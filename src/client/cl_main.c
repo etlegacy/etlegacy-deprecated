@@ -3695,10 +3695,6 @@ void CL_Init(void)
 
 	CL_InitInput();
 
-#ifdef FEATURE_IRC_CLIENT
-	CL_OW_IRCSetup();
-#endif
-
 	// register our variables
 	cl_noprint = Cvar_Get("cl_noprint", "0", 0);
 
@@ -3852,12 +3848,6 @@ void CL_Init(void)
 	Cmd_AddCommand("fs_openedList", CL_OpenedPK3List_f);
 	Cmd_AddCommand("fs_referencedList", CL_ReferencedPK3List_f);
 
-#ifdef FEATURE_IRC_CLIENT
-	Cmd_AddCommand("irc_connect", CL_OW_InitIRC);
-	Cmd_AddCommand("irc_quit", CL_OW_IRCInitiateShutdown);
-	Cmd_AddCommand("irc_say", CL_OW_IRCSay);
-#endif
-
 	// startup-caching system
 	Cmd_AddCommand("cache_startgather", CL_Cache_StartGather_f);
 	Cmd_AddCommand("cache_usedfile", CL_Cache_UsedFile_f);
@@ -3936,10 +3926,6 @@ void CL_Shutdown(void)
 	DL_Shutdown();
 	CL_ShutdownRef();
 
-#ifdef FEATURE_IRC_CLIENT
-	CL_OW_IRCInitiateShutdown();
-#endif
-
 	CL_ShutdownUI();
 
 	Cmd_RemoveCommand("cmd");
@@ -3973,10 +3959,6 @@ void CL_Shutdown(void)
 	Cmd_RemoveCommand("updatehunkusage");
 	Cmd_RemoveCommand("wav_record");
 	Cmd_RemoveCommand("wav_stoprecord");
-
-#ifdef FEATURE_IRC_CLIENT
-	CL_OW_IRCWaitShutdown();
-#endif
 
 	Cvar_Set("cl_running", "0");
 
