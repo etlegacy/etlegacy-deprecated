@@ -755,6 +755,11 @@ install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/COPYING.txt"
 if(ET_FS_BASEPATH)
 	message(STATUS "Installing genuine ET files")
 
+        install(FILES "${ET_FS_BASEPATH}/etmain/mp_bin.pk3"
+                DESTINATION "${INSTALL_DEFAULT_MODDIR}/etmain"
+                PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+        )
+
 	install(FILES "${ET_FS_BASEPATH}/etmain/pak0.pk3"
 		DESTINATION "${INSTALL_DEFAULT_MODDIR}/etmain"
 		PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
@@ -786,7 +791,7 @@ else()
 	message(STATUS "***********************************************************")
 	message(STATUS "Genuine ET files are not copied - ET:Legacy won't start !!!")
 	message(STATUS "In order to start the game copy")
-	message(STATUS "pak0.pk3, pak1.pk3 and pak2.pk3")
+	message(STATUS "mp_bin.pk3, pak0.pk3, pak1.pk3 and pak2.pk3")
 	message(STATUS "to ${INSTALL_DEFAULT_MODDIR}/etmain")
 	message(STATUS "***********************************************************")
 endif(ET_FS_BASEPATH)
