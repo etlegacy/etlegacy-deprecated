@@ -3421,12 +3421,6 @@ qboolean FS_idPak(char *pak, char *base)
 {
 	int i;
 
-	// ET:L does not need original mp_bin
-	//if (!FS_FilenameCompare(pak, va("%s/mp_bin", base)))
-	//{
-	//	return qtrue;
-	//}
-
 	for (i = 0; i < NUM_ID_PAKS; i++)
 	{
 		if (!FS_FilenameCompare(pak, va("%s/pak%d", base, i)))
@@ -3469,7 +3463,7 @@ qboolean FS_VerifyOfficialPaks(void)
 	{
 		if (FS_idPak(fs_serverPakNames[i], BASEGAME))
 		{
-			Q_strncpyz(officialpaks[numOfficialPaksOnServer].pakname, fs_serverPakNames[i], sizeof(officialpaks[0].pakname));
+			Q_strncpyz(officialpaks[numOfficialPaksOnServer].pakname, fs_serverPakNames[i], sizeof(officialpaks[i].pakname));
 			officialpaks[numOfficialPaksOnServer].ok = qfalse;
 			numOfficialPaksOnServer++;
 		}
@@ -3492,9 +3486,9 @@ qboolean FS_VerifyOfficialPaks(void)
 						if (!Q_stricmp(packPath, officialpaks[j].pakname))
 						{
 							officialpaks[j].ok = qtrue;
+							numOfficialPaksLocal++;
 						}
 					}
-					numOfficialPaksLocal++;
 				}
 				break;
 			}
@@ -4329,7 +4323,7 @@ void FS_InitFilesystem(void)
 	// - we want the nice error message here as well
 	if (FS_ReadFile("default.cfg", NULL) <= 0)
 	{
-		Com_Error(ERR_FATAL, "FS_InitFilesystem: Couldn't load default.cfg - I am missing essential files!\nVerify your installation and make sure genuine ET files\n- mp_bin.pk3\n- pak0.pk3\n- pak1.pk3\n- pak2.pk3\nare located in 'etmain' folder of fs_basepath: %s", fs_basepath->string);
+		Com_Error(ERR_FATAL, "FS_InitFilesystem: Couldn't load default.cfg - I am missing essential files!\nVerify your installation and make sure genuine ET files\n- pak0.pk3\n- pak1.pk3\n- pak2.pk3\nare located in 'etmain' folder of fs_basepath: %s", fs_basepath->string);
 	}
 
 	Q_strncpyz(lastValidBase, fs_basepath->string, sizeof(lastValidBase));
@@ -4357,6 +4351,7 @@ void FS_Restart(int checksumFeed)
 	{
 		// this might happen when connecting to a pure server not using BASEGAME/pak0.pk3
 		// (for instance a TA demo server)
+		// FIXME: Check if that can be safely removed
 		if (lastValidBase[0])
 		{
 			FS_PureServerSetLoadedPaks("", "");

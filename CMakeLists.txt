@@ -842,10 +842,10 @@ install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/COPYING.txt"
 if(ET_FS_BASEPATH)
 	message(STATUS "Installing genuine ET files")
 
-	install(FILES "${ET_FS_BASEPATH}/etmain/mp_bin.pk3"
-		DESTINATION "${INSTALL_DEFAULT_MODDIR}/etmain"
-		PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
-	)
+        install(FILES "${ET_FS_BASEPATH}/etmain/mp_bin.pk3"
+                DESTINATION "${INSTALL_DEFAULT_MODDIR}/etmain"
+                PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+        )
 
 	install(FILES "${ET_FS_BASEPATH}/etmain/pak0.pk3"
 		DESTINATION "${INSTALL_DEFAULT_MODDIR}/etmain"
