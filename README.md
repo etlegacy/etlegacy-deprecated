@@ -1,4 +1,4 @@
-ET: Legacy [![Build Status](https://travis-ci.org/etlegacy/etlegacy.png?branch=master)](https://travis-ci.org/etlegacy/etlegacy)
+ET: Legacy
 ==========
 
 *A second breath of life for Wolfenstein: Enemy Territory*
@@ -8,6 +8,8 @@ Website: [http://www.etlegacy.com](http://www.etlegacy.com)
 IRC: \#etlegacy on irc.freenode.net
 
 Repository: [https://github.com/etlegacy/etlegacy](https://github.com/etlegacy/etlegacy)
+
+This fork is for the OpenPandora, bringing ARM compatibility and GLES renderer
 
 INTRODUCTION
 ============

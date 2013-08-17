@@ -440,6 +440,7 @@ void RE_BeginFrame(stereoFrame_t stereoFrame)
 	tr.frameCount++;
 	tr.frameSceneNum = 0;
 
+#ifndef HAVE_GLES
 	// do overdraw measurement
 	if (r_measureOverdraw->integer)
 	{
@@ -476,6 +477,7 @@ void RE_BeginFrame(stereoFrame_t stereoFrame)
 		}
 		r_measureOverdraw->modified = qfalse;
 	}
+#endif
 
 	// texturemode stuff
 	if (r_textureMode->modified)
@@ -514,6 +516,7 @@ void RE_BeginFrame(stereoFrame_t stereoFrame)
 	}
 	cmd->commandId = RC_DRAW_BUFFER;
 
+#ifndef HAVE_GLES
 	if (glConfig.stereoEnabled)
 	{
 		if (stereoFrame == STEREO_LEFT)
@@ -540,10 +543,14 @@ void RE_BeginFrame(stereoFrame_t stereoFrame)
 			cmd->buffer = (int)GL_FRONT;
 		}
 		else
+
 		{
+#endif
 			cmd->buffer = (int)GL_BACK;
+#ifndef HAVE_GLES
 		}
 	}
+#endif
 }
 
 /*

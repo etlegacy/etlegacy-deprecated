@@ -458,11 +458,21 @@ static const char *IN_TranslateSDLToQ3Key(SDL_keysym *keysym,
 		case SDLK_DELETE:       *key = K_DEL;           break;
 		case SDLK_PAUSE:        *key = K_PAUSE;         break;
 
+#ifdef PANDORA
+		case SDLK_LSHIFT:  		*key = K_SHIFT;  		break;
+		case SDLK_RSHIFT:  		*key = K_MOUSE2;  		break;
+#else
 		case SDLK_LSHIFT:
 		case SDLK_RSHIFT:       *key = K_SHIFT;         break;
+#endif
 
+#ifdef PANDORA
+		case SDLK_LCTRL:  		*key = K_CTRL;  		break;
+		case SDLK_RCTRL:  		*key = K_MOUSE1;  		break;
+#else
 		case SDLK_LCTRL:
 		case SDLK_RCTRL:        *key = K_CTRL;          break;
+#endif
 
 		case SDLK_RMETA:
 		case SDLK_LMETA:        *key = K_COMMAND;       break;
@@ -1043,6 +1053,9 @@ static void IN_JoyMove(void)
 
 			if (in_joystickUseAnalog->integer)
 			{
+#ifdef PANDORA
+				if (i==1) axis = -axis;			// Invert Y axis
+#endif
 				float f = ((float) abs(axis)) / 32767.0f;
 
 				if (f < in_joystickThreshold->value)
@@ -1052,7 +1065,7 @@ static void IN_JoyMove(void)
 
 				if (axis != stick_state.oldaaxes[i])
 				{
-					Com_QueueEvent(0, SE_JOYSTICK_AXIS, i, axis, 0, NULL);
+					Com_QueueEvent(0, SE_JOYSTICK_AXIS, i, axis/256, 0, NULL);
 					stick_state.oldaaxes[i] = axis;
 				}
 			}

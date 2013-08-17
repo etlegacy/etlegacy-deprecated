@@ -44,6 +44,7 @@ R_ArrayElementDiscrete
 This is just for OpenGL conformance testing, it should never be the fastest
 ================
 */
+#ifndef HAVE_GLES
 static void GLAPIENTRY R_ArrayElementDiscrete(GLint index)
 {
 	qglColor4ubv(tess.svars.colors[index]);
@@ -58,7 +59,9 @@ static void GLAPIENTRY R_ArrayElementDiscrete(GLint index)
 	}
 	qglVertex3fv(tess.xyz[index].v);
 }
+#endif
 
+#ifndef HAVE_GLES
 /*
 ================
 R_ArrayElement
@@ -173,7 +176,7 @@ static void R_DrawStripElements(int numIndexes, const glIndex_t *indexes, void (
 
 	qglEnd();
 }
-
+#endif
 /*
 ==================
 R_DrawElements
@@ -185,6 +188,7 @@ without compiled vertex arrays.
 */
 static void R_DrawElements(int numIndexes, const glIndex_t *indexes)
 {
+#ifndef HAVE_GLES
 	switch (r_primitives->integer)
 	{
 	case 0:
@@ -202,14 +206,17 @@ static void R_DrawElements(int numIndexes, const glIndex_t *indexes)
 		R_DrawStripElements(numIndexes, indexes, R_ArrayElement);
 		return;
 	case 2:
+#endif
 		qglDrawElements(GL_TRIANGLES, numIndexes, GL_INDEX_TYPE, indexes);
 		return;
+#ifndef HAVE_GLES
 	case 3:
 		R_DrawStripElements(numIndexes, indexes, R_ArrayElementDiscrete);
 		return;
 	default: // anything else will cause no drawing
 		return;
 	}
+#endif
 }
 
 /*
@@ -355,7 +362,9 @@ static void DrawTris(shaderCommands_t *input)
 	{
 		stateBits |= (GLS_POLYMODE_LINE);
 		GL_State(stateBits);
+#ifndef HAVE_GLES
 		qglEnable(GL_POLYGON_OFFSET_LINE);
+#endif		
 		qglPolygonOffset(r_offsetFactor->value, r_offsetUnits->value);
 	}
 
@@ -363,13 +372,21 @@ static void DrawTris(shaderCommands_t *input)
 	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
 	qglVertexPointer(3, GL_FLOAT, 16, input->xyz);   // padded for SIMD
-
+	
+#ifndef HAVE_GLES
 	if (qglLockArraysEXT)
 	{
 		qglLockArraysEXT(0, input->numVertexes);
 		GLimp_LogComment("glLockArraysEXT\n");
 	}
-
+#endif
+#ifdef HAVE_GLES
+// It's not 100% exact, but it's better than nothing
+	qglDrawElements( GL_LINE_STRIP, 
+					input->numIndexes,
+					GL_INDEX_TYPE,
+					input->indexes );
+#else
 	R_DrawElements(input->numIndexes, input->indexes);
 
 	if (qglUnlockArraysEXT)
@@ -377,8 +394,11 @@ static void DrawTris(shaderCommands_t *input)
 		qglUnlockArraysEXT();
 		GLimp_LogComment("glUnlockArraysEXT\n");
 	}
+#endif
 	qglDepthRange(0, 1);
+#ifndef HAVE_GLES
 	qglDisable(GL_POLYGON_OFFSET_LINE);
+#endif
 }
 
 /*
@@ -417,9 +437,13 @@ static void DrawNormals(shaderCommands_t *input)
 
 		qglColor3f(ent->ambientLight[0] / 255, ent->ambientLight[1] / 255, ent->ambientLight[2] / 255);
 		qglPointSize(5);
+		#ifdef HAVE_GLES
+		/*SEB *TODO* */
+		#else
 		qglBegin(GL_POINTS);
 		qglVertex3fv(temp);
 		qglEnd();
+		#endif
 		qglPointSize(1);
 
 		if (fabs(VectorLengthSquared(ent->lightDir) - 1.0f) > 0.2f)
@@ -431,11 +455,15 @@ static void DrawNormals(shaderCommands_t *input)
 			qglColor3f(ent->directedLight[0] / 255, ent->directedLight[1] / 255, ent->directedLight[2] / 255);
 		}
 		qglLineWidth(3);
+		#ifdef HAVE_GLES
+		/*SEB *TODO* */
+		#else
 		qglBegin(GL_LINES);
 		qglVertex3fv(temp);
 		VectorMA(temp, 32, ent->lightDir, temp);
 		qglVertex3fv(temp);
 		qglEnd();
+		#endif
 		qglLineWidth(1);
 	}
 	// normals drawing
@@ -443,6 +471,9 @@ static void DrawNormals(shaderCommands_t *input)
 	{
 		int i;
 
+		#ifdef HAVE_GLES
+		/*SEB *TODO* */
+		#else
 		qglBegin(GL_LINES);
 		for (i = 0 ; i < input->numVertexes ; i++)
 		{
@@ -451,6 +482,7 @@ static void DrawNormals(shaderCommands_t *input)
 			qglVertex3fv(temp);
 		}
 		qglEnd();
+		#endif
 	}
 
 	qglDepthRange(0, 1);
@@ -516,10 +548,12 @@ static void DrawMultitextured(shaderCommands_t *input, int stage)
 
 	// this is an ugly hack to work around a GeForce driver
 	// bug with multitexture and clip planes
+#ifndef HAVE_GLES
 	if (backEnd.viewParms.isPortal)
 	{
 		qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
+#endif
 
 	// base
 	GL_SelectTexture(0);
@@ -565,7 +599,7 @@ static void DynamicLightSinglePass(void)
 	int      i, l, a, b, c, color, *intColors;
 	vec3_t   origin;
 	byte     *colors;
-	unsigned hitIndexes[SHADER_MAX_INDEXES];
+	glIndex_t hitIndexes[SHADER_MAX_INDEXES];
 	int      numIndexes;
 	float    radius, radiusInverseCubed;
 	float    intensity, remainder, modulate;
@@ -720,7 +754,7 @@ static void DynamicLightPass(void)
 	int      i, l, a, b, c, color, *intColors;
 	vec3_t   origin;
 	byte     *colors;
-	unsigned hitIndexes[SHADER_MAX_INDEXES];
+	glIndex_t hitIndexes[SHADER_MAX_INDEXES];
 	int      numIndexes;
 	float    radius, radiusInverseCubed;
 	float    intensity, remainder, modulate;

@@ -260,6 +260,8 @@ static ID_NONSTATIC_INLINE float idSqrt(float x)
 #define CPUSTRING   "linux-x86_64"
 #elif defined __axp__
 #define CPUSTRING   "linux-alpha"
+#elif defined ARM
+#define CPUSTRING   "linux-arm"
 #else
 #define CPUSTRING   "linux-other"
 #endif

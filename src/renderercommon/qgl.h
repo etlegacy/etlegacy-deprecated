@@ -34,11 +34,16 @@
 #ifndef __QGL_H__
 #define __QGL_H__
 
+#ifdef HAVE_GLES
+#include <GLES/gl.h>
+#include <EGL/egl.h>
+#else
 #ifdef BUNDLED_GLEW
 #   include "GL/glew.h"
 #else
 #   include <GL/glew.h>
 #endif
+#endif	//HAVE_GLES
 
 /*
 #ifndef FEATURE_RENDERER2
@@ -54,11 +59,21 @@
 extern "C" {
 #endif
 
+#ifdef HAVE_GLES
+#define qglMultiTexCoord2fARB(t , s)                            glMultiTexCoord4f(t, s, 0, 1.0f)
+#define qglActiveTextureARB                                     glActiveTexture
+#define qglClientActiveTextureARB                               glClientActiveTexture
+#else
 #define qglMultiTexCoord2fARB                                   glMultiTexCoord2fARB
 #define qglActiveTextureARB                                     glActiveTextureARB
 #define qglClientActiveTextureARB                               glClientActiveTextureARB
+#endif
 #define qglLockArraysEXT                                        glLockArraysEXT
 #define qglUnlockArraysEXT                                      glUnlockArraysEXT
+#ifdef HAVE_GLES
+extern void ( * glLockArraysEXT )( GLint, GLint );
+extern void ( * glUnlockArraysEXT )( void );
+#endif
 #define qglPNTrianglesiATI                                      glPNTrianglesiATI
 #define qglPNTrianglesfATI                                      glPNTrianglesfATI
 #define qglCreateShaderObjectARB                                glCreateShaderObjectARB
@@ -174,16 +189,29 @@ extern "C" {
 #define qglClear glClear
 #define qglClearAccum glClearAccum
 #define qglClearColor glClearColor
+#ifdef HAVE_GLES
+#define qglClearDepth glClearDepthf
+#else
 #define qglClearDepth glClearDepth
+#endif
 #define qglClearIndex glClearIndex
 #define qglClearStencil glClearStencil
+#ifdef HAVE_GLES
+#define qglClipPlane glClipPlanef
+#else
 #define qglClipPlane glClipPlane
+#endif
 #define qglColor3b glColor3b
 #define qglColor3bv glColor3bv
 #define qglColor3d glColor3d
 #define qglColor3dv glColor3dv
+#ifdef HAVE_GLES
+#define qglColor3f(r, g, b) glColor4f(r, g, b, 1.0f)
+#define qglColor3fv( a ) glColor4f( a[0], a[1], a[2], 1.0f )
+#else
 #define qglColor3f glColor3f
 #define qglColor3fv glColor3fv
+#endif
 #define qglColor3i glColor3i
 #define qglColor3iv glColor3iv
 #define qglColor3s glColor3s
@@ -199,13 +227,21 @@ extern "C" {
 #define qglColor4d glColor4d
 #define qglColor4dv glColor4dv
 #define qglColor4f glColor4f
+#ifdef HAVE_GLES
+#define qglColor4fv( a ) glColor4f( a[0], a[1], a[2], a[3] )
+#else
 #define qglColor4fv glColor4fv
+#endif
 #define qglColor4i glColor4i
 #define qglColor4iv glColor4iv
 #define qglColor4s glColor4s
 #define qglColor4sv glColor4sv
 #define qglColor4ub glColor4ub
+#ifdef HAVE_GLES
+#define qglColor4ubv(a) glColor4ub((a)[0], (a)[1], (a)[2], (a)[3])
+#else
 #define qglColor4ubv glColor4ubv
+#endif
 #define qglColor4ui glColor4ui
 #define qglColor4uiv glColor4uiv
 #define qglColor4us glColor4us
@@ -223,7 +259,11 @@ extern "C" {
 #define qglDeleteTextures glDeleteTextures
 #define qglDepthFunc glDepthFunc
 #define qglDepthMask glDepthMask
+#ifdef HAVE_GLES
+#define qglDepthRange glDepthRangef
+#else
 #define qglDepthRange glDepthRange
+#endif
 #define qglDisable glDisable
 #define qglDisableClientState glDisableClientState
 #define qglDrawArrays glDrawArrays
@@ -254,10 +294,18 @@ extern "C" {
 #define qglFlush glFlush
 #define qglFogf glFogf
 #define qglFogfv glFogfv
+#ifdef HAVE_GLES
+#define qglFogi  glFogf
+#else
 #define qglFogi glFogi
+#endif
 #define qglFogiv glFogiv
 #define qglFrontFace glFrontFace
+#ifdef HAVE_GLES
+#define qglFrustum glFrustumf
+#else
 #define qglFrustum glFrustum
+#endif
 #define qglGenLists glGenLists
 #define qglGenTextures glGenTextures
 #define qglGetBooleanv glGetBooleanv
@@ -348,7 +396,11 @@ extern "C" {
 #define qglNormal3s glNormal3s
 #define qglNormal3sv glNormal3sv
 #define qglNormalPointer glNormalPointer
+#ifdef HAVE_GLES
+#define qglOrtho glOrthof
+#else
 #define qglOrtho glOrtho
+#endif
 #define qglPassThrough glPassThrough
 #define qglPixelMapfv glPixelMapfv
 #define qglPixelMapuiv glPixelMapuiv
@@ -495,6 +547,14 @@ extern "C" {
 #define qglVertex4sv glVertex4sv
 #define qglVertexPointer glVertexPointer
 #define qglViewport glViewport
+
+#ifdef HAVE_GLES
+#define GL_CLAMP     GL_CLAMP_TO_EDGE
+#define GL_TEXTURE0_ARB	GL_TEXTURE0
+#define GL_TEXTURE1_ARB	GL_TEXTURE1
+#define GL_TEXTURE2_ARB	GL_TEXTURE2
+#define GL_TEXTURE3_ARB	GL_TEXTURE3
+#endif
 
 #ifdef __cplusplus
 }

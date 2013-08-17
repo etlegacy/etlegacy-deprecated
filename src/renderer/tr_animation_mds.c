@@ -1391,7 +1391,13 @@ void RB_SurfaceAnim(mdsSurface_t *surface)
 
 	if (render_count == surface->numVerts)
 	{
+		#ifdef HAVE_GLES
+		int ii;
+		for (ii=0; ii<indexes; ii++)
+			pIndexes[ii]=triangles[ii];
+		#else
 		memcpy(pIndexes, triangles, sizeof(triangles[0]) * indexes);
+		#endif
 		if (baseVertex)
 		{
 			glIndex_t *indexesEnd;
@@ -1487,6 +1493,9 @@ void RB_SurfaceAnim(mdsSurface_t *surface)
 
 				GL_Bind(tr.whiteImage);
 				qglLineWidth(1);
+				#ifdef HAVE_GLES
+				//*TODO
+				#else
 				qglBegin(GL_LINES);
 				for (j = 0; j < 3; j++)
 				{
@@ -1498,16 +1507,21 @@ void RB_SurfaceAnim(mdsSurface_t *surface)
 					qglVertex3fv(vec);
 				}
 				qglEnd();
+				#endif
 
 				// connect to our parent if it's valid
 				if (validBones[boneInfo[*boneRefs].parent])
 				{
 					qglLineWidth(2);
+					#ifdef HAVE_GLES
+					//*TODO
+					#else
 					qglBegin(GL_LINES);
 					qglColor3f(.6, .6, .6);
 					qglVertex3fv(bonePtr->translation);
 					qglVertex3fv(bones[boneInfo[*boneRefs].parent].translation);
 					qglEnd();
+					#endif
 				}
 
 				qglLineWidth(1);
@@ -1524,6 +1538,9 @@ void RB_SurfaceAnim(mdsSurface_t *surface)
 
 			GL_Bind(tr.whiteImage);
 			qglLineWidth(1);
+			#ifdef HAVE_GLES
+			//*TODO
+			#else
 			qglBegin(GL_LINES);
 			qglColor3f(.0, .0, .8);
 
@@ -1541,6 +1558,7 @@ void RB_SurfaceAnim(mdsSurface_t *surface)
 			}
 
 			qglEnd();
+			#endif
 
 			// track debug stats
 			if (r_bonesDebug->integer == 4)

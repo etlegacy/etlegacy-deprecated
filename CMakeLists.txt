@@ -25,6 +25,9 @@ set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 option(BUILD_SERVER		"Build the dedicated server executable"				ON)
 option(BUILD_CLIENT		"Build the client executable"					ON)
 option(BUILD_MOD		"Build the mod libraries"					ON)
+option(PANDORA "Set to ON if targeting an OpenPandora device" ${PANDORA})
+option(JOYSTICK "Set to ON if you want Joystick support (Linux only)" ${JOYSTICK})
+option(CROUCH "Set to ON if you want Toggle Crouch" ${CROUCH})
 
 # Enable pk3 creation if zip executable is found. Download it on Windows
 find_program(ZIP_EXECUTABLE zip PATHS ${CMAKE_BINARY_DIR})
@@ -171,6 +174,15 @@ if(NOT CMAKE_SYSTEM MATCHES "Darwin")
 		message(STATUS "Warning: processor architecture not recognised (${CMAKE_SYSTEM_PROCESSOR})")
 	endif()
 endif(NOT CMAKE_SYSTEM MATCHES "Darwin")
+if(PANDORA)
+	add_definitions(-DPANDORA -DHAVE_GLES -DARM -DNEON -DAUTOAIM)
+endif()
+if (JOYSTICK)
+	add_definitions(-DJOYSTICK)
+endif()
+if (CROUCH)
+	add_definitions(-DCROUCH)
+endif()
 
 #-----------------------------------------------------------------
 # Sources
@@ -321,6 +333,10 @@ FILE(GLOB RENDERER1_FILES
 	"src/renderer/*.h"
 )
 
+if(PANDORA)
+	LIST(APPEND RENDERER1_FILES "src/sdl/eglport.c")
+endif()
+
 FILE(GLOB RENDERER2_FILES
 	"src/renderer2/*.c"
 	"src/renderer2/*.cpp"
@@ -380,24 +396,31 @@ endif(BUNDLED_LIBS OR BUNDLED_SDL OR BUNDLED_CURL AND FEATURE_CURL OR BUNDLED_JP
 # Client features
 #-----------------------------------------------------------------
 if(BUILD_CLIENT)
-	find_package(OpenGL REQUIRED)
-	list(APPEND RENDERER_LIBRARIES ${OPENGL_LIBRARIES})
-	include_directories(SYSTEM ${OPENGL_INCLUDE_DIR})
+	if(PANDORA)
+		list(APPEND RENDERER_LIBRARIES -lEGL -lGLES_CM)
+		include_directories(SYSTEM /mnt/utmp/codeblocks/usr/include/gles)
+	else()
+		find_package(OpenGL REQUIRED)
+		list(APPEND RENDERER_LIBRARIES ${OPENGL_LIBRARIES})
+		include_directories(SYSTEM ${OPENGL_INCLUDE_DIR})
+	endif()
 
 	if(NOT WIN32) # Dependency of GLEW and SDL_syswm.h
 		find_package(X11 REQUIRED)
 		include_directories(${X11_INCLUDE_DIR})
 	endif(NOT WIN32)
 
-	if(NOT BUNDLED_GLEW)
-		find_package(GLEW REQUIRED)
-		list(APPEND RENDERER_LIBRARIES ${GLEW_LIBRARY})
-		include_directories(SYSTEM ${GLEW_INCLUDE_PATH})
-	else()
-		list(APPEND RENDERER_LIBRARIES ${BUNDLED_GLEW_LIBRARIES})
-		include_directories(SYSTEM ${BUNDLED_GLEW_INCLUDE_DIR})
-		add_definitions(-DBUNDLED_GLEW)
-		add_definitions(-DGLEW_STATIC)
+	if(NOT PANDORA)
+		if(NOT BUNDLED_GLEW)
+			find_package(GLEW REQUIRED)
+			list(APPEND RENDERER_LIBRARIES ${GLEW_LIBRARY})
+			include_directories(SYSTEM ${GLEW_INCLUDE_PATH})
+		else()
+			list(APPEND RENDERER_LIBRARIES ${BUNDLED_GLEW_LIBRARIES})
+			include_directories(SYSTEM ${BUNDLED_GLEW_INCLUDE_DIR})
+			add_definitions(-DBUNDLED_GLEW)
+			add_definitions(-DGLEW_STATIC)
+		endif()
 	endif()
 
 	if(NOT BUNDLED_SDL)
@@ -618,9 +641,11 @@ if(BUILD_CLIENT)
 		if(BUNDLED_SDL)
 			add_dependencies(renderer_opengl1_${ARCH} bundled_sdl)
 		endif(BUNDLED_SDL)
-		if(BUNDLED_GLEW)
-				add_dependencies(renderer_opengl1_${ARCH} bundled_glew)
-		endif(BUNDLED_GLEW)
+		if(NOT PANDORA)
+			if(BUNDLED_GLEW)
+					add_dependencies(renderer_opengl1_${ARCH} bundled_glew)
+			endif(BUNDLED_GLEW)
+		endif()
 		if(BUNDLED_JPEG)
 			add_dependencies(renderer_opengl1_${ARCH} bundled_jpeg)
 		endif(BUNDLED_JPEG)

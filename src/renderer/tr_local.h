@@ -41,8 +41,20 @@
 #include "../renderercommon/tr_common.h"
 #include "../renderercommon/qgl.h"
 
+#ifdef HAVE_GLES
+#include "GLES/glext.h"
+#ifndef GL_RGBA4
+#define GL_RGBA4				0x8056
+#endif
+#ifndef GL_RGB5
+#define GL_RGB5					0x8050
+#endif
+#define GL_INDEX_TYPE       GL_UNSIGNED_SHORT
+typedef unsigned short glIndex_t;
+#else
 #define GL_INDEX_TYPE       GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;
+#endif
 
 // 14 bits
 // can't be increased without changing bit packing for drawsurfs
@@ -833,7 +845,7 @@ typedef struct
 
 	// triangle definitions
 	int numIndexes;
-	glIndex_t *indexes;
+	int *indexes;
 
 	int numVerts;
 	vec4_t *xyz;

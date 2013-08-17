@@ -1601,7 +1601,13 @@ void RB_MDM_SurfaceAnim(mdmSurface_t *surface)
 
 	if (render_count == surface->numVerts)
 	{
+		#ifdef HAVE_GLES
+		int ii;
+		for (ii=0; ii<indexes; ii++)
+			pIndexes[ii]=triangles[ii];
+		#else
 		memcpy(pIndexes, triangles, sizeof(triangles[0]) * indexes);
+		#endif
 		if (baseVertex)
 		{
 			glIndex_t *indexesEnd;
@@ -1700,6 +1706,9 @@ void RB_MDM_SurfaceAnim(mdmSurface_t *surface)
 				if (r_bonesDebug->integer != 9)
 				{
 					qglLineWidth(1);
+					#ifdef HAVE_GLES
+					//*TODO
+					#else
 					qglBegin(GL_LINES);
 					for (j = 0; j < 3; j++)
 					{
@@ -1711,17 +1720,22 @@ void RB_MDM_SurfaceAnim(mdmSurface_t *surface)
 						qglVertex3fv(vec);
 					}
 					qglEnd();
+					#endif
 				}
 
 				// connect to our parent if it's valid
 				if (validBones[boneInfo[*boneRefs].parent])
 				{
 					qglLineWidth(r_bonesDebug->integer == 8 ? 4 : 2);
+					#ifdef HAVE_GLES
+					//*TODO
+					#else
 					qglBegin(GL_LINES);
 					qglColor3f(.6, .6, .6);
 					qglVertex3fv(bonePtr->translation);
 					qglVertex3fv(bones[boneInfo[*boneRefs].parent].translation);
 					qglEnd();
+					#endif
 				}
 
 				qglLineWidth(1);
@@ -1750,11 +1764,15 @@ void RB_MDM_SurfaceAnim(mdmSurface_t *surface)
 					vec[2] = vec[2] + diff[2] * 3;
 
 					qglEnable(GL_BLEND);
+					#ifdef HAVE_GLES
+					//*TODO
+					#else
 					qglBegin(GL_LINES);
 					qglColor4f(1.f, .4f, .05f, .35f);
 					qglVertex3fv(bonePtr->translation);
 					qglVertex3fv(vec);
 					qglEnd();
+					#endif
 					qglDisable(GL_BLEND);
 
 					R_DebugText(vec, 1.f, 1.f, 1.f, mdxBoneInfo->name, qfalse);         // qfalse, as there is no reason to set depthrange again
@@ -1789,6 +1807,9 @@ void RB_MDM_SurfaceAnim(mdmSurface_t *surface)
 
 						GL_Bind(tr.whiteImage);
 						qglLineWidth(2);
+						#ifdef HAVE_GLES
+						//*TODO
+						#else
 						qglBegin(GL_LINES);
 						for (j = 0; j < 3; j++)
 						{
@@ -1800,6 +1821,7 @@ void RB_MDM_SurfaceAnim(mdmSurface_t *surface)
 							qglVertex3fv(vec);
 						}
 						qglEnd();
+						#endif
 
 						VectorSet(vec, 0.f, 0.f, 32.f);
 						VectorSubtract(outTag.origin, vec, diff);
@@ -1809,11 +1831,15 @@ void RB_MDM_SurfaceAnim(mdmSurface_t *surface)
 
 						qglLineWidth(1);
 						qglEnable(GL_BLEND);
+						#ifdef HAVE_GLES
+						//*TODO
+						#else
 						qglBegin(GL_LINES);
 						qglColor4f(1.f, .4f, .05f, .35f);
 						qglVertex3fv(outTag.origin);
 						qglVertex3fv(vec);
 						qglEnd();
+						#endif
 						qglDisable(GL_BLEND);
 
 						R_DebugText(vec, 1.f, 1.f, 1.f, pTag->name, qfalse);    // qfalse, as there is no reason to set depthrange again
@@ -1835,6 +1861,9 @@ void RB_MDM_SurfaceAnim(mdmSurface_t *surface)
 
 			GL_Bind(tr.whiteImage);
 			qglLineWidth(1);
+			#ifdef HAVE_GLES
+			//*TODO
+			#else
 			qglBegin(GL_LINES);
 			qglColor3f(.0, .0, .8);
 
@@ -1852,6 +1881,7 @@ void RB_MDM_SurfaceAnim(mdmSurface_t *surface)
 			}
 
 			qglEnd();
+			#endif
 
 
 			if (r_bonesDebug->integer == 4) // track debug stats
@@ -1875,6 +1905,9 @@ void RB_MDM_SurfaceAnim(mdmSurface_t *surface)
 			tempVert = ( float * )(tess.xyz + baseVertex);
 			GL_Bind(tr.whiteImage);
 			qglPointSize(5);
+			#ifdef HAVE_GLES
+			//*TODO
+			#else
 			qglBegin(GL_POINTS);
 			for (j = 0; j < render_count; j++, tempVert += 4)
 			{
@@ -1897,6 +1930,7 @@ void RB_MDM_SurfaceAnim(mdmSurface_t *surface)
 				v = (mdmVertex_t *)&v->weights[v->numWeights];
 			}
 			qglEnd();
+			#endif
 		}
 	}
 

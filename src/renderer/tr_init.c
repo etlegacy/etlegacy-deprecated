@@ -47,6 +47,11 @@ static void GfxInfo_f(void);
 cvar_t *com_altivec;
 #endif
 
+#ifdef HAVE_GLES
+void ( * glLockArraysEXT )( GLint, GLint );
+void ( * glUnlockArraysEXT )( void );
+#endif
+
 cvar_t *r_flareSize;
 cvar_t *r_flareFade;
 
@@ -333,7 +338,7 @@ vidmode_t r_vidModes[] =
 	{ "Mode  8: 1280x1024",         1280, 1024, 1 },
 	{ "Mode  9: 1600x1200",         1600, 1200, 1 },
 	{ "Mode 10: 2048x1536",         2048, 1536, 1 },
-	{ "Mode 11: 856x480 (wide)",    856,  480,  1 },
+	{ "Mode 11: 800x480 (wide)",    800,  480,  1 },
 	{ "Mode 12: 1366x768 (16:9)",   1366, 768,  1 },
 	{ "Mode 13: 1440x900 (16:10)",  1440, 900,  1 },
 	{ "Mode 14: 1680x1050 (16:10)", 1680, 1050, 1 },
@@ -447,8 +452,24 @@ byte *RB_ReadPixels(int x, int y, int width, int height, size_t *offset, int *pa
 	// Allocate a few more bytes so that we can choose an alignment we like
 	buffer = ri.Hunk_AllocateTempMemory(padwidth * height + *offset + packAlign - 1);
 
+	#ifdef HAVE_GLES
+	bufstart=buffer;
+	padwidth=linelen;
+	int p2width=1, p2height=1;
+	int xx, yy, aa;
+	while (p2width<glConfig.vidWidth) p2width*=2;
+	while (p2height<glConfig.vidHeight) p2height*=2;
+	byte *source = (byte*) ri.Hunk_AllocateTempMemory( p2width * p2height * 4 );
+	qglReadPixels( 0, 0, p2width, p2height, GL_RGBA, GL_UNSIGNED_BYTE, source );
+	for (yy=y; yy<height; yy++)
+		for (xx=x; xx<width; xx++)
+			for (aa=0; aa<3; aa++)
+				buffer[yy*width*3+xx*3+aa]=source[(yy+y)*p2width*4+(xx+x)*4+aa];
+	ri.Hunk_FreeTempMemory(source);
+	#else
 	bufstart = PADP(( intptr_t ) buffer + *offset, packAlign);
 	qglReadPixels(x, y, width, height, GL_RGB, GL_UNSIGNED_BYTE, bufstart);
+	#endif
 
 	*offset = bufstart - buffer;
 	*padlen = padwidth - linelen;
@@ -472,7 +493,11 @@ byte *RB_ReadZBuffer(int x, int y, int width, int height, int *padlen)
 
 	bufstart = PADP(( intptr_t ) buffer, packAlign);
 	qglDepthRange(0.0f, 1.0f);
+	#ifdef HAVE_GLES
+	memset(buffer, 0, padwidth * height + packAlign - 1);	//*TODO* find something to read DepthBuffer ?!
+	#else
 	qglReadPixels(x, y, width, height, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, bufstart);
+	#endif
 
 	*padlen = padwidth - linelen;
 
@@ -1017,7 +1042,15 @@ void GL_SetDefaultState(void)
 	// make sure our GL state vector is set correctly
 	glState.glStateBits = GLS_DEPTHTEST_DISABLE | GLS_DEPTHMASK_TRUE;
 
+#ifdef HAVE_GLES
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	//*SEB* ? not the best place !
+	glLockArraysEXT = NULL;
+	glUnlockArraysEXT = NULL;
+#else
 	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+#endif
 	qglDepthMask(GL_TRUE);
 	qglDisable(GL_DEPTH_TEST);
 	qglEnable(GL_SCISSOR_TEST);
@@ -1102,6 +1135,9 @@ void GfxInfo_f(void)
 		// default is to use triangles if compiled vertex arrays are present
 		ri.Printf(PRINT_ALL, "rendering primitives: ");
 		primitives = r_primitives->integer;
+#ifdef HAVE_GLES
+		primitives = 2;
+#else
 		if (primitives == 0)
 		{
 			if (qglLockArraysEXT)
@@ -1113,6 +1149,7 @@ void GfxInfo_f(void)
 				primitives = 1;
 			}
 		}
+#endif
 		if (primitives == -1)
 		{
 			ri.Printf(PRINT_ALL, "none\n");
@@ -1135,7 +1172,11 @@ void GfxInfo_f(void)
 	ri.Printf(PRINT_ALL, "picmip: %d\n", r_picmip->integer);
 	ri.Printf(PRINT_ALL, "texture bits: %d\n", r_texturebits->integer);
 	ri.Printf(PRINT_ALL, "multitexture: %s\n", enablestrings[qglActiveTextureARB != 0]);
+#ifdef HAVE_GLES
+	ri.Printf(PRINT_ALL, "compiled vertex arrays: %s\n", enablestrings[0]);
+#else
 	ri.Printf(PRINT_ALL, "compiled vertex arrays: %s\n", enablestrings[qglLockArraysEXT != 0]);
+#endif
 	ri.Printf(PRINT_ALL, "texenv add: %s\n", enablestrings[glConfig.textureEnvAddAvailable != 0]);
 	ri.Printf(PRINT_ALL, "compressed textures: %s\n", enablestrings[glConfig.textureCompression != TC_NONE]);
 

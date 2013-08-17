@@ -110,12 +110,12 @@ void Cui_WideRect(Rectangle *rect)
 	rect->y *= DC->yscale;
 	rect->w *= DC->xscale;
 	rect->h *= DC->yscale;
-
+/*
 	if (DC->glconfig.windowAspect > RATIO43)
 	{
 		rect->x *= RATIO43 / DC->glconfig.windowAspect;
 		rect->w *= RATIO43 / DC->glconfig.windowAspect;
-	}
+	}*/
 }
 
 /**
