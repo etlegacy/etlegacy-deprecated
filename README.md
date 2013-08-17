@@ -20,6 +20,13 @@ which in turn is based on the GPL'd source code of Wolfenstein: Enemy Territory.
 Its main goal is to fix bugs and clean up the codebase while remaining 
 compatible with the ET 2.60b version.
 
+OPENPANDORA
+===========
+
+For more info on the OpenPandora go here: http://boards.openpandora.org/
+Specific thread for Jedi Academy on the OpenPandora here: http://boards.openpandora.org/index.php/topic/14051-enemy-territory-legacy/
+
+
 GENERAL NOTES
 =============
 
