@@ -24,7 +24,8 @@ OPENPANDORA
 ===========
 
 For more info on the OpenPandora go here: http://boards.openpandora.org/
-Specific thread for Jedi Academy on the OpenPandora here: http://boards.openpandora.org/index.php/topic/14051-enemy-territory-legacy/
+
+Specific thread for ET:Legacy on the OpenPandora here: http://boards.openpandora.org/index.php/topic/14051-enemy-territory-legacy/
 
 
 GENERAL NOTES
