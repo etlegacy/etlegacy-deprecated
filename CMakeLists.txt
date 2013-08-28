@@ -28,6 +28,7 @@ option(BUILD_MOD		"Build the mod libraries"					ON)
 option(PANDORA "Set to ON if targeting an OpenPandora device" ${PANDORA})
 option(JOYSTICK "Set to ON if you want Joystick support (Linux only)" ${JOYSTICK})
 option(CROUCH "Set to ON if you want Toggle Crouch" ${CROUCH})
+option(GLES "Set to ON if you want GLES renderer" ${GLES})
 
 # Enable pk3 creation if zip executable is found. Download it on Windows
 find_program(ZIP_EXECUTABLE zip PATHS ${CMAKE_BINARY_DIR})
@@ -199,7 +200,10 @@ if(NOT CMAKE_SYSTEM MATCHES "Darwin")
 	endif()
 endif(NOT CMAKE_SYSTEM MATCHES "Darwin")
 if(PANDORA)
-	add_definitions(-DPANDORA -DHAVE_GLES -DARM -DNEON -DAUTOAIM)
+	add_definitions(-DPANDORA -DARM -DNEON -DAUTOAIM)
+endif()
+if (GLES)
+	add_definitions(-DHAVE_GLES)
 endif()
 if (JOYSTICK)
 	add_definitions(-DJOYSTICK)
@@ -357,9 +361,11 @@ FILE(GLOB RENDERER1_FILES
 	"src/renderer/*.h"
 )
 
-if(PANDORA)
-	LIST(APPEND RENDERER1_FILES "src/sdl/eglport.c")
-endif()
+FILE(GLOB RENDERERGLES_FILES
+	"src/rendererGLES/*.c"
+	"src/rendererGLES/*.h"
+	"src/sdl/eglport.c"
+)
 
 FILE(GLOB RENDERER2_FILES
 	"src/renderer2/*.c"
@@ -420,7 +426,7 @@ endif(BUNDLED_LIBS OR BUNDLED_SDL OR BUNDLED_CURL AND FEATURE_CURL OR BUNDLED_JP
 # Client features
 #-----------------------------------------------------------------
 if(BUILD_CLIENT)
-	if(PANDORA)
+	if(GLES)
 		list(APPEND RENDERER_LIBRARIES -lEGL -lGLES_CM)
 		include_directories(SYSTEM /mnt/utmp/codeblocks/usr/include/gles)
 	else()
@@ -434,7 +440,7 @@ if(BUILD_CLIENT)
 		include_directories(${X11_INCLUDE_DIR})
 	endif(NOT WIN32)
 
-	if(NOT PANDORA)
+	if(NOT GLES)
 		if(NOT BUNDLED_GLEW)
 			find_package(GLEW REQUIRED)
 			list(APPEND RENDERER_LIBRARIES ${GLEW_LIBRARY})
@@ -661,11 +667,15 @@ if(BUILD_CLIENT)
 		set(REND_LIBTYPE STATIC)
 	endif(RENDERER_DYNAMIC)
 	if(RENDERER_DYNAMIC OR NOT FEATURE_RENDERER2)
-		add_library(renderer_opengl1_${ARCH} ${REND_LIBTYPE} ${RENDERER1_FILES} ${RENDERER_COMMON})
+		if (GLES)
+			add_library(renderer_opengl1_${ARCH} ${REND_LIBTYPE} ${RENDERERGLES_FILES} ${RENDERER_COMMON})
+		else()
+			add_library(renderer_opengl1_${ARCH} ${REND_LIBTYPE} ${RENDERER1_FILES} ${RENDERER_COMMON})
+		endif()
 		if(BUNDLED_SDL)
 			add_dependencies(renderer_opengl1_${ARCH} bundled_sdl)
 		endif(BUNDLED_SDL)
-		if(NOT PANDORA)
+		if(NOT GLES)
 			if(BUNDLED_GLEW)
 					add_dependencies(renderer_opengl1_${ARCH} bundled_glew)
 			endif(BUNDLED_GLEW)

@@ -342,19 +342,6 @@ void GL_State(unsigned long stateBits)
 		}
 	}
 
-	// fill/line mode
-	if (diff & GLS_POLYMODE_LINE)
-	{
-		if (stateBits & GLS_POLYMODE_LINE)
-		{
-			qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		}
-		else
-		{
-			qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		}
-	}
-
 	// depthtest
 	if (diff & GLS_DEPTHTEST_DISABLE)
 	{
@@ -612,7 +599,7 @@ void RB_BeginDrawingView(void)
 	if (backEnd.viewParms.isPortal)
 	{
 		float  plane[4];
-		double plane2[4];
+		float	plane2[4];
 
 		plane[0] = backEnd.viewParms.portalPlane.normal[0];
 		plane[1] = backEnd.viewParms.portalPlane.normal[1];
@@ -874,7 +861,7 @@ void RE_StretchRaw(int x, int y, int w, int h, int cols, int rows, const byte *d
 	{
 		tr.scratchImage[client]->width  = tr.scratchImage[client]->uploadWidth = cols;
 		tr.scratchImage[client]->height = tr.scratchImage[client]->uploadHeight = rows;
-		qglTexImage2D(GL_TEXTURE_2D, 0, 3, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -901,16 +888,32 @@ void RE_StretchRaw(int x, int y, int w, int h, int cols, int rows, const byte *d
 
 	qglColor3f(tr.identityLight, tr.identityLight, tr.identityLight);
 
-	qglBegin(GL_QUADS);
-	qglTexCoord2f(0.5f / cols, 0.5f / rows);
-	qglVertex2f(x, y);
-	qglTexCoord2f((cols - 0.5f) / cols, 0.5f / rows);
-	qglVertex2f(x + w, y);
-	qglTexCoord2f((cols - 0.5f) / cols, (rows - 0.5f) / rows);
-	qglVertex2f(x + w, y + h);
-	qglTexCoord2f(0.5f / cols, (rows - 0.5f) / rows);
-	qglVertex2f(x, y + h);
-	qglEnd();
+	GLfloat tex[] = {
+	 0.5f / cols,  0.5f / rows,
+	 ( cols - 0.5f ) / cols,  0.5f / rows,
+	 ( cols - 0.5f ) / cols, ( rows - 0.5f ) / rows,
+	 0.5f / cols, ( rows - 0.5f ) / rows 
+	};
+	GLfloat vtx[] = {
+	 x, y,
+	 x+w, y,
+	 x+w, y+h,
+	 x, y+h 
+	};
+	GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
+	GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
+	if (glcol)
+		qglDisableClientState(GL_COLOR_ARRAY);
+	if (!text)
+		qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+	qglEnableClientState( GL_VERTEX_ARRAY );
+	qglTexCoordPointer( 2, GL_FLOAT, 0, tex );
+	qglVertexPointer  ( 2, GL_FLOAT, 0, vtx );
+	qglDrawArrays( GL_TRIANGLE_FAN, 0, 4 );
+	if (glcol)
+		qglEnableClientState(GL_COLOR_ARRAY);
+	if (!text)
+		qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
 }
 
 void RE_UploadCinematic(int w, int h, int cols, int rows, const byte *data, int client, qboolean dirty)
@@ -922,7 +925,7 @@ void RE_UploadCinematic(int w, int h, int cols, int rows, const byte *data, int 
 	{
 		tr.scratchImage[client]->width  = tr.scratchImage[client]->uploadWidth = cols;
 		tr.scratchImage[client]->height = tr.scratchImage[client]->uploadHeight = rows;
-		qglTexImage2D(GL_TEXTURE_2D, 0, 3, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -1292,8 +1295,6 @@ const void *RB_DrawBuffer(const void *data)
 
 	cmd = ( const drawBufferCommand_t * ) data;
 
-	qglDrawBuffer(cmd->buffer);
-
 	// clear screen for debugging
 	if (r_clear->integer)
 	{
@@ -1355,19 +1356,27 @@ void RB_ShowImages(void)
 			h *= image->uploadHeight / 512.0f;
 		}
 
-		GL_Bind(image);
-		qglBegin(GL_QUADS);
-		qglTexCoord2f(0, 0);
-		qglVertex2f(x, y);
-		qglTexCoord2f(1, 0);
-		qglVertex2f(x + w, y);
-		qglTexCoord2f(1, 1);
-		qglVertex2f(x + w, y + h);
-		qglTexCoord2f(0, 1);
-		qglVertex2f(x, y + h);
-		qglEnd();
+		GLfloat tex[] = {
+		 0, 0,
+		 1, 0,
+		 1, 1,
+		 0, 1
+		};
+	GLfloat vtx[] = {
+		 x, y,
+		 x + w, y,
+		 x + w, y + h,
+		 x, y + h
+		};
+		qglTexCoordPointer( 2, GL_FLOAT, 0, tex );
+		qglVertexPointer  ( 2, GL_FLOAT, 0, vtx );
+		qglDrawArrays( GL_TRIANGLE_FAN, 0, 4 );
 	}
 
+	if (glcol)
+		qglEnableClientState(GL_COLOR_ARRAY);
+	if (!text)
+		qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
 	qglFinish();
 
 	end = ri.Milliseconds();
@@ -1385,39 +1394,50 @@ void RB_DrawBounds(vec3_t mins, vec3_t maxs)
 	GL_State(GLS_POLYMODE_LINE);
 
 	// box corners
-	qglBegin(GL_LINES);
-	qglColor3f(1, 1, 1);
-
-	qglVertex3f(mins[0], mins[1], mins[2]);
-	qglVertex3f(maxs[0], mins[1], mins[2]);
-	qglVertex3f(mins[0], mins[1], mins[2]);
-	qglVertex3f(mins[0], maxs[1], mins[2]);
-	qglVertex3f(mins[0], mins[1], mins[2]);
-	qglVertex3f(mins[0], mins[1], maxs[2]);
-
-	qglVertex3f(maxs[0], maxs[1], maxs[2]);
-	qglVertex3f(mins[0], maxs[1], maxs[2]);
-	qglVertex3f(maxs[0], maxs[1], maxs[2]);
-	qglVertex3f(maxs[0], mins[1], maxs[2]);
-	qglVertex3f(maxs[0], maxs[1], maxs[2]);
-	qglVertex3f(maxs[0], maxs[1], mins[2]);
-	qglEnd();
+	GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
+	GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
+	if (glcol)
+		qglDisableClientState(GL_COLOR_ARRAY);
+	if (text)
+		qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
+	GLfloat vtx1[] = {
+	 mins[ 0 ], mins[ 1 ], mins[ 2 ],
+	 maxs[ 0 ], mins[ 1 ], mins[ 2 ],
+	 mins[ 0 ], mins[ 1 ], mins[ 2 ],
+	 mins[ 0 ], maxs[ 1 ], mins[ 2 ],
+	 mins[ 0 ], mins[ 1 ], mins[ 2 ],
+	 mins[ 0 ], mins[ 1 ], maxs[ 2 ],
+	 maxs[ 0 ], maxs[ 1 ], maxs[ 2 ],
+	 mins[ 0 ], maxs[ 1 ], maxs[ 2 ],
+	 maxs[ 0 ], maxs[ 1 ], maxs[ 2 ],
+	 maxs[ 0 ], mins[ 1 ], maxs[ 2 ],
+	 maxs[ 0 ], maxs[ 1 ], maxs[ 2 ],
+	 maxs[ 0 ], maxs[ 1 ], mins[ 2 ]
+	};
+	qglColor3f( 1, 1, 1 );
+	qglVertexPointer  ( 3, GL_FLOAT, 0, vtx1 );
+	qglDrawArrays( GL_LINES, 0, 12 );
 
 	center[0] = (mins[0] + maxs[0]) * 0.5;
 	center[1] = (mins[1] + maxs[1]) * 0.5;
 	center[2] = (mins[2] + maxs[2]) * 0.5;
 
 	// center axis
-	qglBegin(GL_LINES);
-	qglColor3f(1, 0.85, 0);
-
-	qglVertex3f(mins[0], center[1], center[2]);
-	qglVertex3f(maxs[0], center[1], center[2]);
-	qglVertex3f(center[0], mins[1], center[2]);
-	qglVertex3f(center[0], maxs[1], center[2]);
-	qglVertex3f(center[0], center[1], mins[2]);
-	qglVertex3f(center[0], center[1], maxs[2]);
-	qglEnd();
+	GLfloat vtx2[] = {
+	 mins[ 0 ], center[ 1 ], center[ 2 ],
+	 maxs[ 0 ], center[ 1 ], center[ 2 ],
+	 center[ 0 ], mins[ 1 ], center[ 2 ],
+	 center[ 0 ], maxs[ 1 ], center[ 2 ],
+	 center[ 0 ], center[ 1 ], mins[ 2 ],
+	 center[ 0 ], center[ 1 ], maxs[ 2 ]
+	};
+	qglColor3f( 1, 0.85, 0 );
+	qglVertexPointer  ( 3, GL_FLOAT, 0, vtx2 );
+	qglDrawArrays( GL_LINES, 0, 6 );
+	if (glcol)
+		qglEnableClientState(GL_COLOR_ARRAY);
+	if (text)
+		qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
 }
 
 /*
@@ -1442,26 +1462,6 @@ const void *RB_SwapBuffers(const void *data)
 	}
 
 	cmd = ( const swapBuffersCommand_t * ) data;
-
-	// we measure overdraw by reading back the stencil buffer and
-	// counting up the number of increments that have happened
-	if (r_measureOverdraw->integer)
-	{
-		int           i;
-		long          sum = 0;
-		unsigned char *stencilReadback;
-
-		stencilReadback = ri.Hunk_AllocateTempMemory(glConfig.vidWidth * glConfig.vidHeight);
-		qglReadPixels(0, 0, glConfig.vidWidth, glConfig.vidHeight, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, stencilReadback);
-
-		for (i = 0; i < glConfig.vidWidth * glConfig.vidHeight; i++)
-		{
-			sum += stencilReadback[i];
-		}
-
-		backEnd.pc.c_overDraw += sum;
-		ri.Hunk_FreeTempMemory(stencilReadback);
-	}
 
 	if (!glState.finishCalled)
 	{
@@ -1493,7 +1493,7 @@ const void *RB_RenderToTexture(const void *data)
 	GL_Bind(cmd->image);
 	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_LINEAR);
 	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_LINEAR);
-	qglTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
+	qglTexParameteri( GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE );
 	qglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, cmd->x, cmd->y, cmd->w, cmd->h, 0);
 //  qglCopyTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, cmd->x, cmd->y, cmd->w, cmd->h );
 

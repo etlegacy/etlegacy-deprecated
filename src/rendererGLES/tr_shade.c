@@ -38,141 +38,6 @@
 #include "tr_local.h"
 
 /*
-================
-R_ArrayElementDiscrete
-
-This is just for OpenGL conformance testing, it should never be the fastest
-================
-*/
-static void GLAPIENTRY R_ArrayElementDiscrete(GLint index)
-{
-	qglColor4ubv(tess.svars.colors[index]);
-	if (glState.currenttmu)
-	{
-		qglMultiTexCoord2fARB(0, tess.svars.texcoords[0][index][0], tess.svars.texcoords[0][index][1]);
-		qglMultiTexCoord2fARB(1, tess.svars.texcoords[1][index][0], tess.svars.texcoords[1][index][1]);
-	}
-	else
-	{
-		qglTexCoord2fv(tess.svars.texcoords[0][index]);
-	}
-	qglVertex3fv(tess.xyz[index].v);
-}
-/*
-================
-R_ArrayElement
-
-This is just because of the GLEW and Windows idiocy. Straight call to glArrayElement brakes the build on function type mismatch.
-================
-*/
-static void GLAPIENTRY R_ArrayElement(GLint index)
-{
-	qglArrayElement(index);
-}
-
-/*
-===================
-R_DrawStripElements
-===================
-*/
-static int c_vertexes;          // for seeing how long our average strips are
-static int c_begins;
-
-static void R_DrawStripElements(int numIndexes, const glIndex_t *indexes, void (GLAPIENTRY *element)(GLint))
-{
-	int      i;
-	int      last[3] = { -1, -1, -1 };
-	qboolean even;
-
-	c_begins++;
-
-	if (numIndexes <= 0)
-	{
-		return;
-	}
-
-	qglBegin(GL_TRIANGLE_STRIP);
-
-	// prime the strip
-	element(indexes[0]);
-	element(indexes[1]);
-	element(indexes[2]);
-	c_vertexes += 3;
-
-	last[0] = indexes[0];
-	last[1] = indexes[1];
-	last[2] = indexes[2];
-
-	even = qfalse;
-
-	for (i = 3; i < numIndexes; i += 3)
-	{
-		// odd numbered triangle in potential strip
-		if (!even)
-		{
-			// check previous triangle to see if we're continuing a strip
-			if ((indexes[i + 0] == last[2]) && (indexes[i + 1] == last[1]))
-			{
-				element(indexes[i + 2]);
-				c_vertexes++;
-				assert(indexes[i + 2] < tess.numVertexes);
-				even = qtrue;
-			}
-			// otherwise we're done with this strip so finish it and start
-			// a new one
-			else
-			{
-				qglEnd();
-
-				qglBegin(GL_TRIANGLE_STRIP);
-				c_begins++;
-
-				element(indexes[i + 0]);
-				element(indexes[i + 1]);
-				element(indexes[i + 2]);
-
-				c_vertexes += 3;
-
-				even = qfalse;
-			}
-		}
-		else
-		{
-			// check previous triangle to see if we're continuing a strip
-			if ((last[2] == indexes[i + 1]) && (last[0] == indexes[i + 0]))
-			{
-				element(indexes[i + 2]);
-				c_vertexes++;
-
-				even = qfalse;
-			}
-			// otherwise we're done with this strip so finish it and start
-			// a new one
-			else
-			{
-				qglEnd();
-
-				qglBegin(GL_TRIANGLE_STRIP);
-				c_begins++;
-
-				element(indexes[i + 0]);
-				element(indexes[i + 1]);
-				element(indexes[i + 2]);
-				c_vertexes += 3;
-
-				even = qfalse;
-			}
-		}
-
-		// cache the last three vertices
-		last[0] = indexes[i + 0];
-		last[1] = indexes[i + 1];
-		last[2] = indexes[i + 2];
-	}
-
-	qglEnd();
-}
-/*
 ==================
 R_DrawElements
 
@@ -183,31 +48,8 @@ without compiled vertex arrays.
 */
 static void R_DrawElements(int numIndexes, const glIndex_t *indexes)
 {
-	switch (r_primitives->integer)
-	{
-	case 0:
-		// default is to use triangles if compiled vertex arrays are present
-		if (qglLockArraysEXT)
-		{
-			qglDrawElements(GL_TRIANGLES, numIndexes, GL_INDEX_TYPE, indexes);
-		}
-		else
-		{
-			R_DrawStripElements(numIndexes, indexes, R_ArrayElement);
-		}
-		return;
-	case 1:
-		R_DrawStripElements(numIndexes, indexes, R_ArrayElement);
-		return;
-	case 2:
 		qglDrawElements(GL_TRIANGLES, numIndexes, GL_INDEX_TYPE, indexes);
 		return;
-	case 3:
-		R_DrawStripElements(numIndexes, indexes, R_ArrayElementDiscrete);
-		return;
-	default: // anything else will cause no drawing
-		return;
-	}
 }
 
 /*
@@ -353,7 +195,6 @@ static void DrawTris(shaderCommands_t *input)
 	{
 		stateBits |= (GLS_POLYMODE_LINE);
 		GL_State(stateBits);
-		qglEnable(GL_POLYGON_OFFSET_LINE);
 		qglPolygonOffset(r_offsetFactor->value, r_offsetUnits->value);
 	}
 
@@ -362,20 +203,12 @@ static void DrawTris(shaderCommands_t *input)
 
 	qglVertexPointer(3, GL_FLOAT, 16, input->xyz);   // padded for SIMD
 	
-	if (qglLockArraysEXT)
-	{
-		qglLockArraysEXT(0, input->numVertexes);
-		GLimp_LogComment("glLockArraysEXT\n");
-	}
-	R_DrawElements(input->numIndexes, input->indexes);
-
-	if (qglUnlockArraysEXT)
-	{
-		qglUnlockArraysEXT();
-		GLimp_LogComment("glUnlockArraysEXT\n");
-	}
+// It's not 100% exact, but it's better than nothing
+	qglDrawElements( GL_LINE_STRIP, 
+					input->numIndexes,
+					GL_INDEX_TYPE,
+					input->indexes );
 	qglDepthRange(0, 1);
-	qglDisable(GL_POLYGON_OFFSET_LINE);
 }
 
 /*
@@ -414,9 +247,11 @@ static void DrawNormals(shaderCommands_t *input)
 
 		qglColor3f(ent->ambientLight[0] / 255, ent->ambientLight[1] / 255, ent->ambientLight[2] / 255);
 		qglPointSize(5);
-		qglBegin(GL_POINTS);
+		/*SEB *TODO* */
+/*		qglBegin(GL_POINTS);
 		qglVertex3fv(temp);
 		qglEnd();
+*/
 		qglPointSize(1);
 
 		if (fabs(VectorLengthSquared(ent->lightDir) - 1.0f) > 0.2f)
@@ -428,11 +263,13 @@ static void DrawNormals(shaderCommands_t *input)
 			qglColor3f(ent->directedLight[0] / 255, ent->directedLight[1] / 255, ent->directedLight[2] / 255);
 		}
 		qglLineWidth(3);
-		qglBegin(GL_LINES);
+		/*SEB *TODO* */
+/*		qglBegin(GL_LINES);
 		qglVertex3fv(temp);
 		VectorMA(temp, 32, ent->lightDir, temp);
 		qglVertex3fv(temp);
 		qglEnd();
+*/
 		qglLineWidth(1);
 	}
 	// normals drawing
@@ -440,7 +277,8 @@ static void DrawNormals(shaderCommands_t *input)
 	{
 		int i;
 
-		qglBegin(GL_LINES);
+		/*SEB *TODO* */
+/*		qglBegin(GL_LINES);
 		for (i = 0 ; i < input->numVertexes ; i++)
 		{
 			qglVertex3fv(input->xyz[i].v);
@@ -448,6 +286,7 @@ static void DrawNormals(shaderCommands_t *input)
 			qglVertex3fv(temp);
 		}
 		qglEnd();
+*/
 	}
 
 	qglDepthRange(0, 1);
@@ -513,10 +352,6 @@ static void DrawMultitextured(shaderCommands_t *input, int stage)
 
 	// this is an ugly hack to work around a GeForce driver
 	// bug with multitexture and clip planes
-	if (backEnd.viewParms.isPortal)
-	{
-		qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	}
 
 	// base
 	GL_SelectTexture(0);

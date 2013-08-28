@@ -47,6 +47,9 @@ static void GfxInfo_f(void);
 cvar_t *com_altivec;
 #endif
 
+void ( * glLockArraysEXT )( GLint, GLint );
+void ( * glUnlockArraysEXT )( void );
+
 cvar_t *r_flareSize;
 cvar_t *r_flareFade;
 
@@ -447,8 +450,19 @@ byte *RB_ReadPixels(int x, int y, int width, int height, size_t *offset, int *pa
 	// Allocate a few more bytes so that we can choose an alignment we like
 	buffer = ri.Hunk_AllocateTempMemory(padwidth * height + *offset + packAlign - 1);
 
-	bufstart = PADP(( intptr_t ) buffer + *offset, packAlign);
-	qglReadPixels(x, y, width, height, GL_RGB, GL_UNSIGNED_BYTE, bufstart);
+	bufstart=buffer;
+	padwidth=linelen;
+	int p2width=1, p2height=1;
+	int xx, yy, aa;
+	while (p2width<glConfig.vidWidth) p2width*=2;
+	while (p2height<glConfig.vidHeight) p2height*=2;
+	byte *source = (byte*) ri.Hunk_AllocateTempMemory( p2width * p2height * 4 );
+	qglReadPixels( 0, 0, p2width, p2height, GL_RGBA, GL_UNSIGNED_BYTE, source );
+	for (yy=y; yy<height; yy++)
+		for (xx=x; xx<width; xx++)
+			for (aa=0; aa<3; aa++)
+				buffer[yy*width*3+xx*3+aa]=source[(yy+y)*p2width*4+(xx+x)*4+aa];
+	ri.Hunk_FreeTempMemory(source);
 
 	*offset = bufstart - buffer;
 	*padlen = padwidth - linelen;
@@ -472,7 +486,7 @@ byte *RB_ReadZBuffer(int x, int y, int width, int height, int *padlen)
 
 	bufstart = PADP(( intptr_t ) buffer, packAlign);
 	qglDepthRange(0.0f, 1.0f);
-	qglReadPixels(x, y, width, height, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, bufstart);
+	memset(buffer, 0, padwidth * height + packAlign - 1);	//*TODO* find something to read DepthBuffer ?!
 
 	*padlen = padwidth - linelen;
 
@@ -1017,7 +1031,12 @@ void GL_SetDefaultState(void)
 	// make sure our GL state vector is set correctly
 	glState.glStateBits = GLS_DEPTHTEST_DISABLE | GLS_DEPTHMASK_TRUE;
 
-	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	//*SEB* ? not the best place !
+	glLockArraysEXT = NULL;
+	glUnlockArraysEXT = NULL;
+
 	qglDepthMask(GL_TRUE);
 	qglDisable(GL_DEPTH_TEST);
 	qglEnable(GL_SCISSOR_TEST);
@@ -1102,17 +1121,7 @@ void GfxInfo_f(void)
 		// default is to use triangles if compiled vertex arrays are present
 		ri.Printf(PRINT_ALL, "rendering primitives: ");
 		primitives = r_primitives->integer;
-		if (primitives == 0)
-		{
-			if (qglLockArraysEXT)
-			{
-				primitives = 2;
-			}
-			else
-			{
-				primitives = 1;
-			}
-		}
+		primitives = 2;
 		if (primitives == -1)
 		{
 			ri.Printf(PRINT_ALL, "none\n");
@@ -1135,7 +1144,7 @@ void GfxInfo_f(void)
 	ri.Printf(PRINT_ALL, "picmip: %d\n", r_picmip->integer);
 	ri.Printf(PRINT_ALL, "texture bits: %d\n", r_texturebits->integer);
 	ri.Printf(PRINT_ALL, "multitexture: %s\n", enablestrings[qglActiveTextureARB != 0]);
-	ri.Printf(PRINT_ALL, "compiled vertex arrays: %s\n", enablestrings[qglLockArraysEXT != 0]);
+	ri.Printf(PRINT_ALL, "compiled vertex arrays: %s\n", enablestrings[0]);
 	ri.Printf(PRINT_ALL, "texenv add: %s\n", enablestrings[glConfig.textureEnvAddAvailable != 0]);
 	ri.Printf(PRINT_ALL, "compressed textures: %s\n", enablestrings[glConfig.textureCompression != TC_NONE]);
 

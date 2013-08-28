@@ -1391,7 +1391,9 @@ void RB_SurfaceAnim(mdsSurface_t *surface)
 
 	if (render_count == surface->numVerts)
 	{
-		memcpy(pIndexes, triangles, sizeof(triangles[0]) * indexes);
+		int ii;
+		for (ii=0; ii<indexes; ii++)
+			pIndexes[ii]=triangles[ii];
 		if (baseVertex)
 		{
 			glIndex_t *indexesEnd;
@@ -1487,7 +1489,8 @@ void RB_SurfaceAnim(mdsSurface_t *surface)
 
 				GL_Bind(tr.whiteImage);
 				qglLineWidth(1);
-				qglBegin(GL_LINES);
+				//*TODO
+/*				qglBegin(GL_LINES);
 				for (j = 0; j < 3; j++)
 				{
 					VectorClear(vec);
@@ -1498,16 +1501,18 @@ void RB_SurfaceAnim(mdsSurface_t *surface)
 					qglVertex3fv(vec);
 				}
 				qglEnd();
-
+*/
 				// connect to our parent if it's valid
 				if (validBones[boneInfo[*boneRefs].parent])
 				{
 					qglLineWidth(2);
-					qglBegin(GL_LINES);
+					//*TODO
+/*					qglBegin(GL_LINES);
 					qglColor3f(.6, .6, .6);
 					qglVertex3fv(bonePtr->translation);
 					qglVertex3fv(bones[boneInfo[*boneRefs].parent].translation);
 					qglEnd();
+*/
 				}
 
 				qglLineWidth(1);
@@ -1524,7 +1529,8 @@ void RB_SurfaceAnim(mdsSurface_t *surface)
 
 			GL_Bind(tr.whiteImage);
 			qglLineWidth(1);
-			qglBegin(GL_LINES);
+			//*TODO
+/*			qglBegin(GL_LINES);
 			qglColor3f(.0, .0, .8);
 
 			pIndexes = &tess.indexes[oldIndexes];
@@ -1541,7 +1547,7 @@ void RB_SurfaceAnim(mdsSurface_t *surface)
 			}
 
 			qglEnd();
-
+*/
 			// track debug stats
 			if (r_bonesDebug->integer == 4)
 			{

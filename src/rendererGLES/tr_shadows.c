@@ -54,6 +54,8 @@ typedef struct
 static edgeDef_t edgeDefs[SHADER_MAX_VERTEXES][MAX_EDGE_DEFS];
 static int       numEdgeDefs[SHADER_MAX_VERTEXES];
 static int       facing[SHADER_MAX_INDEXES / 3];
+static unsigned short indexes[6*MAX_EDGE_DEFS*SHADER_MAX_VERTEXES];
+static int idx = 0;
 
 void R_AddEdgeDef(int i1, int i2, int facing)
 {
@@ -85,6 +87,7 @@ void R_RenderShadowEdges(void)
 	// but lots of models have dangling edges or overfanned edges
 	c_edges    = 0;
 	c_rejected = 0;
+	idx = 0;
 
 	for (i = 0 ; i < tess.numVertexes ; i++)
 	{
@@ -113,12 +116,14 @@ void R_RenderShadowEdges(void)
 			// triangle, it is a sil edge
 			if (hit[1] == 0)
 			{
-				qglBegin(GL_TRIANGLE_STRIP);
-				qglVertex3fv(tess.xyz[i].v);
-				qglVertex3fv(tess.xyz[i + tess.numVertexes].v);
-				qglVertex3fv(tess.xyz[i2].v);
-				qglVertex3fv(tess.xyz[i2 + tess.numVertexes].v);
-				qglEnd();
+				// A single drawing call is better than many. So I prefer a singe TRIANGLES call than many TRAINGLE_STRIP call
+				// even if it seems less efficiant, it's faster on the PANDORA
+				indexes[idx++] = i;
+				indexes[idx++] = i + tess.numVertexes;
+				indexes[idx++] = i2;
+				indexes[idx++] = i2;
+				indexes[idx++] = i + tess.numVertexes;
+				indexes[idx++] = i2 + tess.numVertexes;
 				c_edges++;
 			}
 			else
@@ -127,6 +132,7 @@ void R_RenderShadowEdges(void)
 			}
 		}
 	}
+	qglDrawElements(GL_TRIANGLES, idx, GL_UNSIGNED_SHORT, indexes);
 }
 
 /*
@@ -221,6 +227,13 @@ void RB_ShadowTessEnd(void)
 	qglEnable(GL_STENCIL_TEST);
 	qglStencilFunc(GL_ALWAYS, 1, 255);
 
+	qglVertexPointer (3, GL_FLOAT, 16, tess.xyz);
+	GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
+	GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
+	if (text)
+		qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
+	if (glcol)
+		qglDisableClientState( GL_COLOR_ARRAY );
 	// mirrors have the culling order reversed
 	if (backEnd.viewParms.isMirror)
 	{
@@ -232,7 +245,7 @@ void RB_ShadowTessEnd(void)
 		qglCullFace(GL_BACK);
 		qglStencilOp(GL_KEEP, GL_KEEP, GL_DECR);
 
-		R_RenderShadowEdges();
+		qglDrawElements(GL_TRIANGLES, idx, GL_UNSIGNED_SHORT, indexes);
 	}
 	else
 	{
@@ -244,9 +257,13 @@ void RB_ShadowTessEnd(void)
 		qglCullFace(GL_FRONT);
 		qglStencilOp(GL_KEEP, GL_KEEP, GL_DECR);
 
-		R_RenderShadowEdges();
+		qglDrawElements(GL_TRIANGLES, idx, GL_UNSIGNED_SHORT, indexes);
 	}
 
+	if (text)
+		qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+	if (glcol)
+		qglEnableClientState( GL_COLOR_ARRAY );
 	// reenable writing to the color buffer
 	qglColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 }
@@ -284,12 +301,24 @@ void RB_ShadowFinish(void)
 	qglColor3f(0.6f, 0.6f, 0.6f);
 	GL_State(GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_ZERO);
 
-	qglBegin(GL_QUADS);
-	qglVertex3f(-100, 100, -10);
-	qglVertex3f(100, 100, -10);
-	qglVertex3f(100, -100, -10);
-	qglVertex3f(-100, -100, -10);
-	qglEnd();
+	GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
+	GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
+	if (text)
+		qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
+	if (glcol)
+		qglDisableClientState( GL_COLOR_ARRAY );
+	GLfloat vtx[] = {
+	 -100,  100, -10,
+	  100,  100, -10,
+	  100, -100, -10,
+	 -100, -100, -10
+	};
+	qglVertexPointer  ( 3, GL_FLOAT, 0, vtx );
+	qglDrawArrays( GL_TRIANGLE_FAN, 0, 4 );
+	if (text)
+		qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+	if (glcol)
+		qglEnableClientState( GL_COLOR_ARRAY );
 
 	qglColor4f(1, 1, 1, 1);
 	qglDisable(GL_STENCIL_TEST);
