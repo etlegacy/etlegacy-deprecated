@@ -186,8 +186,11 @@ void CG_Text_Paint_Ext(float x, float y, float scalex, float scaley, vec4_t colo
 
 		while (s && *s && count < len)
 		{
-			glyph = &font->glyphs[(unsigned char)*s];
-			if (Q_IsColorString(s))
+			if (Q_IsColorEscape(s))
+			{
+				s += 1;
+			}
+			else if (Q_IsColorString(s))
 			{
 				if (*(s + 1) == COLOR_NULL)
 				{
@@ -202,24 +205,25 @@ void CG_Text_Paint_Ext(float x, float y, float scalex, float scaley, vec4_t colo
 				s += 2;
 				continue;
 			}
-			else
-			{
-				yadj = scaley * glyph->top;
+			
+			
+			glyph = &font->glyphs[(unsigned char)*s];
+			
+			yadj = scaley * glyph->top;
 
-				if (style == ITEM_TEXTSTYLE_SHADOWED || style == ITEM_TEXTSTYLE_SHADOWEDMORE)
-				{
-					ofs           = style == ITEM_TEXTSTYLE_SHADOWED ? 1 : 2;
-					colorBlack[3] = newColor[3];
-					trap_R_SetColor(colorBlack);
-					CG_Text_PaintChar_Ext(x + (glyph->pitch * scalex) + ofs, y - yadj + ofs, glyph->imageWidth, glyph->imageHeight, scalex, scaley, glyph->s, glyph->t, glyph->s2, glyph->t2, glyph->glyph);
-					colorBlack[3] = 1.0;
-					trap_R_SetColor(newColor);
-				}
-				CG_Text_PaintChar_Ext(x + (glyph->pitch * scalex), y - yadj, glyph->imageWidth, glyph->imageHeight, scalex, scaley, glyph->s, glyph->t, glyph->s2, glyph->t2, glyph->glyph);
-				x += (glyph->xSkip * scalex) + adjust;
-				s++;
-				count++;
+			if (style == ITEM_TEXTSTYLE_SHADOWED || style == ITEM_TEXTSTYLE_SHADOWEDMORE)
+			{
+				ofs           = style == ITEM_TEXTSTYLE_SHADOWED ? 1 : 2;
+				colorBlack[3] = newColor[3];
+				trap_R_SetColor(colorBlack);
+				CG_Text_PaintChar_Ext(x + (glyph->pitch * scalex) + ofs, y - yadj + ofs, glyph->imageWidth, glyph->imageHeight, scalex, scaley, glyph->s, glyph->t, glyph->s2, glyph->t2, glyph->glyph);
+				colorBlack[3] = 1.0;
+				trap_R_SetColor(newColor);
 			}
+			CG_Text_PaintChar_Ext(x + (glyph->pitch * scalex), y - yadj, glyph->imageWidth, glyph->imageHeight, scalex, scaley, glyph->s, glyph->t, glyph->s2, glyph->t2, glyph->glyph);
+			x += (glyph->xSkip * scalex) + adjust;
+			s++;
+			count++;
 		}
 		trap_R_SetColor(NULL);
 	}

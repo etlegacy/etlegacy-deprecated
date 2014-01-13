@@ -236,18 +236,20 @@ int Text_Width_Ext(const char *text, float scale, int limit, fontInfo_t *font)
 
 		while (s && *s && count < len)
 		{
-			if (Q_IsColorString(s))
+			if (Q_IsColorEscape(s))
+			{
+				s += 1;
+			}
+			else if (Q_IsColorString(s))
 			{
 				s += 2;
 				continue;
 			}
-			else
-			{
-				glyph = &font->glyphs[(unsigned char)*s];
-				out  += glyph->xSkip;
-				s++;
-				count++;
-			}
+			
+			glyph = &font->glyphs[(unsigned char)*s];
+			out  += glyph->xSkip;
+			s++;
+			count++;
 		}
 	}
 	return out * scale * font->glyphScale;
@@ -485,8 +487,11 @@ void Text_Paint_Ext(float x, float y, float scalex, float scaley, vec4_t color, 
 				continue;
 			}
 
-			glyph = &font->glyphs[index];
-			if (Q_IsColorString(s))
+			if (Q_IsColorEscape(s))
+			{
+				s += 1;
+			}
+			else if (Q_IsColorString(s))
 			{
 				if (*(s + 1) == COLOR_NULL)
 				{
@@ -501,28 +506,29 @@ void Text_Paint_Ext(float x, float y, float scalex, float scaley, vec4_t color, 
 				s += 2;
 				continue;
 			}
-			else
+			
+			glyph = &font->glyphs[index];
+			
+			
+			float yadj = scaley * glyph->top;
+
+			if (style == ITEM_TEXTSTYLE_SHADOWED || style == ITEM_TEXTSTYLE_SHADOWEDMORE)
 			{
-				float yadj = scaley * glyph->top;
+				int ofs = style == ITEM_TEXTSTYLE_SHADOWED ? 1 : 2;
 
-				if (style == ITEM_TEXTSTYLE_SHADOWED || style == ITEM_TEXTSTYLE_SHADOWEDMORE)
-				{
-					int ofs = style == ITEM_TEXTSTYLE_SHADOWED ? 1 : 2;
+				colorBlack[3] = newColor[3];
 
-					colorBlack[3] = newColor[3];
+				trap_R_SetColor(colorBlack);
+				Text_PaintCharExt(x + (glyph->pitch * scalex) + ofs, y - yadj + ofs, glyph->imageWidth, glyph->imageHeight, scalex, scaley, glyph->s, glyph->t, glyph->s2, glyph->t2, glyph->glyph);
+				trap_R_SetColor(newColor);
 
-					trap_R_SetColor(colorBlack);
-					Text_PaintCharExt(x + (glyph->pitch * scalex) + ofs, y - yadj + ofs, glyph->imageWidth, glyph->imageHeight, scalex, scaley, glyph->s, glyph->t, glyph->s2, glyph->t2, glyph->glyph);
-					trap_R_SetColor(newColor);
-
-					colorBlack[3] = 1.0;
-				}
-				Text_PaintCharExt(x + (glyph->pitch * scalex), y - yadj, glyph->imageWidth, glyph->imageHeight, scalex, scaley, glyph->s, glyph->t, glyph->s2, glyph->t2, glyph->glyph);
-
-				x += (glyph->xSkip * scalex) + adjust;
-				s++;
-				count++;
+				colorBlack[3] = 1.0;
 			}
+			Text_PaintCharExt(x + (glyph->pitch * scalex), y - yadj, glyph->imageWidth, glyph->imageHeight, scalex, scaley, glyph->s, glyph->t, glyph->s2, glyph->t2, glyph->glyph);
+
+			x += (glyph->xSkip * scalex) + adjust;
+			s++;
+			count++;
 		}
 		trap_R_SetColor(NULL);
 	}
@@ -653,8 +659,11 @@ static void Text_Paint_Limit(float *maxX, float x, float y, float scale, vec4_t 
 
 		while (s && *s && count < len)
 		{
-			glyph = &font->glyphs[(unsigned char)*s]; // this needs to be an unsigned cast for localization
-			if (Q_IsColorString(s))
+			if (Q_IsColorEscape(s))
+			{
+				s += 1;
+			}
+			else if (Q_IsColorString(s))
 			{
 				if (*(s + 1) == COLOR_NULL)
 				{
@@ -669,29 +678,28 @@ static void Text_Paint_Limit(float *maxX, float x, float y, float scale, vec4_t 
 				s += 2;
 				continue;
 			}
-			else
-			{
-				float yadj = useScale * glyph->top;
+			
+			glyph = &font->glyphs[(unsigned char)*s]; // this needs to be an unsigned cast for localization
+			float yadj = useScale * glyph->top;
 
-				if (Text_Width(s, useScale, 1) + x > max)
-				{
-					*maxX = 0;
-					break;
-				}
-				Text_PaintChar(x + (glyph->pitch * useScale), y - yadj,
-				               glyph->imageWidth,
-				               glyph->imageHeight,
-				               useScale,
-				               glyph->s,
-				               glyph->t,
-				               glyph->s2,
-				               glyph->t2,
-				               glyph->glyph);
-				x    += (glyph->xSkip * useScale) + adjust;
-				*maxX = x;
-				count++;
-				s++;
+			if (Text_Width(s, useScale, 1) + x > max)
+			{
+				*maxX = 0;
+				break;
 			}
+			Text_PaintChar(x + (glyph->pitch * useScale), y - yadj,
+						   glyph->imageWidth,
+						   glyph->imageHeight,
+						   useScale,
+						   glyph->s,
+						   glyph->t,
+						   glyph->s2,
+						   glyph->t2,
+						   glyph->glyph);
+			x    += (glyph->xSkip * useScale) + adjust;
+			*maxX = x;
+			count++;
+			s++;
 		}
 		trap_R_SetColor(NULL);
 	}

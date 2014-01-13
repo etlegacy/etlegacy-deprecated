@@ -475,7 +475,11 @@ void CL_ConsolePrint(char *txt)
 
 	while ((c = *txt) != 0)
 	{
-		if (Q_IsColorString(txt))
+		if (Q_IsColorEscape(txt))
+		{
+			txt += 1;
+		}
+		else if (Q_IsColorString(txt))
 		{
 			if (*(txt + 1) == COLOR_NULL)
 			{
