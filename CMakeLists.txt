@@ -122,7 +122,11 @@ if(UNIX AND CROSS_COMPILE32) # 32-bit build
 		set(CMAKE_SYSTEM_PROCESSOR arm)
 		message(STATUS "Forcing ${CMAKE_SYSTEM_PROCESSOR} to cross compile 32bit")
 	else()
-		set(CMAKE_SYSTEM_PROCESSOR i386)
+		if(CMAKE_SYSTEM_PROCESSOR MATCHES "powerpc")
+			set(CMAKE_SYSTEM_PROCESSOR ppc)
+		else()
+			set(CMAKE_SYSTEM_PROCESSOR i386)
+		endif()
 		message(STATUS "Forcing ${CMAKE_SYSTEM_PROCESSOR} to cross compile 32bit")
 	endif()
 	set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
@@ -181,9 +185,33 @@ if(UNIX)
 		
 		# 10.7 is really an arbitrary choice (it should in theory work back to 10.5). The main point is if
 		# we don't specify a target, it will be require the OS version used at compile time.
-		set(CMAKE_OSX_DEPLOYMENT_TARGET "10.7")
+		if(CMAKE_SYSTEM MATCHES "Darwin-8*")
+			set(CMAKE_OSX_DEPLOYMENT_TARGET "10.4")
+            set(CMAKE_OSX_SYSROOT "/Developer/SDKs/MacOSX10.4u.sdk")
+			if(CMAKE_SYSTEM_PROCESSOR MATCHES "ppc")
+				if(CMAKE_C_COMPILER_VERSION MATCHES "4.2.1")
+					set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/usr/include -I/usr/lib/gcc/powerpc-apple-darwin8/4.2.1/include -D__powerpc__ -faltivec -I/usr/local/include/")
+					set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/include -I/usr/lib/gcc/powerpc-apple-darwin8/4.2.1/include -I/usr/include/c++/4.2.1/ -I/usr/include/c++/4.2.1/powerpc-apple-darwin8/ -D__powerpc__ -I/usr/local/include/")
+				else()
+					set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/usr/include -I/usr/lib/gcc/powerpc-apple-darwin8/4.0.1/include -D__powerpc__ -faltivec -I/usr/local/include/")
+					set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/include -I/usr/lib/gcc/powerpc-apple-darwin8/4.0.1/include -I/usr/include/c++/4.0.0/ -I/usr/include/c++/4.0.0/powerpc-apple-darwin8/ -D__powerpc__ -I/usr/local/include/")
+				endif() #  TODO add clang
+			endif()
+
+		elseif(CMAKE_SYSTEM MATCHES "Darwin-9*")
+			set(CMAKE_OSX_DEPLOYMENT_TARGET "10.5")
+            set(CMAKE_OSX_SYSROOT "/Developer/SDKs/MacOSX10.5.sdk")
+			if(CMAKE_SYSTEM_PROCESSOR MATCHES "ppc")
+				set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/usr/include -I/usr/lib/gcc/powerpc-apple-darwin8/4.2.1/include -D__powerpc__  -faltivec -I/usr/local/include/")
+				set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/include -I/usr/lib/gcc/powerpc-apple-darwin8/4.2.1/include -I/usr/include/c++/4.2.1/ -I/usr/include/c++/4.2.1/powerpc-apple-darwin8/ -D__powerpc__ -I/usr/local/include/")
+			endif() #  TODO add clang
+
+		else()
+			set(CMAKE_OSX_DEPLOYMENT_TARGET "10.7")
+			set(CMAKE_OSX_SYSROOT "${XCODE_DEVELOPER_PATH}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk")
+		endif()
 		execute_process(COMMAND xcode-select -p OUTPUT_VARIABLE XCODE_DEVELOPER_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
-		set(CMAKE_OSX_SYSROOT "${XCODE_DEVELOPER_PATH}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk")
+
 		set(CMAKE_CXX_FLAGS "-isysroot ${CMAKE_OSX_SYSROOT} ${CMAKE_CXX_FLAGS}")
 		
 		if(BUILD_CLIENT)
@@ -235,6 +263,8 @@ if(NOT APPLE)
 		endif()
 	elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "AMD64")
 		set(ARCH "x86_64")
+    elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "ppc" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "ppc32" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "powerpc")
+			set(ARCH "ppc") 
 	else()
 		set(ARCH "${CMAKE_SYSTEM_PROCESSOR}")
 		message(STATUS "Warning: processor architecture not recognised (${CMAKE_SYSTEM_PROCESSOR})")
@@ -656,7 +686,7 @@ if(BUILD_MOD)
 	endif(FEATURE_LUA)
 
 	if(FEATURE_OMNIBOT) # 32bit Windows, Linux and OS X only
-		if("${ARCH}" STREQUAL "i386" OR "${ARCH}" STREQUAL "x86")
+		if("${ARCH}" STREQUAL "i386" OR "${ARCH}" STREQUAL "x86" OR "${ARCH}" STREQUAL "ppc")
 			LIST(APPEND QAGAME_SRC "src/game/g_etbot_interface.cpp")
 			LIST(APPEND QAGAME_SRC "src/Omnibot/Common/BotLoadLibrary.cpp")
 			add_definitions(-DFEATURE_OMNIBOT)
@@ -932,7 +962,11 @@ if(BUILD_MOD)
 		PROPERTIES COMPILE_DEFINITIONS "CGAMEDLL"
 		PREFIX ""
 		LIBRARY_OUTPUT_DIRECTORY "legacy"
-		OSX_ARCHITECTURES "i386;x86_64"
+			if(CMAKE_SYSTEM_PROCESSOR MATCHES "ppc")
+			OSX_ARCHITECTURES "ppc"
+			else()
+			OSX_ARCHITECTURES "i386;x86_64"
+			endif()
 	)
 
 	#
@@ -960,7 +994,11 @@ if(BUILD_MOD)
 		PROPERTIES
 		PREFIX ""
 		LIBRARY_OUTPUT_DIRECTORY "legacy"
-		OSX_ARCHITECTURES "i386;x86_64"
+			if(CMAKE_SYSTEM_PROCESSOR MATCHES "ppc")
+			OSX_ARCHITECTURES "ppc"
+			else()
+			OSX_ARCHITECTURES "i386;x86_64"
+			endif()
 	)
 
 	# install bins of cgame, ui and qgame
