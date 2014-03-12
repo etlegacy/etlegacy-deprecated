@@ -223,7 +223,7 @@ if(UNIX)
 		set(CMAKE_CXX_FLAGS "-isysroot ${CMAKE_OSX_SYSROOT} ${CMAKE_CXX_FLAGS}")
 		
 		if(BUILD_CLIENT)
-			set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework Quartz -framework AudioUnit -framework Carbon -L/usr/lib/gcc/powerpc-apple-darwin8/4.2.1/")
+			set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework Quartz -framework AudioUnit -framework Carbon")
 		endif()
 		set(LIB_SUFFIX "_mac")
 		set(CMAKE_SHARED_MODULE_SUFFIX "")

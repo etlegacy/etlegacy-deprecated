@@ -58,13 +58,14 @@ _detectlinuxdistro() {
 }
 
 detectos() {
-	PLATFORMSYS=`uname -s`
-	PLATFORMARCH=`uname -m`
+	PLATFORMSYS="`uname -s`"
+	PLATFORMARCH="`uname -m`"
+	PLATFORMCPU="`uname -p`"
 	if [[ ${PLATFORMSYS} == "Linux" ]]; then
 		DISTRO=`_detectlinuxdistro`
 	elif [[ ${PLATFORMSYS} == "Darwin" ]]; then
-		PLATFORMSYS=`sw_vers -productName`
-		DISTRO=`sw_vers -productVersion`
+		PLATFORMSYS="`sw_vers -productName`"
+		DISTRO="`sw_vers -productVersion`"
 	else
 		DISTRO="Unknown"
 	fi
@@ -109,15 +110,17 @@ echo
 [ ! "${BUNDLED_OGG}" ]  && BUNDLED_OGG=1
 
 if [ "${PLATFORMSYS}" == "Mac OS X" ]; then
+
+if [[ ${PLATFORMCPU} == "powerpc" ]]; then
+         BUNDLED_JPEG=0
+else
+        BUNDLED_JPEG=1
+fi 
+
 	[ ! "${BUNDLED_CURL}" ] && BUNDLED_CURL=0
+
 else
 	[ ! "${BUNDLED_CURL}" ] && BUNDLED_CURL=1
-fi
-
-if [ "${PLATFORMSYS}" == "Darwin" ]; then
-	[ ! "${BUNDLED_JPEG}" ] && BUNDLED_JPEG=0
-else
-	[ ! "${BUNDLED_JPEG}" ] && BUNDLED_JPEG=0
 fi
 
 FEATURE_OGG=1
