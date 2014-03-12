@@ -114,6 +114,11 @@ else
 	[ ! "${BUNDLED_CURL}" ] && BUNDLED_CURL=1
 fi
 
+if [ "${PLATFORMSYS}" == "Darwin" ]; then
+	[ ! "${BUNDLED_JPEG}" ] && BUNDLED_JPEG=0
+else
+	[ ! "${BUNDLED_JPEG}" ] && BUNDLED_JPEG=0
+fi
 
 FEATURE_OGG=1
 FEATURE_TRACKER=1
