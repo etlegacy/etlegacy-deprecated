@@ -112,9 +112,7 @@ echo
 if [ "${PLATFORMSYS}" == "Mac OS X" ]; then
 
 if [[ ${PLATFORMCPU} == "powerpc" ]]; then
-         BUNDLED_JPEG=0
-else
-        BUNDLED_JPEG=1
+         BUNDLED_JPEG=0 # use libjpeg from fink or macports for now
 fi 
 
 	[ ! "${BUNDLED_CURL}" ] && BUNDLED_CURL=0
