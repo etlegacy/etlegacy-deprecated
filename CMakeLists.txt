@@ -187,37 +187,66 @@ if(UNIX)
 		# we don't specify a target, it will be require the OS version used at compile time.
 		if(CMAKE_SYSTEM MATCHES "Darwin-8*")
 			set(CMAKE_OSX_DEPLOYMENT_TARGET "10.4")
-            set(CMAKE_OSX_SYSROOT "/Developer/SDKs/MacOSX10.4u.sdk")
+            	        set(CMAKE_OSX_SYSROOT "/Developer/SDKs/MacOSX10.4u.sdk")
+
 			if(CMAKE_SYSTEM_PROCESSOR MATCHES "ppc")
 			 if(CMAKE_C_COMPILER_ID MATCHES "GNU")
-				if(CMAKE_C_COMPILER_VERSION MATCHES "4.2.1")
-					set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/usr/include -I/usr/lib/gcc/powerpc-apple-darwin8/4.2.1/include -D__powerpc__  -I/usr/local/include/")
-					set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/include -I/usr/lib/gcc/powerpc-apple-darwin8/4.2.1/include -I/usr/include/c++/4.2.1/ -I/usr/include/c++/4.2.1/powerpc-apple-darwin8/ -D__powerpc__ -I/usr/local/include/ -fpermissive")
-					set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/lib/gcc/powerpc-apple-darwin8/4.2.1/ -liconv")
-				else()
-					set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/usr/include -I/usr/lib/gcc/powerpc-apple-darwin8/4.0.1/include -D__powerpc__ -I/usr/local/include/")
-					set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/include -I/usr/lib/gcc/powerpc-apple-darwin8/4.0.1/include -I/usr/include/c++/4.0.0/ -I/usr/include/c++/4.0.0/powerpc-apple-darwin8/ -D__powerpc__ -I/usr/local/include/ -fpermissive")
-					set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/lib/gcc/powerpc-apple-darwin8/4.0.1/ -liconv")	
-			 	endif()
-			 endif() #  TODO add clang
+			  if(CMAKE_C_COMPILER_VERSION MATCHES "4.2.1")
+			   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/usr/include -I/usr/lib/gcc/powerpc-apple-darwin8/4.2.1/include -D__powerpc__  -I/usr/local/include/")
+			   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/include -I/usr/lib/gcc/powerpc-apple-darwin8/4.2.1/include -I/usr/include/c++/4.2.1/ -I/usr/include/c++/4.2.1/powerpc-apple-darwin8/ -D__powerpc__ -I/usr/local/include/ -fpermissive")
+			   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/lib/gcc/powerpc-apple-darwin8/4.2.1/ -liconv")
+			 else()
+			   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/usr/include -I/usr/lib/gcc/powerpc-apple-darwin8/4.0.1/include -D__powerpc__ -I/usr/local/include/")
+			   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/include -I/usr/lib/gcc/powerpc-apple-darwin8/4.0.1/include -I/usr/include/c++/4.0.0/ -I/usr/include/c++/4.0.0/powerpc-apple-darwin8/ -D__powerpc__ -I/usr/local/include/ -fpermissive")
+			   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/lib/gcc/powerpc-apple-darwin8/4.0.1/ -liconv")	
+			 endif()
+		 	endif() #  TODO add clang
+		       endif()
+
+                        if(CMAKE_SYSTEM_PROCESSOR MATCHES "i386")
+                         if(CMAKE_C_COMPILER_ID MATCHES "GNU")
+                          if(CMAKE_C_COMPILER_VERSION MATCHES "4.2.1")
+                           set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/usr/include -I/usr/lib/gcc/i686-apple-darwin8/4.2.1/include -I/usr/local/include/")
+                           set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/include -I/usr/lib/gcc/i686-apple-darwin8/4.2.1/include -I/usr/include/c++/4.2.1/ -I/usr/include/c++/4.2.1/i686-apple-darwin8/ -D__powerpc__ -I/usr/local/include/ -fpermissive")
+                           set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/lib/gcc/i686-apple-darwin8/4.2.1/ -liconv")
+			  else()
+                           set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/usr/include -I/usr/lib/gcc/i686-apple-darwin8/4.0.1/include -I/usr/local/include/")
+                           set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/include -I/usr/lib/gcc/i686-apple-darwin8/4.0.1/include -I/usr/include/c++/4.0.0/ -I/usr/include/c++/4.0.0/i686-apple-darwin8/ -I/usr/local/include/ -fpermissive")
+                           set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/lib/gcc/i686-apple-darwin8/4.0.1/ -liconv")
 			endif()
+	       	       endif() #  TODO add clang
+	   	      endif()
 
 		elseif(CMAKE_SYSTEM MATCHES "Darwin-9*")
 			set(CMAKE_OSX_DEPLOYMENT_TARGET "10.5")
-            set(CMAKE_OSX_SYSROOT "/Developer/SDKs/MacOSX10.5.sdk")
+	                set(CMAKE_OSX_SYSROOT "/Developer/SDKs/MacOSX10.5.sdk")
+
 			if(CMAKE_SYSTEM_PROCESSOR MATCHES "ppc")
 			 if(CMAKE_C_COMPILER_ID MATCHES "GNU")
-				if(CMAKE_C_COMPILER_VERSION MATCHES "4.2.1")
-				set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/usr/include -I/usr/lib/gcc/powerpc-apple-darwin8/4.2.1/include -D__powerpc__  -I/usr/local/include/")
-				set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/include -I/usr/lib/gcc/powerpc-apple-darwin8/4.2.1/include -I/usr/include/c++/4.2.1/ -I/usr/include/c++/4.2.1/powerpc-apple-darwin8/ -D__powerpc__ -I/usr/local/include/ -fpermissive")
-				set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/lib/gcc/powerpc-apple-darwin8/4.2.1/ -liconv")
-			 endif()
-			endif() #  TODO add clang
-		 endif()
-		else() # CMAKE_SYSTEM_PROCESSOR MATCHES
+			  if(CMAKE_C_COMPILER_VERSION MATCHES "4.2.1")
+			    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/usr/include -I/usr/lib/gcc/powerpc-apple-darwin9/4.2.1/include -D__powerpc__  -I/usr/local/include/")
+			    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/include -I/usr/lib/gcc/powerpc-apple-darwin9/4.2.1/include -I/usr/include/c++/4.2.1/ -I/usr/include/c++/4.2.1/powerpc-apple-darwin9/ -D__powerpc__ -I/usr/local/include/ -fpermissive")
+			    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/lib/gcc/powerpc-apple-darwin9/4.2.1/ -liconv")
+			   endif()
+			 endif() #  TODO add clang
+			endif()
+
+                        if(CMAKE_SYSTEM_PROCESSOR MATCHES "i386")
+                         if(CMAKE_C_COMPILER_ID MATCHES "GNU")
+                           if(CMAKE_C_COMPILER_VERSION MATCHES "4.2.1")
+                             set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/usr/include -I/usr/lib/gcc/i686-apple-darwin9/4.2.1/include -I/usr/local/include/")
+                             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/include -I/usr/lib/gcc/i686-apple-darwin9/4.2.1/include -I/usr/include/c++/4.2.1/ -I/usr/include/c++/4.2.1/i686-apple-darwin9/ -I/usr/local/include/ -fpermissive")
+                             set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/lib/gcc/i686-apple-darwin9/4.2.1/ -liconv")
+                        endif()
+		       endif() #  TODO add clang
+      		      endif()
+
+		else() # CMAKE_SYSTEM MATCHES
 			set(CMAKE_OSX_DEPLOYMENT_TARGET "10.7")
 			set(CMAKE_OSX_SYSROOT "${XCODE_DEVELOPER_PATH}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk")
 		endif()
+
+
 		execute_process(COMMAND xcode-select -p OUTPUT_VARIABLE XCODE_DEVELOPER_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 		set(CMAKE_CXX_FLAGS "-isysroot ${CMAKE_OSX_SYSROOT} ${CMAKE_CXX_FLAGS}")
@@ -260,7 +289,6 @@ elseif(WIN32)
 		add_definitions(-D_WIN32_IE=0x0501)
 	endif(MINGW)
 endif()
-
 # Get the system architecture
 if(NOT APPLE)
 	if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "i686" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "i386" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86")
