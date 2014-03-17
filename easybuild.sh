@@ -112,7 +112,7 @@ echo
 if [ "${PLATFORMSYS}" == "Mac OS X" ]; then
 
 if [[ ${PLATFORMCPU} == "powerpc" ]]; then
-         BUNDLED_JPEG=0 # use libjpeg from fink or macports for now
+RELEASE_TYPE="Release-osx" # cannot be "Relase" ???
 fi 
 
 	[ ! "${BUNDLED_CURL}" ] && BUNDLED_CURL=0
