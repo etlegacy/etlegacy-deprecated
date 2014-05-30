@@ -10,7 +10,7 @@
 #import <Cocoa/Cocoa.h>
 #import <sys/param.h>
 
-//#import "SDL/SDL.h"
+//#import <SDL/SDL.h>
 #import "SDL.h"
 #import "SDLMain.h"
 
