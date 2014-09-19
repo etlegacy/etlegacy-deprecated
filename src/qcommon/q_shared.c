@@ -2377,4 +2377,5 @@ float rint(float v)
 		return floorf(v);
 	}
 }
+
 #endif
