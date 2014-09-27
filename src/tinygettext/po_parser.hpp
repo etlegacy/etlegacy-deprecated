@@ -29,16 +29,16 @@ class Dictionary;
 class POParser
 {
 private:
-	std::string filename;
+	std::string   filename;
 	std::istream& in;
-	Dictionary& dict;
-	bool  use_fuzzy;
+	Dictionary&   dict;
+	bool	      use_fuzzy;
 
 	bool running;
 	bool eof;
 	bool big5;
 
-	int line_number;
+	int	    line_number;
 	std::string current_line;
 
 	IConv conv;
