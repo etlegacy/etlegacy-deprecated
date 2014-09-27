@@ -64,8 +64,8 @@ namespace tinygettext {
 class IConv
 {
 private:
-	std::string to_charset;
-	std::string from_charset;
+	std::string	    to_charset;
+	std::string	    from_charset;
 	tinygettext_iconv_t cd;
 
 public:
@@ -78,7 +78,7 @@ public:
 
 private:
 	IConv (const IConv&);
-	IConv& operator= (const IConv&);
+	IConv& operator = (const IConv&);
 };
 
 } // namespace tinygettext
