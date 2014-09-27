@@ -34,7 +34,7 @@ private:
 	typedef std::map<std::string, std::vector<std::string> > Entries;
 	Entries entries;
 
-	typedef std::map<std::string, Entries> CtxtEntries;
+	typedef	    std::map<std::string, Entries> CtxtEntries;
 	CtxtEntries ctxt_entries;
 
 	std::string charset;
@@ -51,7 +51,7 @@ public:
 	/** Return the charset used for this dictionary */
 	std::string get_charset() const;
 
-	void set_plural_forms(const PluralForms&);
+	void	    set_plural_forms(const PluralForms&);
 	PluralForms get_plural_forms() const;
 
 	/** Translate the string \a msgid. */
