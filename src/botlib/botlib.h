@@ -31,6 +31,7 @@
  * @file botlib.h
  * @brief bot AI library
  */
+ 
 #ifndef INCLUDE_BOTLIB_H
 #define INCLUDE_BOTLIB_H
 
@@ -40,9 +41,9 @@
 
 typedef struct bot_debugpoly_s
 {
-	int inuse;
-	int color;
-	int numPoints;
+	int    inuse;
+	int    color;
+	int    numPoints;
 	vec3_t points[128];
 } bot_debugpoly_t;
 
@@ -64,24 +65,24 @@ typedef void (*BotPolyFunc)(int color, int numPoints, float *points);
 typedef struct bsp_surface_s
 {
 	char name[16];
-	int flags;
-	int value;
+	int  flags;
+	int  value;
 } bsp_surface_t;
 
 // remove the bsp_trace_s structure definition l8r on
 // a trace is returned when a box is swept through the world
 typedef struct bsp_trace_s
 {
-	qboolean allsolid;          // if true, plane is not valid
-	qboolean startsolid;        // if true, the initial point was in a solid area
-	float fraction;             // time completed, 1.0 = didn't hit anything
-	vec3_t endpos;              // final position
-	cplane_t plane;             // surface normal at impact
-	float exp_dist;             // expanded plane distance
-	int sidenum;                // number of the brush side hit
-	bsp_surface_t surface;      // the hit point surface
-	int contents;               // contents on other side of surface hit
-	int ent;                    // number of entity hit
+	qboolean      allsolid;		// if true, plane is not valid
+	qboolean      startsolid;	// if true, the initial point was in a solid area
+	float	      fraction;		// time completed, 1.0 = didn't hit anything
+	vec3_t	      endpos;		// final position
+	cplane_t      plane;		// surface normal at impact
+	float	      exp_dist;		// expanded plane distance
+	int	      sidenum;		// number of the brush side hit
+	bsp_surface_t surface;		// the hit point surface
+	int	      contents;		// contents on other side of surface hit
+	int	      ent;		// number of entity hit
 } bsp_trace_t;
 
 // bot AI library exported functions
