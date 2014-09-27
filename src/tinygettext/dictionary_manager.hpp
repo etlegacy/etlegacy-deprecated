@@ -37,15 +37,15 @@ class FileSystem;
 class DictionaryManager
 {
 private:
-	typedef std::map<Language, Dictionary*> Dictionaries;
+	typedef	     std::map<Language, Dictionary*> Dictionaries;
 	Dictionaries dictionaries;
 
-	typedef std::vector<std::string> SearchPath;
+	typedef	   std::vector<std::string> SearchPath;
 	SearchPath search_path;
 
 	std::string charset;
 	bool        use_fuzzy;
-  
+
 	Language    current_language;
 	Dictionary* current_dict;
 
@@ -89,7 +89,7 @@ public:
 
 private:
 	DictionaryManager (const DictionaryManager&);
-	DictionaryManager& operator= (const DictionaryManager&);
+	DictionaryManager& operator = (const DictionaryManager&);
 };
 
 } // namespace tinygettext
