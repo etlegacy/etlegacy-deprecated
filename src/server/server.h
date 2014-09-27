@@ -301,7 +301,7 @@ typedef struct tempBan_s
 	int	 endtime;
 } tempBan_t;
 
-#define MAX_MASTERS                         8               // max recipients for heartbeat packets
+#define MAX_MASTERS                         8			// max recipients for heartbeat packets
 #define MAX_TEMPBAN_ADDRESSES               MAX_CLIENTS
 
 #define SERVER_PERFORMANCECOUNTER_FRAMES    600
@@ -310,20 +310,20 @@ typedef struct tempBan_s
 // this structure will be cleared only when the game dll changes
 typedef struct
 {
-	qboolean initialized;                   // sv_init has completed
+	qboolean initialized;					// sv_init has completed
 
-	int time;                               // will be strictly increasing across level changes
+	int time;						// will be strictly increasing across level changes
 
-	int snapFlagServerBit;                  // ^= SNAPFLAG_SERVERCOUNT every SV_SpawnServer()
+	int snapFlagServerBit;					// ^= SNAPFLAG_SERVERCOUNT every SV_SpawnServer()
 
-	client_t      *clients;                      // [sv_maxclients->integer];
-	int	      numSnapshotEntities;                // sv_maxclients->integer*PACKET_BACKUP*MAX_PACKET_ENTITIES
-	int	      nextSnapshotEntities;               // next snapshotEntities to use
-	entityState_t *snapshotEntities;        // [numSnapshotEntities]
+	client_t      *clients;					// [sv_maxclients->integer];
+	int	      numSnapshotEntities;			// sv_maxclients->integer*PACKET_BACKUP*MAX_PACKET_ENTITIES
+	int	      nextSnapshotEntities;			// next snapshotEntities to use
+	entityState_t *snapshotEntities;			// [numSnapshotEntities]
 	int	      nextHeartbeatTime;
-	challenge_t   challenges[MAX_CHALLENGES]; // to prevent invalid IPs from connecting
+	challenge_t   challenges[MAX_CHALLENGES];		// to prevent invalid IPs from connecting
 	receipt_t     infoReceipts[MAX_INFO_RECEIPTS];
-	netadr_t      redirectAddress;               // for rcon return messages
+	netadr_t      redirectAddress;				// for rcon return messages
 	tempBan_t     tempBanAddresses[MAX_TEMPBAN_ADDRESSES];
 
 	int	  sampleTimes[SERVER_PERFORMANCECOUNTER_SAMPLES];
