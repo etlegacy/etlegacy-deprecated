@@ -39,11 +39,11 @@
 typedef struct
 {
 	connstate_t connState;
-	int connectPacketCount;
-	int clientNum;
-	char servername[MAX_STRING_CHARS];
-	char updateInfoString[MAX_STRING_CHARS];
-	char messageString[MAX_STRING_CHARS];
+	int	    connectPacketCount;
+	int	    clientNum;
+	char	    servername[MAX_STRING_CHARS];
+	char	    updateInfoString[MAX_STRING_CHARS];
+	char	    messageString[MAX_STRING_CHARS];
 } uiClientState_t;
 
 typedef enum
