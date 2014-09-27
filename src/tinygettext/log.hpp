@@ -31,7 +31,6 @@ public:
 	static log_callback_t log_warning_callback;
 	static log_callback_t log_error_callback;
 
-
 	static void default_log_callback(const std::string& str);
 
 	static void set_log_info_callback(log_callback_t callback);
@@ -39,7 +38,7 @@ public:
 	static void set_log_error_callback(log_callback_t callback);
 
 private:
-	log_callback_t callback;
+	log_callback_t	   callback;
 	std::ostringstream out;
 
 public:
