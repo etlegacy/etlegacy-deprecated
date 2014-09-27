@@ -547,7 +547,6 @@ static void SV_Status_f(void)
 		Com_Printf("%5i", cl->netchan.qport);
 
 		Com_Printf(" %5i\n", cl->rate);
-
 	}
 	Com_Printf("\n");
 }
@@ -742,7 +741,6 @@ static void SV_Demo_Record_f(void)
 	SV_DemoStartRecord();
 }
 
-
 /*
 =================
 SV_Demo_Play_f
@@ -775,7 +773,6 @@ static void SV_Demo_Play_f(void)
 		Com_sprintf(sv.demoName, sizeof(sv.demoName), "svdemos/%s.%s%d", arg, SVDEMOEXT, PROTOCOL_VERSION);
 	}
 
-
 	//FS_FileExists(sv.demoName);
 	FS_FOpenFileRead(sv.demoName, &sv.demoFile, qtrue);
 	if (!sv.demoFile)
@@ -786,7 +783,6 @@ static void SV_Demo_Play_f(void)
 
 	SV_DemoStartPlayback();
 }
-
 
 /*
 =================
@@ -947,4 +943,5 @@ void SV_RemoveOperatorCommands(void)
 	Cmd_RemoveCommand("sectorlist");
 	Cmd_RemoveCommand("say");
 #endif
+
 }
