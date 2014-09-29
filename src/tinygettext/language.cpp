@@ -288,7 +288,7 @@ std::string
 resolve_language_alias(const std::string& name)
 {
 	typedef std::map<std::string, std::string> Aliases;
-	static Aliases language_aliases;
+	static	Aliases language_aliases;
 	if (language_aliases.empty())
 	{
 		// FIXME: Many of those are not useful for us, since we leave

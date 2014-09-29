@@ -53,12 +53,12 @@ int numblocks;
 typedef struct memoryblock_s
 {
 	unsigned long int id;
-	void *ptr;
-	int size;
+	void		  *ptr;
+	int		  size;
 #ifdef MEMDEBUG
 	char *label;
 	char *file;
-	int line;
+	int  line;
 #endif //MEMDEBUG
 	struct memoryblock_s *prev, *next;
 } memoryblock_t;
@@ -186,7 +186,7 @@ memoryblock_t *BlockFromPointer(void *ptr, char *str)
 		//char *crash = (char *) NULL;
 		//crash[0] = 1;
 		botimport.Print(PRT_FATAL, "%s: NULL pointer\n", str);
-#endif // MEMDEBUG
+#endif //MEMDEBUG
 		return NULL;
 	}
 	block = ( memoryblock_t * )((char *) ptr - sizeof(memoryblock_t));

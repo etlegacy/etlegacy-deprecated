@@ -26,7 +26,7 @@
 #  define tinygettext_iconv_t     SDL_iconv_t
 #  define tinygettext_iconv       SDL_iconv
 #  define tinygettext_iconv_open  SDL_iconv_open
-#  define tinygettext_iconv_close SDL_iconv_close 
+#  define tinygettext_iconv_close SDL_iconv_close
 
 #else // Using pure iconv
 
@@ -49,13 +49,13 @@
 #  ifdef HAVE_ICONV_CONST
 #    define tinygettext_ICONV_CONST ICONV_CONST
 #  else
-#    define tinygettext_ICONV_CONST 
+#    define tinygettext_ICONV_CONST
 #  endif
 
 #  define tinygettext_iconv_t     iconv_t
 #  define tinygettext_iconv       iconv
 #  define tinygettext_iconv_open  iconv_open
-#  define tinygettext_iconv_close iconv_close 
+#  define tinygettext_iconv_close iconv_close
 
 #endif
 
@@ -64,21 +64,21 @@ namespace tinygettext {
 class IConv
 {
 private:
-  std::string to_charset;
-  std::string from_charset;
-  tinygettext_iconv_t cd;
+	std::string	    to_charset;
+	std::string	    from_charset;
+	tinygettext_iconv_t cd;
 
 public:
-  IConv();
-  IConv(const std::string& fromcode, const std::string& tocode);
-  ~IConv();
+	IConv();
+	IConv(const std::string& fromcode, const std::string& tocode);
+	~IConv();
 
-  void set_charsets(const std::string& fromcode, const std::string& tocode);
-  std::string convert(const std::string& text);
+	void set_charsets(const std::string& fromcode, const std::string& tocode);
+	std::string convert(const std::string& text);
 
 private:
-  IConv (const IConv&);
-  IConv& operator= (const IConv&);
+	IConv (const IConv&);
+	IConv& operator = (const IConv&);
 };
 
 } // namespace tinygettext

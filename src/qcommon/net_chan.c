@@ -448,7 +448,6 @@ qboolean    NET_GetLoopPacket(netsrc_t sock, netadr_t *net_from, msg_t *net_mess
 	Com_Memset(net_from, 0, sizeof(*net_from));
 	net_from->type = NA_LOOPBACK;
 	return qtrue;
-
 }
 
 void NET_SendLoopPacket(netsrc_t sock, int length, const void *data, netadr_t to)

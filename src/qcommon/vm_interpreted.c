@@ -31,7 +31,6 @@
  * @file vm_interpreted.c
  */
 
-
 #include "vm_local.h"
 
 #ifdef DEBUG_VM

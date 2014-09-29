@@ -51,7 +51,7 @@
 typedef struct directive_s
 {
 	char *name;
-	int (*func)(source_t *source);
+	int  (*func)(source_t *source);
 } directive_t;
 
 #define DEFINEHASHSIZE      1024
@@ -504,10 +504,10 @@ void PC_AddBuiltinDefines(source_t *source)
 {
 	int      i;
 	define_t *define;
-	struct builtin
+	struct	 builtin
 	{
 		char *string;
-		int builtin;
+		int  builtin;
 	} builtin[] =
 	{
 		{ "__LINE__", BUILTIN_LINE },

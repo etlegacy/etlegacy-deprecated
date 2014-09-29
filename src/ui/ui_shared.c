@@ -1843,8 +1843,8 @@ void Menu_TransitionItemByName(menuDef_t *menu, const char *p, rectDef_t rectFro
 		item = Menu_GetMatchingItemByNumber(menu, i, p);
 		if (item != NULL)
 		{
-			item->window.flags     |= (WINDOW_INTRANSITION | WINDOW_VISIBLE);
-			item->window.offsetTime = time;
+			item->window.flags	   |= (WINDOW_INTRANSITION | WINDOW_VISIBLE);
+			item->window.offsetTime	    = time;
 			memcpy(&item->window.rectClient, &rectFrom, sizeof(rectDef_t));
 			memcpy(&item->window.rectEffects, &rectTo, sizeof(rectDef_t));
 			item->window.rectEffects2.x = abs(rectTo.x - rectFrom.x) / amt;
@@ -4030,16 +4030,16 @@ qboolean Item_Slider_HandleKey(itemDef_t *item, int key, qboolean down)
 				value       = (float)SLIDER_THUMB_WIDTH / 2;
 				testRect.x -= value;
 				//DC->Print("slider x: %f\n", testRect.x);
-				testRect.w = (SLIDER_WIDTH + (float)SLIDER_THUMB_WIDTH / 2);
+				testRect.w  = (SLIDER_WIDTH + (float)SLIDER_THUMB_WIDTH / 2);
 				//DC->Print("slider w: %f\n", testRect.w);
 				if (Rect_ContainsPoint(&testRect, DC->cursorx, DC->cursory))
 				{
 					float work = DC->cursorx - x;
-					value  = work / SLIDER_WIDTH;
-					value *= (editDef->maxVal - editDef->minVal);
+					value	   = work / SLIDER_WIDTH;
+					value	  *= (editDef->maxVal - editDef->minVal);
 					// vm fuckage
 					// value = (((float)(DC->cursorx - x)/ SLIDER_WIDTH) * (editDef->maxVal - editDef->minVal));
-					value += editDef->minVal;
+					value	  += editDef->minVal;
 					DC->setCVar(item->cvar, va("%f", value));
 					return qtrue;
 				}
@@ -4188,7 +4188,6 @@ itemDef_t *Menu_SetPrevCursorItem(menuDef_t *menu)
 	}
 	menu->cursorItem = oldCursor;
 	return NULL;
-
 }
 
 itemDef_t *Menu_SetNextCursorItem(menuDef_t *menu)
@@ -4301,7 +4300,6 @@ void  Menus_Activate(menuDef_t *menu)
 	}
 
 	Display_CloseCinematics();
-
 }
 
 qboolean Menus_CaptureFuncActive(void)
@@ -5864,8 +5862,8 @@ void Item_ListBox_Paint(itemDef_t *item)
 	else
 	{
 		// draw scrollbar to right side of the window
-		x = fillRect.x + fillRect.w - SCROLLBAR_SIZE - 1;
-		y = fillRect.y + 1;
+		x  = fillRect.x + fillRect.w - SCROLLBAR_SIZE - 1;
+		y  = fillRect.y + 1;
 		DC->drawHandlePic(x, y, SCROLLBAR_SIZE, SCROLLBAR_SIZE, DC->Assets.scrollBarArrowUp);
 		y += SCROLLBAR_SIZE - 1;
 
@@ -6316,10 +6314,10 @@ void Item_Paint(itemDef_t *item)
 void Menu_Init(menuDef_t *menu)
 {
 	memset(menu, 0, sizeof(menuDef_t));
-	menu->cursorItem = -1;
-	menu->fadeAmount = DC->Assets.fadeAmount;
-	menu->fadeClamp  = DC->Assets.fadeClamp;
-	menu->fadeCycle  = DC->Assets.fadeCycle;
+	menu->cursorItem     = -1;
+	menu->fadeAmount     = DC->Assets.fadeAmount;
+	menu->fadeClamp	     = DC->Assets.fadeClamp;
+	menu->fadeCycle	     = DC->Assets.fadeCycle;
 	// by default, do NOT use item hotkey mode
 	menu->itemHotkeyMode = qfalse;
 	Window_Init(&menu->window);
@@ -6624,8 +6622,8 @@ void Menu_Paint(menuDef_t *menu, qboolean forcePaint)
 
 	// draw tooltip data if we have it
 	if (DC->getCVarValue("ui_showtooltips") &&
-	    item != NULL &&
-	    item->toolTipData != NULL &&
+	    item		    != NULL &&
+	    item->toolTipData	    != NULL &&
 	    item->toolTipData->text != NULL &&
 	    *item->toolTipData->text)
 	{
@@ -7739,7 +7737,6 @@ qboolean ItemParse_cvarFloatList(itemDef_t *item, int handle)
 		{
 			return qfalse;
 		}
-
 	}
 	return qfalse;
 }
@@ -9400,7 +9397,7 @@ void BG_FitTextToWidth_Ext(char *instr, float scale, float w, int size, fontInfo
 {
 	char buffer[1024];
 	char *s, *p, *c, *ls = NULL;
-	int  l = 0;
+	int  l		     = 0;
 
 	Q_strncpyz(buffer, instr, 1024);
 	memset(instr, 0, size);

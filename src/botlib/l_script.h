@@ -31,6 +31,7 @@
  * @file l_script.h
  * @brief lexicographical parser
  */
+ 
 #ifndef INCLUDE_L_SCRIPT_H
 #define INCLUDE_L_SCRIPT_H
 
@@ -153,47 +154,47 @@
 // punctuation
 typedef struct punctuation_s
 {
-	char *p;                        // punctuation character(s)
-	int n;                          // punctuation indication
-	struct punctuation_s *next;     // next punctuation
+	char   *p;                      // punctuation character(s)
+	int    n;                       // punctuation indication
+	struct punctuation_s *next;	// next punctuation
 } punctuation_t;
 
 // token
 typedef struct token_s
 {
 	char string[MAX_TOKEN];         // available token
-	int type;                       // last read token type
-	int subtype;                    // last read token sub type
+	int  type;                      // last read token type
+	int  subtype;                   // last read token sub type
 #ifdef NUMBERVALUE
-	unsigned long int intvalue; // integer value
-	long double floatvalue;         // floating point value
+	unsigned long int intvalue;	// integer value
+	long double	  floatvalue;	// floating point value
 #endif //NUMBERVALUE
-	char *whitespace_p;             // start of white space before token
-	char *endwhitespace_p;          // start of white space before token
-	int line;                       // line the token was on
-	int linescrossed;               // lines crossed in white space
+	char   *whitespace_p;           // start of white space before token
+	char   *endwhitespace_p;        // start of white space before token
+	int    line;                    // line the token was on
+	int    linescrossed;            // lines crossed in white space
 	struct token_s *next;           // next token in chain
 } token_t;
 
 //script file
 typedef struct script_s
 {
-	char filename[_MAX_PATH];       //file name of the script
-	char *buffer;                   //buffer containing the script
-	char *script_p;                 // current pointer in the script
-	char *end_p;                    // pointer to the end of the script
-	char *lastscript_p;             // script pointer before reading token
-	char *whitespace_p;             // begin of the white space
-	char *endwhitespace_p;          // end of the white space
-	int length;                     // length of the script in bytes
-	int line;                       // current line in script
-	int lastline;                   // line before reading token
-	int tokenavailable;             // set by UnreadLastToken
-	int flags;                      // several script flags
-	punctuation_t *punctuations;    // the punctuations used in the script
+	char	      filename[_MAX_PATH];      //file name of the script
+	char	      *buffer;                  //buffer containing the script
+	char	      *script_p;                // current pointer in the script
+	char	      *end_p;                   // pointer to the end of the script
+	char	      *lastscript_p;            // script pointer before reading token
+	char	      *whitespace_p;            // begin of the white space
+	char	      *endwhitespace_p;         // end of the white space
+	int	      length;                   // length of the script in bytes
+	int	      line;                     // current line in script
+	int	      lastline;                 // line before reading token
+	int	      tokenavailable;           // set by UnreadLastToken
+	int	      flags;                    // several script flags
+	punctuation_t *punctuations;		// the punctuations used in the script
 	punctuation_t **punctuationtable;
-	token_t token;                  // available token
-	struct script_s *next;          // next script in a chain
+	token_t	      token;                    // available token
+	struct	      script_s *next;           // next script in a chain
 } script_t;
 
 // read a token from the script

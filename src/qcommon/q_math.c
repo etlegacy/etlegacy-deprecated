@@ -1368,7 +1368,6 @@ vec_t VectorNormalize2(const vec3_t v, vec3_t out)
 	}
 
 	return length;
-
 }
 
 void _VectorMA(const vec3_t veca, float scale, const vec3_t vecb, vec3_t vecc)
@@ -1846,4 +1845,5 @@ float Q_acos(float c)
 	}
 	return angle;
 }
+
 #endif

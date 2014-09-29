@@ -118,10 +118,10 @@ typedef struct _tag_menuframework
 	int cursor;
 	int cursor_prev;
 
-	int nitems;
+	int  nitems;
 	void *items[MAX_MENUITEMS];
 
-	void (*draw)(void);
+	void	    (*draw)(void);
 	sfxHandle_t (*key)(int key);
 
 	qboolean wrapAround;
@@ -134,17 +134,17 @@ typedef struct _tag_menuframework
 
 typedef struct
 {
-	int type;
-	const char *name;
-	int id;
-	int x, y;
-	int left;
-	int top;
-	int right;
-	int bottom;
+	int		type;
+	const char	*name;
+	int		id;
+	int		x, y;
+	int		left;
+	int		top;
+	int		right;
+	int		bottom;
 	menuframework_s *parent;
-	int menuPosition;
-	unsigned flags;
+	int		menuPosition;
+	unsigned	flags;
 
 	void (*callback)(void *self, int event);
 	void (*statusbar)(void *self);
@@ -153,17 +153,17 @@ typedef struct
 
 typedef struct
 {
-	int cursor;
-	int scroll;
-	int widthInChars;
+	int  cursor;
+	int  scroll;
+	int  widthInChars;
 	char buffer[MAX_EDIT_LINE];
-	int maxchars;
+	int  maxchars;
 } mfield_t;
 
 typedef struct
 {
 	menucommon_s generic;
-	mfield_t field;
+	mfield_t     field;
 } menufield_s;
 
 typedef struct
@@ -202,27 +202,27 @@ typedef struct
 typedef struct
 {
 	menucommon_s generic;
-	int curvalue;
+	int	     curvalue;
 } menuradiobutton_s;
 
 typedef struct
 {
 	menucommon_s generic;
-	char *focuspic;
-	char *errorpic;
-	qhandle_t shader;
-	qhandle_t focusshader;
-	int width;
-	int height;
-	float *focuscolor;
+	char	     *focuspic;
+	char	     *errorpic;
+	qhandle_t    shader;
+	qhandle_t    focusshader;
+	int	     width;
+	int	     height;
+	float	     *focuscolor;
 } menubitmap_s;
 
 typedef struct
 {
 	menucommon_s generic;
-	char *string;
-	int style;
-	float *color;
+	char	     *string;
+	int	     style;
+	float	     *color;
 } menutext_s;
 
 extern void         Menu_Cache(void);
@@ -326,8 +326,8 @@ typedef struct
 {
 	const char *name;
 	const char *imageName;
-	qhandle_t headImage;
-	qboolean female;
+	qhandle_t  headImage;
+	qboolean   female;
 } characterInfo;
 
 typedef struct
@@ -342,17 +342,17 @@ typedef struct
 	const char *teamName;
 	const char *imageName;
 	const char *teamMembers[TEAM_MEMBERS];
-	qhandle_t teamIcon;
-	qhandle_t teamIcon_Metal;
-	qhandle_t teamIcon_Name;
-	int cinematic;
+	qhandle_t  teamIcon;
+	qhandle_t  teamIcon_Metal;
+	qhandle_t  teamIcon_Name;
+	int	   cinematic;
 } teamInfo;
 
 typedef struct
 {
 	const char *gameType;
 	const char *gameTypeShort;
-	int gtEnum;
+	int	   gtEnum;
 	const char *gameTypeDescription;
 } gameTypeInfo;
 
@@ -371,43 +371,43 @@ typedef struct serverFilter_s
 typedef struct
 {
 	char adrstr[MAX_ADDRESSLENGTH];
-	int start;
+	int  start;
 } pinglist_t;
 
 typedef struct serverStatus_s
 {
-	int refreshtime;
-	int sortKey;
-	int sortDir;
-	qboolean refreshActive;
-	int currentServer;
-	int displayServers[MAX_DISPLAY_SERVERS];
-	int numDisplayServers;
-	int numPlayersOnServers;
-	int nextDisplayRefresh;
+	int	  refreshtime;
+	int	  sortKey;
+	int	  sortDir;
+	qboolean  refreshActive;
+	int	  currentServer;
+	int	  displayServers[MAX_DISPLAY_SERVERS];
+	int	  numDisplayServers;
+	int	  numPlayersOnServers;
+	int	  nextDisplayRefresh;
 	qhandle_t currentServerPreview;
-	int currentServerCinematic;
-	int motdLen;
-	int motdWidth;
-	int motdPaintX;
-	int motdPaintX2;
-	int motdOffset;
-	int motdTime;
-	char motd[MAX_STRING_CHARS];
+	int	  currentServerCinematic;
+	int	  motdLen;
+	int	  motdWidth;
+	int	  motdPaintX;
+	int	  motdPaintX2;
+	int	  motdOffset;
+	int	  motdTime;
+	char	  motd[MAX_STRING_CHARS];
 } serverStatus_t;
 
 typedef struct
 {
-	char adrstr[MAX_ADDRESSLENGTH];
-	char name[MAX_ADDRESSLENGTH];
-	int startTime;
-	int serverNum;
+	char	 adrstr[MAX_ADDRESSLENGTH];
+	char	 name[MAX_ADDRESSLENGTH];
+	int	 startTime;
+	int	 serverNum;
 	qboolean valid;
 } pendingServer_t;
 
 typedef struct
 {
-	int num;
+	int		num;
 	pendingServer_t server[MAX_SERVERSTATUSREQUESTS];
 } pendingServerStatus_t;
 
@@ -417,7 +417,7 @@ typedef struct
 	char *lines[MAX_SERVERSTATUS_LINES][4];
 	char text[MAX_SERVERSTATUS_TEXT];
 	char pings[MAX_CLIENTS * 3];
-	int numLines;
+	int  numLines;
 } serverStatusInfo_t;
 
 typedef struct
@@ -437,81 +437,81 @@ typedef struct
 
 	int legacyClient;
 
-	int characterCount;
+	int	      characterCount;
 	characterInfo characterList[MAX_HEADS];
 
-	int aliasCount;
+	int	  aliasCount;
 	aliasInfo aliasList[MAX_ALIASES];
 
-	int teamCount;
+	int	 teamCount;
 	teamInfo teamList[MAX_TEAMS];
 
-	int numGameTypes;
+	int	     numGameTypes;
 	gameTypeInfo gameTypes[MAX_GAMETYPES];
 
-	int numJoinGameTypes;
+	int	     numJoinGameTypes;
 	gameTypeInfo joinGameTypes[MAX_GAMETYPES];
 
-	int redBlue;
-	int playerCount;
-	int myTeamCount;
-	int teamIndex;
-	int playerRefresh;
-	int playerIndex;
-	int playerNumber;
+	int	 redBlue;
+	int	 playerCount;
+	int	 myTeamCount;
+	int	 teamIndex;
+	int	 playerRefresh;
+	int	 playerIndex;
+	int	 playerNumber;
 	qboolean teamLeader;
-	char playerNames[MAX_CLIENTS][MAX_NAME_LENGTH * 2];
+	char	 playerNames[MAX_CLIENTS][MAX_NAME_LENGTH * 2];
 	qboolean playerMuted[MAX_CLIENTS];
-	int playerRefereeStatus[MAX_CLIENTS];
-	char teamNames[MAX_CLIENTS][MAX_NAME_LENGTH];
-	int teamClientNums[MAX_CLIENTS];
+	int	 playerRefereeStatus[MAX_CLIENTS];
+	char	 teamNames[MAX_CLIENTS][MAX_NAME_LENGTH];
+	int	 teamClientNums[MAX_CLIENTS];
 
-	int mapCount;
+	int	mapCount;
 	mapInfo mapList[MAX_MAPS];
 
-	int campaignCount;
+	int	       campaignCount;
 	campaignInfo_t campaignList[MAX_CAMPAIGNS];
 
 	cpsFile_t campaignStatus;
 
 	profileInfo_t profileList[MAX_PROFILES];
-	int profileCount;
-	int profileIndex;
+	int	      profileCount;
+	int	      profileIndex;
 
 	modInfo_t modList[MAX_MODS];
-	int modCount;
-	int modIndex;
+	int	  modCount;
+	int	  modIndex;
 
 	const char *demoList[MAX_DEMOS];
-	int demoCount;
-	int demoIndex;
+	int	   demoCount;
+	int	   demoIndex;
 
 	const char *movieList[MAX_MOVIES];
-	int movieCount;
-	int movieIndex;
-	int previewMovie;
+	int	   movieCount;
+	int	   movieIndex;
+	int	   previewMovie;
 
 	serverStatus_t serverStatus;
 
 	// for the showing the status of a server
-	char serverStatusAddress[MAX_ADDRESSLENGTH];
+	char		   serverStatusAddress[MAX_ADDRESSLENGTH];
 	serverStatusInfo_t serverStatusInfo;
-	int nextServerStatusRefresh;
+	int		   nextServerStatusRefresh;
 
 	// to retrieve the status of server to find a player
 	pendingServerStatus_t pendingServerStatus;
-	char findPlayerName[MAX_STRING_CHARS];
-	char foundPlayerServerAddresses[MAX_FOUNDPLAYER_SERVERS][MAX_ADDRESSLENGTH];
-	char foundPlayerServerNames[MAX_FOUNDPLAYER_SERVERS][MAX_ADDRESSLENGTH];
-	int currentFoundPlayerServer;
-	int numFoundPlayerServers;
-	int nextFindPlayerRefresh;
+	char		      findPlayerName[MAX_STRING_CHARS];
+	char		      foundPlayerServerAddresses[MAX_FOUNDPLAYER_SERVERS][MAX_ADDRESSLENGTH];
+	char		      foundPlayerServerNames[MAX_FOUNDPLAYER_SERVERS][MAX_ADDRESSLENGTH];
+	int		      currentFoundPlayerServer;
+	int		      numFoundPlayerServers;
+	int		      nextFindPlayerRefresh;
 
 	int currentCrosshair;
 	int startPostGameTime;
 
-	int q3HeadCount;
-	char q3HeadNames[MAX_PLAYERMODELS][64];
+	int	  q3HeadCount;
+	char	  q3HeadNames[MAX_PLAYERMODELS][64];
 	qhandle_t q3HeadIcons[MAX_PLAYERMODELS];
 
 	int effectsColor;
@@ -521,7 +521,7 @@ typedef struct
 	int activeFont;
 
 	const char *glInfoLines[GLINFO_LINES];
-	int numGlInfoLines;
+	int	   numGlInfoLines;
 
 	vec4_t xhairColor;
 	vec4_t xhairColorAlt;
