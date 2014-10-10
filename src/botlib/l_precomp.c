@@ -1433,7 +1433,7 @@ typedef struct value_s
 	signed long int intvalue;
 	double floatvalue;
 	int parentheses;
-	struct value_s *prev, *next;
+	struct      value_s *prev, *next;
 } value_t;
 
 int PC_OperatorPriority(int op)
@@ -2441,6 +2441,7 @@ int PC_Directive_pragma(source_t *source)
 	SourceWarning(source, "#pragma directive not supported");
 	while (PC_ReadLine(source, &token))
 		;
+
 	return qtrue;
 }
 
