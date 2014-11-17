@@ -508,7 +508,6 @@ void SV_DemoChangeMaxClients(void)
 	int      count;
 	//qboolean firstTime = svs.clients == NULL;
 
-
 	// == Checking the prerequisites
 	// Note: we check  here that we have enough slots to fit all clients, and that it doesn't overflow the MAX_CLIENTS the engine can support. Also, we save the oldMaxClients and oldDemoClients values.
 
@@ -637,6 +636,7 @@ static void SV_ClearServer(void)
 			Z_Free(sv.configstrings[i]);
 		}
 	}
+	
 	Com_Memset(&sv, 0, sizeof(sv));
 }
 
@@ -658,7 +658,7 @@ void SV_TouchCGameDLL(void)
 	else if (sv_pure->integer)
 	{
 		Com_Error(ERR_DROP, "Failed to locate %s for pure server mode. "
-		                    "You'll probably need cgame for other platforms too.", filename);
+							"You'll probably need cgame for other platforms too.", filename);
 	}
 }
 
@@ -865,6 +865,7 @@ void SV_SpawnServer(char *server)
 		{
 			Com_Printf("WARNING: sv_pure set but no PK3 files loaded\n");
 		}
+		
 		p = FS_LoadedPakNames();
 		Cvar_Set("sv_pakNames", p);
 	}
@@ -1188,6 +1189,7 @@ void SV_FinalCommand(char *cmd, qboolean disconnect)
 						SV_SendServerCommand(cl, "disconnect");
 					}
 				}
+				
 				// force a snapshot to be sent
 				cl->nextSnapshotTime = -1;
 				SV_SendClientSnapshot(cl);
