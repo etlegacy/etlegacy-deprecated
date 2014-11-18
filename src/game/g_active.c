@@ -175,8 +175,7 @@ void P_WorldEffects(gentity_t *ent)
 		{
 			if (ent->watertype & CONTENTS_LAVA)
 			{
-				G_Damage(ent, NULL, NULL, NULL, NULL,
-				         30 * ent->waterlevel, 0, MOD_LAVA);
+				G_Damage(ent, NULL, NULL, NULL, NULL, 30 * ent->waterlevel, 0, MOD_LAVA);
 			}
 		}
 	}
@@ -526,7 +525,7 @@ qboolean G_SpectatorAttackFollow(gentity_t *ent)
 void SpectatorThink(gentity_t *ent, usercmd_t *ucmd)
 {
 	gclient_t *client       = ent->client;
-	gentity_t *crosshairEnt = crosshairEnt = &g_entities[ent->client->ps.identifyClient];
+	gentity_t *crosshairEnt = &g_entities[ent->client->ps.identifyClient];
 
 	// sanity check - check .active in case the client sends us something completely bogus
 

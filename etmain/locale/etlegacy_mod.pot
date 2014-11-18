@@ -347,9 +347,6 @@ msgstr ""
 msgid "Brightness:"
 msgstr ""
 
-msgid "Connection:"
-msgstr ""
-
 msgid "Mouse Sensitivity:"
 msgstr ""
 
@@ -1210,9 +1207,6 @@ msgid "SIMPLE"
 msgstr ""
 
 msgid "Overall Quality:"
-msgstr ""
-
-msgid "Fullscreen:"
 msgstr ""
 
 msgid "Window mode:"
