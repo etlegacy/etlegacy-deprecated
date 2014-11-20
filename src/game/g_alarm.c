@@ -148,6 +148,7 @@ void alarmbox_use(gentity_t *ent, gentity_t *other, gentity_t *foo)
 	{
 		G_AddEvent(ent, EV_GENERAL_SOUND, ent->soundPos3);
 	}
+
 	//	G_Printf("touched alarmbox\n");
 }
 

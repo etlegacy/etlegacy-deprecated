@@ -259,6 +259,7 @@ int G_SwitchBodyPartEntity(gentity_t *ent)
 	{
 		return ent->parent - g_entities;
 	}
+
 	return ent - g_entities;
 }
 
@@ -333,6 +334,7 @@ void G_HistoricalTraceBegin(gentity_t *ent)
 	{
 		return;
 	}
+
 	G_AdjustClientPositions(ent, ent->client->pers.cmd.serverTime, qtrue);
 }
 
@@ -343,6 +345,7 @@ void G_HistoricalTraceEnd(gentity_t *ent)
 	{
 		return;
 	}
+
 	G_AdjustClientPositions(ent, 0, qfalse);
 }
 

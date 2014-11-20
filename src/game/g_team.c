@@ -50,6 +50,7 @@ int OtherTeam(int team)
 	{
 		return TEAM_AXIS;
 	}
+
 	return team;
 }
 
@@ -67,6 +68,7 @@ const char *TeamName(int team)
 	{
 		return "SPECTATOR";
 	}
+
 	return "FREE";
 }
 
@@ -84,6 +86,7 @@ const char *TeamColorString(int team)
 	{
 		return S_COLOR_YELLOW;
 	}
+
 	return S_COLOR_WHITE;
 }
 
@@ -235,6 +238,7 @@ void Team_FragBonuses(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker
 			{
 				break;
 			}
+
 			carrier = NULL;
 		}
 
@@ -661,6 +665,7 @@ gentity_t *SelectRandomTeamSpawnPoint(int teamstate, team_t team, int spawnObjec
 				closest  = i;
 			}
 		}
+
 		return spots[closest];
 	}
 }
@@ -740,6 +745,7 @@ void TeamplayInfoMessage(team_t team)
 			{
 				break;
 			}
+
 			strcpy(string + stringlength, entry);
 			stringlength += j;
 			cnt++;
@@ -821,7 +827,8 @@ void DropToFloor(gentity_t *ent);
 
 
 // edited quaked def
-/*QUAKED team_CTF_redspawn (1 0 0) (-16 -16 -24) (16 16 32) ? INVULNERABLE STARTACTIVE
+/*
+QUAKED team_CTF_redspawn (1 0 0) (-16 -16 -24) (16 16 32) ? INVULNERABLE STARTACTIVE
 potential spawning position for axis team in wolfdm games.
 
 TODO: SelectRandomTeamSpawnPoint() will choose team_CTF_redspawn point that:
@@ -855,7 +862,8 @@ void SP_team_CTF_redspawn(gentity_t *ent)
 }
 
 // edited quaked def
-/*QUAKED team_CTF_bluespawn (0 0 1) (-16 -16 -24) (16 16 32) ? INVULNERABLE STARTACTIVE
+/*
+QUAKED team_CTF_bluespawn (0 0 1) (-16 -16 -24) (16 16 32) ? INVULNERABLE STARTACTIVE
 potential spawning position for allied team in wolfdm games.
 
 TODO: SelectRandomTeamSpawnPoint() will choose team_CTF_bluespawn point that:
@@ -888,7 +896,8 @@ void SP_team_CTF_bluespawn(gentity_t *ent)
 	ent->think = DropToFloor;
 }
 
-/*QUAKED team_WOLF_objective (1 1 0.3) (-16 -16 -24) (16 16 32) DEFAULT_AXIS DEFAULT_ALLIES
+/*
+QUAKED team_WOLF_objective (1 1 0.3) (-16 -16 -24) (16 16 32) DEFAULT_AXIS DEFAULT_ALLIES
 marker for objective
 
 This marker will be used for computing effective radius for
@@ -953,6 +962,7 @@ void objective_Register(gentity_t *self)
 		{
 			Info_SetValueForKey(cs, "z", va("%i", (int)self->s.origin[2]));
 		}
+
 		Info_SetValueForKey(cs, "t", va("%i", self->count2));
 		self->use   = team_wolf_objective_use;
 		self->count = cs_obj;
@@ -1052,6 +1062,7 @@ void checkpoint_use(gentity_t *ent, gentity_t *other, gentity_t *activator)
 			time++;
 			trap_SendServerCommand(activator - g_entities, va("cp \"Flag will be held in %i seconds!\"", time));
 		}
+
 		return;
 	}
 
@@ -1107,6 +1118,7 @@ void checkpoint_hold_think(gentity_t *self)
 	default:
 		break;
 	}
+
 	self->nextthink = level.time + 5000;
 }
 
@@ -1150,6 +1162,7 @@ void checkpoint_think(gentity_t *self)
 	{
 		self->touch = checkpoint_touch;
 	}
+
 	self->nextthink = 0;
 }
 
@@ -1407,7 +1420,8 @@ void checkpoint_spawntouch(gentity_t *self, gentity_t *other, trace_t *trace)
 	}
 }
 
-/*QUAKED team_WOLF_checkpoint (.9 .3 .9) (-16 -16 0) (16 16 128) SPAWNPOINT CP_HOLD AXIS_ONLY ALLIED_ONLY
+/*
+QUAKED team_WOLF_checkpoint (.9 .3 .9) (-16 -16 0) (16 16 128) SPAWNPOINT CP_HOLD AXIS_ONLY ALLIED_ONLY
 This is the flagpole players touch in Capture and Hold game scenarios.
 
 It will call specific trigger funtions in the map script for this object.
@@ -1511,6 +1525,7 @@ int Team_ClassForString(char *string)
 	{
 		return PC_COVERTOPS;
 	}
+
 	return -1;
 }
 
@@ -1624,6 +1639,7 @@ void G_shuffleTeams(void)
 			{
 				G_ExplodeMines(g_entities + sortClients[i]);
 			}
+
 			G_FadeItems(g_entities + sortClients[i], MOD_SATCHEL);
 		}
 
@@ -1644,6 +1660,7 @@ int G_teamID(gentity_t *ent)
 	{
 		return(ent->client->sess.coach_team);
 	}
+
 	return(ent->client->sess.sessionTeam);
 }
 
@@ -1710,7 +1727,6 @@ qboolean G_readyMatchState(void)
 		}
 
 		return qtrue;
-
 	}
 	else if (!G_checkReady())
 	{
@@ -1743,7 +1759,6 @@ void G_verifyMatchState(int nTeam)
 				}
 
 				trap_SendConsoleCommand(EXEC_APPEND, va("map_restart 0 %i\n", GS_WARMUP));
-
 			}
 			else
 			{

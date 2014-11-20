@@ -468,15 +468,20 @@ void G_InitWorldSession(void)
 
         trap_Cvar_VariableStringBuffer(va("fireteam%i", i), s, sizeof(s));
 
-/*		p = Info_ValueForKey( s, "n" );
+        /*
+        p = Info_ValueForKey( s, "n" );
 
-        if(p && *p) {
+        if(p && *p)
+        {
             Q_strncpyz( level.fireTeams[i].name, p, 32 );
             level.fireTeams[i].inuse = qtrue;
-        } else {
+        }
+        else
+        {
             *level.fireTeams[i].name = '\0';
             level.fireTeams[i].inuse = qfalse;
-        }*/
+        }
+        */
 
         p = Info_ValueForKey(s, "id");
         j = atoi(p);
@@ -508,6 +513,7 @@ void G_InitWorldSession(void)
                 {
                     break;
 				}
+
                 Q_strncpyz(str, c, l - c + 1);
                 str[l - c] = '\0';
                 level.fireTeams[i].joinOrder[j++] = atoi(str);
@@ -519,6 +525,7 @@ void G_InitWorldSession(void)
         {
             level.fireTeams[i].joinOrder[j] = -1;
 		}
+
         G_UpdateFireteamConfigString(&level.fireTeams[i]);
 	}
 }
@@ -582,6 +589,7 @@ void G_WriteSessionData(qboolean restart)
                 Com_sprintf(p, 8, " %i", level.fireTeams[i].joinOrder[j]);
                 Q_strcat(buffer2, MAX_STRING_CHARS, p);
 			}
+
             Com_sprintf(buffer, MAX_STRING_CHARS, "\\id\\%i\\i\\%s\\p\\%i", level.fireTeams[i].ident - 1, buffer2, level.fireTeams[i].priv ? 1 : 0);
 		}
 

@@ -153,7 +153,6 @@ void G_CheckForNeededClasses(void)
 
 	lastcheck = level.time;
 
-
 	for (i = 0, ent = g_entities; i < level.maxclients; i++, ent++)
 	{
 		if (!ent->client || !ent->inuse)

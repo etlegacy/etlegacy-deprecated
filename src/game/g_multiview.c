@@ -229,6 +229,7 @@ qboolean G_smvLocateEntityInMVList(gentity_t *ent, int pID, qboolean fRemove)
 				{
 					G_smvRemoveEntityInMVList(ent, &ent->client->pers.mv[i]);
 				}
+
 				return qtrue;
 			}
 		}
@@ -322,6 +323,7 @@ void G_smvAllRemoveSingleClient(int pID)
 		{
 			continue;
 		}
+
 		G_smvLocateEntityInMVList(ent, pID, qtrue);
 	}
 }

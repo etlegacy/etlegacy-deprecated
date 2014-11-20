@@ -466,6 +466,7 @@ void SP_SmokeDust(gentity_t *ent)
 	{
 		ent->health = 16;
 	}
+
 	trap_LinkEntity(ent);
 }
 
@@ -680,6 +681,7 @@ void InitProp(gentity_t *ent)
 		{
 			i = 255;
 		}
+
 		ent->s.constantLight = r | (g << 8) | (b << 16) | (i << 24);
 	}
 
@@ -907,7 +909,6 @@ shard =
     FXTYPE_WOOD = 0,
     FXTYPE_GLASS = 1,
     FXTYPE_METAL = 2
-
 */
 
 /*
@@ -920,7 +921,6 @@ shard =
     FXTYPE_WOOD = 0,
     FXTYPE_GLASS = 1,
     FXTYPE_METAL = 2
-
 */
 
 /*
@@ -933,9 +933,7 @@ shard =
     FXTYPE_WOOD = 0,
     FXTYPE_GLASS = 1,
     FXTYPE_METAL = 2
-
 */
-
 
 /*
 QUAKED props_chair_hiback (.8 .6 .2) (-16 -16 0) (16 16 32)
@@ -947,7 +945,6 @@ shard =
     FXTYPE_WOOD = 0,
     FXTYPE_GLASS = 1,
     FXTYPE_METAL = 2
-
 */
 
 /*
@@ -960,7 +957,6 @@ shard =
     FXTYPE_WOOD = 0,
     FXTYPE_GLASS = 1,
     FXTYPE_METAL = 2
-
 */
 void Props_Chair_Think(gentity_t *self);
 void Props_Chair_Touch(gentity_t *self, gentity_t *other, trace_t *trace);
@@ -1510,6 +1506,7 @@ void Prop_Break_Sound(gentity_t *ent)
 	{
 		return;
 	}
+
 	G_AddEvent(ent, EV_FX_SOUND, ent->count);
 }
 
@@ -1877,7 +1874,6 @@ shard =
     FXTYPE_GLASS = 0,
     FXTYPE_WOOD = 1,
     FXTYPE_METAL = 2
-
 */
 void SP_Props_Desklamp(gentity_t *ent)
 {
@@ -2317,7 +2313,6 @@ shard =
     FXTYPE_GLASS = 0,
     FXTYPE_WOOD = 1,
     FXTYPE_METAL = 2
-
 */
 
 /*
@@ -2520,7 +2515,6 @@ void props_crate32x64_die(gentity_t *ent, gentity_t *inflictor, gentity_t *attac
 
 void SP_Props_Crate32x64(gentity_t *ent)
 {
-
 	trap_SetBrushModel(ent, ent->model);
 
 	InitProp(ent);
@@ -2742,7 +2736,6 @@ void SP_Props_Flipping_Table(gentity_t *ent)
 
 	trap_LinkEntity(ent);
 }
-
 
 /*
 QUAKED props_58x112tablew (.8 .6 .2) ?
@@ -3208,6 +3201,7 @@ void SP_props_decoration(gentity_t *ent)
 		{
 			i = 255;
 		}
+
 		ent->s.constantLight = r | (g << 8) | (b << 16) | (i << 24);
 	}
 
@@ -3277,7 +3271,6 @@ void SP_props_decoration(gentity_t *ent)
 		}
 
 		ent->touch = props_touch;
-
 	}
 	else if (!(ent->health) && (ent->spawnflags & 4))
 	{
@@ -3328,7 +3321,6 @@ must have an origin brush
 */
 void SP_props_decorBRUSH(gentity_t *self)
 {
-
 	trap_SetBrushModel(self, self->model);
 
 	SP_props_decoration(self);
@@ -3496,6 +3488,7 @@ void props_statue_blocked(gentity_t *ent)
 			{
 				t = 200;
 			}
+
 			traceEnt->client->ps.pm_time   = t;
 			traceEnt->client->ps.pm_flags |= PMF_TIME_KNOCKBACK;
 		}
@@ -3633,6 +3626,7 @@ void SP_props_statue(gentity_t *ent)
 		{
 			i = 255;
 		}
+
 		ent->s.constantLight = r | (g << 8) | (b << 16) | (i << 24);
 	}
 
@@ -3862,7 +3856,6 @@ void props_locker_spawn_item(gentity_t *ent)
 
 	//drop = Drop_Item (ent, item, 0, qtrue);
 	drop = LaunchItem(item, ent->r.currentOrigin, tv(0, 0, 20), ent->s.number);
-
 
 	if (!drop)
 	{
@@ -4114,7 +4107,6 @@ void props_flamethrower_think(gentity_t *ent)
 		//      The flamethrower effect above is purely visual
 		//      we actual need to create an entity that is the fire and will do damage
 		fire_flamechunk(ent, ent->r.currentOrigin, flameDir);
-
 		{
 			int rnd;
 
@@ -4222,5 +4214,6 @@ void SP_props_flamethrower(gentity_t *ent)
 	{
 		dsize = 1;
 	}
+
 	ent->accuracy = dsize;
 }

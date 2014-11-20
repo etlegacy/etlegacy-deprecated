@@ -629,6 +629,7 @@ gitem_t bg_itemlist[] =
 			0,
 			0
 		},
+
 		NULL,
 		NULL,   // ammo icon
 		"Small Health",
@@ -648,6 +649,7 @@ gitem_t bg_itemlist[] =
 			0,
 			0
 		},
+
 		NULL,
 		NULL,   // ammo icon
 		"Med Health",
@@ -667,6 +669,7 @@ gitem_t bg_itemlist[] =
 			0,
 			0
 		},
+
 		NULL,
 		NULL,   // ammo icon
 		"Med Health",
@@ -683,6 +686,7 @@ gitem_t bg_itemlist[] =
 			0,
 			0
 		},
+
 		NULL,
 		NULL,   // ammo icon
 		"Health Pack",
@@ -706,6 +710,7 @@ gitem_t bg_itemlist[] =
 			"models/powerups/health/health_t2.md3",  // half eaten
 			"models/powerups/health/health_t1.md3"   // whole turkey
 		},
+
 		NULL,
 		NULL,   // ammo icon
 		"Hot Meal",
@@ -727,6 +732,7 @@ gitem_t bg_itemlist[] =
 			0, // we can't load what's not in - "models/powerups/health/health_b2.md3",    // half eaten
 			0 // we can't load what's not in - "models/powerups/health/health_b1.md3"     // whole turkey
 		},
+
 		NULL,
 		NULL,   // ammo icon
 		"Cold Meal",
@@ -748,6 +754,7 @@ gitem_t bg_itemlist[] =
 			0,
 			0
 		},
+
 		NULL,
 		NULL,   // ammo icon
 		"Health",
@@ -772,6 +779,7 @@ gitem_t bg_itemlist[] =
 			"models/multiplayer/knife/v_knife.md3",
 			0
 		},
+
 		"icons/iconw_knife_1",   // icon
 		"icons/ammo2",           // ammo icon
 		"Knife",             // pickup
@@ -788,6 +796,7 @@ gitem_t bg_itemlist[] =
 			"models/multiplayer/knife_kbar/v_knife.md3",
 			0
 		},
+
 		"icons/iconw_knife_1",   // icon
 		"icons/ammo2",           // ammo icon
 		"Ka-Bar",             // pickup
@@ -808,6 +817,7 @@ gitem_t bg_itemlist[] =
 			"models/weapons2/luger/v_luger.md3",
 			0
 		},
+
 		"",  // icon
 		"icons/ammo2",           // ammo icon
 		"Luger",             // pickup
@@ -827,6 +837,7 @@ gitem_t bg_itemlist[] =
 			"models/weapons2/akimbo_luger/v_akimbo_luger.md3",
 			0
 		},
+
 		"icons/iconw_colt_1",    // icon                            // FIXME: need new icon
 		"icons/ammo2",           // ammo icon
 		"Akimbo Luger",          // pickup
@@ -846,6 +857,7 @@ gitem_t bg_itemlist[] =
 			"models/weapons2/akimbo_luger/v_akimbo_luger.md3",
 			0
 		},
+
 		"icons/iconw_colt_1",    // icon                            // FIXME: need new icon
 		"icons/ammo2",           // ammo icon
 		"Silenced Akimbo Luger",         // pickup
@@ -865,6 +877,7 @@ gitem_t bg_itemlist[] =
 			"models/weapons2/thompson/v_thompson.md3",
 			0
 		},
+
 		"icons/iconw_thompson_1",    // icon
 		"icons/ammo2",           // ammo icon
 		"Thompson",              // pickup
@@ -881,6 +894,7 @@ gitem_t bg_itemlist[] =
 			0,
 			0
 		},
+
 		"",                      // icon
 		"",                      // ammo icon
 		"BLANK",             // pickup
@@ -900,6 +914,7 @@ gitem_t bg_itemlist[] =
 			"models/weapons2/sten/v_sten.md3",
 			0
 		},
+
 		"icons/iconw_sten_1",    // icon
 		"icons/ammo2",           // ammo icon
 		"Sten",                  // pickup
@@ -919,6 +934,7 @@ gitem_t bg_itemlist[] =
 			"models/weapons2/colt/v_colt.md3",
 			0
 		},
+
 		"icons/iconw_colt_1",    // icon
 		"icons/ammo2",           // ammo icon
 		"Colt",                  // pickup
@@ -938,6 +954,7 @@ gitem_t bg_itemlist[] =
 			"models/weapons2/akimbo_colt/v_akimbo_colt.md3",
 			0
 		},
+
 		"icons/iconw_colt_1",    // icon                            // FIXME: need new icon
 		"icons/ammo2",           // ammo icon
 		"Akimbo Colt",           // pickup
@@ -957,6 +974,7 @@ gitem_t bg_itemlist[] =
 			"models/weapons2/akimbo_colt/v_akimbo_colt.md3",
 			0
 		},
+
 		"icons/iconw_colt_1",    // icon                            // FIXME: need new icon
 		"icons/ammo2",           // ammo icon
 		"Silenced Akimbo Colt",          // pickup
@@ -979,6 +997,7 @@ gitem_t bg_itemlist[] =
 			"models/weapons2/mp40/v_mp40.md3",
 			0
 		},
+
 		"icons/iconw_mp40_1",    // icon
 		"icons/ammo2",       // ammo icon
 		"MP40",              // pickup
@@ -998,6 +1017,7 @@ gitem_t bg_itemlist[] =
 			"models/weapons2/panzerfaust/v_pf.md3",
 			0
 		},
+
 		"icons/iconw_panzerfaust_1", // icon
 		"icons/ammo6",       // ammo icon
 		"Panzerfaust",               // pickup
@@ -1017,6 +1037,7 @@ gitem_t bg_itemlist[] =
 			"models/weapons2/bazooka/v_bazooka.md3",
 			0
 		},
+
 		"icons/iconw_bazooka_1", // icon
 		"icons/ammo6",       // ammo icon
 		"Bazooka",               // pickup
@@ -1037,6 +1058,7 @@ gitem_t bg_itemlist[] =
 			"models/weapons2/grenade/v_grenade.md3",
 			0
 		},
+
 		"icons/iconw_grenade_1", // icon
 		"icons/icona_grenade",   // ammo icon
 		"Grenade",               // pickup
@@ -1053,6 +1075,7 @@ gitem_t bg_itemlist[] =
 			"models/weapons2/grenade/v_pineapple.md3",
 			0
 		},
+
 		"icons/iconw_pineapple_1",   // icon
 		"icons/icona_pineapple", // ammo icon
 		"Pineapple",             // pickup
@@ -1069,6 +1092,7 @@ gitem_t bg_itemlist[] =
 			"models/multiplayer/smokegrenade/v_smokegrenade.md3",
 			0
 		},
+
 		"icons/iconw_smokegrenade_1",    // icon
 		"icons/ammo2",   // ammo icon
 		"smokeGrenade",              // pickup
@@ -1085,6 +1109,7 @@ gitem_t bg_itemlist[] =
 			"models/multiplayer/smokegrenade/v_smokegrenade.md3",
 			0
 		},
+
 		"icons/iconw_smokegrenade_1",    // icon
 		"icons/ammo2",   // ammo icon
 		"smokeTrail",                // pickup
@@ -1101,6 +1126,7 @@ gitem_t bg_itemlist[] =
 			"models/multiplayer/medpack/v_medpack.md3",
 			0
 		},
+
 		"icons/iconw_medheal_1", // icon
 		"icons/ammo2",           // ammo icon
 		"medicheal",         // pickup
@@ -1117,6 +1143,7 @@ gitem_t bg_itemlist[] =
 			"models/weapons2/dynamite/v_dynamite.md3",
 			0
 		},
+
 		"icons/iconw_dynamite_1",    // icon
 		"icons/ammo9",           // ammo icon
 		"Dynamite Weapon",       // pickup
@@ -1136,6 +1163,7 @@ gitem_t bg_itemlist[] =
 			"models/weapons2/flamethrower/v_flamethrower.md3",
 			"models/weapons2/flamethrower/pu_flamethrower.md3"
 		},
+
 		"icons/iconw_flamethrower_1",    // icon
 		"icons/ammo10",              // ammo icon
 		"Flamethrower",              // pickup
@@ -1152,6 +1180,7 @@ gitem_t bg_itemlist[] =
 			"models/weapons2/grenade/v_grenade.md3",
 			0
 		},
+
 		"icons/iconw_grenade_1", // icon
 		"icons/icona_grenade",   // ammo icon
 		"nopickup(WP_MAPMORTAR)",        // pickup
@@ -1168,6 +1197,7 @@ gitem_t bg_itemlist[] =
 			"models/multiplayer/pliers/v_pliers.md3",
 			0
 		},
+
 		"icons/iconw_pliers_1",  // icon
 		"icons/ammo2",           // ammo icon
 		"Special",               // pickup
@@ -1184,6 +1214,7 @@ gitem_t bg_itemlist[] =
 			0,
 			0
 		},
+
 		"icons/iconw_syringe_1", // icon
 		"icons/ammo2",           // ammo icon
 		"Artillery",             // pickup
@@ -1200,6 +1231,7 @@ gitem_t bg_itemlist[] =
 			"models/multiplayer/syringe/v_syringe.md3",
 			0
 		},
+
 		"icons/iconw_syringe_1", // icon
 		"icons/ammo2",           // ammo icon
 		"Syringe",               // pickup
@@ -1216,6 +1248,7 @@ gitem_t bg_itemlist[] =
 			"models/multiplayer/syringe/v_syringe.md3",
 			0
 		},
+
 		"icons/iconw_syringe_1", // icon
 		"icons/ammo2",           // ammo icon
 		"Adrenaline Syringe",    // pickup
@@ -1232,6 +1265,7 @@ gitem_t bg_itemlist[] =
 			"models/multiplayer/ammopack/v_ammopack.md3",
 			"models/multiplayer/ammopack/ammopack_pickup.md3"
 		},
+
 		"icons/iconw_ammopack_1", // icon
 		"icons/ammo2",           // ammo icon
 		"Ammo Pack",             // pickup
@@ -1250,6 +1284,7 @@ gitem_t bg_itemlist[] =
 			//"models/multiplayer/ammopack/v_ammopack.md3",
 			//"models/multiplayer/ammopack/ammopack_pickup_s.md3"
 		},
+
 		"icons/iconw_ammopack_1",    // icon
 		"icons/ammo2",               // ammo icon
 		"Mega Ammo Pack",            // pickup
@@ -2381,6 +2416,7 @@ qboolean BG_AddMagicAmmo(playerState_t *ps, int *skill, int teamNum, int numOfCl
 			}
 		}
 	}
+
 	return ammoAdded;
 }
 
@@ -2476,6 +2512,7 @@ qboolean BG_CanItemBeGrabbed(const entityState_t *ent, const playerState_t *ps, 
 		Com_Error(ERR_DROP, "BG_CanItemBeGrabbed: IT_BAD");
 		break;
 	}
+
 	return qfalse;
 }
 
@@ -2507,6 +2544,7 @@ void BG_CalculateSpline_r(splinePath_t *spline, vec3_t out1, vec3_t out2, float 
 			VectorSubtract(points[i + 1], points[i], dist);
 			VectorMA(points[i], tension, dist, points[i]);
 		}
+
 		count--;
 	}
 
@@ -2565,6 +2603,7 @@ qboolean BG_RaySphereIntersection(float radius, vec3_t origin, splineSegment_t *
 	{
 		return qfalse;
 	}
+
 	d = sqrt(d);
 
 	*t0 = (-b + d) * 0.5f;
@@ -2671,6 +2710,7 @@ void BG_LinearPathOrigin2(float radius, splinePath_t **pSpline, float *deltaTime
 						return;
 					}
 				}
+
 				found = qfalse;
 			}
 
@@ -2702,6 +2742,7 @@ void BG_LinearPathOrigin2(float radius, splinePath_t **pSpline, float *deltaTime
 				return;
 				//Com_Error( ERR_DROP, "End of spline reached (%s)", start->point.name );
 			}
+
 			*pSpline = (*pSpline)->prev;
 		}
 		else
@@ -2711,6 +2752,7 @@ void BG_LinearPathOrigin2(float radius, splinePath_t **pSpline, float *deltaTime
 				return;
 				//Com_Error( ERR_DROP, "End of spline reached (%s)", start->point.name );
 			}
+
 			*pSpline = (*pSpline)->next;
 		}
 	}
@@ -3977,6 +4019,7 @@ qboolean PC_Float_Parse(int handle, float *f)
 		{
 			return qfalse;
 		}
+
 		negative = qtrue;
 	}
 	if (token.type != TT_NUMBER)
@@ -3992,6 +4035,7 @@ qboolean PC_Float_Parse(int handle, float *f)
 	{
 		*f = token.floatvalue;
 	}
+
 	return qtrue;
 }
 
@@ -4008,6 +4052,7 @@ qboolean PC_Color_Parse(int handle, vec4_t *c)
 		}
 		(*c)[i] = f;
 	}
+
 	return qtrue;
 }
 
@@ -4022,8 +4067,10 @@ qboolean PC_Vec_Parse(int handle, vec3_t *c)
 		{
 			return qfalse;
 		}
+
 		(*c)[i] = f;
 	}
+
 	return qtrue;
 }
 
@@ -4042,6 +4089,7 @@ qboolean PC_Int_Parse(int handle, int *i)
 		{
 			return qfalse;
 		}
+
 		negative = qtrue;
 	}
 	if (token.type != TT_NUMBER)
@@ -4054,6 +4102,7 @@ qboolean PC_Int_Parse(int handle, int *i)
 	{
 		*i = -*i;
 	}
+
 	return qtrue;
 }
 
@@ -4330,6 +4379,7 @@ void BG_setCrosshair(char *colString, float *col, float alpha, char *cvarName)
 				col[2] = (*OSP_Colortable[i].color)[2];
 				return;
 			}
+
 			i++;
 		}
 	}

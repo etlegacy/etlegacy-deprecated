@@ -141,6 +141,7 @@ void G_BounceMissile(gentity_t *ent, trace_t *trace)
 				// explode one 750msecs after launchtime
 				ent->nextthink = level.time + (750 - (level.time + 4000 - ent->nextthink));
 			}
+
 			return;
 		}
 	}
@@ -217,6 +218,7 @@ void G_MissileImpact(gentity_t *ent, trace_t *trace, int impactDamage)
 			{
 				velocity[2] = 1;    // stepped on a grenade
 			}
+
 			G_Damage(other->dmgparent ? other->dmgparent : other, ent, &g_entities[ent->r.ownerNum], velocity, ent->s.origin, ent->damage, 0, ent->methodOfDeath);
 		}
 		else     // if no damage value, then this is a splash damage grenade only
@@ -395,7 +397,6 @@ void G_ExplodeMissile(gentity_t *ent)
 
 	if (etype == ET_MISSILE)
 	{
-
 		if (ent->s.weapon == WP_LANDMINE)
 		{
 			mapEntityData_t *mEnt;
@@ -667,7 +668,8 @@ void G_RunMissile(gentity_t *ent)
 				ent->count2     = 2;
 				ent->s.legsAnim = 1;
 
-				/*{
+				/*
+				{
 				    gentity_t *tent;
 
 				    tent = G_TempEntity( origin, EV_RAILTRAIL );
@@ -677,7 +679,8 @@ void G_RunMissile(gentity_t *ent)
 				    tent = G_TempEntity( origin, EV_RAILTRAIL );
 				    VectorCopy( ent->r.currentOrigin, tent->s.origin2 );
 				    tent->s.dmgFlags = 0;
-				}*/
+				}
+				*/
 			}
 		}
 	}
@@ -860,7 +863,8 @@ int G_PredictMissile(gentity_t *ent, int duration, vec3_t endPos, qboolean allow
 		}
 	}
 	/*
-	    if (!allowBounce && tr.fraction < 1 && tr.entityNum > level.maxclients) {
+	    if (!allowBounce && tr.fraction < 1 && tr.entityNum > level.maxclients)
+	    {
 	        // go back a bit in time, so we can catch it in the air
 	        time -= 200;
 	        if (time < level.time + FRAMETIME)
@@ -945,6 +949,7 @@ void G_BurnTarget(gentity_t *self, gentity_t *body, qboolean directhit)
 		{
 			point[2] += body->client->ps.viewheight;
 		}
+
 		VectorSubtract(point, self->r.currentOrigin, v);
 	}
 	else
@@ -989,6 +994,7 @@ void G_BurnTarget(gentity_t *self, gentity_t *body, qboolean directhit)
 		{
 			G_Damage(body, self->parent, self->parent, vec3_origin, self->r.currentOrigin, 2, 0, MOD_FLAMETHROWER);
 		}
+
 		return;
 	}
 

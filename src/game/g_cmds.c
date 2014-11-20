@@ -75,8 +75,10 @@ qboolean G_MatchOnePlayer(int *plist, char *err, int len)
 				Q_strcat(err, len, line);
 			}
 		}
+
 		return qfalse;
 	}
+
 	return qtrue;
 }
 
@@ -142,6 +144,7 @@ int ClientNumbersFromString(char *s, int *plist)
 			found++;
 		}
 	}
+
 	*plist = -1;
 	return found;
 }
@@ -166,6 +169,7 @@ void G_TeamDamageStats(gentity_t *ent)
             g_teamDamageRestriction.integer
             ));
     }
+
     return;
 }
 */
@@ -306,6 +310,7 @@ qboolean G_SendScore_Add(gentity_t *ent, int i, char *buf, int bufsize)
 	{
 		return qfalse;
 	}
+
 	Q_strcat(buf, bufsize, entry);
 
 	return qtrue;
@@ -354,6 +359,7 @@ void G_SendScore(gentity_t *ent)
 		{
 			break;
 		}
+
 		count++;
 	}
 	trap_SendServerCommand(ent - g_entities, va("%s %i%s", startbuffer, count, buffer));
@@ -374,6 +380,7 @@ void G_SendScore(gentity_t *ent)
 			G_Printf("ERROR: G_SendScore() buffer overflow\n");
 			break;
 		}
+
 		count++;
 	}
 	if (!count)
@@ -414,6 +421,7 @@ qboolean CheatsOk(gentity_t *ent)
 		trap_SendServerCommand(ent - g_entities, va("print \"You must be alive to use this command.\n\""));
 		return qfalse;
 	}
+
 	return qtrue;
 }
 
@@ -469,6 +477,7 @@ void SanitizeString(char *in, char *out, qboolean fToLower)
 			{
 				in++;
 			}
+
 			continue;
 		}
 
@@ -542,6 +551,7 @@ int ClientNumberFromString(gentity_t *to, char *s)
 			CPx(to - g_entities, va("print \"Client[lof] %i [lon]is not active\n\"", idnum));
 			return -1;
 		}
+
 		return(idnum);
 	}
 
@@ -564,6 +574,7 @@ int GetSkillPointUntilLevelUp(gentity_t *ent, int skill)
 			}
 		}
 	}
+
 	return -1;
 }
 
@@ -644,6 +655,7 @@ void Cmd_Give_f(gentity_t *ent)
 				G_DebugAddSkillPoints(ent, i, amount, "give skill");
 			}
 		}
+
 		return;
 	}
 
@@ -656,6 +668,7 @@ void Cmd_Give_f(gentity_t *ent)
 				ent->client->sess.medals[i] = 1;
 			}
 		}
+
 		ClientUserinfoChanged(ent - g_entities);
 		return;
 	}
@@ -677,23 +690,30 @@ void Cmd_Give_f(gentity_t *ent)
 		}
 	}
 
-	/*if ( Q_stricmpn( name, "damage", 6) == 0)
+	/*
+	if ( Q_stricmpn( name, "damage", 6) == 0)
 	{
-	    if(amount) {
+	    if(amount)
+	    {
 	        name = ConcatArgs( 3 );
 
-	        if( *name ) {
+	        if( *name )
+	        {
 	            int client = ClientNumberFromString( ent, name );
-	            if( client >= 0 ) {
+	            if( client >= 0 )
+	            {
 	                G_Damage( &g_entities[client], ent, ent, NULL, NULL, amount, DAMAGE_NO_PROTECTION, MOD_UNKNOWN );
 	            }
-	        } else {
+	        }
+	        else
+	        {
 	            G_Damage( ent, ent, ent, NULL, NULL, amount, DAMAGE_NO_PROTECTION, MOD_UNKNOWN );
 	        }
 	    }
 
 	    return;
-	}*/
+	}
+	*/
 
 	if (give_all || Q_stricmp(name, "weapons") == 0)
 	{
@@ -760,9 +780,12 @@ void Cmd_Give_f(gentity_t *ent)
 	}
 
 	// spawn a specific item right on the player
-	/*if ( !give_all ) {
+	/*
+	if ( !give_all )
+	{
 	    it = BG_FindItem (name);
-	    if (!it) {
+	    if (!it)
+	    {
 	        return;
 	    }
 
@@ -775,10 +798,12 @@ void Cmd_Give_f(gentity_t *ent)
 	    it_ent->active = qtrue;
 	    Touch_Item (it_ent, ent, &trace);
 	    it_ent->active = qfalse;
-	    if (it_ent->inuse) {
+	    if (it_ent->inuse)
+	    {
 	        G_FreeEntity( it_ent );
 	    }
-	}*/
+	}
+	*/
 }
 
 /*
@@ -1536,6 +1561,7 @@ qboolean G_IsWeaponDisabled(gentity_t *ent, weapon_t weapon)
 			{
 				CP("cp \"^1*^3 ROCKET LAUNCHER not available!^1 *\" 1");
 			}
+
 			return qtrue;
 		}
 		break;
@@ -1560,6 +1586,7 @@ qboolean G_IsWeaponDisabled(gentity_t *ent, weapon_t weapon)
 			{
 				CP("cp \"^1*^3 MACHINE GUN not available!^1 *\" 1");
 			}
+
 			return qtrue;
 		}
 		break;
@@ -1583,6 +1610,7 @@ qboolean G_IsWeaponDisabled(gentity_t *ent, weapon_t weapon)
 			{
 				CP("cp \"^1*^3 FLAMETHROWER not available!^1 *\" 1");
 			}
+
 			return qtrue;
 		}
 		break;
@@ -1607,6 +1635,7 @@ qboolean G_IsWeaponDisabled(gentity_t *ent, weapon_t weapon)
 			{
 				CP("cp \"^1*^3 MORTAR/GRANATWERFER not available!^1 *\" 1");
 			}
+
 			return qtrue;
 		}
 		break;
@@ -1631,8 +1660,10 @@ qboolean G_IsWeaponDisabled(gentity_t *ent, weapon_t weapon)
 			{
 				CP("cp \"^1*^3 GRENADE LAUNCHER not available!^1 *\" 1");
 			}
+
 			return qtrue;
 		}
+
 		break;
 	default:
 		break;
@@ -1702,8 +1733,10 @@ int G_ClassCount(gentity_t *ent, int playerType, team_t team)
 		{
 			continue;
 		}
+
 		cnt++;
 	}
+
 	return cnt;
 }
 
@@ -1824,8 +1857,10 @@ qboolean G_IsClassFull(gentity_t *ent, int playerType, team_t team)
 			CP("cp \"^1Covert Ops^7 is not available! Choose another class!\n\"");
 			return qtrue;
 		}
+
 		break;
 	}
+
 	return qfalse;
 }
 
@@ -1977,6 +2012,7 @@ void Cmd_Follow_f(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
 		{
 			StopFollowing(ent);
 		}
+
 		return;
 	}
 
@@ -2117,6 +2153,7 @@ void Cmd_FollowCycle_f(gentity_t *ent, int dir, qboolean skipBots)
 		{
 			ent->client->sess.spectatorClient = -1;
 		}
+
 		return;
 	}
 
@@ -2398,6 +2435,7 @@ void G_Say(gentity_t *ent, gentity_t *target, int mode, const char *chatText)
 		{
 			G_SayTo(ent, target, mode, color, name, text, qfalse);
 		}
+
 		return;
 	}
 
@@ -2654,6 +2692,7 @@ static void Cmd_Voice_f(gentity_t *ent, int mode, qboolean arg0, qboolean voiceo
 		{
 			return;
 		}
+
 		G_Voice(ent, NULL, mode, ConcatArgs(((arg0) ? 0 : 1)), voiceonly);
 	}
 	else
@@ -2672,6 +2711,7 @@ static void Cmd_Voice_f(gentity_t *ent, int mode, qboolean arg0, qboolean voiceo
 		{
 			return;
 		}
+
 		G_Voice(ent, NULL, mode, ConcatArgs(((arg0) ? 2 + index : 3 + index)), voiceonly);
 	}
 }
@@ -2742,6 +2782,7 @@ qboolean Cmd_CallVote_f(gentity_t *ent, unsigned int dwCommand, qboolean fRefCom
 				CP("cp \"Not allowed to call a vote as a spectator.\"");
 				return qfalse;
 			}
+
 			// flag to control vote permissions
 			//else if ( !sbfNoVoteLimit && G_shrubbot_permission(ent, SBF_NOVOTE) ) {
 			//	CP("cp \"Your adminlevel isn't allowed to call votes.\"");
@@ -2788,6 +2829,7 @@ qboolean Cmd_CallVote_f(gentity_t *ent, unsigned int dwCommand, qboolean fRefCom
 			CP(va("print \"^3>>> Unknown vote command: ^7%s %s\n\"", arg1, arg2));
 			G_voteHelp(ent, qtrue);
 		}
+
 		return qfalse;
 	}
 
@@ -2821,6 +2863,7 @@ qboolean Cmd_CallVote_f(gentity_t *ent, unsigned int dwCommand, qboolean fRefCom
 		{
 			level.voteInfo.voteYes = 0;
 		}
+
 		AP(va("print \"[lof]%s^7 [lon]called a vote.[lof]  Voting for: %s\n\"", ent->client->pers.netname, level.voteInfo.voteString));
 
 		G_LogPrintf("callvote: %i %s\n", (int)(ent - g_entities), level.voteInfo.voteString);
@@ -2859,6 +2902,7 @@ qboolean Cmd_CallVote_f(gentity_t *ent, unsigned int dwCommand, qboolean fRefCom
 			Q_strcat(voteDesc, sizeof(voteDesc), ent->client->pers.netname);
 			Q_strcat(voteDesc, sizeof(voteDesc), ")");
 		}
+
 		trap_SetConfigstring(CS_VOTE_STRING, voteDesc);
 		trap_SetConfigstring(CS_VOTE_TIME, va("%i", level.voteInfo.voteTime));
 	}
@@ -2890,6 +2934,7 @@ qboolean G_FindFreeComplainIP(gclient_t *cl, ipFilter_t *ip)
 			return qtrue;
 		}
 	}
+
 	return qfalse;
 }
 
@@ -3277,6 +3322,7 @@ void Cmd_StartCamera_f(gentity_t *ent)
 	{
 		G_FreeEntity(ent->client->cameraPortal);
 	}
+
 	ent->client->cameraPortal = G_Spawn();
 
 	ent->client->cameraPortal->s.eType           = ET_CAMERA;
@@ -3500,6 +3546,7 @@ qboolean Do_Activate_f(gentity_t *ent, gentity_t *traceEnt)
 			{
 				G_UseEntity(traceEnt, ent, 0);
 			}
+
 			found = qtrue;
 		}
 		else if (traceEnt->s.eType == ET_ITEM)
@@ -3519,6 +3566,7 @@ qboolean Do_Activate_f(gentity_t *ent, gentity_t *traceEnt)
 				{
 					ent->client->pers.autoActivate = PICKUP_FORCE;      // force pickup
 				}
+
 				traceEnt->active = qtrue;
 				traceEnt->touch(traceEnt, ent, &trace);
 			}
@@ -3583,6 +3631,7 @@ qboolean Do_Activate_f(gentity_t *ent, gentity_t *traceEnt)
 			{
 				traceEnt->flags |= FL_SOFTACTIVATE;     // no noise
 			}
+
 			G_TryDoor(traceEnt, ent, ent);        // (door,other,activator)
 			found = qtrue;
 		}
@@ -3592,6 +3641,7 @@ qboolean Do_Activate_f(gentity_t *ent, gentity_t *traceEnt)
 			{
 				traceEnt->health++;
 			}
+
 			found = qtrue;
 		}
 		else if ((Q_stricmp(traceEnt->classname, "func_button") == 0) && (traceEnt->s.apos.trType == TR_STATIONARY && traceEnt->s.pos.trType == TR_STATIONARY) && traceEnt->active == qfalse)
@@ -3606,6 +3656,7 @@ qboolean Do_Activate_f(gentity_t *ent, gentity_t *traceEnt)
 			{
 				traceEnt->flags |= FL_SOFTACTIVATE;     // no noise
 			}
+
 			G_UseEntity(traceEnt, ent, ent);
 			found = qtrue;
 		}
@@ -3738,12 +3789,14 @@ void Cmd_Activate_f(gentity_t *ent)
 					break;
 				}
 			}
+
 			ent->client->ps.weaponTime = ent->backupWeaponTime;
 		}
 		else
 		{
 			ent->active = qfalse;
 		}
+
 		return;
 	}
 	else if ((ent->client->ps.eFlags & EF_MOUNTEDTANK) && (ent->s.eFlags & EF_MOUNTEDTANK) && !level.disableTankExit)
@@ -4445,6 +4498,7 @@ void ClientCommand(int clientNum)
 		{
 			trap_SendServerCommand(ent - g_entities, "print \"Can't chat - you are muted\n\"\n");
 		}
+
 		return;
 	}
 	else if (Q_stricmp(cmd, "say_team") == 0)
@@ -4463,6 +4517,7 @@ void ClientCommand(int clientNum)
 		{
 			trap_SendServerCommand(ent - g_entities, "print \"Can't team chat - you are muted\n\"\n");
 		}
+
 		return;
 	}
 	else if (Q_stricmp(cmd, "vsay") == 0)
@@ -4475,6 +4530,7 @@ void ClientCommand(int clientNum)
 		{
 			trap_SendServerCommand(ent - g_entities, "print \"Can't chat - you are muted\n\"\n");
 		}
+
 		return;
 	}
 	else if (Q_stricmp(cmd, "vsay_team") == 0)
@@ -4493,6 +4549,7 @@ void ClientCommand(int clientNum)
 		{
 			trap_SendServerCommand(ent - g_entities, "print \"Can't team chat - you are muted\n\"\n");
 		}
+
 		return;
 	}
 	else if (Q_stricmp(cmd, "say_buddy") == 0)
@@ -4505,6 +4562,7 @@ void ClientCommand(int clientNum)
 		{
 			trap_SendServerCommand(ent - g_entities, "print \"Can't buddy chat - you are muted\n\"\n");
 		}
+
 		return;
 	}
 	else if (Q_stricmp(cmd, "vsay_buddy") == 0)
@@ -4517,6 +4575,7 @@ void ClientCommand(int clientNum)
 		{
 			trap_SendServerCommand(ent - g_entities, "print \"Can't buddy chat - you are muted\n\"\n");
 		}
+
 		return;
 	}
 	else if (Q_stricmp(cmd, "score") == 0)
@@ -4741,12 +4800,15 @@ char *Q_AddCR(char *s)
 				{
 					*++copy = *s;
 				}
+
 				*++copy = '\0';
 				s       = place;
 				continue;
 			}
 		}
+
 		s++;
 	}
+
 	return start;
 }

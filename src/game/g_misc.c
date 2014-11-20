@@ -51,7 +51,8 @@ void SP_info_camp(gentity_t *self)
 	G_SetOrigin(self, self->s.origin);
 }
 
-/*QUAKED info_null (0 0.5 0) (-4 -4 -4) (4 4 4)
+/*
+QUAKED info_null (0 0.5 0) (-4 -4 -4) (4 4 4)
 Used as a positional target for calculations in the utilities (spotlights, etc), but removed during gameplay.
 */
 void SP_info_null(gentity_t *self)
@@ -336,6 +337,7 @@ void SP_misc_gamemodel(gentity_t *ent)
 		ent->s.apos.trType = 1; // misc_gamemodels (since they have no movement) will use type = 0 for static models, type = 1 for auto-aligning models
 
 	}
+
 	trap_LinkEntity(ent);
 }
 
@@ -455,7 +457,8 @@ void locateCamera(gentity_t *ent)
 	ent->s.eventParm = DirToByte(dir);
 }
 
-/*QUAKED misc_portal_surface (0 0 1) (-8 -8 -8) (8 8 8)
+/*
+QUAKED misc_portal_surface (0 0 1) (-8 -8 -8) (8 8 8)
 The portal surface nearest this entity will show a view from the targeted misc_portal_camera, or a mirror view if untargeted.
 This must be within 64 world units of the surface!
 */
@@ -479,7 +482,8 @@ void SP_misc_portal_surface(gentity_t *ent)
 	}
 }
 
-/*QUAKED misc_portal_camera (0 0 1) (-8 -8 -8) (8 8 8) slowrotate fastrotate
+/*
+QUAKED misc_portal_camera (0 0 1) (-8 -8 -8) (8 8 8) slowrotate fastrotate
 The target for a misc_portal_director.  You can set either angles or target another entity to determine the direction of view.
 "roll" an angle modifier to orient the camera around the target vector;
 */
@@ -556,7 +560,6 @@ void Use_Shooter(gentity_t *ent, gentity_t *other, gentity_t *activator)
 		VectorScale(dir, VectorLength(ent->s.origin2), dir);
 		fire_mortar(ent, ent->s.origin, dir);
 		break;
-
 	}
 
 	G_AddEvent(ent, EV_FIRE_WEAPON, 0);
@@ -589,6 +592,7 @@ void InitShooter(gentity_t *ent, int weapon)
 		ent->think     = InitShooter_Finish;
 		ent->nextthink = level.time + 500;
 	}
+
 	trap_LinkEntity(ent);
 }
 
@@ -739,7 +743,8 @@ void dlight_finish_spawning(gentity_t *ent)
 
 static int dlightstarttime = 0;
 
-/*QUAKED dlight (0 1 0) (-12 -12 -12) (12 12 12) FORCEACTIVE STARTOFF ONETIME
+/*
+QUAKED dlight (0 1 0) (-12 -12 -12) (12 12 12) FORCEACTIVE STARTOFF ONETIME
 "style": value is an int from 1-19 that contains a pre-defined 'flicker' string.
 "stylestring": set your own 'flicker' string.  (ex. "klmnmlk"). NOTE: this should be all lowercase
 Stylestring characters run at 10 cps in the game. (meaning the alphabet, at 24 characters, would take 2.4 seconds to cycle)
@@ -1070,7 +1075,6 @@ void clamp_hweapontofirearc(gentity_t *self, vec3_t dang)
 // Hitscan
 // Use some part of entitystate to store firing barrel? or just encode it with event more likely
 // Shouldn't really have smoke puff in air, but may add anyway for effect
-//
 
 void aagun_use(gentity_t *ent, gentity_t *other, gentity_t *activator)
 {
@@ -1110,6 +1114,7 @@ void aagun_track(gentity_t *self, gentity_t *other)
 		{
 			self->s.apos.trDelta[i] = AngleNormalize180(self->s.apos.trDelta[i]);
 		}
+
 		VectorScale(self->s.apos.trDelta, 1000 / 50, self->s.apos.trDelta);
 		self->s.apos.trTime     = level.time;
 		self->s.apos.trDuration = 50;
@@ -1191,10 +1196,12 @@ void aagun_think(gentity_t *self)
 		{
 			self->s.apos.trDelta[i] = AngleNormalize180(self->s.apos.trDelta[i]);
 		}
+
 		VectorScale(self->s.apos.trDelta, 1000 / 50, self->s.apos.trDelta);
 		self->s.apos.trTime     = level.time;
 		self->s.apos.trDuration = 50;
 	}
+
 	self->nextthink = level.time + 50;
 
 	SnapVector(self->s.apos.trDelta);
@@ -1238,24 +1245,29 @@ void aagun_fire(gentity_t *other)
 
 void aagun_touch(gentity_t *self, gentity_t *other, trace_t *trace)
 {
-	/*  if (!self->active) {
-	        return;
+	/*
+	if (!self->active)
+	{
+	    return;
+	}
+
+	if (other->active)
+	{
+	    vec3_t  dang;
+	    int     i;
+
+	    for (i = 0; i < 3; i++)
+	    {
+	        dang[i] = SHORT2ANGLE(other->client->pers.cmd.angles[i]);
 	    }
 
-	    if (other->active) {
-	        vec3_t  dang;
-	        int     i;
+	    // now tell the client to lock the view in the direction of the gun
+	    other->client->ps.viewlocked = VIEWLOCK_MG42;
+	    other->client->ps.viewlocked_entNum = self->s.number;
 
-	        for (i = 0; i < 3; i++) {
-	            dang[i] = SHORT2ANGLE(other->client->pers.cmd.angles[i]);
-	        }
-
-	        // now tell the client to lock the view in the direction of the gun
-	        other->client->ps.viewlocked = VIEWLOCK_MG42;
-	        other->client->ps.viewlocked_entNum = self->s.number;
-
-	        clamp_playerbehindgun (self, other, dang);
-	    }*/
+	    clamp_playerbehindgun (self, other, dang);
+	}
+	*/
 }
 
 void aagun_spawn(gentity_t *gun)
@@ -1295,7 +1307,8 @@ void aagun_spawn(gentity_t *gun)
 	trap_LinkEntity(gun);
 }
 
-/*QUAKED misc_aagun (1 0 0) (-32 -32 0) (64 32 56)
+/*
+QUAKED misc_aagun (1 0 0) (-32 -32 0) (64 32 56)
 harc = fixed full 360?
 varc = fixed 0-45 up?
 */
@@ -1323,6 +1336,7 @@ void mg42_touch(gentity_t *self, gentity_t *other, trace_t *trace)
 		{
 			dang[i] = SHORT2ANGLE(other->client->pers.cmd.angles[i]);
 		}
+
 		// now tell the client to lock the view in the direction of the gun
 		other->client->ps.viewlocked        = VIEWLOCK_MG42;
 		other->client->ps.viewlocked_entNum = self->s.number;
@@ -1378,6 +1392,7 @@ void mg42_track(gentity_t *self, gentity_t *other)
 		{
 			self->s.apos.trDelta[i] = AngleNormalize180(self->s.apos.trDelta[i]);
 		}
+
 		VectorScale(self->s.apos.trDelta, 1000 / 50, self->s.apos.trDelta);
 		self->s.apos.trTime     = level.time;
 		self->s.apos.trDuration = 50;
@@ -1510,10 +1525,12 @@ void mg42_think(gentity_t *self)
 		{
 			self->s.apos.trDelta[i] = AngleNormalize180(self->s.apos.trDelta[i]);
 		}
+
 		VectorScale(self->s.apos.trDelta, 1000 / 50, self->s.apos.trDelta);
 		self->s.apos.trTime     = level.time;
 		self->s.apos.trDuration = 50;
 	}
+
 	self->nextthink = level.time + 50;
 
 	SnapVector(self->s.apos.trDelta);
@@ -1588,6 +1605,7 @@ void mg42_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int da
 			VectorCopy(owner->TargetAngles, owner->r.currentOrigin);
 			owner->r.contents = CONTENTS_CORPSE;            // this will correct itself in ClientEndFrame
 		}
+
 		owner->client->ps.eFlags &= ~EF_MG42_ACTIVE;            // unset flag
 
 		owner->client->ps.persistant[PERS_HWEAPON_USE] = 0;
@@ -1767,7 +1785,8 @@ void mg42_spawn(gentity_t *ent)
 	G_FreeEntity(ent);
 }
 
-/*QUAKED misc_mg42 (1 0 0) (-16 -16 -24) (16 16 24) HIGH NOTRIPOD
+/*
+QUAKED misc_mg42 (1 0 0) (-16 -16 -24) (16 16 24) HIGH NOTRIPOD
 harc = horizonal fire arc Default is 57.5 (left and right)
 varc = vertical fire arc Default is 45 (upwards and 22.5 down)
 health = how much damage can it take default is 50
@@ -1931,11 +1950,11 @@ void flak_spawn(gentity_t *ent)
 	trap_LinkEntity(gun);
 }
 
-/*QUAKED misc_flak (1 0 0) (-32 -32 0) (32 32 100)
+/*
+QUAKED misc_flak (1 0 0) (-32 -32 0) (32 32 100)
 */
 void SP_misc_flak(gentity_t *self)
 {
-
 	if (!self->harc)
 	{
 		self->harc = 180;
@@ -1962,7 +1981,8 @@ void SP_misc_flak(gentity_t *self)
 	self->nextthink = level.time + FRAMETIME;
 }
 
-/*QUAKED misc_spawner (.3 .7 .8) (-8 -8 -8) (8 8 8)
+/*
+QUAKED misc_spawner (.3 .7 .8) (-8 -8 -8) (8 8 8)
 use the pickup name
   when this entity gets used it will spawn an item
 that matches its spawnitem field
@@ -2041,7 +2061,8 @@ void firetrail_use(gentity_t *ent, gentity_t *other, gentity_t *activator)
 	trap_LinkEntity(ent);
 }
 
-/*QUAKED misc_firetrails (.4 .9 .7) (-16 -16 -16) (16 16 16)
+/*
+QUAKED misc_firetrails (.4 .9 .7) (-16 -16 -16) (16 16 16)
 This entity must target the plane its going to be attached to
 
   its use function will turn the fire stream effect on and off
@@ -2094,7 +2115,8 @@ void SP_misc_firetrails(gentity_t *ent)
 	ent->nextthink = level.time + 100;
 }
 
-/*QUAKED misc_constructiblemarker (1 0.85 0) ?
+/*
+QUAKED misc_constructiblemarker (1 0.85 0) ?
 Used to indicate where constructibles are, is a special entity due to bot
 needs. The entity has to be solid and target the trigger_objective_info
 belonging to the constructible.
@@ -2151,7 +2173,8 @@ void SP_misc_constructiblemarker(gentity_t *ent)
 	ent->nextthink = level.time + FRAMETIME;
 }
 
-/*QUAKED misc_landmine (.35 0.85 .35) (-16 -16 0) (16 16 16) AXIS ALLIED
+/*
+QUAKED misc_landmine (.35 0.85 .35) (-16 -16 0) (16 16 16) AXIS ALLIED
 Landmine entity. Make sure it is placed less than 64 units above an appropiate, landmine placement
 compatible surface. It will drop down on spawn and then settle itself.
 
@@ -2253,7 +2276,8 @@ void SP_misc_landmine(gentity_t *ent)
 	ent->think     = landmine_setup;
 }
 
-/*QUAKED misc_commandmap_marker (0 0.85 .85) (-16 -16 0) (16 16 16) ONLY_AXIS ONLY_ALLIED ISOBJECTIVE ISHEALTHAMMOCABINET ISCOMMANDPOST
+/*
+QUAKED misc_commandmap_marker (0 0.85 .85) (-16 -16 0) (16 16 16) ONLY_AXIS ONLY_ALLIED ISOBJECTIVE ISHEALTHAMMOCABINET ISCOMMANDPOST
 Command map marker entity. When set to state default it shows, any other state and it isn't visible.
 -------- KEYS --------
 (none)
@@ -2353,6 +2377,7 @@ qboolean G_ConstructionIsFullyBuilt(gentity_t *ent)
 	{
 		return qfalse;
 	}
+
 	return qtrue;
 }
 
@@ -2457,6 +2482,7 @@ float AngleDifference(float ang1, float ang2)
 			diff += 360.0f;
 		}
 	}
+
 	return diff;
 }
 
@@ -2474,6 +2500,7 @@ char *ClientName(int client, char *name, int size)
 		G_Printf("^1ClientName: client out of range\n");
 		return "[client out of range]";
 	}
+
 	trap_GetConfigstring(CS_PLAYERS + client, buf, sizeof(buf));
 	Q_strncpyz(name, Info_ValueForKey(buf, "n"), size);
 	Q_CleanStr(name);

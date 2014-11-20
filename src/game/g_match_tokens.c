@@ -85,6 +85,7 @@ hash(register const char *str, register unsigned int len)
 		hval += asso_values[(unsigned char)str[0]];
 		break;
 	}
+	
 	return hval;
 }
 
@@ -230,6 +231,7 @@ in_word_set(register const char *str, register unsigned int len)
 			}
 		}
 	}
+	
 	return 0;
 }
 	#line 55 "input_tokens.gperf"

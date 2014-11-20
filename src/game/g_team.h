@@ -81,7 +81,7 @@
 
 // Prototypes
 
-int OtherTeam(int team);
+int        OtherTeam(int team);
 const char *TeamName(int team);
 const char *TeamColorString(int team);
 

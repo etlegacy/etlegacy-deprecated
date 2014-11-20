@@ -159,7 +159,6 @@ typedef enum
 	                        // add commands to the console as if they were typed in
 	                        // for map changing, etc
 
-
 	//=========== server specific functionality =============
 
 	G_LOCATE_GAME_DATA,     // ( gentity_t *gEnts, int numGEntities, int sizeofGEntity_t,
@@ -277,7 +276,6 @@ typedef enum
 	G_SENDMESSAGE = 585,
 	G_MESSAGESTATUS,
 } gameImport_t;
-
 
 // functions exported by the game subsystem
 typedef enum

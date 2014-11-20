@@ -637,6 +637,7 @@ int G_Campaign_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2
 			{
 				G_voteCurrentSetting(ent, arg, g_campaigns[level.currentCampaign].shortname);
 			}
+
 			return G_INVALID;
 		}
 		else if (G_voteDescription(ent, fRefereeCmd, dwVoteIndex))
@@ -645,6 +646,7 @@ int G_Campaign_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2
 			{
 				G_voteCurrentSetting(ent, arg, g_campaigns[level.currentCampaign].shortname);
 			}
+
 			return G_INVALID;
 		}
 
@@ -677,7 +679,6 @@ int G_MapRestart_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *ar
 				return G_INVALID;
 			}
 		}
-
 		// Vote action (vote has passed)
 	}
 	else
@@ -777,7 +778,6 @@ int G_Nextmap_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2,
 				}
 			}
 		}
-
 		// Vote action (vote has passed)
 	}
 	else
@@ -887,6 +887,7 @@ int G_Referee_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2,
 			ClientUserinfoChanged(atoi(level.voteInfo.vote_value));
 		}
 	}
+
 	return G_OK;
 }
 
@@ -949,7 +950,6 @@ int G_StartMatch_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *ar
 			G_refPrintf(ent, "^3Not enough players to start match!");
 			return G_INVALID;
 		}
-
 		// Vote action (vote has passed)
 	}
 	else
@@ -977,7 +977,6 @@ int G_SwapTeams_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg
 			G_voteDisableMessage(ent, arg);
 			return G_INVALID;
 		}
-
 		// Vote action (vote has passed)
 	}
 	else
@@ -1075,6 +1074,7 @@ int G_Config_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, 
 			G_PrintConfigs(ent);
 			return G_INVALID;
 		}
+
 		Com_sprintf(level.voteInfo.vote_value, VOTE_MAXSTRING, "%s", arg2);
 	}
 	else // Vote action (vote has passed)
@@ -1136,6 +1136,7 @@ void G_WarmupDamageTypeList(gentity_t *ent)
 	{
 		G_refPrintf(ent, "  %d ^3(%s)", i, warmupType[i]);
 	}
+
 	G_refPrintf(ent, "\n");
 }
 
@@ -1292,6 +1293,7 @@ void G_IntermissionMapVote(gentity_t *ent)
 			level.mapvoteinfo[ent->client->sess.mapVotedFor[0]].numVotes--;
 			level.mapvoteinfo[ent->client->sess.mapVotedFor[0]].totalVotes--;
 		}
+
 		ent->client->ps.eFlags |= EF_VOTED;
 		level.mapvoteinfo[atoi(arg)].numVotes++;
 		level.mapvoteinfo[atoi(arg)].totalVotes++;
@@ -1326,6 +1328,7 @@ void G_IntermissionMapVote(gentity_t *ent)
 			level.mapvoteinfo[ent->client->sess.mapVotedFor[voteRank - 1]].numVotes   -= voteRank;
 			level.mapvoteinfo[ent->client->sess.mapVotedFor[voteRank - 1]].totalVotes -= voteRank;
 		}
+
 		level.mapvoteinfo[atoi(arg)].numVotes      += voteRank;
 		level.mapvoteinfo[atoi(arg)].totalVotes    += voteRank;
 		ent->client->sess.mapVotedFor[voteRank - 1] = atoi(arg);
@@ -1405,6 +1408,7 @@ void G_IntermissionVoteTally(gentity_t *ent)
 			trap_SendServerCommand(level.sortedClients[i], voteTally);
 		}
 	}
+
 	return;
 }
 // MAPVOTE END
@@ -1450,6 +1454,7 @@ int G_Surrender_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg
 		{
 			return G_INVALID;
 		}
+
 		Q_strncpyz(arg2,
 		           (ent->client->sess.sessionTeam == TEAM_AXIS) ?
 		           "[AXIS]" : "[ALLIES]",
@@ -1471,6 +1476,7 @@ int G_Surrender_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg
 		      (level.voteInfo.voteTeam == TEAM_AXIS) ?
 		      "^1AXIS^7" : "^4ALLIES^7"));
 	}
+
 	return G_OK;
 }
 
@@ -1499,6 +1505,7 @@ int G_NextCampaign_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *
 			trap_SendConsoleCommand(EXEC_APPEND, "vstr nextcampaign\n");
 		}
 	}
+
 	return G_OK;
 }
 
@@ -1527,6 +1534,7 @@ int G_RestartCampaign_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, cha
 		                           g_campaigns[level.currentCampaign].shortname,
 		                           ((*s) ? va("; set nextcampaign \"%s\"", s) : "")));
 	}
+
 	return G_OK;
 }
 
@@ -1539,8 +1547,10 @@ int G_Poll_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, qb
 		{
 			return G_INVALID;
 		}
+
 		Com_sprintf(arg2,
 		            VOTE_MAXSTRING, "%s", ConcatArgs(2));
 	}
+
 	return G_OK;
 }

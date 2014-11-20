@@ -399,6 +399,7 @@ void G_UpdateTeamMapData_Construct(gentity_t *ent)
 			mEnt         = G_AllocMapEntityData(teamList);
 			mEnt->entNum = num;
 		}
+
 		VectorCopy(ent->s.pos.trBase, mEnt->org);
 		mEnt->data      = mEnt->entNum; //ent->s.modelindex2;
 		mEnt->type      = ME_CONSTRUCT;
@@ -429,6 +430,7 @@ void G_UpdateTeamMapData_Construct(gentity_t *ent)
 		mEnt         = G_AllocMapEntityData(teamList);
 		mEnt->entNum = num;
 	}
+
 	VectorCopy(ent->s.pos.trBase, mEnt->org);
 	mEnt->data      = mEnt->entNum; //ent->s.modelindex2;
 	mEnt->type      = ME_CONSTRUCT;
@@ -480,6 +482,7 @@ void G_UpdateTeamMapData_Tank(gentity_t *ent)
 	{
 		mEnt->type = ME_TANK;
 	}
+
 	mEnt->yaw = 0;
 }
 
@@ -498,6 +501,7 @@ void G_UpdateTeamMapData_Destruct(gentity_t *ent)
 			mEnt         = G_AllocMapEntityData(teamList);
 			mEnt->entNum = num;
 		}
+
 		VectorCopy(ent->s.pos.trBase, mEnt->org);
 		mEnt->data      = mEnt->entNum; //ent->s.modelindex2;
 		mEnt->startTime = level.time;
@@ -517,6 +521,7 @@ void G_UpdateTeamMapData_Destruct(gentity_t *ent)
 					mEnt         = G_AllocMapEntityData(teamList);
 					mEnt->entNum = num;
 				}
+
 				VectorCopy(ent->s.pos.trBase, mEnt->org);
 				mEnt->data      = mEnt->entNum; //ent->s.modelindex2;
 				mEnt->startTime = level.time;
@@ -535,6 +540,7 @@ void G_UpdateTeamMapData_Destruct(gentity_t *ent)
 			mEnt         = G_AllocMapEntityData(teamList);
 			mEnt->entNum = num;
 		}
+
 		VectorCopy(ent->s.pos.trBase, mEnt->org);
 		mEnt->data      = mEnt->entNum; //ent->s.modelindex2;
 		mEnt->startTime = level.time;
@@ -554,6 +560,7 @@ void G_UpdateTeamMapData_Destruct(gentity_t *ent)
 					mEnt         = G_AllocMapEntityData(teamList);
 					mEnt->entNum = num;
 				}
+
 				VectorCopy(ent->s.pos.trBase, mEnt->org);
 				mEnt->data      = mEnt->entNum; //ent->s.modelindex2;
 				mEnt->startTime = level.time;
@@ -687,6 +694,7 @@ static void G_UpdateTeamMapData_DisguisedPlayer(gentity_t *spotter, gentity_t *e
 			mEnt->entNum       = num;
 			mEnt->singleClient = spotter->s.clientNum;
 		}
+
 		VectorCopy(ent->client->ps.origin, mEnt->org);
 		mEnt->yaw       = ent->client->ps.viewangles[YAW];
 		mEnt->data      = num;
@@ -705,6 +713,7 @@ static void G_UpdateTeamMapData_DisguisedPlayer(gentity_t *spotter, gentity_t *e
 			mEnt->entNum       = num;
 			mEnt->singleClient = spotter->s.clientNum;
 		}
+
 		VectorCopy(ent->client->ps.origin, mEnt->org);
 		mEnt->yaw       = ent->client->ps.viewangles[YAW];
 		mEnt->data      = num;
@@ -735,6 +744,7 @@ void G_UpdateTeamMapData_LandMine(gentity_t *ent, qboolean forceAllied, qboolean
 			mEnt         = G_AllocMapEntityData(teamList);
 			mEnt->entNum = num;
 		}
+
 		VectorCopy(ent->r.currentOrigin, mEnt->org);
 		mEnt->data      = team;
 		mEnt->startTime = level.time;
@@ -749,6 +759,7 @@ void G_UpdateTeamMapData_LandMine(gentity_t *ent, qboolean forceAllied, qboolean
 		mEnt         = G_AllocMapEntityData(teamList);
 		mEnt->entNum = num;
 	}
+
 	VectorCopy(ent->r.currentOrigin, mEnt->org);
 	mEnt->data      = team;
 	mEnt->startTime = level.time;
@@ -789,6 +800,7 @@ void G_UpdateTeamMapData_CommandmapMarker(gentity_t *ent)
 			mEnt         = G_AllocMapEntityData(teamList);
 			mEnt->entNum = num;
 		}
+
 		VectorCopy(ent->s.origin, mEnt->org);
 		mEnt->data      = ent->parent ? ent->parent->s.teamNum : -1;
 		mEnt->startTime = level.time;
@@ -1033,6 +1045,7 @@ void G_UpdateTeamMapData(void)
 			{
 				G_UpdateTeamMapData_LandMine(ent, qfalse, qfalse);
 			}
+
 			break;
 		case ET_COMMANDMAP_MARKER:
 			G_UpdateTeamMapData_CommandmapMarker(ent);
@@ -1163,11 +1176,13 @@ void G_UpdateTeamMapData(void)
 											}
 										}
 									}
+
 									break;
 								default:
 									break;
 								}
 							}
+
 							G_UpdateTeamMapData_Player(ent2, f1, f2);
 						}
 						break;
@@ -1238,6 +1253,7 @@ void G_UpdateTeamMapData(void)
 													G_DebugAddSkillPoints(ent, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 3.f, "spotting a landmine");
 												}
 											}
+
 											break;
 										default:
 											break;
@@ -1251,6 +1267,7 @@ void G_UpdateTeamMapData(void)
 									}
 								}
 							}
+
 							break;
 						default:
 							break;

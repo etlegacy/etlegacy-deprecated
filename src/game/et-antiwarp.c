@@ -307,6 +307,7 @@ drop_packet:
 		{
 			parms[1] = 1.f;
 		}
+
 		parms[2] = (ent->client->ps.commandTime * 180.f) / 1000.f;
 
 		//etpro_AddDebugLine( org, parms, ((ent - g_entities) % 32), LINEMODE_SPOKES, LINESHADER_RAILCORE, 0, qfalse );

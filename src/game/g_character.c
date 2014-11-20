@@ -67,6 +67,7 @@ static qboolean G_ParseAnimationFiles(bg_character_t *character, const char *ani
 		trap_FS_FCloseFile(f);
 		return qfalse;
 	}
+
 	trap_FS_Read(text, len, f);
 	text[len] = 0;
 	trap_FS_FCloseFile(f);
@@ -240,6 +241,7 @@ void G_UpdateCharacter(gclient_t *client)
 			client->ps.legsTimer  = 0;
 			client->ps.torsoTimer = 0;
 		}
+
 		return;
 	}
 

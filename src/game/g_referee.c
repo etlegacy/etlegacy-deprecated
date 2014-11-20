@@ -173,6 +173,7 @@ void G_ref_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
 				G_refHelp_cmd(ent);
 			}
 		}
+
 		return;
 	}
 
@@ -254,6 +255,7 @@ void G_refLockTeams_cmd(gentity_t *ent, qboolean fLock)
 	{
 		level.server_settings &= ~CV_SVS_LOCKTEAMS;
 	}
+
 	trap_SetConfigstring(CS_SERVERTOGGLES, va("%d", level.server_settings));
 }
 
@@ -419,6 +421,7 @@ void G_refSpeclockTeams_cmd(gentity_t *ent, qboolean fLock)
 	{
 		level.server_settings &= ~CV_SVS_LOCKSPECS;
 	}
+
 	trap_SetConfigstring(CS_SERVERTOGGLES, va("%d", level.server_settings));
 }
 
@@ -511,6 +514,7 @@ void G_refMute_cmd(gentity_t *ent, qboolean mute)
 		player->client->sess.muted = qfalse;
 		G_Printf("\"%s^*\" has been unmuted\n", player->client->pers.netname);
 	}
+
 	ClientUserinfoChanged(pid);
 }
 
@@ -591,6 +595,7 @@ void G_MakeReferee()
 				trap_SendServerCommand(cnum, va("cpm \"^2You have been un-muted\""));
 				level.clients[cnum].sess.muted = qfalse;
 			}
+
 			ClientUserinfoChanged(cnum);
 		}
 		else

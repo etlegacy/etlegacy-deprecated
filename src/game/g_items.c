@@ -102,9 +102,11 @@ int AddToClip(playerState_t *ps, int weapon, int ammomove, int outOfReserve)
 		{
 			ps->ammo[ammoweap] -= ammomove;
 		}
+
 		ps->ammoclip[BG_FindClipForWeapon(weapon)] += ammomove;
 		return qtrue;
 	}
+
 	return qfalse;
 }
 
@@ -469,6 +471,7 @@ int Pickup_Weapon(gentity_t *ent, gentity_t *other)
 				// extracted code originally here into AddMagicAmmo
 				// add 1 clip of magic ammo for any two-handed weapon
 			}
+
 			return RESPAWN_NEVER;
 		}
 	}
@@ -617,6 +620,7 @@ int Pickup_Health(gentity_t *ent, gentity_t *other)
 				AddScore(ent->parent, WOLF_HEALTH_UP);
 				G_LogPrintf("Health_Pack: %d %d\n", (int)(ent->parent - g_entities), (int)(other - g_entities));
 			}
+
 			G_AddSkillPoints(ent->parent, SK_FIRST_AID, 1.f);
 			G_DebugAddSkillPoints(ent->parent, SK_FIRST_AID, 1.f, "health pack picked up");
 			ent->parent->client->PCSpecialPickedUpCount++;
@@ -845,6 +849,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, trace_t *trace)
 		ent->nextthink = level.time + respawn * 1000;
 		ent->think     = RespawnItem;
 	}
+
 	trap_LinkEntity(ent);
 }
 
@@ -918,6 +923,7 @@ gentity_t *LaunchItem(gitem_t *item, vec3_t origin, vec3_t velocity, int ownerNu
 		{
 			G_Script_ScriptEvent(level.gameManager, "trigger", flag->item->giTag == PW_REDFLAG ? "allied_object_dropped" : "axis_object_dropped");
 		}
+
 		G_Script_ScriptEvent(flag, "trigger", "dropped");
 	}
 	else     // auto-remove after 30 seconds
@@ -1148,6 +1154,7 @@ void G_BounceItem(gentity_t *ent, trace_t *trace)
 		{
 			trace->endpos[2] += 1.0;    // make sure it is off ground
 		}
+
 		SnapVector(trace->endpos);
 		G_SetOrigin(ent, trace->endpos);
 		ent->s.groundEntityNum = trace->entityNum;
@@ -1286,6 +1293,7 @@ void G_RunItem(gentity_t *ent)
 		{
 			G_FreeEntity(ent);
 		}
+
 		return;
 	}
 
