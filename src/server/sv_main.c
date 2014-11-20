@@ -92,15 +92,15 @@ cvar_t *sv_packetdelay;
 cvar_t *sv_fullmsg;
 
 // do we communicate with others ?
-cvar_t *sv_advert;      // 0 - no big brothers
-                        // 1 - communicate with master server
-                        // 2 - send trackbase infos
+cvar_t *sv_advert;		// 0 - no big brothers
+						// 1 - communicate with master server
+						// 2 - send trackbase infos
 
 // server attack protection
-cvar_t *sv_protect;     // 0 - unprotected
-                        // 1 - ioquake3 method (default)
-                        // 2 - OPenWolf method
-cvar_t *sv_protectLog;  // name of log file
+cvar_t *sv_protect;		// 0 - unprotected
+						// 1 - ioquake3 method (default)
+						// 2 - OPenWolf method
+cvar_t *sv_protectLog;	// name of log file
 
 #ifdef FEATURE_ANTICHEAT
 cvar_t *sv_wh_active;
@@ -151,8 +151,10 @@ static char *SV_ExpandNewlines(char *in)
 
 			string[l++] = *in;
 		}
+		
 		in++;
 	}
+	
 	string[l] = 0;
 
 	return string;
@@ -180,14 +182,15 @@ void SV_AddServerCommand(client_t *client, const char *cmd)
 		{
 			Com_Printf("cmd %5d: %s\n", i, client->reliableCommands[i & (MAX_RELIABLE_COMMANDS - 1)]);
 		}
+		
 		Com_Printf("cmd %5d: %s\n", i, cmd);
 		SV_DropClient(client, "Server command overflow");
 		return;
 	}
+	
 	index = client->reliableSequence & (MAX_RELIABLE_COMMANDS - 1);
 	Q_strncpyz(client->reliableCommands[index], cmd, sizeof(client->reliableCommands[index]));
 }
-
 
 /**
  * @brief Sends a reliable command string to be interpreted by the client game
@@ -290,7 +293,6 @@ void SV_MasterHeartbeat(const char *message)
 	                                                           NET_ENABLEV4)))
 	{
 		return;     // only dedicated servers send heartbeats
-
 	}
 	// if not time yet, don't send anything
 	if (svs.time < svs.nextHeartbeatTime)
@@ -370,7 +372,6 @@ void SV_MasterHeartbeat(const char *message)
 			}
 		}
 
-
 		Com_Printf("Sending heartbeat to %s\n", sv_master[i]->string);
 
 		// this command should be changed if the server info / status format
@@ -436,8 +437,9 @@ void SV_MasterGameCompleteStatus()
 			{
 				adr[i].port = BigShort(PORT_MASTER);
 			}
+			
 			Com_Printf("%s resolved to %s\n", sv_master[i]->string,
-			           NET_AdrToString(adr[i]));
+					   NET_AdrToString(adr[i]));
 		}
 
 		Com_Printf("Sending gameCompleteStatus to %s\n", sv_master[i]->string);
@@ -482,9 +484,12 @@ static long SVC_HashForAddress(netadr_t address)
 
 	switch (address.type)
 	{
-	case NA_IP:  ip = address.ip;  size = 4; break;
-	case NA_IP6: ip = address.ip6; size = 16; break;
-	default: break;
+	case NA_IP:  ip = address.ip;  size = 4;
+		break;
+	case NA_IP6: ip = address.ip6; size = 16;
+		break;
+	default:
+		break;
 	}
 
 	for (i = 0; i < size; i++)
@@ -525,7 +530,6 @@ static leakyBucket_t *SVC_BucketForAddress(netadr_t address, int burst, int peri
 				return bucket;
 			}
 			break;
-
 		default:
 			break;
 		}
@@ -563,9 +567,12 @@ static leakyBucket_t *SVC_BucketForAddress(netadr_t address, int burst, int peri
 			bucket->type = address.type;
 			switch (address.type)
 			{
-			case NA_IP:  Com_Memcpy(bucket->ipv._4, address.ip, 4);   break;
-			case NA_IP6: Com_Memcpy(bucket->ipv._6, address.ip6, 16); break;
-			default: break;
+			case NA_IP:  Com_Memcpy(bucket->ipv._4, address.ip, 4);
+				break;
+			case NA_IP6: Com_Memcpy(bucket->ipv._6, address.ip6, 16);
+				break;
+			default:
+				break;
 			}
 
 			bucket->lastTime = now;
@@ -694,6 +701,7 @@ static void SVC_Status(netadr_t from, qboolean force)
 			{
 				break;      // can't hold any more
 			}
+			
 			strcpy(status + statusLength, player);
 			statusLength += playerLength;
 		}
@@ -755,7 +763,6 @@ void SVC_Info(netadr_t from)
 			}
 		}
 	}
-
 
 	infostring[0] = 0;
 
@@ -901,6 +908,7 @@ qboolean SV_CheckDRDoS(netadr_t from)
 			SV_WriteAttackLog("Detected flood of getinfo/getstatus connectionless packets\n");
 			lastGlobalLogTime = svs.time;
 		}
+		
 		return qtrue;
 	}
 	if (specificCount >= 3)   // Already sent 3 to this IP in last 2 seconds.
@@ -908,9 +916,10 @@ qboolean SV_CheckDRDoS(netadr_t from)
 		if (lastSpecificLogTime + 1000 <= svs.time)   // Limit one log every second.
 		{
 			SV_WriteAttackLog(va("Possible DRDoS attack to address %s, ignoring getinfo/getstatus connectionless packet\n",
-			                     NET_AdrToString(exactFrom)));
+								 NET_AdrToString(exactFrom)));
 			lastSpecificLogTime = svs.time;
 		}
+		
 		return qtrue;
 	}
 
@@ -941,7 +950,7 @@ static void SVC_RemoteCommand(netadr_t from, msg_t *msg)
 	if ((sv_protect->integer & SVP_IOQ3) && SVC_RateLimitAddress(from, 10, 1000))
 	{
 		SV_WriteAttackLog(va("Bad rcon - rate limit from %s exceeded, dropping request\n",
-		                     NET_AdrToString(from)));
+							 NET_AdrToString(from)));
 		return;
 	}
 
@@ -1074,7 +1083,7 @@ static void SV_ConnectionlessPacket(netadr_t from, msg_t *msg)
 	else
 	{
 		SV_WriteAttackLog(va("bad connectionless packet from %s:\n%s\n" // changed from Com_DPrintf to print in attack log
-		                     , NET_AdrToString(from), s));              // this was never reported to admins before so they might be confused
+							 , NET_AdrToString(from), s));              // this was never reported to admins before so they might be confused
 	}                                                                   // note: if protect log isn't set we do Com_Printf
 }
 
@@ -1136,6 +1145,7 @@ void SV_PacketEvent(netadr_t from, msg_t *msg)
 				SV_ExecuteClientMessage(cl, msg);
 			}
 		}
+		
 		return;
 	}
 
@@ -1298,6 +1308,7 @@ static qboolean SV_CheckPaused(void)
 		{
 			Cvar_Set("sv_paused", "0");
 		}
+		
 		return qfalse;
 	}
 
@@ -1305,6 +1316,7 @@ static qboolean SV_CheckPaused(void)
 	{
 		Cvar_Set("sv_paused", "1");
 	}
+	
 	return qtrue;
 }
 
@@ -1671,6 +1683,7 @@ int SV_LoadTag(const char *mod_name)
 			tag->axis[1][j] = LittleFloat(readTag->axis[1][j]);
 			tag->axis[2][j] = LittleFloat(readTag->axis[2][j]);
 		}
+		
 		Q_strncpyz(tag->name, readTag->name, 64);
 	}
 

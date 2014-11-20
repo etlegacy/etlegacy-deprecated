@@ -106,6 +106,7 @@ void SV_SectorList_f(void)
 		{
 			c++;
 		}
+		
 		Com_Printf("sector %i: %i entities\n", i, c);
 	}
 }
@@ -341,7 +342,7 @@ void SV_LinkEntity(sharedEntity_t *gEnt)
 
 	//get all leafs, including solids
 	num_leafs = CM_BoxLeafnums(gEnt->r.absmin, gEnt->r.absmax,
-	                           leafs, MAX_TOTAL_ENT_LEAFS, &lastLeaf);
+							   leafs, MAX_TOTAL_ENT_LEAFS, &lastLeaf);
 
 	// if none of the leafs were inside the map, the
 	// entity is outside the world and can be considered unlinked
@@ -363,9 +364,10 @@ void SV_LinkEntity(sharedEntity_t *gEnt)
 				if (ent->areanum2 != -1 && ent->areanum2 != area && sv.state == SS_LOADING)
 				{
 					Com_DPrintf("Entity %i touching 3 areas at %f %f %f\n",
-					            gEnt->s.number,
-					            gEnt->r.absmin[0], gEnt->r.absmin[1], gEnt->r.absmin[2]);
+								gEnt->s.number,
+								gEnt->r.absmin[0], gEnt->r.absmin[1], gEnt->r.absmin[2]);
 				}
+				
 				ent->areanum2 = area;
 			}
 			else
@@ -664,15 +666,14 @@ void SV_ClipMoveToEntities(moveclip_t *clip)
 		origin = touch->r.currentOrigin;
 		angles = touch->r.currentAngles;
 
-
 		if (!touch->r.bmodel)
 		{
 			angles = vec3_origin;   // boxes don't rotate
 		}
 
 		CM_TransformedBoxTrace(&trace, clip->start, clip->end,
-		                       clip->mins, clip->maxs, clipHandle, clip->contentmask,
-		                       origin, angles, clip->capsule);
+							   clip->mins, clip->maxs, clipHandle, clip->contentmask,
+							   origin, angles, clip->capsule);
 
 		if (trace.allsolid)
 		{

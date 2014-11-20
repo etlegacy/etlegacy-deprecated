@@ -608,7 +608,6 @@ static void SV_AddEntitiesVisibleFromPoint(vec3_t origin, clientSnapshot_t *fram
 			SV_AddEntitiesVisibleFromPoint(ent->s.origin2, frame, eNums /*, qtrue, localClient*/);
 #endif
 		}
-
 		continue;
 	}
 }
@@ -741,6 +740,7 @@ static void SV_BuildClientSnapshot(client_t *client)
 		{
 			Com_Error(ERR_FATAL, "SV_BuildClientSnapshot: svs.nextSnapshotEntities wrapped");
 		}
+		
 		frame->num_entities++;
 	}
 }
@@ -788,6 +788,7 @@ static int SV_RateMsec(client_t *client, int messageSize)
 			rate = maxRate;
 		}
 	}
+	
 	rateMsec = (messageSize + HEADER_RATE_BYTES) * 1000 / rate;
 
 	return rateMsec;
@@ -1070,7 +1071,7 @@ void SV_SendClientMessages(void)
 			sv.ucompNum++;
 
 			Com_DPrintf("bpspc(%2.0f) bps(%2.0f) pk(%i) ubps(%2.0f) upk(%i) cr(%2.2f) acr(%2.2f)\n",
-			            ave / (float)numclients, ave, sv.bpsMaxBytes, uave, sv.ubpsMaxBytes, comp_ratio, sv.ucompAve / sv.ucompNum);
+						ave / (float)numclients, ave, sv.bpsMaxBytes, uave, sv.ubpsMaxBytes, comp_ratio, sv.ucompAve / sv.ucompNum);
 		}
 	}
 }

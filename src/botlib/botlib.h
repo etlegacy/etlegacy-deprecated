@@ -79,10 +79,10 @@ typedef struct bsp_trace_s
 	vec3_t endpos;              // final position
 	cplane_t plane;             // surface normal at impact
 	float exp_dist;             // expanded plane distance
-	int sidenum;                // number of the brush side hit
+	int sidenum;            // number of the brush side hit
 	bsp_surface_t surface;      // the hit point surface
-	int contents;               // contents on other side of surface hit
-	int ent;                    // number of entity hit
+	int contents;           // contents on other side of surface hit
+	int ent;            // number of entity hit
 } bsp_trace_t;
 
 // bot AI library exported functions

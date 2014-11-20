@@ -187,7 +187,7 @@ memoryblock_t *BlockFromPointer(void *ptr, char *str)
 		//char *crash = (char *) NULL;
 		//crash[0] = 1;
 		botimport.Print(PRT_FATAL, "%s: NULL pointer\n", str);
-#endif // MEMDEBUG
+#endif //MEMDEBUG
 		return NULL;
 	}
 	block = ( memoryblock_t * )((char *) ptr - sizeof(memoryblock_t));
