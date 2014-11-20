@@ -2,8 +2,8 @@
  * @file g_lua.c
  * @brief ET <-> *Lua* interface source file.
  *
- * @copyright This code is taken from ETPub.
- * All credits go to their team especially to quad and pheno!
+ * @copyright This code is taken from ETPub and NQ.
+ * All credits go to their teams especially to quad and pheno!
  * http://etpub.org
  * http://shitstorm.org
  *
@@ -1837,11 +1837,6 @@ qboolean G_LuaGetNamedFunction(lua_vm_t *vm, const char *name)
 	}
 	return qfalse;
 }
-
-// Compatibility with Lua 5.1
-#if LUA_VERSION_NUM < 502
-	#define luaL_newlib(L, l) (lua_newtable(L), luaL_register(L, NULL, l))
-#endif
 
 /**
  * @brief Dump the lua stack to console
