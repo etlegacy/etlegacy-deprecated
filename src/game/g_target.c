@@ -134,6 +134,7 @@ void SP_target_delay(gentity_t *ent)
 	{
 		ent->wait = 1;
 	}
+
 	ent->use = Use_Target_Delay;
 }
 
@@ -156,6 +157,7 @@ void SP_target_score(gentity_t *ent)
 	{
 		ent->count = 1;
 	}
+
 	ent->use = Use_Target_Score;
 }
 
@@ -448,6 +450,7 @@ void misc_beam_start(gentity_t *self)
 			G_FreeEntity(self);
 			return;
 		}
+
 		self->target_ent = ent;
 	}
 	else
@@ -466,6 +469,7 @@ void misc_beam_start(gentity_t *self)
 			G_FreeEntity(self);
 			return; // No targets by this name.
 		}
+
 		self->enemy = ent;
 	}
 	else     // the misc_beam is it's own ending point
@@ -548,6 +552,7 @@ void target_laser_on(gentity_t *self)
 	{
 		self->activator = self;
 	}
+
 	target_laser_think(self);
 }
 
@@ -583,6 +588,7 @@ void target_laser_start(gentity_t *self)
 		{
 			G_Printf("%s at %s: %s is a bad target\n", self->classname, vtos(self->s.origin), self->target);
 		}
+
 		self->enemy = ent;
 	}
 	else
@@ -692,6 +698,7 @@ void target_relay_use(gentity_t *self, gentity_t *other, gentity_t *activator)
 		{
 			G_UseEntity(ent, self, activator);
 		}
+
 		return;
 	}
 
@@ -712,10 +719,12 @@ void target_relay_use(gentity_t *self, gentity_t *other, gentity_t *activator)
 			}
 
 			/*
-			if(self->spawnflags & 16) {	// take key
+			if(self->spawnflags & 16)
+			{	// take key
 			    activator->client->ps.stats[STAT_KEYS] &= ~(1<<item->giTag);
 			    // TODO: "took inventory item" sound
-			}*/
+			}
+			*/
 		}
 	}
 
@@ -1162,9 +1171,7 @@ void target_script_trigger_use(gentity_t *ent, gentity_t *other, gentity_t *acti
 
 			// Play the script
 			G_Script_ScriptEvent(trent, "trigger", ent->target);
-
 		} // if (trent)...
-
 	} // if (ent->aiName)...
 
 	// Use the old method if we didn't find an entity with the ainame

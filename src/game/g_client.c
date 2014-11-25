@@ -197,6 +197,7 @@ gentity_t *SelectRandomDeathmatchSpawnPoint(void)
 		{
 			continue;
 		}
+
 		spots[count] = spot;
 		count++;
 	}
@@ -563,6 +564,7 @@ void SetClientViewAngle(gentity_t *ent, vec3_t angle)
 		cmdAngle                        = ANGLE2SHORT(angle[i]);
 		ent->client->ps.delta_angles[i] = cmdAngle - ent->client->pers.cmd.angles[i];
 	}
+
 	VectorCopy(angle, ent->s.angles);
 	VectorCopy(ent->s.angles, ent->client->ps.viewangles);
 }
@@ -591,6 +593,7 @@ void G_DropLimboHealth(gentity_t *ent)
 			{
 				break;
 			}
+
 			launchvel[0] = crandom();
 			launchvel[1] = crandom();
 			launchvel[2] = 0;
@@ -600,6 +603,7 @@ void G_DropLimboHealth(gentity_t *ent)
 
 			Weapon_Medic_Ext(ent, launchspot, launchspot, launchvel);
 		}
+
 		ent->client->ps.classWeaponTime = cwt;
 	}
 }
@@ -946,6 +950,7 @@ static void AddExtraSpawnAmmo(gclient_t *client, weapon_t weaponNum)
 		{
 			client->ps.ammo[BG_FindAmmoForWeapon(weaponNum)] += GetAmmoTableData(weaponNum)->maxclip;
 		}
+
 		break;
 	default:
 		break;
@@ -1042,6 +1047,7 @@ void SetWolfSpawnWeapons(gclient_t *client)
 					{
 						AddWeaponToPlayer(client, WP_GPG40, GetAmmoTableData(WP_GPG40)->defaultStartingAmmo, GetAmmoTableData(WP_GPG40)->defaultStartingClip, qfalse);
 					}
+
 					break;
 				default:
 					AddWeaponToPlayer(client, WP_MP40, GetAmmoTableData(WP_MP40)->defaultStartingAmmo, GetAmmoTableData(WP_MP40)->defaultStartingClip, qtrue);
@@ -1059,11 +1065,13 @@ void SetWolfSpawnWeapons(gclient_t *client)
 					{
 						AddWeaponToPlayer(client, WP_M7, GetAmmoTableData(WP_M7)->defaultStartingAmmo, GetAmmoTableData(WP_M7)->defaultStartingClip, qfalse);
 					}
+
 					break;
 				default:
 					AddWeaponToPlayer(client, WP_THOMPSON, GetAmmoTableData(WP_THOMPSON)->defaultStartingAmmo, GetAmmoTableData(WP_THOMPSON)->defaultStartingClip, qtrue);
 					break;
 				}
+
 				AddWeaponToPlayer(client, WP_LANDMINE, GetAmmoTableData(WP_LANDMINE)->defaultStartingAmmo, GetAmmoTableData(WP_LANDMINE)->defaultStartingClip, qfalse);
 				AddWeaponToPlayer(client, WP_GRENADE_PINEAPPLE, 0, 4, qfalse);
 			}
@@ -1160,6 +1168,7 @@ void SetWolfSpawnWeapons(gclient_t *client)
 					{
 						AddWeaponToPlayer(client, WP_MORTAR2_SET, GetAmmoTableData(WP_MORTAR2_SET)->defaultStartingAmmo, GetAmmoTableData(WP_MORTAR2_SET)->defaultStartingClip, qfalse);
 					}
+
 					break;
 				}
 				break;
@@ -1187,8 +1196,10 @@ void SetWolfSpawnWeapons(gclient_t *client)
 					{
 						AddWeaponToPlayer(client, WP_MORTAR_SET, GetAmmoTableData(WP_MORTAR_SET)->defaultStartingAmmo, GetAmmoTableData(WP_MORTAR_SET)->defaultStartingClip, qfalse);
 					}
+
 					break;
 				}
+
 				break;
 			default:
 				break;
@@ -1206,6 +1217,7 @@ void SetWolfSpawnWeapons(gclient_t *client)
 					{
 						AddWeaponToPlayer(client, WP_K43_SCOPE, GetAmmoTableData(WP_K43_SCOPE)->defaultStartingAmmo, GetAmmoTableData(WP_K43_SCOPE)->defaultStartingClip, qfalse);
 					}
+
 					break;
 				}
 				else
@@ -1214,6 +1226,7 @@ void SetWolfSpawnWeapons(gclient_t *client)
 					{
 						AddWeaponToPlayer(client, WP_GARAND_SCOPE, GetAmmoTableData(WP_GARAND_SCOPE)->defaultStartingAmmo, GetAmmoTableData(WP_GARAND_SCOPE)->defaultStartingClip, qfalse);
 					}
+
 					break;
 				}
 			case WP_FG42:
@@ -1221,6 +1234,7 @@ void SetWolfSpawnWeapons(gclient_t *client)
 				{
 					AddWeaponToPlayer(client, WP_FG42SCOPE, GetAmmoTableData(WP_FG42SCOPE)->defaultStartingAmmo, GetAmmoTableData(WP_FG42SCOPE)->defaultStartingClip, qfalse);
 				}
+
 				break;
 			default:
 				AddWeaponToPlayer(client, WP_STEN, 2 * (GetAmmoTableData(WP_STEN)->defaultStartingAmmo), GetAmmoTableData(WP_STEN)->defaultStartingClip, qtrue);
@@ -1292,6 +1306,7 @@ void SetWolfSpawnWeapons(gclient_t *client)
 				{
 					AddWeaponToPlayer(client, WP_LUGER, GetAmmoTableData(WP_LUGER)->defaultStartingAmmo, GetAmmoTableData(WP_LUGER)->defaultStartingClip, qfalse);
 				}
+
 				break;
 			}
 			break;
@@ -1338,8 +1353,10 @@ void SetWolfSpawnWeapons(gclient_t *client)
 				{
 					AddWeaponToPlayer(client, WP_COLT, GetAmmoTableData(WP_COLT)->defaultStartingAmmo, GetAmmoTableData(WP_COLT)->defaultStartingClip, qfalse);
 				}
+
 				break;
 			}
+
 			break;
 		}
 
@@ -1376,7 +1393,6 @@ void SetWolfSpawnWeapons(gclient_t *client)
 			{
 				AddWeaponToPlayer(client, WP_MEDIC_ADRENALINE, 0, 10, qfalse);
 			}
-
 		}
 		// End Knifeonly stuff -- Ensure that medics get their basic stuff
 	}
@@ -1775,6 +1791,7 @@ void ClientUserinfoChanged(int clientNum)
 			{
 				trap_DropClient(clientNum, "Bad userinfo.", 0);
 			}
+
 			return;
 		}
 		// Empty string for key and we exit...
@@ -1795,6 +1812,7 @@ void ClientUserinfoChanged(int clientNum)
 				trap_DropClient(clientNum, "Bad userinfo.", 0);
 				return;
 			}
+
 			Q_strncpyz(client->pers.client_ip, cs_value, MAX_IP4_LENGTH);
 			break;
 		}
@@ -1841,6 +1859,7 @@ void ClientUserinfoChanged(int clientNum)
 				trap_DropClient(clientNum, "Bad userinfo.", 0);
 				return;
 			}
+
 			Q_strncpyz(client->pers.cl_guid, cs_value, MAX_GUID_LENGTH + 1);
 			break;
 		case TOK_skill:
@@ -2805,6 +2824,7 @@ static char *G_CheckVersion(gentity_t *ent)
 	{
 		return(s);
 	}
+
 	return NULL;
 }
 #endif
@@ -2840,12 +2860,16 @@ void ClientSpawn(gentity_t *ent, qboolean revived, qboolean teamChange, qboolean
 	client->pers.lastHQMineReportTime     = level.timeCurrent;
 
 /*#ifndef LEGACY_DEBUG
-    if( !client->sess.versionOK ) {
+    if( !client->sess.versionOK )
+    {
         char *clientMismatchedVersion = G_CheckVersion( ent );	// returns NULL if version is identical
 
-        if( clientMismatchedVersion ) {
+        if( clientMismatchedVersion )
+        {
             trap_DropClient( ent - g_entities, va( "Client/Server game mismatch: '%s/%s'", clientMismatchedVersion, GAME_VERSION_DATED ) );
-        } else {
+        }
+        else
+        {
             client->sess.versionOK = qtrue;
         }
     }
@@ -2874,9 +2898,11 @@ void ClientSpawn(gentity_t *ent, qboolean revived, qboolean teamChange, qboolean
 			// if we have requested a specific spawn point, use it (fixme: what if this will place us inside another character?)
 /*			spawnPoint = NULL;
             trap_GetUserinfo( ent->s.number, userinfo, sizeof(userinfo) );
-            if( (str = Info_ValueForKey( userinfo, "spawnPoint" )) != NULL && str[0] ) {
+            if( (str = Info_ValueForKey( userinfo, "spawnPoint" )) != NULL && str[0] )
+            {
                 spawnPoint = SelectSpawnPointFromList( str, spawn_origin, spawn_angles );
-                if (!spawnPoint) {
+                if (!spawnPoint)
+                {
                     G_Printf( "WARNING: unable to find spawn point \"%s\" for bot \"%s\"\n", str, ent->aiName );
                 }
             }

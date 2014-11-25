@@ -185,6 +185,7 @@ qboolean    PM_SlideMove(qboolean gravity)
 						Com_Printf("%i:planeoriginnudge\n", c_pmove);
 					}
 				}
+
 				break;
 			}
 		}
@@ -370,6 +371,7 @@ void PM_StepSlideMove(qboolean gravity)
 		{
 			Com_Printf("%i:bend can't step\n", c_pmove);
 		}
+
 		return;     // can't step up
 	}
 
@@ -397,6 +399,7 @@ void PM_StepSlideMove(qboolean gravity)
 			{
 				Com_Printf("%i:legs unsteppable\n", c_pmove);
 			}
+
 			return;
 		}
 		memset(&trace, 0, sizeof(trace));
@@ -409,6 +412,7 @@ void PM_StepSlideMove(qboolean gravity)
 			{
 				Com_Printf("%i:head unsteppable\n", c_pmove);
 			}
+
 			return;
 		}
 	}

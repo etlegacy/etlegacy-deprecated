@@ -121,9 +121,11 @@ qboolean StringToFilter(const char *s, ipFilter_t *f)
 				{
 					break;
 				}
+
 				s++;
 				continue;
 			}
+
 			G_Printf("Bad filter address: %s\n", s);
 			return qfalse;
 		}
@@ -141,6 +143,7 @@ qboolean StringToFilter(const char *s, ipFilter_t *f)
 		{
 			break;
 		}
+
 		s++;
 	}
 
@@ -179,6 +182,7 @@ static void UpdateIPBans(ipFilterList_t *ipFilterList)
 			{
 				Q_strcat(ip, sizeof(ip), va("%i", b[j]));
 			}
+
 			Q_strcat(ip, sizeof(ip), (j < 3) ? "." : " ");
 		}
 		if (strlen(iplist_final) + strlen(ip) < MAX_CVAR_VALUE_STRING)
@@ -203,6 +207,7 @@ void PrintMaxLivesGUID(void)
 	{
 		G_LogPrintf("%i. %s\n", i, guidMaxLivesFilters[i].compare);
 	}
+
 	G_LogPrintf("--- End of list\n");
 }
 
@@ -225,6 +230,7 @@ qboolean G_FilterPacket(ipFilterList_t *ipFilterList, char *from)
 		{
 			break;
 		}
+
 		i++, p++;
 	}
 
@@ -265,6 +271,7 @@ qboolean G_FilterMaxLivesPacket(char *from)
 			return 1;
 		}
 	}
+
 	return 0;
 }
 
@@ -287,6 +294,7 @@ void AddIP(ipFilterList_t *ipFilterList, const char *str)
 			G_Printf("IP filter list is full\n");
 			return;
 		}
+
 		ipFilterList->numIPFilters++;
 	}
 
@@ -319,6 +327,7 @@ void AddMaxLivesGUID(char *str)
 		G_Printf("MaxLives GUID filter list is full\n");
 		return;
 	}
+
 	Q_strncpyz(guidMaxLivesFilters[numMaxLivesFilters].compare, str, 33);
 	numMaxLivesFilters++;
 }
@@ -346,6 +355,7 @@ void G_ProcessIPBans(void)
 		{
 			AddIP(&ipFilters, t);
 		}
+
 		t = s;
 	}
 }
@@ -411,6 +421,7 @@ void ClearMaxLivesBans()
 	{
 		guidMaxLivesFilters[i].compare[0] = '\0';
 	}
+
 	numMaxLivesFilters = 0;
 
 	ipMaxLivesFilters.numIPFilters = 0;
@@ -521,6 +532,7 @@ void Svcmd_EntityList_f(void)
 			{
 				G_Printf("^2%4i: %s %s\n", e, check->classname, check->targetname);
 			}
+
 			entsFree++;
 			continue;
 		}
@@ -550,6 +562,7 @@ void Svcmd_EntityList_f(void)
 			G_Printf("%s *unknown classname* %s\n", line, check->targetname);
 		}
 	}
+
 	G_Printf("^2%4i: num_entities - %4i: entities not in use\n", level.num_entities, entsFree);
 }
 
@@ -593,6 +606,7 @@ gclient_t *ClientForString(const char *s)
 			G_Printf("Client %i is not connected\n", idnum);
 			return NULL;
 		}
+
 		return cl;
 	}
 
@@ -714,7 +728,9 @@ void Svcmd_ForceTeam_f(void)
  */
 void Svcmd_StartMatch_f(void)
 {
-	/*  if ( !g_noTeamSwitching.integer ) {
+	/*
+	    if ( !g_noTeamSwitching.integer )
+	    {
 	        trap_SendServerCommand( -1, va("print \"g_noTeamSwitching not activated.\n\""));
 	        return;
 	    }
@@ -723,17 +739,20 @@ void Svcmd_StartMatch_f(void)
 	G_refAllReady_cmd(NULL);
 
 	/*
-	    if ( level.numPlayingClients <= 1 ) {
+	    if ( level.numPlayingClients <= 1 )
+	    {
 	        trap_SendServerCommand( -1, va("print \"Not enough playing clients to start match.\n\""));
 	        return;
 	    }
 
-	    if ( g_gamestate.integer == GS_PLAYING ) {
+	    if ( g_gamestate.integer == GS_PLAYING )
+	    {
 	        trap_SendServerCommand( -1, va("print \"Match is already in progress.\n\""));
 	        return;
 	    }
 
-	    if ( g_gamestate.integer == GS_WARMUP ) {
+	    if ( g_gamestate.integer == GS_WARMUP )
+	    {
 	        trap_SendConsoleCommand( EXEC_APPEND, va( "map_restart 0 %i\n", GS_PLAYING ) );
 	    }
 	*/
@@ -897,6 +916,7 @@ void Svcmd_RevivePlayer(char *name)
 	{
 		return;
 	}
+
 	player = &g_entities[clientNum];
 
 	ReviveEntity(player, player);
@@ -938,9 +958,11 @@ void Svcmd_Gib(void)
 			{
 				continue;
 			}
+
 			G_Damage(vic, NULL, NULL, NULL, NULL, 500, 0, MOD_UNKNOWN);
 			count++;
 		}
+
 		trap_SendServerCommand(-1, va("print \"%d players gibbed.\n\"", count));
 		return;
 	}
@@ -1005,9 +1027,11 @@ void Svcmd_Die(void)
 			{
 				continue;
 			}
+
 			G_Damage(vic, NULL, NULL, NULL, NULL, 140, 0, MOD_UNKNOWN);
 			count++;
 		}
+
 		trap_SendServerCommand(-1, va("print \"%d players died.\n\"", count));
 		return;
 	}
@@ -1072,10 +1096,12 @@ void Svcmd_Freeze(void)
 			{
 				continue;
 			}
+
 			vic->client->freezed = qtrue;
 			vic->takedamage      = qfalse;
 			count++;
 		}
+
 		trap_SendServerCommand(-1, va("print \"%d players are frozen.\n\"", count));
 		return;
 	}
@@ -1137,10 +1163,12 @@ void Svcmd_Unfreeze(void)
 			{
 				continue;
 			}
+
 			vic->client->freezed = qfalse;
 			vic->takedamage      = qtrue;
 			count++;
 		}
+
 		trap_SendServerCommand(-1, va("print \"%d players are unfrozen.\n\"", count));
 		return;
 	}
@@ -1216,6 +1244,7 @@ void Svcmd_Burn(void)
 			G_BurnMeGood(vic, vic, NULL);
 			count++;
 		}
+
 		trap_SendServerCommand(-1, va("print \"%d players burned.\n\"", count));
 		return;
 	}
@@ -1305,6 +1334,7 @@ void Svcmd_Pip(void)
 			G_Pip(vic);
 			count++;
 		}
+
 		trap_SendServerCommand(-1, va("print \"%d players pipped.\n\"", count));
 		return;
 	}
@@ -1395,7 +1425,6 @@ static void Svcmd_Kick_f(void)
 					// use engine banning system, mods may choose to use their own banlist
 					if (USE_ENGINE_BANLIST)
 					{
-
 						// kick but dont ban bots, they arent that lame
 						if ((g_entities[cl->ps.clientNum].r.svFlags & SVF_BOT))
 						{
@@ -1530,6 +1559,7 @@ static void Svcmd_KickNum_f(void)
 		{
 			timeout = 0;
 		}
+
 		trap_DropClient(cl->ps.clientNum, "player kicked", timeout);
 	}
 	else
@@ -1964,6 +1994,7 @@ void Svcmd_CSInfo_f(void)
 			{
 				str = "";
 			}
+
 			break;
 		}
 
@@ -1978,6 +2009,7 @@ void Svcmd_CSInfo_f(void)
 					Q_strncpyz(cspart, (char *)&cs[j * (239 - 1)], 239);
 					G_Printf("%s", cspart);
 				}
+
 				G_Printf("\n");
 			}
 		}
@@ -1986,6 +2018,7 @@ void Svcmd_CSInfo_f(void)
 			G_Printf("%-4i %-8i %s\n", i, size, str);
 		}
 	}
+
 	G_Printf("--------------------------------------------\nTotal CONFIGSTRING Length: %i\n", total);
 }
 
@@ -2221,6 +2254,7 @@ qboolean ConsoleCommand(void)
 			{
 				G_refHelp_cmd(NULL);
 			}
+
 			return qtrue;
 		}
 

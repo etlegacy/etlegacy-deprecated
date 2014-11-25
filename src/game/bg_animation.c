@@ -351,6 +351,7 @@ long BG_StringHashValue(const char *fname)
 		hash = 0;   // never return -1
 		Com_Printf("BG_StringHash WARNING: fname with empty string returning 0");
 	}
+
 	return hash;
 }
 
@@ -371,6 +372,7 @@ long BG_StringHashValue_Lwr(const char *fname)
 	{
 		hash = 0;   // never return -1
 	}
+
 	return hash;
 }
 
@@ -407,6 +409,7 @@ static int BG_AnimationIndexForString(char *string, animModelInfo_t *animModelIn
 			return i;
 		}
 	}
+
 	// no match found
 	BG_AnimParseError("BG_AnimationIndexForString: unknown index '%s' for animation group '%s'", string, animModelInfo->animationGroup);
 	return -1;  // shutup compiler
@@ -426,6 +429,7 @@ animation_t *BG_AnimationForString(char *string, animModelInfo_t *animModelInfo)
 			return anim;
 		}
 	}
+
 	// no match found
 	Com_Error(ERR_DROP, "BG_AnimationForString: unknown animation '%s' for animation group '%s'", string, animModelInfo->animationGroup);
 	return NULL;    // shutup compiler
@@ -579,6 +583,7 @@ void BG_ParseConditionBits(char **text_pp, animStringItem_t *stringTable, int co
 			{
 				Q_strcat(currentString, sizeof(currentString), " ");
 			}
+
 			Q_strcat(currentString, sizeof(currentString), token);
 		}
 
@@ -599,6 +604,7 @@ void BG_ParseConditionBits(char **text_pp, animStringItem_t *stringTable, int co
 						minus = qtrue;
 						continue;
 					}
+
 					BG_AnimParseError("BG_AnimParseAnimScript: unexpected '%s'", token);
 				}
 			}
@@ -689,7 +695,6 @@ qboolean BG_ParseConditions(char **text_pp, animScriptItem_t *scriptItem)
 			minus = qfalse;
 		}
 
-
 		conditionIndex = BG_IndexForString(token, animConditionsStr, qfalse);
 
 		switch (animConditionsTable[conditionIndex].type)
@@ -710,6 +715,7 @@ qboolean BG_ParseConditions(char **text_pp, animScriptItem_t *scriptItem)
 				{
 					token[strlen(token) - 1] = '\0';
 				}
+
 				conditionValue[0] = BG_IndexForString(token, animConditionsTable[conditionIndex].values, qfalse);
 			}
 			else
@@ -766,6 +772,7 @@ static void BG_ParseCommands(char **input, animScriptItem_t *scriptItem, animMod
 			{
 				BG_AnimParseError("BG_ParseCommands: exceeded maximum number of animations (%i)", MAX_ANIMSCRIPT_ANIMCOMMANDS);
 			}
+
 			command = &scriptItem->commands[scriptItem->numCommands++];
 			memset(command, 0, sizeof(*command));
 		}
@@ -804,6 +811,7 @@ static void BG_ParseCommands(char **input, animScriptItem_t *scriptItem, animMod
 					{
 						BG_AnimParseError("BG_ParseCommands: expected duration value");
 					}
+
 					command->animDuration[partIndex] = atoi(token);
 				}
 				else        // unget the token
@@ -848,6 +856,7 @@ static void BG_ParseCommands(char **input, animScriptItem_t *scriptItem, animMod
 				{
 					BG_AnimParseError("BG_ParseCommands: wav files not supported, only sound scripts");
 				}
+
 				// this was crashing because soundIndex wasn't initialized
 				// FIXME: find the reason
 				//  hmmm, soundindex is setup on both client and server :/
@@ -1018,6 +1027,7 @@ void BG_AnimParseAnimScript(animModelInfo_t *animModelInfo, animScriptData_t *sc
 				{
 					currentScript = NULL;
 				}
+
 				// make sure we read a new index before next indent
 				indexes[indentLevel] = -1;
 			}
@@ -1042,6 +1052,7 @@ void BG_AnimParseAnimScript(animModelInfo_t *animModelInfo, animScriptData_t *sc
 				{
 					BG_AnimParseError("BG_AnimParseAnimScript: expected '{'");
 				}
+
 				indentLevel++;
 			}
 			else if ((indentLevel == 1) && (indexes[indentLevel] < 0))
@@ -1057,6 +1068,7 @@ void BG_AnimParseAnimScript(animModelInfo_t *animModelInfo, animScriptData_t *sc
 				{
 					currentScript = &animModelInfo->scriptCannedAnims[indexes[1]];
 				}
+
 				memset(currentScript, 0, sizeof(*currentScript));
 			}
 			else if ((indentLevel == 2) && (indexes[indentLevel] < 0))
@@ -1083,6 +1095,7 @@ void BG_AnimParseAnimScript(animModelInfo_t *animModelInfo, animScriptData_t *sc
 				{
 					BG_AnimParseError("BG_AnimParseAnimScript: exceeded maximum global items (%i)", MAX_ANIMSCRIPT_ITEMS_PER_MODEL);
 				}
+
 				// it was parsed ok, so grab an item from the global list to use
 				currentScript->items[currentScript->numItems] = &animModelInfo->scriptItems[animModelInfo->numScriptItems++];
 				currentScriptItem                             = currentScript->items[currentScript->numItems];
@@ -1137,6 +1150,7 @@ void BG_AnimParseAnimScript(animModelInfo_t *animModelInfo, animScriptData_t *sc
 				{
 					currentScript = NULL;
 				}
+
 				// make sure we read a new index before next indent
 				indexes[indentLevel] = -1;
 			}
@@ -1174,6 +1188,7 @@ void BG_AnimParseAnimScript(animModelInfo_t *animModelInfo, animScriptData_t *sc
 				{
 					BG_AnimParseError("BG_AnimParseAnimScript: exceeded maximum global items (%i)", MAX_ANIMSCRIPT_ITEMS_PER_MODEL);
 				}
+
 				// it was parsed ok, so grab an item from the global list to use
 				currentScript->items[currentScript->numItems] = &animModelInfo->scriptItems[animModelInfo->numScriptItems++];
 				currentScriptItem                             = currentScript->items[currentScript->numItems];
@@ -1531,6 +1546,7 @@ int BG_AnimScriptCannedAnimation(playerState_t *ps, animModelInfo_t *animModelIn
 	{
 		return -1;
 	}
+
 	// pick a random command
 	scriptCommand = &scriptItem->commands[rand() % scriptItem->numCommands];
 	// run it
@@ -1621,6 +1637,7 @@ void BG_UpdateConditionValue(int client, int condition, int value, qboolean chec
 		// we must fall through here because a bunch of non-bitflag
 		// conditions are set with checkConversion == qtrue
 	}
+
 	globalScriptData->clientConditions[client][condition][0] = value;
 }
 
@@ -1642,6 +1659,7 @@ int BG_GetConditionValue(int client, int condition, qboolean checkConversion)
 					return i;
 				}
 			}
+
 			// nothing found
 			return 0;
 		}
@@ -1650,6 +1668,7 @@ int BG_GetConditionValue(int client, int condition, qboolean checkConversion)
 			// must use COM_BitCheck on the result.
 			return globalScriptData->clientConditions[client][condition] != 0;
 		}
+
 		//BG_AnimParseError( "BG_GetConditionValue: internal error" );
 	}
 	else
@@ -1723,6 +1742,7 @@ int BG_GetAnimScriptAnimation(int client, animModelInfo_t *animModelInfo, aistat
 	{
 		return -1;
 	}
+
 	// return the animation
 	return scriptCommand->animIndex[0];
 }
@@ -1754,6 +1774,7 @@ int BG_GetAnimScriptEvent(playerState_t *ps, scriptAnimEventTypes_t event)
 	{
 		return -1;
 	}
+
 	// pick a random command
 	scriptCommand = &scriptItem->commands[rand() % scriptItem->numCommands];
 

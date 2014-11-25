@@ -508,6 +508,7 @@ void G_Script_ScriptParse(gentity_t *ent)
 			{
 				G_Error("G_Script_ScriptParse(), Error (line %d): '}' expected, end of script found.\n", COM_GetCurrentParseLine());
 			}
+
 			break;
 		}
 
@@ -543,6 +544,7 @@ void G_Script_ScriptParse(gentity_t *ent)
 				inScript      = qtrue;
 				numEventItems = 0;
 			}
+
 			wantName = qfalse;
 		}
 		else if (inScript)
@@ -575,6 +577,7 @@ void G_Script_ScriptParse(gentity_t *ent)
 				{
 					Q_strcat(params, sizeof(params), " ");
 				}
+
 				Q_strcat(params, sizeof(params), token);
 			}
 
@@ -815,6 +818,7 @@ int G_Script_GetEventIndex(gentity_t *ent, char *eventStr, char *params)
 		{
 			G_Printf("devmode-> G_Script_GetEventIndex(), unknown event: %s\n", eventStr);
 		}
+
 		return -1;
 	}
 
@@ -1154,6 +1158,7 @@ void script_mover_blocked(gentity_t *ent, gentity_t *other)
 			Team_DroppedFlagThink(other);
 			return;
 		}
+
 		G_FreeEntity(other);
 		return;
 	}
@@ -1352,6 +1357,7 @@ void script_model_med_spawn(gentity_t *ent)
 		ent->clipmask   = CONTENTS_SOLID;
 		ent->r.contents = CONTENTS_SOLID;
 	}
+
 	ent->s.eType = ET_GENERAL;
 
 	ent->s.modelindex = G_ModelIndex(ent->model);
@@ -1431,7 +1437,6 @@ void SP_script_camera(gentity_t *ent)
 	ent->r.svFlags |= SVF_NOCLIENT;     // only broadcast when in use
 }
 
-
 /*QUAKED script_multiplayer (1.0 0.25 1.0) (-8 -8 -8) (8 8 8)
 
   This is used to script multiplayer maps.  Entity not displayed in game.
@@ -1452,6 +1457,7 @@ void SP_script_multiplayer(gentity_t *ent)
 	{
 		G_Error("^1ERROR: multiple script_multiplayers found^7\n");
 	}
+
 	level.gameManager                    = ent;
 	level.gameManager->s.otherEntityNum  = team_maxLandmines.integer;  // axis landmine count
 	level.gameManager->s.otherEntityNum2 = team_maxLandmines.integer;  // allies landmine count

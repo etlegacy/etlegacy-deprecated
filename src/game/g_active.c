@@ -306,6 +306,7 @@ qboolean ReadyToConstruct(gentity_t *ent, gentity_t *constructible, qboolean upd
 		{
 			weaponTime += constructible->constructibleStats.chargebarreq * ((float)level.engineerChargeTime[ent->client->sess.sessionTeam - 1] / (constructible->constructibleStats.duration / (float)FRAMETIME));
 		}
+
 		//weaponTime += 2.f * ((float)level.engineerChargeTime[ent->client->sess.sessionTeam-1]/(constructible->wait/(float)FRAMETIME));
 	}
 
@@ -519,6 +520,7 @@ qboolean G_SpectatorAttackFollow(gentity_t *ent)
 		ent->client->sess.spectatorClient = tr.entityNum;
 		return qtrue;
 	}
+
 	return qfalse;
 }
 
@@ -661,7 +663,6 @@ void SpectatorThink(gentity_t *ent, usercmd_t *ucmd)
 	         (((client->buttons & BUTTON_ACTIVATE) && !(client->oldbuttons & BUTTON_ACTIVATE)) || ucmd->upmove > 0) &&
 	         G_allowFollow(ent, TEAM_AXIS) && G_allowFollow(ent, TEAM_ALLIES))
 	{
-
 		StopFollowing(ent);
 	}
 #ifdef FEATURE_MULTIVIEW
@@ -717,6 +718,7 @@ qboolean ClientInactivityTimer(gclient_t *client)
 		{
 			client->inactivityTime = level.time + 1000 * inactivityspec;
 		}
+
 		return qtrue;
 	}
 
@@ -1154,11 +1156,14 @@ void ClientThink_real(gentity_t *ent)
 		client->pmext.centerangles[PITCH] = ent->tagParent->r.currentAngles[PITCH];
 	}
 
-	/*if (client->cameraPortal) {
+	/*
+	if (client->cameraPortal)
+	{
 	    G_SetOrigin( client->cameraPortal, client->ps.origin );
 	    trap_LinkEntity(client->cameraPortal);
 	    VectorCopy( client->cameraOrigin, client->cameraPortal->s.origin2);
-	}*/
+	}
+	*/
 
 	// mark the time, so the connection sprite can be removed
 	ucmd = &ent->client->pers.cmd;
@@ -1724,7 +1729,6 @@ void SpectatorClientEndFrame(gentity_t *ent)
 		ent->client->ps.stats[STAT_XP]          = ent->client->ps.stats[STAT_XP] & 0x7FFF;
 	}
 
-
 	// if we are doing a chase cam or a remote view, grab the latest info
 	if ((ent->client->sess.spectatorState == SPECTATOR_FOLLOW) || (ent->client->ps.pm_flags & PMF_LIMBO))
 	{
@@ -2000,6 +2004,7 @@ void WolfReviveBbox(gentity_t *self)
 			// Reset value so we don't continue to warp them
 			self->props_frame_state = -1;
 		}
+
 		return;
 	}
 

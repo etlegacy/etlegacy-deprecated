@@ -163,6 +163,7 @@ void CG_GenerateTracemap(void)
 							topdownmin = tracemap.ground[j][i];
 						}
 					}
+
 					break;
 				}
 			}
@@ -237,6 +238,7 @@ void CG_GenerateTracemap(void)
 								{
 									min = tracemap.sky[j][i];
 								}
+
 								break;
 							}
 							else
@@ -266,6 +268,7 @@ void CG_GenerateTracemap(void)
 						{
 							min = tracemap.sky[j][i];
 						}
+
 						break;
 					}
 					else
@@ -526,6 +529,7 @@ void CG_GenerateTracemap(void)
 					trap_FS_Write(&max, sizeof(max), f);
 					break;
 				}
+
 				continue;
 			}
 
@@ -622,6 +626,7 @@ qboolean BG_LoadTraceMap(char *rawmapname, vec2_t world_mins, vec2_t world_maxs)
 						sky_max = datablock[j][0] | (datablock[j][1] << 8) | (datablock[j][2] << 16) | (datablock[j][3] << 24);
 						break;
 					}
+
 					tracemap.sky[TRACEMAP_SIZE - 1 - i][j]       = MAX_WORLD_HEIGHT;
 					tracemap.skyground[TRACEMAP_SIZE - 1 - i][j] = MAX_WORLD_HEIGHT;
 					tracemap.ground[TRACEMAP_SIZE - 1 - i][j]    = MIN_WORLD_HEIGHT;
@@ -906,6 +911,7 @@ int BG_GetTracemapGroundFloor(void)
 	{
 		return MIN_WORLD_HEIGHT;
 	}
+
 	return tracemap.groundfloor;
 }
 
@@ -915,6 +921,7 @@ int BG_GetTracemapGroundCeil(void)
 	{
 		return MAX_WORLD_HEIGHT;
 	}
+
 	return tracemap.groundceil;
 }
 

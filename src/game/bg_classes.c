@@ -199,6 +199,7 @@ qboolean BG_ClassHasWeapon(bg_playerclass_t *classInfo, weapon_t weap)
 			return qtrue;
 		}
 	}
+
 	return qfalse;
 }
 

@@ -187,6 +187,7 @@ qboolean G_IsOnFireteam(int entityNum, fireteamData_t **teamNum)
 				{
 					*teamNum = &level.fireTeams[i];
 				}
+
 				return qtrue;
 			}
 		}
@@ -196,6 +197,7 @@ qboolean G_IsOnFireteam(int entityNum, fireteamData_t **teamNum)
 	{
 		*teamNum = NULL;
 	}
+
 	return qfalse;
 }
 
@@ -221,6 +223,7 @@ qboolean G_IsFireteamLeader(int entityNum, fireteamData_t **teamNum)
 			{
 				*teamNum = &level.fireTeams[i];
 			}
+
 			return qtrue;
 		}
 	}
@@ -229,6 +232,7 @@ qboolean G_IsFireteamLeader(int entityNum, fireteamData_t **teamNum)
 	{
 		*teamNum = NULL;
 	}
+
 	return qfalse;
 }
 
@@ -432,9 +436,11 @@ qboolean G_OnlyBotsInFireteam(fireteamData_t *ft, int excludeEntityNum, int *fir
 			{
 				*firstHuman = i;
 			}
+
 			return qfalse;
 		}
 	}
+
 	return botFound;
 }
 
@@ -477,6 +483,7 @@ void G_RemoveClientFromFireteams(int entityNum, qboolean update, qboolean print)
 #endif
 								ft->joinOrder[j] = -1;
 							}
+
 							ft->inuse = qfalse;
 							ft->ident = -1;
 							G_UpdateFireteamConfigString(ft);
@@ -512,6 +519,7 @@ void G_RemoveClientFromFireteams(int entityNum, qboolean update, qboolean print)
 				{
 					ft->joinOrder[j] = ft->joinOrder[j + 1];
 				}
+
 				ft->joinOrder[g_maxclients.integer - 1] = -1;
 
 				break;

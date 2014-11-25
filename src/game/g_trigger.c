@@ -393,6 +393,7 @@ void SP_target_push(gentity_t *self)
 		self->think     = AimAtTarget;
 		self->nextthink = level.time + FRAMETIME;
 	}
+
 	self->use = Use_target_push;
 }
 
@@ -1248,6 +1249,7 @@ void explosive_indicator_think(gentity_t *ent)
 				G_FreeMapEntityData(&mapEntityData[1], mEnt);
 			}
 		}
+
 		G_FreeEntity(ent);
 		return;
 	}
@@ -1320,6 +1322,7 @@ void constructible_indicator_think(gentity_t *ent)
 	{
 		VectorCopy(ent->parent->r.currentOrigin, ent->s.pos.trBase);
 	}
+
 	ent->s.effect1Time = parent->constructibleStats.weaponclass;
 	ent->nextthink     = level.time + FRAMETIME;
 }
@@ -1515,8 +1518,8 @@ void Think_SetupObjectiveInfo(gentity_t *ent)
 
 			trap_LinkEntity(e);     // moved down
 		}
-		ent->touch = Touch_ObjectiveInfo;
 
+		ent->touch = Touch_ObjectiveInfo;
 	}
 	else if (ent->target_ent->s.eType == ET_COMMANDMAP_MARKER)
 	{

@@ -128,6 +128,7 @@ qboolean G_commandCheck(gentity_t *ent, char *cmd, qboolean fDoAnytime)
 			{
 				pCR->pCommand(ent, i, pCR->fValue);
 			}
+
 			return qtrue;
 		}
 	}
@@ -642,7 +643,6 @@ void G_specinvite_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fLock)
 		// Notify sender/recipient
 		CP(va("print \"%s^7 has been sent a spectator invitation.\n\"", player->client->pers.netname));
 		G_printFull(va("*** You've been invited to spectate the %s team!", aTeams[tteam]), player);
-
 	}
 	else
 	{
@@ -708,6 +708,7 @@ void G_statsall_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fDump)
 		{
 			continue;
 		}
+
 		CP(va("ws %s\n", G_createStats(player)));
 	}
 }
@@ -833,6 +834,7 @@ int QDECL SortStats(const void *a, const void *b)
 	{
 		return -1;
 	}
+
 	return 1;
 }
 
@@ -896,6 +898,7 @@ void G_weaponStatsLeaders_cmd(gentity_t *ent, qboolean doTop, qboolean doWindow)
 			}
 		}
 	}
+
 	CP(va("%sbstats%s %s 0", ((doWindow) ? "w" : ""), ((doTop) ? "" : "b"), z));
 }
 
@@ -938,6 +941,7 @@ void G_weaponRankings_cmd(gentity_t *ent, unsigned int dwCommand, qboolean state
 		{
 			Q_strcat(z, sizeof(z), va("  %s - %s\n", aWeaponInfo[i].pszCode, aWeaponInfo[i].pszName));
 		}
+
 		CP(va("print \"%s\"", z));
 		return;
 	}

@@ -55,5 +55,6 @@ g_StringToken_t G_GetTokenForString(char const *str)
 	{
 		return TOK_UNKNOWN;
 	}
+
 	return (g_StringToken_t)token->g_index;
 }

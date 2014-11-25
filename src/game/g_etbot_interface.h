@@ -60,16 +60,16 @@ enum BotFlagOptions
 };
 //////////////////////////////////////////////////////////////////////////
 
-int Bot_Interface_Init();
+int  Bot_Interface_Init();
 void Bot_Interface_InitHandles();
-int Bot_Interface_Shutdown();
+int  Bot_Interface_Shutdown();
 
 void Bot_Interface_Update();
 
 void Bot_Interface_ConsoleCommand();
 
-qboolean Bot_Util_AllowPush(int weaponId);
-qboolean Bot_Util_CheckForSuicide(gentity_t *ent);
+qboolean   Bot_Util_AllowPush(int weaponId);
+qboolean   Bot_Util_CheckForSuicide(gentity_t *ent);
 const char *_GetEntityName(gentity_t *_ent);
 
 //void Bot_Util_AddGoal(gentity_t *_ent, int _goaltype, int _team, const char *_tag, obUserData *_bud);

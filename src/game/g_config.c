@@ -84,6 +84,7 @@ void G_PrintConfigs(gentity_t *ent)
 			G_refPrintf(ent, "^7Config: ^3%s", filename);
 		}
 	}
+
 	G_Printf("Config list done\n");
 }
 
@@ -201,6 +202,7 @@ qboolean G_ParseSettings(int handle, qboolean setvars, config_t *config)
 			{
 				return G_ConfigError(handle, "excepted a command value");
 			}
+
 			trap_SendConsoleCommand(EXEC_APPEND, va("%s\n", token.string));
 		}
 		else if (!Q_stricmp(token.string, "mapscripthash"))
@@ -322,6 +324,7 @@ void G_configLoadAndSet(const char *name)
 				parseOK = qfalse;
 				break;
 			}
+
 			G_Printf("Config name is: %s\n", config->name);
 		}
 		else if (!Q_stricmp(token.string, "version"))

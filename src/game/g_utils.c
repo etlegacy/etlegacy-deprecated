@@ -111,6 +111,7 @@ const char *BuildShaderStateConfig()
 		Com_sprintf(out, (MAX_QPATH * 2) + 5, "%i=%i:%5.2f@", i1, i2, remappedShaders[i].timeOffset);
 		Q_strcat(buff, sizeof(buff), out);
 	}
+
 	return buff;
 }
 
@@ -194,8 +195,8 @@ void G_RemoveConfigstringIndex(const char *name, int start, int max)
 				trap_GetConfigstring(start + j, s, sizeof(s));
 				trap_SetConfigstring(start + j, "");
 				trap_SetConfigstring(start + i, s);
-
 			}
+
 			break;
 		}
 	}
@@ -673,6 +674,7 @@ void G_SetMovedir(vec3_t angles, vec3_t movedir)
 	{
 		AngleVectors(angles, movedir, NULL, NULL);
 	}
+
 	VectorClear(angles);
 }
 
@@ -752,6 +754,7 @@ gentity_t *G_Spawn(void)
 		{
 			G_Printf("%4i: %s\n", i, g_entities[i].classname);
 		}
+
 		G_Error("G_Spawn: no free entities\n");
 	}
 
@@ -782,9 +785,11 @@ qboolean G_EntitiesFree(void)
 		{
 			continue;
 		}
+
 		// slot available
 		return qtrue;
 	}
+
 	return qfalse;
 }
 
@@ -821,11 +826,11 @@ void G_FreeEntity(gentity_t *ed)
 		// debug
 		//if (ed->s.eType >= ET_EVENTS)
 		//{
-		//  G_Printf("^3%4i event entity freed - num_entities: %4i - %s [%s]\n", ed-g_entities, level.num_entities, ed->classname, eventnames[ed->s.eType - ET_EVENTS]);
+		//	G_Printf("^3%4i event entity freed - num_entities: %4i - %s [%s]\n", ed-g_entities, level.num_entities, ed->classname, eventnames[ed->s.eType - ET_EVENTS]);
 		//}
 		//else
 		//{
-		//  G_Printf("^2%4i entity freed - num_entities: %4i - %s\n", ed-g_entities, level.num_entities, ed->classname);
+		//	G_Printf("^2%4i entity freed - num_entities: %4i - %s\n", ed-g_entities, level.num_entities, ed->classname);
 		//}
 
 		// game entity is immediately available and a 'slot' will be reused
@@ -929,6 +934,7 @@ void G_AddPredictableEvent(gentity_t *ent, int event, int eventParm)
 	{
 		return;
 	}
+
 	BG_AddPredictableEventToPlayerstate(event, eventParm, &ent->client->ps);
 }
 
@@ -958,6 +964,7 @@ void G_AddEvent(gentity_t *ent, int event, int eventParm)
 		ent->s.eventParms[ent->s.eventSequence & (MAX_EVENTS - 1)] = eventParm;
 		ent->s.eventSequence++;
 	}
+
 	ent->eventTime   = level.time;
 	ent->r.eventTime = level.time;
 }
@@ -1061,6 +1068,7 @@ qboolean infront(gentity_t *self, gentity_t *other)
 	{
 		return qtrue;
 	}
+
 	return qfalse;
 }
 

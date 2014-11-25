@@ -612,6 +612,7 @@ qboolean G_CallSpawn(gentity_t *ent)
 			{
 				return qfalse;
 			}
+
 			return qtrue;
 		}
 	}
@@ -738,6 +739,7 @@ void G_ParseField(const char *key, const char *value, gentity_t *ent)
 			case F_IGNORE:
 				break;
 			}
+
 			return;
 		}
 	}
@@ -892,6 +894,7 @@ qboolean G_ParseSpawnVars(void)
 		{
 			G_Error("G_ParseSpawnVars: MAX_SPAWN_VARS\n");
 		}
+
 		level.spawnVars[level.numSpawnVars][0] = G_AddSpawnVarToken(keyname);
 		level.spawnVars[level.numSpawnVars][1] = G_AddSpawnVarToken(com_token);
 		level.numSpawnVars++;
@@ -1054,6 +1057,7 @@ fieldtype_t GetFieldType(char *fieldname)
 	{
 		return F_IGNORE;
 	}
+
 	return fields[index].type;
 }
 #endif // FEATURE_LUA

@@ -74,6 +74,7 @@ void G_LogRegionHit(gentity_t *ent, hitRegion_t hr)
 	{
 		return;
 	}
+
 	ent->client->pers.playerStats.hitRegions[hr]++;
 }
 
@@ -328,6 +329,7 @@ void G_ResetXP(gentity_t *ent)
 	{
 		ent->client->ps.weapon = oldWeapon;
 	}
+
 	ClientUserinfoChanged(ent - g_entities);
 }
 
@@ -494,11 +496,16 @@ void G_AddKillSkillPoints(gentity_t *attacker, meansOfDeath_t mod, hitRegion_t h
 	case MOD_AKIMBO_SILENCEDLUGER:
 		switch (hr)
 		{
-		case HR_HEAD:   G_AddSkillPoints(attacker, SK_LIGHT_WEAPONS, 5.f); G_DebugAddSkillPoints(attacker, SK_LIGHT_WEAPONS, 5.f, "headshot kill"); break;
-		case HR_ARMS:   G_AddSkillPoints(attacker, SK_LIGHT_WEAPONS, 3.f); G_DebugAddSkillPoints(attacker, SK_LIGHT_WEAPONS, 3.f, "armshot kill"); break;
-		case HR_BODY:   G_AddSkillPoints(attacker, SK_LIGHT_WEAPONS, 3.f); G_DebugAddSkillPoints(attacker, SK_LIGHT_WEAPONS, 3.f, "bodyshot kill"); break;
-		case HR_LEGS:   G_AddSkillPoints(attacker, SK_LIGHT_WEAPONS, 3.f); G_DebugAddSkillPoints(attacker, SK_LIGHT_WEAPONS, 3.f, "legshot kill");  break;
-		default:        G_AddSkillPoints(attacker, SK_LIGHT_WEAPONS, 3.f); G_DebugAddSkillPoints(attacker, SK_LIGHT_WEAPONS, 3.f, "kill"); break;               // for weapons that don't have localized damage
+		case HR_HEAD:   G_AddSkillPoints(attacker, SK_LIGHT_WEAPONS, 5.f); G_DebugAddSkillPoints(attacker, SK_LIGHT_WEAPONS, 5.f, "headshot kill");
+			break;
+		case HR_ARMS:   G_AddSkillPoints(attacker, SK_LIGHT_WEAPONS, 3.f); G_DebugAddSkillPoints(attacker, SK_LIGHT_WEAPONS, 3.f, "armshot kill");
+			break;
+		case HR_BODY:   G_AddSkillPoints(attacker, SK_LIGHT_WEAPONS, 3.f); G_DebugAddSkillPoints(attacker, SK_LIGHT_WEAPONS, 3.f, "bodyshot kill");
+			break;
+		case HR_LEGS:   G_AddSkillPoints(attacker, SK_LIGHT_WEAPONS, 3.f); G_DebugAddSkillPoints(attacker, SK_LIGHT_WEAPONS, 3.f, "legshot kill");
+			break;
+		default:        G_AddSkillPoints(attacker, SK_LIGHT_WEAPONS, 3.f); G_DebugAddSkillPoints(attacker, SK_LIGHT_WEAPONS, 3.f, "kill");
+			break;               // for weapons that don't have localized damage
 		}
 		break;
 
@@ -515,11 +522,16 @@ void G_AddKillSkillPoints(gentity_t *attacker, meansOfDeath_t mod, hitRegion_t h
 	case MOD_FG42SCOPE:
 		switch (hr)
 		{
-		case HR_HEAD:   G_AddSkillPoints(attacker, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 5.f); G_DebugAddSkillPoints(attacker, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 5.f, "headshot kill"); break;
-		case HR_ARMS:   G_AddSkillPoints(attacker, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 3.f); G_DebugAddSkillPoints(attacker, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 2.f, "armshot kill"); break;
-		case HR_BODY:   G_AddSkillPoints(attacker, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 3.f); G_DebugAddSkillPoints(attacker, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 3.f, "bodyshot kill"); break;
-		case HR_LEGS:   G_AddSkillPoints(attacker, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 3.f); G_DebugAddSkillPoints(attacker, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 2.f, "legshot kill"); break;
-		default:        G_AddSkillPoints(attacker, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 3.f); G_DebugAddSkillPoints(attacker, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 3.f, "kill"); break;             // for weapons that don't have localized damage
+		case HR_HEAD:   G_AddSkillPoints(attacker, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 5.f); G_DebugAddSkillPoints(attacker, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 5.f, "headshot kill");
+			break;
+		case HR_ARMS:   G_AddSkillPoints(attacker, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 3.f); G_DebugAddSkillPoints(attacker, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 2.f, "armshot kill");
+			break;
+		case HR_BODY:   G_AddSkillPoints(attacker, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 3.f); G_DebugAddSkillPoints(attacker, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 3.f, "bodyshot kill");
+			break;
+		case HR_LEGS:   G_AddSkillPoints(attacker, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 3.f); G_DebugAddSkillPoints(attacker, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 2.f, "legshot kill");
+			break;
+		default:        G_AddSkillPoints(attacker, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 3.f); G_DebugAddSkillPoints(attacker, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 3.f, "kill");
+			break;             // for weapons that don't have localized damage
 		}
 		break;
 

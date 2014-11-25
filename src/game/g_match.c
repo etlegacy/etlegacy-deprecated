@@ -141,6 +141,7 @@ void G_delayPrint(gentity_t *dpent)
 				G_spawnPrintf(DP_UNPAUSING, level.time + 10, NULL);
 			}
 		}
+
 		break;
 	}
 
@@ -166,6 +167,7 @@ void G_delayPrint(gentity_t *dpent)
 				trap_SetConfigstring(CS_SERVERTOGGLES, va("%d", level.server_settings));
 			}
 		}
+
 		break;
 	}
 
@@ -187,6 +189,7 @@ void G_delayPrint(gentity_t *dpent)
 			{
 				continue;
 			}
+
 			G_smvRegenerateClients(ent, ent->client->pers.mvReferenceList);
 		}
 
@@ -274,6 +277,7 @@ void G_addStats(gentity_t *targ, gentity_t *attacker, int dmg_ref, int mod)
 				attacker->client->sess.aWeaponStats[ref].atts = 1;
 			}
 		}
+
 		return;
 	}
 
@@ -861,6 +865,7 @@ int G_checkServerToggle(vmCvar_t *cv)
 		{
 			level.server_settings &= ~CV_SVS_NEXTMAP;
 		}
+
 		return qtrue;
 	}
 	else if (cv == &g_nextcampaign && g_gametype.integer == GT_WOLF_CAMPAIGN)
@@ -873,6 +878,7 @@ int G_checkServerToggle(vmCvar_t *cv)
 		{
 			level.server_settings &= ~CV_SVS_NEXTMAP;
 		}
+
 		return qtrue;
 	}
 	else
