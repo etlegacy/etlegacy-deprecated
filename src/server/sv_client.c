@@ -374,7 +374,9 @@ gotnewcl:
 	}
 
 	if (!Auth_ClientCheck(newcl))
+	{
 		return;
+	}
 
 	SV_UserinfoChanged(newcl);
 
@@ -1847,7 +1849,9 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
 	}
 
 	if (!Auth_ClientMessage(cl))
+	{
 		return;
+	}
 
 	// if this is a usercmd from a previous gamestate,
 	// ignore it or retransmit the current gamestate

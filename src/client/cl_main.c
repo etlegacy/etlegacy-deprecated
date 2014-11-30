@@ -902,22 +902,40 @@ void CL_Connect_f(void)
 	// Game started as a custom protocol handler for et://<ip>[:port][/password][?session]
 	if (!Q_stricmpn(server, "et://", 5))
 	{
-		char *address = strlen(server) > 5 ? &server[5] : NULL;
+		char *address  = strlen(server) > 5 ? &server[5] : NULL;
 		char *password = address ? strstr(address, "/") : NULL;
-		char *session = address ? strstr(address, "?") : NULL;
-		if (password > address) *password++ = '\0';
-		else password = NULL;
-		if (session > address) *session++ = '\0';
-		else session = NULL;
+		char *session  = address ? strstr(address, "?") : NULL;
+		if (password > address)
+		{
+			*password++ = '\0';
+		}
+		else
+		{
+			password = NULL;
+		}
+		if (session > address)
+		{
+			*session++ = '\0';
+		}
+		else
+		{
+			session = NULL;
+		}
 
 		if (address)
+		{
 			server = address;
+		}
 
 		if (password)
+		{
 			Cvar_Set("password", password);
+		}
 
 		if (session)
+		{
 			Cvar_Set("etl_session", session);
+		}
 	}
 
 	S_StopAllSounds();
