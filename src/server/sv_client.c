@@ -335,7 +335,7 @@ void SV_DirectConnect(netadr_t from)
 			NET_OutOfBandPrint(NS_SERVER, from, va("print\n%s\n", sv_fullmsg->string));
 			Com_DPrintf("Rejected a connection.\n");
 		}
-		
+
 		return;
 	}
 
@@ -578,7 +578,7 @@ void SV_SendClientGameState(client_t *client)
 		{
 			continue;
 		}
-		
+
 		MSG_WriteByte(&msg, svc_baseline);
 		MSG_WriteDeltaEntity(&msg, &nullstate, base, qtrue);
 	}
@@ -721,7 +721,7 @@ void SV_NextDownload_f(client_t *cl)
 		cl->downloadClientBlock++;
 		return;
 	}
-	
+
 	// We aren't getting an acknowledge for the correct block, drop the client
 	// FIXME: this is bad... the client will never parse the disconnect message
 	//          because the cgame isn't loaded yet
@@ -762,7 +762,7 @@ void SV_WWWDownload_f(client_t *cl)
 		{
 			Com_Printf("WARNING: dupe wwwdl ack from client '%s'\n", rc(cl->name));
 		}
-		
+
 		cl->bWWWing = qtrue;
 		return;
 	}
@@ -960,7 +960,7 @@ void SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
 						{
 							download_flag |= (1 << DL_FLAG_DISCON);
 						}
-						
+
 						MSG_WriteLong(msg, download_flag);   // flags
 						return;
 					}
@@ -977,7 +977,7 @@ void SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
 					{
 						return;
 					}
-					
+
 					Com_Printf("Client '%s': falling back to regular downloading for failed file %s\n", rc(cl->name), cl->downloadName);
 				}
 			}
@@ -987,7 +987,7 @@ void SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
 				{
 					return;
 				}
-				
+
 				Com_Printf("Client '%s' is not configured for www download\n", rc(cl->name));
 			}
 		}
@@ -1427,7 +1427,7 @@ void SV_UserinfoChanged(client_t *cl)
 		{
 			i = 30;
 		}
-		
+
 		cl->snapshotMsec = 1000 / i;
 	}
 	else
@@ -1559,7 +1559,7 @@ void SV_ExecuteClientCommand(client_t *cl, const char *s, qboolean clientOK, qbo
 				SV_SendServerCommand(cl, "cp \"^3Can't join a team when a demo is replaying!\"");     // issue a chat message only to the player trying to join a team
 				return;
 			}
-			
+
 			Cmd_Args_Sanitize();
 			VM_Call(gvm, GAME_CLIENT_COMMAND, cl - svs.clients);
 		}
@@ -1735,7 +1735,7 @@ static void SV_UserMove(client_t *cl, msg_t *msg, qboolean delta)
 			Com_DPrintf("%s: didn't get cp command, resending gamestate\n", rc(cl->name));
 			SV_SendClientGameState(cl);
 		}
-		
+
 		return;
 	}
 
@@ -1896,7 +1896,6 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
 				return; // disconnect command
 			}
 		}
-		
 		while (1);
 
 		return;
