@@ -1154,6 +1154,9 @@ void SV_Init(void)
 #ifdef FEATURE_TRACKER
 	Tracker_Init();
 #endif
+
+	json_api_init();
+	Auth_Init();
 }
 
 /*
@@ -1255,4 +1258,5 @@ void SV_Shutdown(char *finalmsg)
 #ifdef FEATURE_TRACKER
 	Tracker_ServerStop();
 #endif
+	json_api_free();
 }

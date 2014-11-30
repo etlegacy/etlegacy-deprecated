@@ -170,6 +170,8 @@ typedef struct client_s
 	clientState_t state;
 	char userinfo[MAX_INFO_STRING];         // name, etc
 	char userinfobuffer[MAX_INFO_STRING];   // used for buffering of user info
+	char username[MAX_INFO_STRING];
+	char session[MAX_INFO_STRING];
 
 	char reliableCommands[MAX_RELIABLE_COMMANDS][MAX_STRING_CHARS];
 	int reliableSequence;                   // last added reliable message, not necesarily sent or acknowledged yet
@@ -518,6 +520,7 @@ void SV_ExecuteClientCommand(client_t *cl, const char *s, qboolean clientOK, qbo
 void SV_ClientThink(client_t *cl, usercmd_t *cmd);
 void SV_WriteDownloadToClient(client_t *cl, msg_t *msg);
 void SV_UpdateUserinfo_f(client_t *cl);
+void SV_SendClientGameState(client_t *client);
 
 // sv_ccmds.c
 void SV_Heartbeat_f(void);
@@ -566,6 +569,14 @@ void SV_RestorePos(int cli);
 int SV_CanSee(int player, int other);
 int SV_PositionChanged(int cli);
 #endif
+
+// sv_auth.c
+void Auth_Init();
+void Auth_Heartbeat();
+qboolean Auth_ClientCheck(client_t *cl);
+qboolean Auth_ClientMessage(client_t *cl);
+void Auth_UserinfoChanged(client_t *cl);
+void Auth_ClientDisconnect(client_t *cl);
 
 //============================================================
 

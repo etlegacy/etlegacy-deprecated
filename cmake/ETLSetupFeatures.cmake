@@ -83,32 +83,6 @@ if(BUILD_CLIENT)
 		include_directories(SYSTEM ${JPEG_BUNDLED_INCLUDE_DIR})
 	endif()
 
-	if(FEATURE_CURL)
-		if(NOT BUNDLED_CURL)
-			find_package(CURL REQUIRED)
-			list(APPEND CLIENT_LIBRARIES ${CURL_LIBRARIES})
-			include_directories(SYSTEM ${CURL_INCLUDE_DIR})
-			if(MINGW)
-				add_definitions(-DCURL_STATICLIB)
-			endif(MINGW)
-		else() # BUNDLED_CURL
-			list(APPEND CLIENT_LIBRARIES ${CURL_BUNDLED_LIBRARY}) # NOTE: LIBRARY not LIBRARIES
-			include_directories(SYSTEM ${CURL_BUNDLED_INCLUDE_DIR})
-			add_definitions(-DCURL_STATICLIB)
-		endif()
-		set(CLIENT_SRC ${CLIENT_SRC} "src/qcommon/dl_main_curl.c")
-	else(FEATURE_CURL)
-		set(CLIENT_SRC ${CLIENT_SRC} "src/qcommon/dl_main_stubs.c")
-	endif(FEATURE_CURL)
-
-	if(FEATURE_JANSSON)
-		list(APPEND CLIENT_LIBRARIES ${BUNDLED_JASSON_LIBRARIES}) # NOTE: LIBRARY not LIBRARIES
-		include_directories(SYSTEM ${BUNDLED_JASSON_INCLUDE_DIR})
-		set(CLIENT_SRC ${CLIENT_SRC} "src/qcommon/json.c")
-	else(FEATURE_JANSSON)
-		set(CLIENT_SRC ${CLIENT_SRC} "src/qcommon/json_stubs.c")
-	endif(FEATURE_JANSSON)
-
 	if(FEATURE_GETTEXT)
 		add_definitions(-DFEATURE_GETTEXT)
 		FILE(GLOB GETTEXT_SRC
@@ -233,6 +207,44 @@ endif()
 if (FEATURE_CROUCH)
 	add_definitions(-DFEATURE_CROUCH)
 endif()
+
+if(FEATURE_CURL)
+	if(NOT BUNDLED_CURL)
+		find_package(CURL REQUIRED)
+		list(APPEND CLIENT_LIBRARIES ${CURL_LIBRARIES})
+		list(APPEND SERVER_LIBRARIES ${CURL_LIBRARIES})
+		include_directories(SYSTEM ${CURL_INCLUDE_DIR})
+		if(MINGW)
+			add_definitions(-DCURL_STATICLIB)
+		endif(MINGW)
+	else() # BUNDLED_CURL
+		list(APPEND CLIENT_LIBRARIES ${CURL_BUNDLED_LIBRARY}) # NOTE: LIBRARY not LIBRARIES
+		list(APPEND SERVER_LIBRARIES ${CURL_BUNDLED_LIBRARY}) # NOTE: LIBRARY not LIBRARIES
+		include_directories(SYSTEM ${CURL_BUNDLED_INCLUDE_DIR})
+		add_definitions(-DCURL_STATICLIB)
+	endif()
+	set(CLIENT_SRC ${CLIENT_SRC} "src/qcommon/dl_main_curl.c")
+else(FEATURE_CURL)
+	set(CLIENT_SRC ${CLIENT_SRC} "src/qcommon/dl_main_stubs.c")
+endif(FEATURE_CURL)
+
+if(FEATURE_JANSSON)
+	if(NOT BUNDLED_JANSSON)
+		find_package(JANSSON REQUIRED)
+		list(APPEND CLIENT_LIBRARIES ${JANSSON_LIBRARY})
+		list(APPEND SERVER_LIBRARIES ${JANSSON_LIBRARY})
+		include_directories(SYSTEM ${JANSSON_INCLUDE_PATH})
+	else() # BUNDLED_JANSSON
+		list(APPEND CLIENT_LIBRARIES ${BUNDLED_JANSSON_LIBRARY}) # NOTE: LIBRARY not LIBRARIES
+		list(APPEND SERVER_LIBRARIES ${BUNDLED_JANSSON_LIBRARY}) # NOTE: LIBRARY not LIBRARIES
+	endif()
+	include_directories(SYSTEM ${BUNDLED_JASSON_INCLUDE_DIR})
+	set(CLIENT_SRC ${CLIENT_SRC} "src/qcommon/json.c")
+	set(SERVER_SRC ${SERVER_SRC} "src/qcommon/json.c")
+else(FEATURE_JANSSON)
+	set(CLIENT_SRC ${CLIENT_SRC} "src/qcommon/json_stubs.c")
+	set(SERVER_SRC ${SERVER_SRC} "src/qcommon/json_stubs.c")
+endif(FEATURE_JANSSON)
 
 if(FEATURE_CURSES)
 	find_package(Curses REQUIRED)

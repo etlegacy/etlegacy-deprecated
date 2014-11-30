@@ -96,15 +96,22 @@ function(git_describe _var)
 	#endif()
 
 	#message(STATUS "Arguments to execute_process: ${ARGN}")
-
-	execute_process(COMMAND "${GIT_EXECUTABLE}" describe ${hash} ${ARGN}
+	execute_process(COMMAND "${GIT_EXECUTABLE}" describe --exact ${hash} ${ARGN}
 		WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
 		RESULT_VARIABLE res
 		OUTPUT_VARIABLE out
 		ERROR_QUIET
 		OUTPUT_STRIP_TRAILING_WHITESPACE)
 	if(NOT res EQUAL 0)
-		set(out "${out}-${res}-NOTFOUND")
+		execute_process(COMMAND "${GIT_EXECUTABLE}" rev-parse --short ${hash}
+			WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+			RESULT_VARIABLE res
+			OUTPUT_VARIABLE out
+			ERROR_QUIET
+			OUTPUT_STRIP_TRAILING_WHITESPACE)
+		if(NOT res EQUAL 0)
+			set(out "${out}-${res}-NOTFOUND")
+		endif()
 	endif()
 
 	set(${_var} "${out}" PARENT_SCOPE)

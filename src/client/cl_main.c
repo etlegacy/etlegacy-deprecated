@@ -899,10 +899,25 @@ void CL_Connect_f(void)
 		server = Cmd_Argv(2);
 	}
 
-	// Game started as a custom protocol handler for et://
+	// Game started as a custom protocol handler for et://<ip>[:port][/password][?session]
 	if (!Q_stricmpn(server, "et://", 5))
 	{
-		Q_strncpyz(server, server + 5, strlen(server));
+		char *address = strlen(server) > 5 ? &server[5] : NULL;
+		char *password = address ? strstr(address, "/") : NULL;
+		char *session = address ? strstr(address, "?") : NULL;
+		if (password > address) *password++ = '\0';
+		else password = NULL;
+		if (session > address) *session++ = '\0';
+		else session = NULL;
+
+		if (address)
+			server = address;
+
+		if (password)
+			Cvar_Set("password", password);
+
+		if (session)
+			Cvar_Set("etl_session", session);
 	}
 
 	S_StopAllSounds();
@@ -3111,6 +3126,7 @@ void CL_Init(void)
 	Cvar_Get("snaps", "20", CVAR_USERINFO | CVAR_ARCHIVE);
 
 	Cvar_Get("password", "", CVAR_USERINFO);
+	Cvar_Get("etl_session", "", CVAR_USERINFO);
 	Cvar_Get("cg_predictItems", "1", CVAR_ARCHIVE);
 
 	Cvar_Get("cg_autoactivate", "1", CVAR_ARCHIVE);

@@ -35,4 +35,13 @@
 #ifndef INCLUDE_JSON_PUBLIC_H
 #define INCLUDE_JSON_PUBLIC_H
 
+#include <jansson.h>
+
+typedef void (*json_api_callback)(qboolean, json_t *, void *);
+
+void json_api_init();
+int json_api_request(const char *url, json_t *, json_api_callback, void *);
+int json_api_frame();
+void json_api_free();
+
 #endif // #ifndef INCLUDE_JSON_PUBLIC_H

@@ -373,6 +373,9 @@ gotnewcl:
 		return;
 	}
 
+	if (!Auth_ClientCheck(newcl))
+		return;
+
 	SV_UserinfoChanged(newcl);
 
 	// Clear out firstPing now that client is connected
@@ -511,6 +514,8 @@ void SV_DropClient(client_t *drop, const char *reason)
 #ifdef FEATURE_TRACKER
 	Tracker_ClientDisconnect(drop);
 #endif
+
+	Auth_ClientDisconnect(drop);
 }
 
 /**
@@ -1365,6 +1370,8 @@ void SV_UserinfoChanged(client_t *cl)
 	}
 #endif
 
+	Auth_UserinfoChanged(cl);
+
 	// name for C code
 	Q_strncpyz(cl->name, Info_ValueForKey(cl->userinfo, "name"), sizeof(cl->name));
 
@@ -1838,6 +1845,10 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
 		cl->reliableAcknowledge = cl->reliableSequence;
 		return;
 	}
+
+	if (!Auth_ClientMessage(cl))
+		return;
+
 	// if this is a usercmd from a previous gamestate,
 	// ignore it or retransmit the current gamestate
 	//

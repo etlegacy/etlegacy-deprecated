@@ -278,11 +278,6 @@ void SV_MasterHeartbeat(const char *message)
 	int             res;
 	int             netenabled;
 
-	if (!(sv_advert->integer & SVA_MASTER))
-	{
-		return;
-	}
-
 	netenabled = Cvar_VariableIntegerValue("net_enabled");
 
 	// "dedicated 1" is for lan play, "dedicated 2" is for inet public play
@@ -302,6 +297,13 @@ void SV_MasterHeartbeat(const char *message)
 	}
 
 	svs.nextHeartbeatTime = svs.time + HEARTBEAT_MSEC;
+
+	Auth_Heartbeat();
+
+	if (!(sv_advert->integer & SVA_MASTER))
+	{
+		return;
+	}
 
 	// send to group masters
 	for (i = 0; i < MAX_MASTER_SERVERS; i++)
@@ -1526,6 +1528,8 @@ void SV_Frame(int msec)
 #ifdef FEATURE_TRACKER
 	Tracker_Frame(msec);
 #endif
+
+	json_api_frame();
 
 	if (com_dedicated->integer)
 	{
