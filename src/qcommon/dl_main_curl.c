@@ -57,7 +57,7 @@ static FILE  *dl_file    = NULL;
 typedef struct write_result_s
 {
 	char *data;
-	int pos;
+	int  pos;
 } write_result_t;
 
 /*

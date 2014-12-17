@@ -96,7 +96,6 @@ typedef struct patchCollide_s {
     facet_t	*facets;
 } patchCollide_t;
 
-
 #define	MAX_GRID_SIZE	129
 
 typedef struct {
@@ -788,7 +787,6 @@ static int CM_EdgePlaneNum(cGrid_t *grid, int gridPlanes[MAX_GRID_SIZE][MAX_GRID
 		}
 		VectorMA(p1, 4, planes[p].plane, up);
 		return CM_FindPlane(p1, p2, up);
-
 	}
 
 	Com_Error(ERR_DROP, "CM_EdgePlaneNum: bad k");
@@ -1168,7 +1166,6 @@ void CM_AddFacetBevels(facet_t *facet)
 	facet->borderNoAdjust[facet->numBorders] = 0;
 	facet->borderInward[facet->numBorders]   = qtrue;
 	facet->numBorders++;
-
 }
 
 typedef enum

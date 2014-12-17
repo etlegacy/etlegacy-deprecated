@@ -32,7 +32,6 @@
  * @file vm_interpreted.c
  */
 
-
 #include "vm_local.h"
 
 #ifdef DEBUG_VM
@@ -235,7 +234,6 @@ void VM_PrepareInterpreter(vm_t *vm, vmHeader_t *header)
 		default:
 			break;
 		}
-
 	}
 	pc          = 0;
 	instruction = 0;
@@ -307,7 +305,6 @@ void VM_PrepareInterpreter(vm_t *vm, vmHeader_t *header)
 /*
 ==============
 VM_Call
-
 
 Upon a system call, the stack will look like:
 
@@ -863,7 +860,6 @@ nextInstruction2:
 				opStack        -= 2;
 				goto nextInstruction;
 			}
-
 
 		//===================================================================
 

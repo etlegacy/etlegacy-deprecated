@@ -255,6 +255,7 @@ void COM_BitClear(int array[], int bitNum)
 
 	array[i] &= ~(1 << bitNum);
 }
+
 //============================================================================
 
 short ShortSwap(short l)
@@ -1524,7 +1525,6 @@ char *Q_CleanStr(char *string)
 	return string;
 }
 
-
 /**
  * @brief Takes a plain "un-colored" string, and then colorizes it so the string is displayed in the given color.
  * If given a string such as "Bob" and asked to colorize to '1' (red)', the output would be "^1Bob". If given
@@ -1994,7 +1994,7 @@ void Info_RemoveKey(char *s, const char *key)
 
 		if (!Q_stricmp(key, pkey))
 		{
-			// rain - arguments to strcpy must not overlap
+			// arguments to strcpy must not overlap
 			//strcpy (start, s);    // remove this part
 			memmove(start, s, strlen(s) + 1);     // remove this part
 			return;

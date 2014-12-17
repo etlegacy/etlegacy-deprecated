@@ -164,7 +164,6 @@ void Netchan_TransmitNextFragment(netchan_t *chan)
 	}
 }
 
-
 /*
 ===============
 Netchan_Transmit
@@ -412,7 +411,7 @@ LOOPBACK BUFFERS FOR LOCAL PLAYER
 typedef struct
 {
 	byte data[MAX_PACKETLEN];
-	int datalen;
+	int  datalen;
 } loopmsg_t;
 
 typedef struct
@@ -422,7 +421,6 @@ typedef struct
 } loopback_t;
 
 loopback_t loopbacks[2];
-
 
 qboolean    NET_GetLoopPacket(netsrc_t sock, netadr_t *net_from, msg_t *net_message)
 {
@@ -449,7 +447,6 @@ qboolean    NET_GetLoopPacket(netsrc_t sock, netadr_t *net_from, msg_t *net_mess
 	Com_Memset(net_from, 0, sizeof(*net_from));
 	net_from->type = NA_LOOPBACK;
 	return qtrue;
-
 }
 
 void NET_SendLoopPacket(netsrc_t sock, int length, const void *data, netadr_t to)
@@ -578,7 +575,6 @@ void QDECL NET_OutOfBandPrint(netsrc_t sock, netadr_t adr, const char *format, .
 {
 	va_list argptr;
 	char    string[MAX_MSGLEN];
-
 
 	// set the header
 	string[0] = -1;

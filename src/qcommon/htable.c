@@ -71,14 +71,12 @@ struct tentry_t
 	unsigned int hash;
 };
 
-
 /*
  * Function pointers
  */
 typedef unsigned int ( *getkey_t )(const char *key);
 typedef char * ( *keyfromentry_t )(struct tentry_t *entry, size_t key_offset);
 typedef int ( *comparekey_t )(const char *k1, const char *k2);
-
 
 /*
  * Main hash table structure
@@ -101,9 +99,9 @@ struct hashtable_s
 	size_t key_length;
 
 	/* Functions */
-	getkey_t GetKey;
+	getkey_t       GetKey;
 	keyfromentry_t KeyFromEntry;
-	comparekey_t CompareKey;
+	comparekey_t   CompareKey;
 
 	/* List of all items */
 	struct listhead_t all_items;
@@ -154,11 +152,11 @@ static void _HT_InsertInGlobalList(hashtable_t table, struct tentry_t *t_entry, 
  *=============================================*/
 
 hashtable_t HT_Create(
-    size_t size,
+    size_t       size,
     unsigned int flags,
-    size_t item_size,
-    size_t key_offset,
-    size_t key_length
+    size_t       item_size,
+    size_t       key_offset,
+    size_t       key_length
     )
 {
 	hashtable_t       table;
@@ -229,7 +227,6 @@ void HT_Destroy(hashtable_t table)
 	}
 	Z_Free(table);
 }
-
 
 void *HT_GetItem(
     hashtable_t table,
@@ -417,8 +414,8 @@ void *HT_PutItem(
 
 qboolean HT_DeleteItem(
     hashtable_t table,
-    const char *key,
-    void **found
+    const char  *key,
+    void        **found
     )
 {
 	unsigned int      hash;

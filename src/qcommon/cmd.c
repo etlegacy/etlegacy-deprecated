@@ -46,8 +46,8 @@
 typedef struct
 {
 	byte *data;
-	int maxsize;
-	int cursize;
+	int  maxsize;
+	int  cursize;
 } cmd_t;
 
 int   cmd_wait;
@@ -401,9 +401,9 @@ void Cmd_Echo_f(void)
 typedef struct cmd_function_s
 {
 	struct cmd_function_s *next;
-	char *name;
-	xcommand_t function;
-	completionFunc_t complete;
+	char                  *name;
+	xcommand_t            function;
+	completionFunc_t      complete;
 } cmd_function_t;
 
 static int  cmd_argc;
