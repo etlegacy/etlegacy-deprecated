@@ -1836,6 +1836,9 @@ extern vmCvar_t g_corpses;
 
 extern vmCvar_t g_realHead;
 
+extern vmCvar_t sv_fps;
+extern vmCvar_t g_skipCorrection;
+
 typedef struct GeoIPTag
 {
 	fileHandle_t GeoIPDatabase;
@@ -1935,6 +1938,7 @@ void G_HistoricalTrace(gentity_t *ent, trace_t *results, const vec3_t start, con
 void G_HistoricalTraceBegin(gentity_t *ent);
 void G_HistoricalTraceEnd(gentity_t *ent);
 void G_Trace(gentity_t *ent, trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask, qboolean ignoreCorpses);
+void G_PredictPmove(gentity_t *ent, float frametime);
 
 #define BODY_VALUE(ENT) ENT->watertype
 #define BODY_TEAM(ENT) ENT->s.modelindex
@@ -2256,6 +2260,10 @@ qboolean G_LandmineArmed(gentity_t *ent);
 qboolean G_LandmineUnarmed(gentity_t *ent);
 team_t G_LandmineTeam(gentity_t *ent);
 qboolean G_LandmineSpotted(gentity_t *ent);
+qboolean G_AvailableAirstrikes(gentity_t *ent);
+qboolean G_AvailableArtillery(gentity_t *ent);
+void G_AddAirstrikeToCounters(gentity_t *ent);
+void G_AddArtilleryToCounters(gentity_t *ent);
 gentity_t *G_FindSmokeBomb(gentity_t *start);
 gentity_t *G_FindLandmine(gentity_t *start);
 gentity_t *G_FindDynamite(gentity_t *start);
@@ -2389,8 +2397,9 @@ void G_mapvoteinfo_write(void);
 void G_mapvoteinfo_read(void);
 
 // g_misc flags
-#define G_MISC_SHOVE_NOZ          1
-#define G_MISC_MEDIC_SYRINGE_HEAL 2
+#define G_MISC_SHOVE_NOZ           BIT(0)
+#define G_MISC_MEDIC_SYRINGE_HEAL  BIT(1)
+#define G_MISC_ARTY_STRIKE_COMBINE BIT(2)
 
 // g_voting flags
 #define VOTEF_USE_TOTAL_VOTERS      1   // use total voters instead of total players to decide if a vote passes
@@ -2398,7 +2407,7 @@ void G_mapvoteinfo_read(void);
 #define VOTEF_DISP_CALLER           4   // append "(called by name)" in vote string
 
 // Server frametime is calculated with the sv_fps
-#define SERVER_FRAMETIME    (1000/trap_Cvar_VariableIntegerValue("sv_fps"))   // (1000/20) default
+#define SERVER_FRAMETIME    (1000 / trap_Cvar_VariableIntegerValue("sv_fps"))   // (1000/20) default
 #define SERVER_FRAMETIME_F  ((float)SERVER_FRAMETIME) // (1000/20) default
 
 // Calculated deltas
