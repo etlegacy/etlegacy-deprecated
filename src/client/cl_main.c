@@ -760,6 +760,29 @@ void CL_RequestMotd(void)
 	NET_OutOfBandPrint(NS_CLIENT, autoupdate.motdServer, "getmotd \"%s\"", info);
 }
 
+void CL_RequestMasterData(qboolean force)
+{
+	int tempTime = cls.realtime - autoupdate.masterDataChecked;
+
+	//Only check when we are not running a game
+	if (cls.state >= CA_LOADING)
+	{
+		return;
+	}
+
+	if (!force && autoupdate.masterDataChecked && tempTime < 300000 && tempTime > 0)
+	{
+		return;
+	}
+
+	// We need to add cls.realtime + 1 since on the very first time cls.realtime can be 0
+	autoupdate.masterDataChecked = cls.realtime + 1;
+
+	// fire a message off to the motd server and check for update
+	CL_RequestMotd();
+	CL_CheckAutoUpdate();
+}
+
 /*
 ======================================================================
 CONSOLE COMMANDS
@@ -951,9 +974,7 @@ void CL_Connect_f(void)
 	Cvar_Set("r_uiFullScreen", "0");
 	Cvar_Set("ui_connecting", "1");
 
-	// fire a message off to the motd server and check for update
-	CL_RequestMotd();
-	CL_CheckAutoUpdate();
+	CL_RequestMasterData(qtrue);
 
 	// clear any previous "server full" type messages
 	clc.serverMessage[0] = 0;
@@ -2540,6 +2561,9 @@ void CL_Frame(int msec)
 
 	// resend a connection request if necessary
 	CL_CheckForResend();
+
+	// request motd and update data from the master server
+	CL_RequestMasterData(qfalse);
 
 	// decide on the serverTime to render
 	CL_SetCGameTime();

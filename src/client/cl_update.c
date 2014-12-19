@@ -63,12 +63,6 @@ void CL_CheckAutoUpdate(void)
 		return;
 	}
 
-	// Only check once per session
-	if (autoupdate.updateChecked)
-	{
-		return;
-	}
-
 	// Resolve update server
 	Com_Printf("Updater: resolving %s... ", UPDATE_SERVER_NAME);
 
@@ -170,6 +164,7 @@ void CL_GetAutoUpdate(void)
 #endif /* FEATURE_AUTOUPDATE */
 }
 
+#ifdef FEATURE_AUTOUPDATE
 static void CL_RunUpdateBinary(const char *updateBinary, const char *updateConfig)
 {
 	static char fn[MAX_OSPATH];
@@ -194,7 +189,9 @@ static void CL_RunUpdateBinary(const char *updateBinary, const char *updateConfi
 	// - after Legacy mod update
 	FS_ConditionalRestart(clc.checksumFeed);
 }
+#endif /* FEATURE_AUTOUPDATE */
 
+#ifdef FEATURE_AUTOUPDATE
 static qboolean CL_UnpackUpdatePackage(const char *pack, const char *bin, const char *config)
 {
 	char *fn1 = FS_BuildOSPath(Cvar_VariableString("fs_homepath"), AUTOUPDATE_DIR, pack);
@@ -221,6 +218,20 @@ static qboolean CL_UnpackUpdatePackage(const char *pack, const char *bin, const 
 
 	return qfalse;
 }
+#endif /* FEATURE_AUTOUPDATE */
+
+#ifdef FEATURE_AUTOUPDATE
+static void CL_CLeanUpdateFolder(const char *bin)
+{
+	//We just remove the old updater here, if it exists.
+	//The update installer itself does other cleanups
+	char *fn1 = FS_BuildOSPath(Cvar_VariableString("fs_homepath"), AUTOUPDATE_DIR, bin);
+	if (FS_FileInPathExists(fn1))
+	{
+		FS_Remove(fn1);
+	}
+}
+#endif /* FEATURE_AUTOUPDATE */
 
 qboolean CL_CheckUpdateDownloads(void)
 {
@@ -233,6 +244,8 @@ qboolean CL_CheckUpdateDownloads(void)
 			CL_InitDownloads();
 			return qtrue;
 		}
+
+		CL_CLeanUpdateFolder(UPDATE_BINARY);
 
 		if (CL_UnpackUpdatePackage(UPDATE_PACKAGE, UPDATE_BINARY, UPDATE_CONFIG))
 		{
@@ -394,7 +407,18 @@ void CL_UpdateInfoPacket(netadr_t from)
 		}
 
 #ifdef FEATURE_AUTOUPDATE
-		VM_Call(uivm, UI_SET_ACTIVE_MENU, UIMENU_WM_AUTOUPDATE);
+		if (uivm)
+		{
+			uiMenuCommand_t currentMenu = VM_Call(uivm, UI_GET_ACTIVE_MENU);
+			if (currentMenu != UIMENU_WM_AUTOUPDATE)
+			{
+				VM_Call(uivm, UI_SET_ACTIVE_MENU, UIMENU_WM_AUTOUPDATE);
+			}
+		}
+		else
+		{
+			Com_Printf("%s ^1RUN UPDATE COMMAND TO UPDATE\n", com_updatemessage->string);
+		}
 #endif /* FEATURE_AUTOUPDATE */
 	}
 }
@@ -421,6 +445,7 @@ void CL_UpdateVarsClean(int flags)
 		Cvar_Set("com_updatefiles", "");
 		Cvar_Set("com_updatemessage", "");
 		Cvar_Set("com_updatefiles", "");
+		autoupdate.masterDataChecked = 0;
 	case CLEAR_FLAGS:
 		autoupdate.updateChecked = qfalse;
 		autoupdate.forceUpdate   = qfalse;

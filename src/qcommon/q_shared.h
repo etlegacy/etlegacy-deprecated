@@ -402,6 +402,10 @@ typedef int clipHandle_t;
 #define BIT(x)              (1 << x)
 #endif
 
+#define ENABLEBIT(x, y) x |= BIT(y)
+#define CLEARBIT(x, y) x &= ~BIT(y)
+#define TOGGLEBIT(x, y) x ^= BIT(y)
+
 //#define   SND_NORMAL          0x000   // (default) Allow sound to be cut off only by the same sound on this channel
 #define     SND_OKTOCUT         0x001   // Allow sound to be cut off by any following sounds on this channel
 #define     SND_REQUESTCUT      0x002   // Allow sound to be cut off by following sounds on this channel only for sounds who request cutoff
@@ -862,6 +866,10 @@ void ByteToDir(int b, vec3_t dir);
 #define MatrixMultiply(in1, in2, o) _MatrixMultiply(in1, in2, o)
 
 #endif // 1
+
+#define SinCos(rad,s,c)		\
+	(s) = sin( (rad) );		\
+	(c) = cos( (rad) );
 
 #ifdef __LCC__
 #ifdef VectorCopy
