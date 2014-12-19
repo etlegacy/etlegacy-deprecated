@@ -293,7 +293,7 @@ int CM_PointContents(const vec3_t p, clipHandle_t model)
 		for (i = 0 ; i < b->numsides ; i++)
 		{
 			d = DotProduct(p, b->sides[i].plane->normal);
-// FIXME test for Cash
+// FIXME: test for Cash
 //          if ( d >= b->sides[i].plane->dist ) {
 			if (d > b->sides[i].plane->dist)
 			{
@@ -440,7 +440,7 @@ void CM_AdjustAreaPortalState(int area1, int area2, qboolean open)
 		cm.areaPortals[area1 * cm.numAreas + area2]++;
 		cm.areaPortals[area2 * cm.numAreas + area1]++;
 	}
-	else if (cm.areaPortals[area2 * cm.numAreas + area1])         // Ridah, fixes loadgame issue
+	else if (cm.areaPortals[area2 * cm.numAreas + area1])         // fixes loadgame issue
 	{
 		cm.areaPortals[area1 * cm.numAreas + area2]--;
 		cm.areaPortals[area2 * cm.numAreas + area1]--;

@@ -495,7 +495,6 @@ void ChopWindingInPlace(winding_t **inout, vec3_t normal, vec_t dist, vec_t epsi
 	if (!counts[1])
 	{
 		return;     // inout stays the same
-
 	}
 	maxpts = in->numpoints + 4;   // cant use counts[0]+2 because
 	                              // of fp grouping errors

@@ -302,7 +302,7 @@ Dlls will call this directly
 intptr_t QDECL VM_DllSyscall(intptr_t arg, ...)
 {
 #if defined(__x86_64__) || defined (__llvm__) || ((defined __linux__) && (defined __powerpc__)) || defined(__MORPHOS__)
-	// rcg010206 - see commentary above
+	// see commentary above
 	intptr_t args[16];
 	int      i;
 	va_list  ap;
@@ -586,7 +586,7 @@ void *VM_ArgPtr(intptr_t intValue)
 	{
 		return NULL;
 	}
-	// bk001220 - currentVM is missing on reconnect
+	// currentVM is missing on reconnect
 	if (currentVM == NULL)
 	{
 		return NULL;
@@ -609,7 +609,7 @@ void *VM_ExplicitArgPtr(vm_t *vm, intptr_t intValue)
 		return NULL;
 	}
 
-	// bk010124 - currentVM is missing on reconnect here as well?
+	// currentVM is missing on reconnect here as well?
 	if (currentVM == NULL)
 	{
 		return NULL;
@@ -664,7 +664,7 @@ intptr_t QDECL VM_Call(vm_t *vm, int callnum, ...)
 	// if we have a dll loaded, call it directly
 	if (vm->entryPoint)
 	{
-		// rcg010207 -  see dissertation at top of VM_DllSyscall() in this file.
+		// see dissertation at top of VM_DllSyscall() in this file.
 		int     args[16];
 		va_list ap;
 		int     i;
