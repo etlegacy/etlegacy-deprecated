@@ -109,8 +109,7 @@ void Con_MessageMode_f(void)
 
 	Field_Clear(&chatField);
 	chatField.widthInChars = 30;
-
-	cls.keyCatchers ^= KEYCATCH_MESSAGE;
+	cls.keyCatchers       ^= KEYCATCH_MESSAGE;
 }
 
 /*
@@ -198,10 +197,13 @@ void Con_Dump_f(void)
 	{
 		line = con.text + (l % con.totallines) * con.linewidth;
 		for (x = 0 ; x < con.linewidth ; x++)
+		{
 			if ((line[x] & 0xff) != ' ')
 			{
 				break;
 			}
+		}
+
 		if (x != con.linewidth)
 		{
 			break;
@@ -223,23 +225,25 @@ void Con_Dump_f(void)
 		line = con.text + (l % con.totallines) * con.linewidth;
 		for (i = 0; i < con.linewidth; i++)
 			buffer[i] = line[i] & 0xff;
-		for (x = con.linewidth - 1 ; x >= 0 ; x--)
 		{
-			if (buffer[x] == ' ')
+			for (x = con.linewidth - 1 ; x >= 0 ; x--)
 			{
-				buffer[x] = 0;
+				if (buffer[x] == ' ')
+				{
+					buffer[x] = 0;
+				}
+				else
+				{
+					break;
+				}
 			}
-			else
-			{
-				break;
-			}
-		}
 #ifdef _WIN32
-		Q_strcat(buffer, bufferlen, "\r\n");
+			Q_strcat(buffer, bufferlen, "\r\n");
 #else
-		Q_strcat(buffer, bufferlen, "\n");
+			Q_strcat(buffer, bufferlen, "\n");
 #endif
-		FS_Write(buffer, strlen(buffer), f);
+			FS_Write(buffer, strlen(buffer), f);
+		}
 	}
 
 	Hunk_FreeTempMemory(buffer);
@@ -494,14 +498,12 @@ void CL_ConsolePrint(char *txt)
 			{
 				break;
 			}
-
 		}
 
 		// word wrap
 		if (l != con.linewidth && (con.x + l >= con.linewidth))
 		{
 			Con_Linefeed(skipnotify);
-
 		}
 
 		txt++;
@@ -516,13 +518,12 @@ void CL_ConsolePrint(char *txt)
 			break;
 		default:    // display character and advance
 			y = con.current % con.totallines;
-			// rain - sign extension caused the character to carry over
+			// sign extension caused the character to carry over
 			// into the color info for high ascii chars; casting c to unsigned
 			con.text[y * con.linewidth + con.x] = (color << 8) | (unsigned char)c;
 			con.x++;
 			if (con.x >= con.linewidth)
 			{
-
 				Con_Linefeed(skipnotify);
 				con.x = 0;
 			}
@@ -550,7 +551,7 @@ void CL_ConsolePrint(char *txt)
 }
 
 #if defined(_WIN32) && !defined(LEGACY_DEBUG)
-#pragma optimize( "g", on ) // SMF - re-enabled optimization
+#pragma optimize( "g", on ) // re-enabled optimization
 #endif
 
 /*
@@ -934,7 +935,6 @@ void Con_RunConsole(void)
 	else
 	{
 		con.finalFrac = 0;  // none visible
-
 	}
 	// scroll towards the destination height
 	if (con.finalFrac < con.displayFrac)
@@ -944,7 +944,6 @@ void Con_RunConsole(void)
 		{
 			con.displayFrac = con.finalFrac;
 		}
-
 	}
 	else if (con.finalFrac > con.displayFrac)
 	{
