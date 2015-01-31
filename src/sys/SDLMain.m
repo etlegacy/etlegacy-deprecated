@@ -231,9 +231,13 @@ static void CustomApplicationMain( int argc, char **argv )
 }
 
 /* Set the working directory to the .app's parent directory */
-- (void) setupWorkingDirectory
+- (void) setupWorkingDirectory:(BOOL)shouldChdir
 {
-	
+	if (shouldChdir)
+	{
+		NSString *path = [[NSBundle mainBundle] resourcePath];
+		[[NSFileManager defaultManager] changeCurrentDirectoryPath:path];
+	}
 }
 
 void Cbuf_AddText( const char *text );
@@ -260,7 +264,8 @@ void Cbuf_AddText( const char *text );
 {
 	int status;
 
-	
+	/* Set the working directory to the .app's parent directory */
+	[self setupWorkingDirectory:gFinderLaunch];
 
 	/* Hand off to main application code */
 	gCalledAppMainline = TRUE;
@@ -278,17 +283,7 @@ void Cbuf_AddText( const char *text );
 /* Main entry point to executable - should *not* be SDL_main! */
 int main ( int argc, char **argv )
 {
-	/* Set the working directory to the .app's parent directory */
-	char parentdir[MAXPATHLEN];
-	CFURLRef url = CFBundleCopyBundleURL(CFBundleGetMainBundle());
-	CFURLRef url2 = CFURLCreateCopyDeletingLastPathComponent(0, url);
-	if (CFURLGetFileSystemRepresentation(url2, 1, (UInt8 *)parentdir, MAXPATHLEN)) {
-		chdir(parentdir);   /* chdir to the binary app's parent */
-	}
-	CFRelease(url);
-	CFRelease(url2);
-	
-	
+
 	/* Copy the arguments into a global variable */
 	/* This is passed if we are launched by double-clicking */
 	if ( argc >= 2 && strncmp( argv[ 1 ], "-psn", 4 ) == 0 )
