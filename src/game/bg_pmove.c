@@ -2377,10 +2377,12 @@ static void PM_BeginWeaponReload(int weapon)
 		break;
 	case WP_MOBILE_BROWNING:
 	case WP_MOBILE_BROWNING_SET:
+		/*
 		if (pm->ps->ammoclip[WP_MOBILE_BROWNING] != 0)
 		{
 			return;
 		}
+		*/
 		break;
 
 	// if ((weapon <= WP_NONE || weapon > WP_DYNAMITE) && !(weapon >= WP_KAR98 && weapon < WP_NUM_WEAPONS))
