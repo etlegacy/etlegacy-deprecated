@@ -2368,10 +2368,12 @@ static void PM_BeginWeaponReload(int weapon)
 	{
 	case WP_MOBILE_MG42:
 	case WP_MOBILE_MG42_SET:
+		/*
 		if (pm->ps->ammoclip[WP_MOBILE_MG42] != 0)
 		{
 			return;
 		}
+		*/
 		break;
 	case WP_MOBILE_BROWNING:
 	case WP_MOBILE_BROWNING_SET:
