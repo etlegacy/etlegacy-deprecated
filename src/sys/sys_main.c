@@ -1006,8 +1006,9 @@ int main(int argc, char **argv)
 	// But on OS X we want to pretend the binary path is the .app's parent
 	// So that way the base folder is right next to the .app allowing
 	{
-		char     parentdir[1024];
-		CFURLRef url = CFBundleCopyBundleURL(CFBundleGetMainBundle());
+
+		char     resourcedir[1024];
+		CFURLRef url = CFBundleCopyResourceURL(CFBundleGetMainBundle(), CFSTR("etl"), CFSTR("icns"), NULL);
 		if (!url)
 		{
 			Sys_Dialog(DT_ERROR, "A CFURL for the app bundle could not be found.", "Can't set Sys_SetBinaryPath");
@@ -1015,16 +1016,18 @@ int main(int argc, char **argv)
 		}
 
 		CFURLRef url2 = CFURLCreateCopyDeletingLastPathComponent(0, url);
-		if (!url2 || !CFURLGetFileSystemRepresentation(url2, 1, (UInt8 *)parentdir, 1024))
+		if (!url2 || !CFURLGetFileSystemRepresentation(url2, 1, (UInt8 *)resourcedir, 1024))
 		{
-			Sys_Dialog(DT_ERROR, "CFURLGetFileSystemRepresentation returned an error when finding the app bundle's parent directory.", "Can't set Sys_SetBinaryPath");
+			Sys_Dialog(DT_ERROR, "CFURLGetFileSystemRepresentation returned an error when finding the app resources directory.", "Can't set Sys_SetBinaryPath");
 			Sys_Exit(1);
 		}
 
-		Sys_SetBinaryPath(parentdir);
+		// At this point were really actually setting the path to Resources
+		Sys_SetBinaryPath(resourcedir);
 
 		CFRelease(url);
 		CFRelease(url2);
+
 	}
 #else
 	Sys_SetBinaryPath(Sys_Dirname(argv[0]));
