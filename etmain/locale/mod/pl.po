@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: ET:Legacy\n"
 "Report-Msgid-Bugs-To: mail@etlegacy.com\n"
 "POT-Creation-Date: 2015-01-10 20:22+0100\n"
-"PO-Revision-Date: 2015-03-11 09:48+0000\n"
-"Last-Translator: Rafał Pawlak <rafal1137@yahoo.pl>\n"
+"PO-Revision-Date: 2015-06-28 08:54+0000\n"
+"Last-Translator: Artem Vorotnikov <artem@vorotnikov.me>\n"
 "Language-Team: Polish (http://www.transifex.com/projects/p/etlegacy/language/pl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -4667,7 +4667,7 @@ msgstr "Zostaleą zabity przez Gospodarza Serwera"
 
 #: src/cgame/cg_draw.c:1952
 msgid "You were team-killed by a bot."
-msgstr "Zostaleś zabity przez bota."
+msgstr "Zostaleą zabity przez bota."
 
 #: src/cgame/cg_draw.c:1962
 msgid "Your application has been submitted"
@@ -5045,7 +5045,7 @@ msgstr "Podłożony pod %s."
 #: src/cgame/cg_popupmessages.c:682
 #, c-format
 msgid "Defused at %s."
-msgstr "Rozbrojony pod %s."
+msgstr "Rozbrojony na %s."
 
 #: src/cgame/cg_popupmessages.c:691
 #, c-format
@@ -5359,1347 +5359,1332 @@ msgstr "Wszystkie ulubione serwery usunięte."
 
 #: src/cgame/cg_predict.c:641
 msgid "You are near"
-msgstr "Jesteś blisko"
+msgstr ""
 
 msgid "joined the Axis team\n"
-msgstr "dołączył do zespołu Osi\n"
+msgstr ""
 
 msgid "joined the Allies team\n"
-msgstr "dołączył do zespołu Aliantów\n"
+msgstr ""
 
 msgid "entered the game\n"
-msgstr "wszedł do gry\n"
+msgstr ""
 
 msgid "rediscovered gravity"
-msgstr "odkrył grawitacje"
+msgstr ""
 
 msgid "was crushed"
-msgstr "został zmiażdżony"
+msgstr ""
 
 msgid "drowned"
-msgstr "utopił się"
+msgstr ""
 
 msgid "slagged"
-msgstr "zmęczył się"
+msgstr ""
 
 msgid "was killed"
-msgstr "został zabity"
+msgstr ""
 
 msgid "got buried under a pile of rubble"
-msgstr "został pochowany pod stertą gruzu"
+msgstr ""
 
 msgid "was incinerated"
-msgstr "został spalony"
+msgstr ""
 
 msgid "had an appointment with the map mortar"
-msgstr "miał spotkanie z mortarem"
+msgstr ""
 
 msgid "took a map mortar shell shower"
-msgstr "wziął prysznić z naboi mortara"
+msgstr ""
 
 msgid "was pulverized by an explosion"
-msgstr "został starty na proch przez wybuch"
+msgstr ""
 
 msgid "dynamited himself to pieces"
-msgstr "rozwalił samego siebie na kawałki"
+msgstr ""
 
 msgid "dove on his own grenade"
-msgstr "zanurkował na własny granat"
+msgstr ""
 
 msgid "vaporized himself"
-msgstr "zniszczył samego siebie"
+msgstr ""
 
 msgid "played with fire"
-msgstr "bawił się ogniem"
+msgstr ""
 
 msgid "obliterated himself"
-msgstr "Ostrzelał samego siebie"
+msgstr ""
 
 msgid "fired-for-effect on himself"
-msgstr "zestrzelony na własną prośbę"
+msgstr ""
 
 msgid "died in his own explosion"
-msgstr "zginął we własnej eksplozjii"
+msgstr ""
 
 msgid "ate his own rifle grenade"
-msgstr "zjadł własnego granata od rifli"
+msgstr ""
 
 msgid "failed to spot his own landmine"
-msgstr "niezauwazył własnej miny"
+msgstr ""
 
 msgid "embraced his own satchel explosion"
-msgstr "został wysadzony przez ładunek"
+msgstr ""
 
 msgid "engineered himself into oblivion"
-msgstr "zaprojektował samego siebie w zapomnienie"
+msgstr ""
 
 msgid "buried himself alive"
-msgstr "pochował się żywcem"
+msgstr ""
 
 msgid "never saw his own mortar round coming"
-msgstr "nigdy nie widział lecącego własnego pocisku mortara"
+msgstr ""
 
 msgid "danced on his airstrike marker"
-msgstr "tańczył na swoim znaczniku od nalotu"
+msgstr ""
 
 msgid "committed suicide"
-msgstr "wykonał samobójstwo"
+msgstr ""
 
 msgid "killed himself"
-msgstr "zabił samego siebie"
+msgstr ""
 
 msgid "Improved use of Explosive Ammunition"
-msgstr "Lepszym użyciem Amunicji Wybuchowej"
+msgstr ""
 
 msgid "Improved Dexterity"
-msgstr "Lepszą Zręcznością"
+msgstr ""
 
 msgid "Binoculars for any Class"
-msgstr "Lornetkami dla każdej Klasy"
+msgstr ""
 
 msgid "Medic Ammo"
-msgstr "Amunicja Medyka"
+msgstr ""
 
-msgid "Improved Resources"
-msgstr "Ulepszonymi Zasobami"
+msgid "Improved First Aid Resources"
+msgstr ""
 
 msgid "Improved use of Light Weapon Ammunition"
-msgstr "Lepszym użyciem Amunicji do Bronii Lekkiej"
+msgstr ""
 
 msgid "Improved Projectile Resources"
-msgstr "Lepszym Zasobem Pociskow"
+msgstr ""
 
 msgid "Improved use of Scoped Weapon Ammunition"
-msgstr "Lepszym uzyciem Amunicji do Snajperki"
+msgstr ""
 
 msgid "Improved Physical Fitness"
-msgstr "Poprawną Sprawnością Fizyczną"
+msgstr ""
+
+msgid "Improved Ammo Resources"
+msgstr ""
 
 msgid "Improved Signals"
-msgstr "Ulepszonymi Sygnałami"
+msgstr ""
 
 msgid "Faster Reload"
-msgstr "Szybszym Przeładowaniem"
+msgstr ""
 
 msgid "Heavy Weapon Proficiency"
-msgstr "Bieglością Obsługi Ciężkiej Bronii"
+msgstr ""
 
 msgid "Improved use of Sabotage and Misdirection"
-msgstr "Lepszym użyciem Sabotażu i Odwrócenia Uwagi"
+msgstr ""
 
 msgid "Improved Health"
-msgstr "Ulepszonym Życiem"
+msgstr ""
 
 msgid "Improved Construction and Destruction"
-msgstr "Ulepszonym Budowaniem i Niszczeniem"
+msgstr ""
 
 msgid "Full Revive"
-msgstr "Pełnym Ożywieniem"
+msgstr ""
 
 msgid "Improved Air and Ground Support"
-msgstr "Lepszymi Nalotami i Wsparciem Naziemnym"
+msgstr ""
 
 msgid "Improved Light Weapon Handling"
-msgstr "Lepszą Obsługą Bronii Lekkiej"
+msgstr ""
 
 msgid "Breath Control"
-msgstr "Kontrolą Oddechu"
+msgstr ""
 
 msgid "Trap Awareness"
-msgstr "Wykrywaniem Pułapek"
+msgstr ""
 
 msgid "a Flak Jacket"
-msgstr "Kamizelką Kuloodporną"
+msgstr ""
 
 msgid "Adrenalin Self"
-msgstr "Wlasną Adrelaniną"
+msgstr ""
 
 msgid "Enemy Recognition"
-msgstr "Rozpoznaniem Wroga"
+msgstr ""
 
 msgid "Dual-Wield Pistols"
-msgstr "Podwojnymi Pistoletami"
+msgstr ""
 
 msgid "Improved Weapon Handling"
-msgstr "Ulepszoną Obslugą Bronii"
+msgstr ""
 
 msgid "Assassin"
-msgstr "Zabójstwem"
+msgstr ""
 
 #: src/cgame/cg_consolecmds:1233
 msgid "You will spawn as an %s %s with a %s and %s."
-msgstr "Zrespawnujesz się jako %s %s z %s i %s."
+msgstr ""
 
 #: etmain/ui/credits_etlegacy.menu:85
 msgid "^1THE TEAM"
-msgstr "^1ZESPÓŁ"
+msgstr ""
 
 msgid "Axis team"
-msgstr "Zespołu Osi"
+msgstr ""
 
 msgid "Allied team"
-msgstr "Zespołu Aliantów"
+msgstr ""
 
 msgid "Spectators"
-msgstr "Obserwatorów"
+msgstr ""
 
 msgid "You must be a player or following a player to use +stats\n"
-msgstr "Musisz być graczem lub obserwować gracza aby użyć +stats\n"
+msgstr ""
 
 msgid "^9You must be alive to use ^3/kill."
-msgstr "^9Musisz być żywy aby użyć ^3/kill."
+msgstr ""
 
 msgid "No vote in progress.\n"
-msgstr "Brak głosowań.\n"
+msgstr ""
 
 msgid "No or bad challenge for address.\n"
-msgstr "Brak lub złe wezwanie dla adresu.\n"
+msgstr ""
 
 msgid "Match is already in progress!\n"
-msgstr "Mecz już trwa!\n"
+msgstr ""
 
 msgid "^1** Referee Server Setting Change **\n"
-msgstr "^1** Sędzia Zmienił Ustawienia Serwera **\n"
+msgstr ""
 
 msgid "Your fireteam is now public"
-msgstr "Twój oddział jest teraz publiczny"
+msgstr ""
 
 msgid "Your fireteam is now private"
-msgstr "Twój oddział jest teraz prywatny"
+msgstr ""
 
 msgid "The Allies have too many players.\n"
-msgstr "Alianci mają zbyt dużo graczy.\n"
+msgstr ""
 
 msgid "The Axis has too many players.\n"
-msgstr "Oś ma zbyt dużo graczy.\n"
+msgstr ""
 
 msgid "Attack!"
-msgstr "Atak!"
+msgstr ""
 
 msgid "Fall back!"
-msgstr "Odwrót!"
+msgstr ""
 
 msgid ""
 "^3All players ready!^7\n"
 "Match starting..."
 msgstr ""
-"^3Wszyscy gracze gotowi!^7\n"
-"Mecz zaczyna..."
 
 msgid "Path cleared."
-msgstr "Droga Wolna."
+msgstr ""
 
 msgid "The enemy is weakened."
-msgstr "Wróg jest osłabiony"
+msgstr ""
 
 msgid "All clear."
-msgstr "Czysto"
+msgstr ""
 
 msgid "Incoming!"
-msgstr "Nadchodzą"
+msgstr ""
 
 msgid "Fire in the hole!"
-msgstr "Uwaga Strzelam!"
+msgstr ""
 
 msgid "I'm on defense."
-msgstr "Obraniam."
+msgstr ""
 
 msgid "I'm on offense."
-msgstr "Atakuję."
+msgstr ""
 
 msgid "Taking fire!"
-msgstr "Ściągam Ogien!"
+msgstr ""
 
 msgid "Mines cleared."
-msgstr "Pole Oczyszczone z Min."
+msgstr ""
 
 msgid "Enemy in disguise."
-msgstr "Wróg w Przebraniu."
+msgstr ""
 
 msgid "Need a Medic!"
-msgstr "Potrzebuję Medyka!"
+msgstr ""
 
 msgid "I need ammo!"
-msgstr "Potrzebuję Amunicji!"
+msgstr ""
 
 msgid "I need backup!"
-msgstr "Potrzebuję pomocy!"
+msgstr ""
 
 msgid "We need an engineer!"
-msgstr "Potrzebujemy Inżyniera!"
+msgstr ""
 
 msgid "Cover me!"
-msgstr "Osłaniaj Mnie!"
+msgstr ""
 
 msgid "Hold your fire!"
-msgstr "Wstrzymaj Ogień!"
+msgstr ""
 
 msgid "Where to?"
-msgstr "Dokąd?"
+msgstr ""
 
 msgid "We need Covert Ops!"
-msgstr "Potrzebuję Coverta!"
+msgstr ""
 
 msgid "Follow me!"
-msgstr "Za Mną!"
+msgstr ""
 
 msgid "Let's go!"
-msgstr "No Dalej!"
+msgstr ""
 
 msgid "Move!"
-msgstr "Ruchy!"
+msgstr ""
 
 msgid "Clear the path!"
-msgstr "Oczyść Drogę!"
+msgstr ""
 
 msgid "Defend our objective!"
-msgstr "Ochraniaj nasz cel!"
+msgstr ""
 
 msgid "Disarm the dynamite!"
-msgstr "Rozbrój dynamit!"
+msgstr ""
 
 msgid "Clear the mines!"
-msgstr "Rozbrój miny!"
+msgstr ""
 
 msgid "Reinforce the offense!"
-msgstr "Wzmocnij Atak!"
+msgstr ""
 
 msgid "Reinforce the defense!"
-msgstr "Wzmocnij Obronę!"
+msgstr ""
 
 msgid "Affirmative!"
-msgstr "Pozytywnie!"
+msgstr ""
 
 msgid "No!"
-msgstr "Nie!"
+msgstr ""
 
 msgid "Thank you!"
-msgstr "Dzięki Ci!"
+msgstr ""
 
 msgid "You're welcome."
-msgstr "Nie ma za co."
+msgstr ""
 
 msgid "Bitte sehr."
-msgstr "Proszę bardzo."
+msgstr ""
 
 msgid "Ja!"
-msgstr "Tak!"
+msgstr ""
 
 msgid "Nein!"
-msgstr "Nie!"
+msgstr ""
 
 msgid "Kein problem."
-msgstr "Bez problemu."
+msgstr ""
 
 msgid "Sorry!"
-msgstr "Przepraszam!"
+msgstr ""
 
 msgid "Oops!"
-msgstr "Oops!"
+msgstr ""
 
 msgid "Yes!"
-msgstr "Tak!"
+msgstr ""
 
 msgid "Jawohl!"
-msgstr "Tak jest!"
+msgstr ""
 
 msgid "Negative!"
-msgstr "Negatywnie!"
+msgstr ""
 
 msgid "Hi!"
-msgstr "Cześć!"
+msgstr ""
 
 msgid "Hello!"
-msgstr "Witam!"
+msgstr ""
 
 msgid "Hallo!"
-msgstr "Cześć!"
+msgstr ""
 
 msgid "Good bye."
-msgstr "Dowidzenia."
+msgstr ""
 
 msgid "Auf wiedersehen."
-msgstr "Dowidzenia."
+msgstr ""
 
 msgid "Bye."
-msgstr "Nara."
+msgstr ""
 
 msgid "Great shot!"
-msgstr "Niezły Strzał!"
+msgstr ""
 
 msgid "You got it, man!"
-msgstr "Masz to, człowieku!"
+msgstr ""
 
 msgid "Yeah!"
-msgstr "Nareszcie!"
+msgstr ""
 
 msgid "Yoohoo!"
-msgstr "Tak Jest!"
+msgstr ""
 
 msgid "Hahaa!"
-msgstr "Hahaha!"
+msgstr ""
 
 msgid "Alright!"
-msgstr "W Porządku!"
+msgstr ""
 
 msgid "Woo!"
-msgstr "Wooo!"
+msgstr ""
 
 msgid "Yeehaa!"
-msgstr "Wspaniale!"
+msgstr ""
 
 msgid "'Atta way, baby!"
-msgstr "'Tak trzymać, maleńka!"
+msgstr ""
 
 msgid "Jahaa!"
-msgstr "Nareszcie!"
+msgstr ""
 
 msgid "Wunderbar!"
-msgstr "Wspaniale!"
+msgstr ""
 
 msgid "Excellent!"
-msgstr "Doskonale!"
+msgstr ""
 
 msgid "Oh yes!"
-msgstr "Taaak jest!"
+msgstr ""
 
 msgid "Sehr gut!"
-msgstr "Bardzo dobrze!"
+msgstr ""
 
 msgid "Thanks!"
-msgstr "Dzięki!"
+msgstr ""
 
 msgid "Danke!"
-msgstr "Dzięki!"
+msgstr ""
 
 msgid "Danke sehr!"
-msgstr "Dziękuje bardzo!"
+msgstr ""
 
 msgid "No problem."
-msgstr "Bez problemu."
+msgstr ""
 
 msgid "Good game!"
-msgstr "Dobra gra!"
+msgstr ""
 
 msgid "Command acknowledged!"
-msgstr "Polecenie przyjęte!"
+msgstr ""
 
 msgid "Command declined!"
-msgstr "Polecenie odrzucone!"
+msgstr ""
 
 msgid "Command completed!"
-msgstr "Polecenie wykonane!"
+msgstr ""
 
 msgid "Destroy primary objective!"
-msgstr "Zniszcz Pierwszy cel!"
+msgstr ""
 
 msgid "Destroy secondary objective!"
-msgstr "Zniszcz Drugi cel!"
+msgstr ""
 
 msgid "Destroy construction!"
-msgstr "Zniscz Konstrukcję!"
+msgstr ""
 
 msgid "I'm constructing!"
-msgstr "Konstruuje!"
+msgstr ""
 
 msgid "Repair the vehicle!"
-msgstr "Napraw pojazd!"
+msgstr ""
 
 msgid "Disable the vehicle!"
-msgstr "Zniszcz pojazd!"
+msgstr ""
 
 msgid "Escort the vehicle!"
-msgstr "Eskortuj pojazd!"
+msgstr ""
 
 msgid "Covering fire!"
-msgstr "Ogień osłaniający!"
+msgstr ""
 
 msgid "I'm a soldier."
-msgstr "Jestem Żołnierzem."
+msgstr ""
 
 msgid "I'm an engineer."
-msgstr "Jestem Inżynierem."
+msgstr ""
 
 msgid "I'm a medic."
-msgstr "Jestem Medykiem."
+msgstr ""
 
 msgid "I'm a field ops."
-msgstr "Jestem Wsparciem."
+msgstr ""
 
 msgid "I'm a covert ops."
-msgstr "Jestem Zabójcą."
-
-msgid "No"
-msgstr "Nie"
+msgstr ""
 
 msgid "unknown cmd"
-msgstr "nieznane polecenie"
+msgstr ""
 
 msgid "Server:"
-msgstr "Serwer:"
+msgstr ""
 
 msgid "changed to"
-msgstr "zmienił na"
+msgstr ""
 
 msgid "Arming landmine..."
-msgstr "Podkładanie miny..."
+msgstr ""
 
 msgid "Landmine armed..."
-msgstr "Mina uzbrojona..."
+msgstr ""
 
 msgid "Dynamite is set, but NOT armed!"
-msgstr "Dynamit jest ustawiony, ale NIE uzbrojony!"
+msgstr ""
 
 msgid "Arming dynamite..."
-msgstr "Podkładanie dynamitu..."
+msgstr ""
 
 msgid "Dynamite is now armed with a 30 second timer!"
-msgstr "Dynamit jest uzbrojony z czasem 30 sekund!"
+msgstr ""
 
 msgid "Defusing landmine"
-msgstr "Rozbrajanie miny"
+msgstr ""
 
 msgid "Landmine defused..."
-msgstr "Mina rozbrojona..."
+msgstr ""
 
 msgid "Defusing dynamite..."
-msgstr "Rozbrajanie dynamitu..."
+msgstr ""
 
 msgid "Affirmative!!"
-msgstr "Pozytywnie!!"
+msgstr ""
 
 msgid "^1Spam Protection^7: VoiceChat ignored"
-msgstr "^1Ochrona przed Spamem^7: ChatGłosowy zignorowany"
+msgstr ""
 
 msgid "Mines have been reported in this area."
-msgstr "Miny zostały zgloszone w tym terenie."
+msgstr ""
 
 msgid "'s Landmine"
-msgstr " Miny"
+msgstr ""
 
 msgid "'s Mobile MG 42"
-msgstr " Mobilne MG 42"
+msgstr ""
 
 msgid "'s Mobile Browning"
-msgstr " Mobilny Browning"
+msgstr ""
 
 msgid "'s rifle grenade"
-msgstr " granatem od rifli"
+msgstr ""
 
 msgid "'s support fire"
-msgstr " ogieniem wsparcia"
+msgstr ""
 
 msgid "'s crew-served MG"
-msgstr " serie z MG"
+msgstr ""
 
 msgid "was thrown to his doom by"
-msgstr "został zepchnięty przez"
+msgstr ""
 
 msgid "You have been revived by "
-msgstr "Zostałeś ożywiony przez "
+msgstr ""
 
 msgid "Constructing..."
-msgstr "Budowanie..."
+msgstr ""
 
 msgid "Allied Command Post constructed. Charge speed increased!"
-msgstr "Aliancke Centrum Dowodzenia wybudowane. Szybkość ładowania zwiększona!"
+msgstr ""
 
 msgid "Axis Command Post constructed. Charge speed increased!"
-msgstr "Centrum Dowodzenia OSi wybudowane. Szybkość ładowania zwiększona!"
+msgstr ""
 
 msgid ""
 "^3All players ready!^7\n"
 "Match starting...\n"
 msgstr ""
-"^3Wszyscy gracze gotowi!^7\n"
-"Mecz zaczyna...\n"
 
 msgid "You are on the Allied team"
-msgstr "Jesteś w Zespole Alliantów"
+msgstr ""
 
 msgid "^1*** Match Reset! ***\n"
-msgstr "^1*** Restart Meczu! ***\n"
+msgstr ""
 
 msgid "You are on the Axis team"
-msgstr "Jesteś w Zespole Osi"
+msgstr ""
 
 msgid "Warning, leave the construction area..."
-msgstr "Uwaga, opuść plac budowy..."
+msgstr ""
 
 msgid "got caught in"
-msgstr "został złapany w"
+msgstr ""
 
 msgid "'s construction madness"
-msgstr " szalenstwie budowlanym"
+msgstr ""
 
 #: src/qcommon/download.c:244
 msgid "Need paks: %s\n"
-msgstr "Potrzebuje paczek %s\n"
+msgstr ""
 
 msgid "Not enough players to start match!\n"
-msgstr "Zbyt malo graczy aby zaczac mecz!\n"
+msgstr ""
 
 msgid "'s flamethrower"
-msgstr " miotaczem ognia"
+msgstr ""
 
 msgid "'s Satchel Charge"
-msgstr " Ładunkiem Kulminacyjnym"
+msgstr ""
 
 msgid "You cannot arm dynamite near a friendly objective!"
-msgstr "Nie możesz uzbroić dynamitu blisko przyjaznego celu!"
+msgstr ""
 
 msgid "^3Aborting, can't see target."
-msgstr "^3Przerwanie, nie można namierzyć celu."
+msgstr ""
 
 msgid "^3Firing for effect!"
-msgstr "^3Rozpoczęcie Ostrzału!"
+msgstr ""
 
 msgid "'s tank-mounted MG42"
-msgstr " MG42 na czołgu"
+msgstr ""
 
 msgid "'s dynamite"
-msgstr " dynamitem"
+msgstr ""
 
 msgid "Timelimit hit.\n"
-msgstr "Limitczasowy skończony.\n"
+msgstr ""
 
 msgid "Landmine revealed"
-msgstr "Mina ujawniona"
+msgstr ""
 
 msgid "^3Insufficient fire support."
-msgstr "^3Niewystarczający ogień wsparcia."
+msgstr ""
 
 msgid "'s tank-mounted browning 30cal"
-msgstr " browningiem 30cal na czołgu"
+msgstr ""
 
 msgid "'s grenade"
-msgstr " granatem"
+msgstr ""
 
 msgid "Competition Settings Loaded!\n"
-msgstr "Ustawienia Rozgrywki Wczytane!\n"
+msgstr ""
 
 msgid "Public Settings Loaded!\n"
-msgstr "Ustawienia Publiczne Wczytane!\n"
+msgstr ""
 
 msgid "Landmine cannot be armed here..."
-msgstr "Miny nie mogą być tutaj uzbrojone.."
+msgstr ""
 
 msgid "Your team has too many landmines placed..."
-msgstr "Twój zespół ma zbyt dużo podłożonych min..."
+msgstr ""
 
 msgid "You cannot arm dynamite near a friendly construction!"
-msgstr "Nie możesz podłozyć dynamitu w pobliżu przyjaznej konstrukcji!"
+msgstr ""
 
 msgid "Countdown started.... ^3notready^7 ignored!\n"
-msgstr "Odliczanie rozpoczęte.... ^3niegotowy^7 zignorowane!\n"
+msgstr ""
 
 msgid "No complaint filed against you.\n"
-msgstr "Nie wysłano skargi przeciwko tobie.\n"
+msgstr ""
 
 msgid "You are not the leader of a fireteam\n"
-msgstr "Nie jesteś liderem oddziału\n"
+msgstr ""
 
 msgid "You have been warned by your Fireteam Commander\n"
-msgstr "Zostałeś ostrzeżony przez twojego Dowódcę Oddziału\n"
+msgstr ""
 
 msgid "You have been kicked from the fireteam"
-msgstr "Zostałeś wywalony z oddziału"
+msgstr ""
 
 msgid "You are now the leader of your fireteam"
-msgstr "Jesteś teraz liderem twojego oddziału"
+msgstr ""
 
 msgid "The fireteam you are on has been disbanded"
-msgstr "Oddział w którym jesteś rozpadł się"
+msgstr ""
 
 msgid "You have been given fireteam admin rights"
-msgstr "Dostałeś prawa Dowódcy oddziału"
+msgstr ""
 
 msgid "Too many players already on this Fireteam"
-msgstr "Zbyt dużo graczy już w tym Oddziale"
+msgstr ""
 
 msgid "The leader has now left the Fireteam you applied to"
-msgstr "Lider odszedł z Oddziału do którego chciałeś dojść"
+msgstr ""
 
 msgid "The other player is already on a fireteam"
-msgstr "Ten gracz jest już w oddziale"
+msgstr ""
 
 msgid "You are not on the same team as the other player"
-msgstr "Nie jesteś w tym samym zespole co inny gracz"
+msgstr ""
 
 msgid "You are not on the same Fireteam as the other player"
-msgstr "Nie jesteś w tym samym oddziale co inny gracz"
+msgstr ""
 
 msgid "Invalid client selected"
-msgstr "Niewłaściwie wybrany klient"
+msgstr ""
 
 msgid "usage: fireteam admin <clientname|clientnumber>"
-msgstr "użycie: fireteam admin <nazwaklienta|numerklienta>"
+msgstr ""
 
 msgid "usage: fireteam propose <clientname|clientnumber>"
-msgstr "użycie: fireteam propose <nazwaklienta|numerklienta>"
+msgstr ""
 
 msgid "usage: fireteam kick <clientname|clientnumber>"
-msgstr "użycie: fireteam kick <nazwaklienta|numerklienta>"
+msgstr ""
 
 msgid "usage: fireteam warn <clientname|clientnumber>"
-msgstr "użycie: fireteam warn <nazwaklienta|numerklienta>"
+msgstr ""
 
 msgid "usage: fireteam invite <clientname|clientnumber>"
-msgstr "użycie: fireteam invite <nazwaklienta|numerklienta>"
+msgstr ""
 
 msgid "usage: fireteam apply <fireteamname|fireteamnumber>"
-msgstr "użycie: fireteam apply <nazwaoddzialu|numeroddzialu>"
+msgstr ""
 
 msgid "usage: fireteam <create|leave|apply|invite>"
-msgstr "użycie: fireteam <create|leave|apply|invite>"
+msgstr ""
 
 msgid "You are already on a fireteam, leave it first"
-msgstr "Jesteś już w oddziale, najpierw odejdź z oddziału"
+msgstr ""
 
 msgid ""
-"The other player must be on the same fireteam for you to give admin rights to"
+"The other player must be on the same fireteam for you to give admin rights "
+"to"
 msgstr ""
-"Dany gracz musi być w tym samym oddziale aby mogłbyś dać mu prawa Dowódcy"
 
 msgid "You must be a fireteam admin to give admin rights to someone else"
-msgstr "Musisz być Dowódcą oddziału aby dać prawa Dowódcy komuś innemu"
+msgstr ""
 
 msgid "Invalid referee password!\n"
-msgstr "Nieprawidłowe hasło sędziego!\n"
+msgstr ""
 
 msgid "Usage: ref [password]\n"
-msgstr "Użycie: ref [hasło]\n"
+msgstr ""
 
 msgid ""
 "^3Referee commands:^7\n"
 "------------------------------------------\n"
 msgstr ""
-"^3Komendy sędziego:^7\n"
-"------------------------------------------\n"
 
 msgid ""
 "Usage: ^3\\ref <cmd> [params]\n"
 "\n"
 msgstr ""
-"Użycie: ^3\\ref <komenda> [parametry]\n"
-"\n"
 
 msgid "^5pause speclock warmup ^7[value]\n"
-msgstr "^5pause speclock warmup ^7[wartość]\n"
+msgstr ""
 
 msgid "Sorry, referee status disabled on this server.\n"
-msgstr "Status sędziego jest wyłączony na tym serwerze.\n"
+msgstr ""
 
 msgid "Referee has ^3LOCKED^7 teams\n"
-msgstr "Sędzia ^3ZABLOKOWAŁ^7 zespoły\n"
+msgstr ""
 
 msgid "You have LOCKED teams\n"
-msgstr "ZABLOKOWAŁEŚ zespoły\n"
+msgstr ""
 
 msgid "Referee has ^3UNLOCKED^7 teams\n"
-msgstr "Sędzia ^3ODBLOKOWAŁ^7 zespoły\n"
+msgstr ""
 
 msgid "You have UNLOCKED teams\n"
-msgstr "ODBLOKOWAŁEŚ zespoły\n"
+msgstr ""
 
 msgid "The ^4Allies^7 team is LOCKED!\n"
-msgstr "Zespół ^4Alliantów^7 jest ZABLOKOWANY!\n"
+msgstr ""
 
 msgid "The ^1Axis^7 team is LOCKED!\n"
-msgstr "Zespół ^1Osi^7 jest ZABLOKOWANY!\n"
+msgstr ""
 
 msgid "^3Referee ^1PAUSED^3 the match^3!\n"
-msgstr "^3Sędzia ^1ZATRZYMAŁ^3 mecz^3!\n"
+msgstr ""
 
 msgid "^3Match is ^1PAUSED^3! (^7Referee^3)\n"
-msgstr "^3Mecz ^1ZATRZYMANY^3! (^7Sędzia^3)\n"
+msgstr ""
 
 msgid "The match is already ^1PAUSED!\n"
-msgstr "Mecz jest już ^1ZATRZYMANY!\n"
+msgstr ""
 
 msgid "^3Referee ^5UNPAUSES^3 the match ... resuming in 10 seconds!\n"
-msgstr "^3Sędzia ^5WZNOWIŁ^3 mecz ... wznowienie za 10 sekund!\n"
+msgstr ""
 
 msgid "The match is already ^5UNPAUSED!\n"
-msgstr "Mecz jest już ^5WZNOWIONY!\n"
+msgstr ""
 
 msgid "Bad client slot: "
-msgstr "Zły slot klienta: "
+msgstr ""
 
 msgid "Client"
-msgstr "Klient"
+msgstr ""
 
 msgid "is not active\n"
-msgstr "nie jest aktywny\n"
+msgstr ""
 
 msgid "You can only remove people in the game!\n"
-msgstr "Możesz tylko usuwać ludzi w grze!\n"
+msgstr ""
 
 msgid "User "
-msgstr "Użytkownik "
+msgstr ""
 
 msgid "is not on the server\n"
-msgstr "nie jest na serwerze\n"
+msgstr ""
 
 msgid "^5You've been removed from the ^4Allies^7 team\n"
-msgstr "^5Zostałeś usunięty z zespołu ^4Alliantów\n"
+msgstr ""
 
 msgid "^5You've been removed from the ^1Axis^7 team\n"
-msgstr "^5Zostałeś usunięty z ^7zespołu ^1Osi\n"
+msgstr ""
 
 msgid "Referee has ^3SPECTATOR LOCKED^7 teams\n"
-msgstr "Sędzia ^3ZABLOKOWAŁ OBSERWATORÓW\n"
+msgstr ""
 
 msgid "Referee has ^3SPECTATOR UNLOCKED^7 teams\n"
-msgstr "Sędzia ^3ODBLOKOWAŁ OBSERWATORÓW\n"
+msgstr ""
 
 msgid "usage: ref warn <clientname> [reason].\n"
-msgstr "użycie: ref warn <nazwaklienta> [powód].\n"
+msgstr ""
 
 msgid "Client not on server.\n"
-msgstr "Nie ma Klienta na serwerze.\n"
+msgstr ""
 
 msgid "%s^7 was issued a ^1Warning^7 (No Reason Supplied)\n"
-msgstr "%s^7 otrzymał ^1Ostrzeżenie^7 (Brak Dostatecznego Powodu)\n"
+msgstr ""
 
 msgid "Cannot mute a referee.\n"
-msgstr "Nie można uciszyć sędziego.\n"
+msgstr ""
 
 msgid "^5You've been muted\n"
-msgstr "^5Zostałeś uciszony\n"
+msgstr ""
 
 msgid "Can't chat - you are muted\n"
-msgstr "Nie możesz pisać - jesteś uciszony\n"
+msgstr ""
 
 msgid "^5You've been unmuted\n"
-msgstr "^5Dostałeś możliwość pisania\n"
+msgstr ""
 
 msgid ""
 "^7 ID : Player                    Nudge  Rate  MaxPkts  Snaps  Specials\n"
 msgstr ""
-"^7 ID : Gracz                     Nudge  Rate  Pakiety  Snaps  Specjalne\n"
 
-msgid "^7----------------------------------------------------------------------\n"
-msgstr "^7----------------------------------------------------------------------\n"
+msgid ""
+"^7----------------------------------------------------------------------\n"
+msgstr ""
 
 msgid ""
 "^7Status   : ID : Player                    Nudge  Rate  MaxPkts  Snaps  "
 "Specials\n"
 msgstr ""
-"^7Status   : ID : Gracz                    Nudge  Rate  Pakiety  Snaps  "
-"Specjalne\n"
 
-msgid "^7-------------------------------------------------------------------------------\n"
-msgstr "^7-------------------------------------------------------------------------------\n"
+msgid ""
+"^7-------------------------------------------------------------------------------\n"
+msgstr ""
 
 msgid ""
 "^5\n"
 "Available Game Commands:\n"
 "------------------------\n"
 msgstr ""
-"^5\n"
-"Dostępne Komendy W Grze:\n"
-"------------------------\n"
 
 msgid ""
 "\n"
 "Type: ^3\\command_name ?^7 for more information\n"
 msgstr ""
-"\n"
-"Napisz: ^3\\nazwa_komendy ?^7 aby uzyskać więcej informacji\n"
 
 msgid "Spectators can't lock a team!\n"
-msgstr "Widzowie nie mogą zablokować zepsołu!\n"
+msgstr ""
 
 msgid "The ^4Allies^7 team is now locked!\n"
-msgstr "Zespół ^4Alliancki^7 jest teraz zablokowany!\n"
+msgstr ""
 
 msgid "^3Your team is already locked!\n"
-msgstr "^3Twój zespół jest już zablokowany!\n"
+msgstr ""
 
 msgid "The ^4Allies^7 team is now unlocked!\n"
-msgstr "Zespół ^4Alliancki^7 jest już odblokowany!\n"
+msgstr ""
 
 msgid "^3Your team is already unlocked!\n"
-msgstr "^3Twój zespół jest juz odblokowany!\n"
+msgstr ""
 
 msgid "Spectators can't unlock a team!\n"
-msgstr "Widzowie nie mogą odblokwoac zespolu!\n"
+msgstr ""
 
 msgid "The ^1Axis^7 team is now locked!\n"
-msgstr "Zespół ^1Osi^7 jest teraz zablokowany!\n"
+msgstr ""
 
 msgid "The ^1Axis^7 team is now unlocked!\n"
-msgstr "Zespół ^1Osi^7 jest juz odblokowany!\n"
+msgstr ""
 
 msgid "Team commands not enabled on this server.\n"
-msgstr "Komendy Zespołu nie są włączone na tym serwerze.\n"
+msgstr ""
 
 msgid ""
 "\n"
 "^3>>> Unknown vote command: ^7 \n"
 msgstr ""
-"\n"
-"^3>>> Nieznana komenda głosowania: ^7 \n"
 
 msgid ""
 "\n"
 "Valid ^3callvote^7 commands are:\n"
 "^3----------------------------\n"
 msgstr ""
-"\n"
-"Prawidłowymi komendami ^3callvote^7 są:\n"
-"^3----------------------------\n"
 
 msgid ""
 "\n"
 "Usage: ^3\\callvote <command> <params>\n"
 "^7For current settings/help, use: ^3\\callvote <command> ?\n"
 msgstr ""
-"\n"
-"Użycie: ^3\\callvote <komenda> <parametry>\n"
-"^7Dla bieżących ustawień/pomocy, użyj: ^3\\callvote <komenda> ?\n"
 
 msgid "Type ^3\\stats <player_id>^7 to see stats on an active player.\n"
 msgstr ""
-"Napisz ^3\\stats <id_gracza>^7 aby zobaczyć statystyki aktywnego gracza.\n"
 
 msgid "Spectators can't ready a team!\n"
-msgstr "Widzowie nie mogą być gotowi!\n"
+msgstr ""
 
 msgid "The ^4Allies^7 team is ready!\n"
-msgstr "Zespół ^4Alliantów^7 jest gotowy!\n"
+msgstr ""
 
 msgid "The ^1Axis^7 team is ready!\n"
-msgstr "Zespół ^1Osi^7 jest gotowy!\n"
+msgstr ""
 
 msgid "A vote is already in progress.\n"
-msgstr "Głosowanie jest już w toku.\n"
+msgstr ""
 
 msgid "called a vote.\n"
-msgstr "wybrał głosowanie.\n"
+msgstr ""
 
 msgid "^5Vote passed!\n"
-msgstr "^5Głosownie zaliczone!\n"
+msgstr ""
 
 msgid "Spectator team\n"
-msgstr "Zespół Widzów\n"
+msgstr ""
 
 msgid "Allies team\n"
-msgstr "Zespół Alliantów\n"
+msgstr ""
 
 msgid "Axis team\n"
-msgstr "Zespół Osi\n"
+msgstr ""
 
 msgid "Sorry, "
-msgstr "Wybacz, "
+msgstr ""
 
 msgid "voting has been disabled"
-msgstr "głosowania zostały wyłączone"
+msgstr ""
 
 msgid "Not allowed to call a vote as a spectator.\n"
-msgstr "Nie wolno glosowac jako obserwator.\n"
+msgstr ""
 
 msgid "called a vote."
-msgstr "wybrał głosowanie."
+msgstr ""
 
 msgid "Vote cast.\n"
-msgstr "Oddanie glosów.\n"
+msgstr ""
 
 msgid "'s KA-BAR"
-msgstr " Nożem Bojowym"
+msgstr ""
 
 msgid "'s .45ACP 1911"
-msgstr " Coltem .45"
+msgstr ""
 
 msgid "'s Thompson"
-msgstr " Thompsonem"
+msgstr ""
 
 msgid "'s MP 40"
-msgstr " MP 40"
+msgstr ""
 
 msgid "'s knife"
-msgstr " nożem"
+msgstr ""
 
 msgid "'s Luger 9mm"
-msgstr " Lugerem 9mm"
+msgstr ""
 
 msgid "'s Panzerfaust"
-msgstr " Pociskiem Przeciwczołgowym"
+msgstr ""
 
 msgid "'s Garand"
-msgstr " Garantem"
+msgstr ""
 
 msgid "'s Sten"
-msgstr " Stenem"
+msgstr ""
 
 msgid "'s FG 42"
-msgstr " FG 42"
+msgstr ""
 
 msgid "'s K43"
-msgstr " K43"
+msgstr ""
 
 msgid "'s Bazooka"
-msgstr " Pociskiem Przeciwczołgowym"
+msgstr ""
 
 msgid "'s Akimbo .45ACP 1911s"
-msgstr " Podwójnym .45ACP 1911s"
+msgstr ""
 
 msgid "Server disconnected"
-msgstr "Serwer rozłączony"
+msgstr ""
 
 msgid "Server connection timed out."
-msgstr "Połączenie z serwerem przerwane."
+msgstr ""
 
 msgid "Server disconnected for unknown reason"
-msgstr "Serwer rozłączony z nieznananej przyczyny"
+msgstr ""
 
 msgid "'s Akimbo Luger 9mms"
-msgstr " Podwójnym Lugerem 9mm"
+msgstr ""
 
 msgid "Cheats are not enabled on this server.\n"
-msgstr "Kody nie są włączone na tym serwerze.\n"
+msgstr ""
 
 msgid "team: class is not available\n"
-msgstr "zespół: klasa nie jest dostępna\n"
+msgstr ""
 
 msgid "^1Soldier^7 is not available! Choose another class!\n"
-msgstr "^1Żołnierz^7 nie jest dostępny! Wybierz inną klasę!\n"
+msgstr ""
 
 msgid "^1Medic^7 is not available! Choose another class!\n"
-msgstr "^1Medyk^7 nie jest dostępny! Wybierz inną klasę!\n"
+msgstr ""
 
 msgid "^1Engineer^7 is not available! Choose another class!\n"
-msgstr "^1Inżynier^7 nie jest dostępny! Wybierz inną klasę!\n"
+msgstr ""
 
 msgid "^1Field Ops^7 is not available! Choose another class!\n"
-msgstr "^1Wsparcie^7 nie jest dostępny! Wybierz inną klasę!\n"
+msgstr ""
 
 msgid "^1Covert Ops^7 is not available! Choose another class!\n"
-msgstr "^1Zabojca^7 nie jest dostępny! Wybierz inną klasę!\n"
+msgstr ""
 
 msgid "You must be alive to use this command.\n"
-msgstr "Musisz byż żywy aby uzyć tą komende.\n"
+msgstr ""
 
 msgid "The ^1Axis^7 team is empty!  Follow command ignored.\n"
-msgstr "Zespół ^1Osi^7 jest pusty!  Komenda Follow zignorowana.\n"
+msgstr ""
 
 msgid "The ^4Allies^7 team is empty!  Follow command ignored.\n"
-msgstr "Zespół ^4Aliantow^7 jest pusty!  Komenda Follow zignorowana.\n"
+msgstr ""
 
 msgid "Can't follow a player on an enemy team!\n"
-msgstr "Nie możesz podążać za graczem z przeciwnego zespołu!\n"
+msgstr ""
 
 msgid "Can't follow while not in limbo if on a team!\n"
-msgstr "Nie możesz podążać podczas kiedy jesteś w limbo!\n"
+msgstr ""
 
 msgid "Partial Name Matches more than 1 Player.\n"
-msgstr "Częściowe Imię Pasuje dla więcej niż 1 Gracza.\n"
+msgstr ""
 
 msgid "Spectator follow is now locked on the ^1Axis^7 team.\n"
-msgstr "Podążanie obserwatora jest teraz zablokowane na Zespole ^1Osi^7.\n"
+msgstr ""
 
 msgid "^1Axis^7 team spectating is now disabled.\n"
-msgstr "Obserwowanie Zespołu ^1Axis^7 jest teraz wyłączone.\n"
+msgstr ""
 
 msgid "Spectator follow is now locked on the ^4Allies^7 team.\n"
-msgstr "Podążanie obserwatora jest teraz zablokowane na Zespole ^4Aliantów^7.\n"
+msgstr ""
 
 msgid "^4Allies^7 team spectating is now disabled.\n"
-msgstr "Obserwowanie Zespołu ^4Aliantów^7 jest teraz wyłączone.\n"
+msgstr ""
 
 msgid "Sorry, the ^4Allies^7 team is locked from spectators.\n"
-msgstr "Zespół ^4Aliantów^7 jest zablokowany od obserwowania.\n"
+msgstr ""
 
 msgid "Sorry, the ^1Axis^7 team is locked from spectators.\n"
-msgstr "Zespół ^1Osi^7 jest zablokowany od obserwowania.\n"
+msgstr ""
 
 msgid "Server quit\n"
-msgstr "Server wyłączony\n"
+msgstr ""
 
 msgid "You cannot switch during a match, please wait until the round ends."
 msgstr ""
-"Nie możesz przechodzić podczas meczu, proszę poczekaj aż runda dobiegnie "
-"końca."
 
 msgid "Use the ^3players^7 command to find a valid player ID.\n"
-msgstr "Użyj komende ^3players^7 aby znaleść poprawne ID gracza.\n"
+msgstr ""
 
 msgid "^3Match is already in progress!\n"
-msgstr "^3Mecz już trwa!\n"
+msgstr ""
 
 msgid "^1Teams have been shuffled!\n"
-msgstr "^1Drużyny zostały pomieszane!\n"
+msgstr ""
 
 msgid "^3*** Loading nextmap! ***\n"
-msgstr "^3*** Wczytywanie następnej mapy! ***\n"
+msgstr ""
 
 msgid "^1*** Level Restarted! ***\n"
-msgstr "^1*** Poziom Zrestartowany! ***\n"
+msgstr ""
 
 msgid "You have been switched to the Axis team"
-msgstr "Zostałeś przeniesiony do zespołu Osi"
+msgstr ""
 
 msgid "Keep the Allies from beating the clock!"
-msgstr "Utrzymuj Aliantów od pobicia czasu!"
+msgstr ""
 
 msgid "Keep the Axis from beating the clock!"
-msgstr "Utrzymuj Oś od pobicia czasu!"
+msgstr ""
 
 msgid "You have been switched to the Allied team"
-msgstr "Zostałeś przeniesiony do zespołu Aliantow"
+msgstr ""
 
 msgid "Try to beat the clock!"
-msgstr "Sprobuj pokonać czas!"
+msgstr ""
 
 msgid "You have been been stripped of fireteam admin rights"
-msgstr "Zostałeś pozbawiony praw lidera oddziału"
+msgstr ""
 
 msgid "%s ^7has left the fireteam\n"
-msgstr "%s ^7odszedł z oddziału\n"
+msgstr ""
 
 msgid "You have been warned by your fireteam leader\n"
-msgstr "Zostałeś ostrzeżony przez swojego lidera oddziału\n"
+msgstr ""
 
 msgid "^3moved to spectator for inactivity!\n"
-msgstr "^3przeniesiony do widzów za nieaktywność!\n"
+msgstr ""
 
 msgid "was killed by"
-msgstr "został zabity przez"
+msgstr ""
 
 msgid "was stabbed by"
-msgstr "został pchnięty przez"
+msgstr ""
 
 msgid "was blasted by"
-msgstr "został wysadzony przez"
+msgstr ""
 
 msgid "was exploded by"
-msgstr "został zdetonowany przez"
+msgstr ""
 
 msgid "was cooked by"
-msgstr "został usmażony przez"
+msgstr ""
 
 msgid "never saw"
-msgstr "nie widział"
+msgstr ""
 
 msgid "'s mortar round coming"
-msgstr " pocisku mortara"
+msgstr ""
 
 msgid "was perforated by"
-msgstr "został podziurawiony przez"
+msgstr ""
 
 msgid "'s tank-mounted MG 42"
-msgstr " MG 42 na czołgu"
+msgstr ""
 
 msgid "was shelled by"
-msgstr "został ostrzelany przez"
+msgstr ""
 
 msgid "'s artillery support"
-msgstr " artylerię"
+msgstr ""
 
 msgid "^2swapped places with^7"
-msgstr "^2zamienileś miejscami z^7"
+msgstr ""
 
 msgid "failed to spot"
-msgstr "niezauwazył"
+msgstr ""
 
 msgid "was mown down by"
-msgstr "został podziurawiony przez"
+msgstr ""
 
 msgid "was silenced by"
-msgstr "został uciszony przez"
+msgstr ""
 
 msgid "was sniped by"
-msgstr "został zestrzelony przez"
+msgstr ""
 
 msgid "stood on"
-msgstr "stanął na"
+msgstr ""
 
 msgid "'s airstrike marker"
-msgstr " znaczniku nalotu"
+msgstr ""
 
 msgid "- Small Health"
-msgstr "Małą Apteczkę"
+msgstr ""
 
 msgid "- Med Health"
-msgstr "- Średnią Apteczką"
+msgstr ""
 
 msgid "- Health Pack"
-msgstr "- Apteczkę"
+msgstr ""
 
 msgid "- Hot Meal"
-msgstr "- Ciepły Posiłek"
+msgstr ""
 
 msgid "- Cold Meal"
-msgstr "- Zimny Posiłek"
+msgstr ""
 
 msgid "- Health"
-msgstr "- Życie"
+msgstr ""
 
 msgid "- Knife"
-msgstr "- Nóż"
+msgstr ""
 
 msgid "- Ka-Bar"
-msgstr "- Nóż Bojowy"
+msgstr ""
 
 msgid "- Luger"
-msgstr "- Lugera"
+msgstr ""
 
 msgid "- Akimbo Luger"
-msgstr "- Podwójnego Lugera"
+msgstr ""
 
 msgid "- Silenced Akimbo Luger"
-msgstr "- Podwójnego Lugera z Tłumikiem"
+msgstr ""
 
 msgid "- Thompson"
-msgstr "- Thompsona"
+msgstr ""
 
 msgid "- Sten gun"
-msgstr "- Stena"
+msgstr ""
 
 msgid "- Colt"
-msgstr "- Colta"
+msgstr ""
 
 msgid "- Akimbo Colt"
-msgstr "- Podwójnego Colta"
+msgstr ""
 
 msgid "- Silenced Akimbo Colt"
-msgstr "- Podwójnego Colta z Tłumikiem"
+msgstr ""
 
 msgid "- MP 40"
-msgstr "- MP 40"
+msgstr ""
 
 msgid "- Panzerfaust"
-msgstr "- RPG"
+msgstr ""
 
 msgid "- Bazooka"
-msgstr "- RPG"
+msgstr ""
 
 msgid "- Grenade"
-msgstr "- Granat"
+msgstr ""
 
 msgid "- Pineapple"
-msgstr "- Granat Odłamkowy"
+msgstr ""
 
 msgid "- Flamethrower"
-msgstr "- Miotacz Ognia"
+msgstr ""
 
 msgid "- Syringe"
-msgstr "- Strzykawkę"
+msgstr ""
 
 msgid "- Adrenaline Syringe"
-msgstr "- Strzykawkę z Adrenaliną"
+msgstr ""
 
 msgid "- Ammo Pack"
-msgstr "- Paczkę Amunicji"
+msgstr ""
 
 msgid "- Mega Ammo Pack"
-msgstr "- Wielką Paczkę Amunicji"
+msgstr ""
 
 msgid "- Binoculars"
-msgstr "- Lornetkę"
+msgstr ""
 
 msgid "- Scoped K43 Rifle"
-msgstr "- Karabin K43 z Lunetą"
+msgstr ""
 
 msgid "- K43 Rifle Scope"
-msgstr "- Karabin K43 z Lunetą"
+msgstr ""
 
 msgid "- K43 Rifle"
-msgstr "- Karabin K43"
+msgstr ""
 
 msgid "- M1 Garand"
-msgstr "- Garanta"
+msgstr ""
 
 msgid "- M7"
-msgstr "- M7"
+msgstr ""
 
 msgid "- Scoped M1 Garand"
-msgstr "- Garanta z Lunetą"
+msgstr ""
 
 msgid "- M1 Garand Scope"
-msgstr "- Garanta z Lunetą"
+msgstr ""
 
 msgid "- FG 42 Paratroop Rifle"
-msgstr "- Karabin Spadochroniarzy FG 42"
+msgstr ""
 
 msgid "- FG 42 Paratroop Rifle Scope"
-msgstr "- Karabin Spadochroniarzy FG 42"
+msgstr ""
 
 msgid "- Mortar"
-msgstr "- Moździerz"
+msgstr ""
 
 msgid "- Granatwerfer"
-msgstr "- Moździerz"
+msgstr ""
 
 msgid "- Mobile MG 42"
-msgstr "- Mobilne MG 42"
+msgstr ""
 
 msgid "- Mobile Browning"
-msgstr "- Mobilnego Browninga"
+msgstr ""
 
 msgid "- Silenced Luger"
-msgstr "- Lugera z Tłumikiem"
+msgstr ""
 
 msgid "- Silenced Colt"
-msgstr "- Colta z Tłumikiem"
+msgstr ""
 
 msgid "Includes or excludes empty and full servers from the server list"
-msgstr "Zawiera lub wyklucza serwery puste lub pełne z listy serwerów"
+msgstr ""
 
 msgid "Includes or excludes password protected servers from the server list"
-msgstr "Zawiera lub wyklucza serwery chronione hasłem z listy serwerów"
+msgstr ""
 
-msgid "Includes or excludes servers where team mates can damage each other from the server list"
-msgstr "Zawiera lub wyklucza serwery gdzie jest włączony Ogień Przyjaciela z listy serwerów"
+msgid ""
+"Includes or excludes servers where team mates can damage each other from the"
+" server list"
+msgstr ""
 
-msgid "Includes or excludes servers that limit the number of player lives per match from the server list"
-msgstr "Zawiera lub wyklucza serwery które ograniczają liczbę żyć na mecz z listy serwerów"
+msgid ""
+"Includes or excludes servers that limit the number of player lives per match"
+" from the server list"
+msgstr ""
 
-msgid "Includes or excludes servers that limit the number of\n available heavy weapons from the server list"
-msgstr "Zawiera lub wyklucza serwery które ograniczają liczbę\n dostępnej broni ciężkiej z liczby serwerów"
+msgid ""
+"Includes or excludes servers that limit the number of\n"
+" available heavy weapons from the server list"
+msgstr ""
 
-msgid "Includes or excludes servers with support for modem players from the server list"
-msgstr "Zawiera lub wyklucza serwery z wsparciem dla graczy z modemami z liczby serwerów"
+msgid ""
+"Includes or excludes servers with support for modem players from the server "
+"list"
+msgstr ""
 
-msgid "Includes or excludes servers that enforce balanced teams from the server list"
-msgstr "Zawiera lub wyklucza serwery które wymuszają balans zespołów z liczby serwerów"
+msgid ""
+"Includes or excludes servers that enforce balanced teams from the server "
+"list"
+msgstr ""
 
 msgid "Includes or excludes servers with bots from the server list"
-msgstr "Zawiera lub wyklucza serwery z botami z liczby serwerów"
+msgstr ""
 
 msgid "Click here to sort by Ping"
-msgstr "Naduś tutaj aby posortować przez Ping"
+msgstr ""
 
 msgid "FAV"
-msgstr "ULU"
+msgstr ""
 
 msgid "Sets field of view"
-msgstr "Ustawia pole widzenia"
+msgstr ""
 
 msgid "Selfkill:"
-msgstr "Samobójstwo:"
+msgstr ""
 
 msgid "Fireteam Chat:"
-msgstr "Chat Oddziału:"
+msgstr ""
 
 msgid "Fireteam Quick Chat:"
-msgstr "Szybki Chat Oddziału:"
+msgstr ""
 
 msgid "Ready:"
-msgstr "Gotowy:"
+msgstr ""
 
 msgid "Not Ready:"
-msgstr "Nie Gotowy:"
+msgstr ""
 
 msgid "CONTROLS: ADVANCED"
-msgstr "STEROWANIE: ZAAWANSOWANE"
+msgstr ""
 
 msgid "Deselect All Members:"
-msgstr "Odznacz Wszystkich:"
+msgstr ""
 
 msgid "Select Member #7:"
-msgstr "Wybierz Członka #7:"
+msgstr ""
 
 msgid "Select Member #8:"
-msgstr "Wybierz Członka #8:"
+msgstr ""
