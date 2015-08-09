@@ -130,9 +130,11 @@ Q_EXPORT intptr_t vmMain(intptr_t command, intptr_t arg0, intptr_t arg1, intptr_
 		return UI_API_VERSION;
 	case UI_INIT:
 		_UI_Init(arg1, arg2);
+		UI_InitLua();
 		return 0;
 	case UI_SHUTDOWN:
 		_UI_Shutdown();
+		UI_ShutdownLua();
 		return 0;
 	case UI_HASUNIQUECDKEY: // obsolete - keep this to avoid 'Bad ui export type' for vanilla clients
 		return 0;
@@ -747,7 +749,7 @@ void _UI_Refresh(int realtime)
 		UI_FillRect(-10, -10, 650, 490, colorBlack);
 	}
 
-	if (Menu_Count() > 0)
+	if (qfalse)//Menu_Count() > 0)
 	{
 		// paint all the menus
 		Menu_PaintAll();
@@ -759,9 +761,11 @@ void _UI_Refresh(int realtime)
 		UI_BuildFindPlayerList(qfalse);
 	}
 
+	UI_RunLuaFrame();
+
 	// draw cursor
 	trap_R_SetColor(NULL);
-	if (Menu_Count() > 0)
+	if (qfalse)//Menu_Count() > 0)
 	{
 		uiClientState_t cstate;
 

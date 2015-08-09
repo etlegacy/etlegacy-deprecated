@@ -193,3 +193,8 @@ FILE(GLOB IRC_CLIENT_FILES
 	"src/qcommon/htable.c"
 	"src/qcommon/htable.h"
 )
+
+FILE(GLOB LUA_FILES
+	"etmain/lua/*.lua"
+	"etmain/lua/*/*.lua"
+)

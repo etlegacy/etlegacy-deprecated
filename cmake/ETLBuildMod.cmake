@@ -39,7 +39,13 @@ set_target_properties(qagame${LIB_SUFFIX}${ARCH}
 #
 # ui
 #
-add_library(ui${LIB_SUFFIX}${ARCH} MODULE ${UI_SRC})
+add_library(ui${LIB_SUFFIX}${ARCH} MODULE ${UI_SRC} ${LUA_FILES})
+if(FEATURE_LUA)
+	if(BUNDLED_LUA)
+		add_dependencies(ui${LIB_SUFFIX}${ARCH} bundled_lua)
+	endif(BUNDLED_LUA)
+	target_link_libraries(ui${LIB_SUFFIX}${ARCH} ${MOD_LIBRARIES})
+endif(FEATURE_LUA)
 set_target_properties(ui${LIB_SUFFIX}${ARCH}
 	PROPERTIES
 	PREFIX ""
