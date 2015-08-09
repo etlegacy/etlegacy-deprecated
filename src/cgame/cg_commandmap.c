@@ -795,6 +795,7 @@ void CG_DrawMapEntity(mapEntityData_t *mEnt, float x, float y, float w, float h,
 			customimage = mEnt->team == TEAM_AXIS ? oidInfo->customimageaxis : oidInfo->customimageallies;
 		}
 
+		// FIXME: do a switch
 		if (mEnt->type == ME_CONSTRUCT)
 		{
 			if (mEntFilter & CC_FILTER_CONSTRUCTIONS)
@@ -821,6 +822,10 @@ void CG_DrawMapEntity(mapEntityData_t *mEnt, float x, float y, float w, float h,
 			trap_R_SetColor(colorRed);
 		}
 		else if (mEnt->type == ME_COMMANDMAP_MARKER)
+		{
+			pic = 0;
+		}
+		else if (mEnt->type == ME_DESTRUCT_2)
 		{
 			pic = 0;
 		}

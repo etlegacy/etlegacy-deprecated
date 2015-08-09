@@ -687,10 +687,13 @@ qboolean CG_PredictionOk(playerState_t *ps1, playerState_t *ps2)
 		return qfalse;
 	}
 
+	/* FIXME: disabled for now since it always evaluates to true
+	 * don't predict flying ents ?
 	if (ps1->groundEntityNum != ENTITYNUM_WORLD || ps1->groundEntityNum != ENTITYNUM_NONE || ps2->groundEntityNum != ENTITYNUM_WORLD || ps2->groundEntityNum != ENTITYNUM_NONE)
 	{
 		return qfalse;
 	}
+	 */
 
 	if (ps2->speed != ps1->speed || ps2->delta_angles[0] != ps1->delta_angles[0] || ps2->delta_angles[1] != ps1->delta_angles[1] || ps2->delta_angles[2] != ps1->delta_angles[2])
 	{
@@ -1027,11 +1030,14 @@ void CG_PredictPlayerState(void)
 		// get the previous command
 		trap_GetUserCmd(cmdNum - 1, &cg_pmove.oldcmd);
 
-		if (cg_pmove.pmove_fixed)
-		{
-			// added tracemask
-			PM_UpdateViewAngles(cg_pmove.ps, cg_pmove.pmext, &cg_pmove.cmd, CG_Trace, cg_pmove.tracemask);
-		}
+
+		//if (cg_pmove.pmove_fixed
+		//  && !BG_PlayerMounted(cg.snap->ps.eFlags) // don't update view angles - causes issues in 1st person view with weapons using special view
+		//  && cg.predictedPlayerState.weapon != WP_MOBILE_MG42_SET && cg.predictedPlayerState.weapon != WP_MOBILE_BROWNING_SET) // see cg_view.c fov_x = 55;
+		//{
+		// added tracemask
+		//  PM_UpdateViewAngles(cg_pmove.ps, cg_pmove.pmext, &cg_pmove.cmd, CG_Trace, cg_pmove.tracemask);
+		//}
 
 		// don't do anything if the time is before the snapshot player time
 		if (cg_pmove.cmd.serverTime <= cg.predictedPlayerState.commandTime)
@@ -1054,7 +1060,7 @@ void CG_PredictPlayerState(void)
 		{
 			vec3_t delta;
 
-			if (BG_PlayerMounted(cg_pmove.ps->eFlags))
+			if (BG_PlayerMounted(cg_pmove.ps->eFlags)) // TODO: clarify MG & Browning are locked in place too?
 			{
 				// no prediction errors here, we're locked in place
 				VectorClear(cg.predictedError);
