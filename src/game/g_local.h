@@ -597,6 +597,10 @@ typedef struct
 
 	unsigned int uci;               // GeoIP
 
+	//ETTV
+	int ettv;
+	int shoutcaster;
+
 #ifdef FEATURE_OMNIBOT
 	//Omni-bot
 	qboolean botSuicide;            // /kill before next spawn
@@ -1802,6 +1806,8 @@ extern vmCvar_t sv_fps;
 extern vmCvar_t g_skipCorrection;
 
 extern vmCvar_t g_extendedNames;
+
+extern vmCvar_t g_ettvFlags;
 
 typedef struct GeoIPTag
 {

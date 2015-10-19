@@ -600,7 +600,8 @@ typedef struct clientInfo_s
 	int weaponState;
 	int weaponState_last;
 #endif
-
+	int ettv;
+	int shoutcaster;
 } clientInfo_t;
 
 typedef enum

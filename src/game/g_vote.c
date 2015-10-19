@@ -412,6 +412,12 @@ int G_Kick_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, qb
 			return G_INVALID;
 		}
 
+		if (level.clients[pid].sess.ettv && (g_ettvFlags.integer & ETTV_IMMUNITY))
+		{
+			G_refPrintf(ent, "Can't vote to kick ETTV clients!");
+			return G_INVALID;
+		}
+
 		if (g_entities[pid].r.svFlags & SVF_BOT)
 		{
 			G_refPrintf(ent, "Can't vote to kick bots!");

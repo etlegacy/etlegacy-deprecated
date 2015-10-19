@@ -2107,7 +2107,7 @@ void ClientUserinfoChanged(int clientNum)
 
 	// send over a subset of the userinfo keys so other clients can
 	// print scoreboards, display models, and play custom sounds
-	s = va("n\\%s\\t\\%i\\c\\%i\\lc\\%i\\r\\%i\\m\\%s\\s\\%s\\dn\\%i\\dr\\%i\\w\\%i\\lw\\%i\\sw\\%i\\mu\\%i\\ref\\%i\\u\\%u",
+	s = va("n\\%s\\t\\%i\\c\\%i\\lc\\%i\\r\\%i\\m\\%s\\s\\%s\\dn\\%i\\dr\\%i\\w\\%i\\lw\\%i\\sw\\%i\\mu\\%i\\ref\\%i\\u\\%u\\tv\\%i\\sc\\%i",
 	       client->pers.netname,
 	       client->sess.sessionTeam,
 	       client->sess.playerType,
@@ -2122,7 +2122,9 @@ void ClientUserinfoChanged(int clientNum)
 	       client->sess.latchPlayerWeapon2,
 	       client->sess.muted ? 1 : 0,
 	       client->sess.referee,
-	       client->sess.uci
+	       client->sess.uci,
+		   client->sess.ettv,
+		   client->sess.shoutcaster
 	       );
 
 	trap_GetConfigstring(CS_PLAYERS + clientNum, oldname, sizeof(oldname));

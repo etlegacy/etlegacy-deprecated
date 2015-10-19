@@ -451,6 +451,18 @@ static void WM_DrawClientScore(int x, int y, score_t *score, float *color, float
 			s = CG_TranslateString("^3CONNECTING");
 			p = "";
 		}
+		else if(score->ping >= 999)
+		{
+			s = CG_TranslateString("^3ZOMBIE");
+		}
+		else if(ci->ettv)
+		{
+			s = CG_TranslateString("^3ETTV");
+		}
+		else if(ci->shoutcaster)
+		{
+			s = CG_TranslateString("^3SHOUTCASTER");
+		}
 		else
 		{
 			s = CG_TranslateString("^3SPECTATOR");
