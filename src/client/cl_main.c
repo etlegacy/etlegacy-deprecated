@@ -2109,10 +2109,11 @@ void CL_Video_f(void)
 		return;
 	}
 
-	cl_avidemotype->integer = 2;
+	Cvar_Set("cl_avidemotype", "2");
+
 	if (cl_avidemo->integer == 0)
 	{
-		cl_avidemo->integer = 30;
+		Cvar_Set("cl_avidemo", "30");
 	}
 
 	if (Cmd_Argc() > 1)
