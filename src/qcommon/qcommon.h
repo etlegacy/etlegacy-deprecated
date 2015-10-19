@@ -377,7 +377,9 @@ enum svc_ops_e
 	svc_serverCommand,          // [string] to be executed by client game module
 	svc_download,               // [short] size [size bytes]
 	svc_snapshot,
-	svc_EOF
+	svc_EOF,
+	svc_tv_playerstate,         // playerstate dumps
+	svc_tv_currentstate         // for demos
 };
 
 // client to server

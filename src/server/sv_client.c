@@ -151,7 +151,7 @@ void SV_DirectConnect(netadr_t from)
 
 	// NOTE: but we might need to store the protocol around for potential non http/ftp clients
 	version = atoi(Info_ValueForKey(userinfo, "protocol"));
-	if (version != PROTOCOL_VERSION)
+	if (version != PROTOCOL_VERSION || version != ETTV_PROTOCOL_VERSION)
 	{
 		NET_OutOfBandPrint(NS_SERVER, from, "print\n[err_update]" PROTOCOL_MISMATCH_ERROR_LONG);
 		Com_DPrintf("    rejected connect from version %i\n", version);
@@ -413,7 +413,11 @@ gotnewcl:
 		SV_Heartbeat_f();
 	}
 
-	newcl->protocol = atoi(Info_ValueForKey(userinfo, "protocol"));
+	newcl->protocol = version;
+	if(version == ETTV_PROTOCOL_VERSION)
+	{
+		newcl->ettv = qtrue;
+	}
 
 #ifdef FEATURE_TRACKER
 	Tracker_ClientConnect(newcl);

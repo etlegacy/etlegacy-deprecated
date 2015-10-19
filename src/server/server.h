@@ -241,6 +241,7 @@ typedef struct client_s
 	int protocol; // We can access clients protocol any time
 
 	qboolean demoClient; // is this a demoClient?
+	qboolean ettv;
 } client_t;
 
 //=============================================================================

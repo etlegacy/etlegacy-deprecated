@@ -75,6 +75,12 @@ FILE(GLOB CLIENT_SRC
 	"src/qcommon/download.c"
 )
 
+FILE(GLOB CLIENT_SRV_REMOVE
+	"src/server/sv_ettv*.*"
+)
+
+LIST(REMOVE_ITEM CLIENT_SRC ${CLIENT_SRV_REMOVE})
+
 # These files are shared with the CGAME from the UI library
 FILE(GLOB UI_SHARED
 	"src/ui/ui_shared.c"
