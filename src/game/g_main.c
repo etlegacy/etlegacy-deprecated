@@ -334,6 +334,8 @@ vmCvar_t g_skipCorrection;
 
 vmCvar_t g_extendedNames;
 
+vmCvar_t g_ettvFlags;
+
 cvarTable_t gameCvarTable[] =
 {
 	// don't override the cheat state set by the system
@@ -605,6 +607,7 @@ cvarTable_t gameCvarTable[] =
 	{ &sv_fps,                              "sv_fps",                              "20",                         CVAR_SYSTEMINFO,                                 0, qfalse},
 	{ &g_skipCorrection,                    "g_skipCorrection",                    "1",                          0 },
 	{ &g_extendedNames,                     "g_extendedNames",                     "1",                          0 },
+	{ &g_ettvFlags,                     	"g_ettvFlags",                     	   "3",                          CVAR_ARCHIVE },
 };
 
 // made static to avoid aliasing

@@ -1962,6 +1962,14 @@ typedef struct demoPlayInfo_s
 	int lastTime;
 } demoPlayInfo_t;
 
+#define ETTV_PROTOCOL_VERSION 284
+
+enum {
+	ETTV_NONE = BIT(0),
+	ETTV_IMMUNITY = BIT(1),
+	ETTV_SHOUTCASTER = BIT(2),
+};
+
 //c99 issue pre 2013 VS do not have support for this
 #if defined(_MSC_VER) && (_MSC_VER < 1800)
 // source http://smackerelofopinion.blogspot.fi/2011/10/determining-number-of-arguments-in-c.html
