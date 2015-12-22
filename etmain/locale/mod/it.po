@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: ET:Legacy\n"
 "Report-Msgid-Bugs-To: mail@etlegacy.com\n"
 "POT-Creation-Date: 2015-01-10 20:22+0100\n"
-"PO-Revision-Date: 2015-12-21 19:48+0000\n"
+"PO-Revision-Date: 2015-12-22 17:35+0000\n"
 "Last-Translator: redtide <redtid3@gmail.com>\n"
 "Language-Team: Italian (http://www.transifex.com/etlegacy/etlegacy/language/it/)\n"
 "MIME-Version: 1.0\n"
@@ -1928,27 +1928,27 @@ msgstr "POP-UP"
 
 #: etmain/ui/options_controls.menu:66
 msgid "Show Scores:"
-msgstr "Mostra Punteggio:"
+msgstr "Punteggio:"
 
 #: etmain/ui/options_controls.menu:67
 msgid "Show Limbo Menu:"
-msgstr "Mostra Menu Limbo:"
+msgstr "Menu Limbo:"
 
 #: etmain/ui/options_controls.menu:68
 msgid "Show Command Map:"
-msgstr ""
+msgstr "Mappa Obiettivi:"
 
 #: etmain/ui/options_controls.menu:69
 msgid "Compass Map Zoom In:"
-msgstr ""
+msgstr "Mappa Bussola Zoom In:"
 
 #: etmain/ui/options_controls.menu:70
 msgid "Compass Map Zoom Out:"
-msgstr ""
+msgstr "Mappa Bussola Zoom Out:"
 
 #: etmain/ui/options_controls.menu:71
 msgid "Player Stats:"
-msgstr "Stat. Giocatore:"
+msgstr "Statistiche:"
 
 #: etmain/ui/options_controls.menu:72
 msgid "Top Shots:"
@@ -2172,15 +2172,15 @@ msgstr "Lampeggia l'icona dell'arma durante il fuoco, ricarica o cambio"
 
 #: etmain/ui/options_customise_game.menu:50
 msgid "Muzzle Flash:"
-msgstr ""
+msgstr "Esplosione Colpi:"
 
 #: etmain/ui/options_customise_game.menu:50
 msgid "Enables or disables weapon fire (muzzle flash)"
-msgstr ""
+msgstr "Se visualizzare le esplosioni del fuoco delle armi"
 
 #: etmain/ui/options_customise_game.menu:51
 msgid "Bullet Tracers:"
-msgstr ""
+msgstr "Proiettili Traccianti:"
 
 #: etmain/ui/options_customise_game.menu:51
 #: etmain/ui/options_customise_game.menu:78
@@ -2194,15 +2194,15 @@ msgstr "Attivo"
 
 #: etmain/ui/options_customise_game.menu:51
 msgid "Only own tracers"
-msgstr ""
+msgstr "Solo i propri"
 
 #: etmain/ui/options_customise_game.menu:51
 msgid "Only others tracers"
-msgstr ""
+msgstr "Solo degli altri"
 
 #: etmain/ui/options_customise_game.menu:51
 msgid "Enable/Disable bullet tracers"
-msgstr ""
+msgstr "Abilita/Disabilita proiettili traccianti"
 
 #: etmain/ui/options_customise_game.menu:55
 msgid "SCOPE"
@@ -2210,7 +2210,7 @@ msgstr "MIRINO"
 
 #: etmain/ui/options_customise_game.menu:56
 msgid "Weapon Cycle for Zoom:"
-msgstr ""
+msgstr "Cambio Arma per Zoom:"
 
 #: etmain/ui/options_customise_game.menu:56
 msgid "On (normal)"
@@ -2269,7 +2269,7 @@ msgstr "Specifica la grandezza di incremento per lo zoom"
 
 #: etmain/ui/options_customise_game.menu:63
 msgid "Quick Chat Mode:"
-msgstr "Modalità Chat Istantanea:"
+msgstr "Modalità Chat Rapida:"
 
 #: etmain/ui/options_customise_game.menu:63
 msgid "Alpha"
@@ -2452,7 +2452,7 @@ msgstr "VISUALIZZA"
 
 #: etmain/ui/options_customise_hud.menu:32
 msgid "HUD DISPLAY"
-msgstr "HUD DISPLAY"
+msgstr "VISUALIZZAZIONE HUD"
 
 #: etmain/ui/options_customise_hud.menu:33
 msgid "Draw Gun:"
@@ -2464,11 +2464,11 @@ msgstr "Mostra il modello dell'arma su schermo"
 
 #: etmain/ui/options_customise_hud.menu:34
 msgid "Show Compass:"
-msgstr ""
+msgstr "Mostra Bussola:"
 
 #: etmain/ui/options_customise_hud.menu:34
 msgid "Displays compass (with icons when near select events)"
-msgstr ""
+msgstr "Visualizza una bussola con la mappa della posizione"
 
 #: etmain/ui/options_customise_hud.menu:36
 msgid "Auto Map Zoom:"
@@ -2496,19 +2496,19 @@ msgstr "Visualizza il tempo per rientrare in gioco"
 
 #: etmain/ui/options_customise_hud.menu:39
 msgid "Cursor Hints:"
-msgstr ""
+msgstr "Anima Icona Azione:"
 
 #: etmain/ui/options_customise_hud.menu:39
 msgid "Size Pulse"
-msgstr ""
+msgstr "Pulsa Dimensione"
 
 #: etmain/ui/options_customise_hud.menu:39
 msgid "Strobe Pulse"
-msgstr ""
+msgstr "Effetto Stroboscopico"
 
 #: etmain/ui/options_customise_hud.menu:39
 msgid "Alpha Pulse"
-msgstr ""
+msgstr "Pulsa Trasparenza"
 
 #: etmain/ui/options_customise_hud.menu:39
 msgid "Solid"
@@ -2516,7 +2516,7 @@ msgstr "Solido"
 
 #: etmain/ui/options_customise_hud.menu:39
 msgid "Icon display format when near an action item"
-msgstr ""
+msgstr "Formato di visualizzazione dell'icona d'azione sugli oggetti"
 
 #: etmain/ui/options_customise_hud.menu:40
 msgid "Show Locations:"
@@ -2632,7 +2632,7 @@ msgstr "Visualizza lagometer"
 
 #: etmain/ui/options_customise_hud.menu:49
 msgid "Switch HUD:"
-msgstr "Scambia HUD:"
+msgstr "Tipo di HUD:"
 
 #: etmain/ui/options_customise_hud.menu:49
 msgid "Standard Hud"
@@ -2648,11 +2648,11 @@ msgstr "HUD Alternativo 2"
 
 #: etmain/ui/options_customise_hud.menu:49
 msgid "Switches between different HUD"
-msgstr "Scambia HUD differenti"
+msgstr "Scegli il tipo di HUD"
 
 #: etmain/ui/options_customise_hud.menu:50
 msgid "Modify Selected HUD:"
-msgstr ""
+msgstr "Personalizza HUD:"
 
 #: etmain/ui/options_customise_hud.menu:50
 msgid "Move Round Timer"
@@ -2684,7 +2684,7 @@ msgstr "Timer + Gradi + Popup"
 
 #: etmain/ui/options_customise_hud.menu:50
 msgid "Customises Selected HUD"
-msgstr ""
+msgstr "Personalizza HUD Selezionato"
 
 #: etmain/ui/options_customise_hud.menu:55
 msgid "IN-GAME DISPLAY"
@@ -2719,7 +2719,7 @@ msgstr ""
 
 #: etmain/ui/options_customise_hud.menu:59
 msgid "Corona Distance:"
-msgstr ""
+msgstr "Distanza Bagliore:"
 
 #: etmain/ui/options_customise_hud.menu:59
 msgid "Extreme"
@@ -2727,16 +2727,16 @@ msgstr "Estremo"
 
 #: etmain/ui/options_customise_hud.menu:59
 msgid "Sets the maximum distance light corona is displayed"
-msgstr ""
+msgstr "Imposta la distanza massima per visualizzare il bagliore delle luci"
 
 #: etmain/ui/options_customise_hud.menu:60
 msgid "Particles:"
-msgstr ""
+msgstr "Particelle:"
 
 #: etmain/ui/options_customise_hud.menu:60
 msgid ""
 "Toggles display of particle effects - e.g. explosions, some smoke effects"
-msgstr ""
+msgstr "Se visualizzare gli effetti di emissioni di particelle (esplosioni o alcuni effetti di fumo)"
 
 #: etmain/ui/options_customise_hud.menu:61
 msgid "Wall Mark Lifetime:"
@@ -4067,7 +4067,7 @@ msgstr "3. Muoversi!"
 #: etmain/ui/wm_ftquickmessageAlt.menu:126
 #: etmain/ui/wm_quickmessageAlt.menu:126
 msgid "4. Clear The Path!"
-msgstr "4. Liberate il passaggio!"
+msgstr "4. Liberate il Passaggio!"
 
 #: etmain/ui/wm_ftquickmessageAlt.menu:127
 #: etmain/ui/wm_quickmessageAlt.menu:127
@@ -4143,7 +4143,7 @@ msgstr "5. Arrivederci"
 #: etmain/ui/wm_ftquickmessageAlt.menu:153
 #: etmain/ui/wm_quickmessageAlt.menu:153
 msgid "6. Great Shot"
-msgstr "6. Gran Colpo"
+msgstr "6. Bel Colpo"
 
 #: etmain/ui/wm_ftquickmessageAlt.menu:154
 #: etmain/ui/wm_quickmessageAlt.menu:154
@@ -4501,7 +4501,7 @@ msgstr "Entrerai in gioco come un %s %s con %s e %s."
 #: src/cgame/cg_debriefing.c:1340
 #, c-format
 msgid "Last Played             : %s"
-msgstr "Ultima Giocata       : %s"
+msgstr "Ultima Giocata         : %s"
 
 #: src/cgame/cg_debriefing.c:1341
 msgid "Never"
@@ -4515,7 +4515,7 @@ msgstr "%d mappe fa"
 #: src/cgame/cg_debriefing.c:1347
 #, c-format
 msgid "Total Accumulated Votes : %d"
-msgstr "Totale Voti Accumulati    : %d"
+msgstr "Totale Voti Accumulati : %d"
 
 #: src/cgame/cg_debriefing.c:2013 src/cgame/cg_debriefing.c:3202
 #: src/cgame/cg_scoreboard.c:723
@@ -4529,7 +4529,7 @@ msgstr "ACC:"
 
 #: src/cgame/cg_debriefing.c:2624
 msgid "HS:"
-msgstr "Punti:"
+msgstr "HS:"
 
 #: src/cgame/cg_debriefing.c:2659
 msgid "Time:"
@@ -4883,7 +4883,7 @@ msgstr "Hai scambiato posto con"
 
 #: src/cgame/cg_event.c:275
 msgid "You killed ^1TEAMMATE^7"
-msgstr "Hai ucciso un ^1COMPAGNO^7"
+msgstr "Hai ucciso il ^1COMPAGNO^7"
 
 #: src/cgame/cg_event.c:280
 msgid "You killed"
@@ -4891,15 +4891,15 @@ msgstr "Hai ucciso"
 
 #: src/cgame/cg_event.c:293
 msgid "^7swapped places with"
-msgstr "^7scambiato posto con"
+msgstr "^7ha scambiato posto con"
 
 #: src/cgame/cg_event.c:297
 msgid "^7killed ^1TEAMMATE^7"
-msgstr "^7ucciso un ^1COMPAGNO^7"
+msgstr "^7ha ucciso il ^1COMPAGNO^7"
 
 #: src/cgame/cg_event.c:302
 msgid "^7killed"
-msgstr "^7ucciso"
+msgstr "^7ha ucciso"
 
 #: src/cgame/cg_event.c:566
 msgid "died"
@@ -5016,7 +5016,7 @@ msgstr ""
 
 #: src/cgame/cg_info.c:1193
 msgid "OBJECTIVES"
-msgstr "OBBIETTIVI"
+msgstr "OBIETTIVI"
 
 #: src/cgame/cg_info.c:1421
 msgid "DEMO STATUS"
@@ -5074,12 +5074,12 @@ msgstr "Sei stato premiato con %s"
 #: src/cgame/cg_popupmessages.c:680
 #, c-format
 msgid "Planted at %s."
-msgstr "Piantata su %s."
+msgstr "Piantata: %s."
 
 #: src/cgame/cg_popupmessages.c:682
 #, c-format
 msgid "Defused at %s."
-msgstr "Disinnescata su %s."
+msgstr "Disinnescata: %s."
 
 #: src/cgame/cg_popupmessages.c:691
 #, c-format
@@ -5109,17 +5109,17 @@ msgstr ""
 #: src/cgame/cg_popupmessages.c:733
 #, c-format
 msgid "%s have stolen %s!"
-msgstr "%s ha rubato %s!"
+msgstr "%s ha rubato: %s!"
 
 #: src/cgame/cg_popupmessages.c:735
 #, c-format
 msgid "%s have returned %s!"
-msgstr "%s ha ripreso %s!"
+msgstr "%s ha ripreso: %s!"
 
 #: src/cgame/cg_popupmessages.c:758
 #, c-format
 msgid "%s^7 has joined the %s^7!"
-msgstr "%s^7 si è unito al %s^7!"
+msgstr "%s^7 si è unito %s^7!"
 
 #: src/cgame/cg_popupmessages.c:761
 #, c-format
@@ -5398,7 +5398,7 @@ msgstr "Tutti i server preferiti sono stati rimossi."
 
 #: src/cgame/cg_predict.c:641
 msgid "You are near"
-msgstr "Sei vicino"
+msgstr "Sei vicino a:"
 
 msgid "joined the Axis team\n"
 msgstr "si è unito al team Axis\n"
@@ -5488,82 +5488,82 @@ msgid "killed himself"
 msgstr "si è ucciso"
 
 msgid "Improved use of Explosive Ammunition"
-msgstr "Migliorato l'uso delle Munizioni Esplosive"
+msgstr "l'uso avanzato di munizioni esplosive"
 
 msgid "Improved Dexterity"
-msgstr "Destrezza migliorata"
+msgstr "miglior destrezza"
 
 msgid "Binoculars for any Class"
-msgstr "Binocolo per tutte le Classi"
+msgstr "binocolo per tutte le classi"
 
 msgid "Medic Ammo"
-msgstr "Munizioni Mediche"
+msgstr "attrezzatura medica"
 
 msgid "Improved First Aid Resources"
-msgstr "Risorse di Primo Soccorso migliorate"
+msgstr "migliori risorse di primo soccorso"
 
 msgid "Improved use of Light Weapon Ammunition"
-msgstr "Migliorato l'uso delle Munizioni per Armi Leggere"
+msgstr "l'uso avanzato delle munizioni per armi leggere"
 
 msgid "Improved Projectile Resources"
-msgstr ""
+msgstr "più munizioni a disposizione"
 
 msgid "Improved use of Scoped Weapon Ammunition"
-msgstr ""
+msgstr "l'uso avanzato delle munizioni per armi con mirino"
 
 msgid "Improved Physical Fitness"
-msgstr "Idoneità Fisica Migliorata"
+msgstr "una migliore idoneità fisica"
 
 msgid "Improved Ammo Resources"
-msgstr "Risorse Munizioni Migliorate"
+msgstr "migliori risorse di munizioni"
 
 msgid "Improved Signals"
-msgstr "Segnali Migliorati"
+msgstr "segnali migliorati"
 
 msgid "Faster Reload"
-msgstr "Ricarica Più Veloce"
+msgstr "una ricarica più veloce"
 
 msgid "Heavy Weapon Proficiency"
-msgstr ""
+msgstr "competenza sulle armi pesanti"
 
 msgid "Improved use of Sabotage and Misdirection"
-msgstr ""
+msgstr "abilità nel missioni di sabotaggio"
 
 msgid "Improved Health"
-msgstr "Salute Migliorata"
+msgstr "salute migliorata"
 
 msgid "Improved Construction and Destruction"
-msgstr "Costruzione e Distruzione Migliorati"
+msgstr "costruzione e distruzione migliorati"
 
 msgid "Full Revive"
-msgstr ""
+msgstr "piena rianimazione"
 
 msgid "Improved Air and Ground Support"
-msgstr "Supporto Aereo e di Terra Migliorati"
+msgstr "miglior supporto aereo e di terra"
 
 msgid "Improved Light Weapon Handling"
-msgstr "Uso Armi Leggere Migliorato"
+msgstr "l'uso avanzato di armi leggere"
 
 msgid "Breath Control"
-msgstr ""
+msgstr "controllo del respiro"
 
 msgid "Trap Awareness"
-msgstr "Riconoscimento Trappole"
+msgstr "riconoscimento delle trappole"
 
 msgid "a Flak Jacket"
-msgstr "un Giubbotto Antiproiettile"
+msgstr "un giubbotto antiproiettile"
 
 msgid "Adrenalin Self"
-msgstr ""
+msgstr "disposizione di adrenalina"
 
 msgid "Enemy Recognition"
-msgstr "Riconoscimento Nemico"
+msgstr "riconoscimento del nemico"
 
 msgid "Dual-Wield Pistols"
-msgstr ""
+msgstr "doppia pistola"
 
 msgid "Improved Weapon Handling"
-msgstr "Uso Armi Migliorato"
+msgstr "l'uso avanzato delle armi"
 
 msgid "Assassin"
 msgstr "Assassino"
@@ -5577,13 +5577,13 @@ msgid "^1THE TEAM"
 msgstr "^1IL TEAM"
 
 msgid "Axis team"
-msgstr "team Axis"
+msgstr "al team Axis"
 
 msgid "Allied team"
-msgstr "team Allied"
+msgstr "al team Allied"
 
 msgid "Spectators"
-msgstr "Spettatori"
+msgstr "agli spettatori"
 
 msgid "You must be a player or following a player to use +stats\n"
 msgstr ""
@@ -5654,7 +5654,7 @@ msgid "Mines cleared."
 msgstr "Mine Disinnescate."
 
 msgid "Enemy in disguise."
-msgstr ""
+msgstr "Nemico camuffato."
 
 msgid "Need a Medic!"
 msgstr "Serve un Medico!"
@@ -5714,10 +5714,10 @@ msgid "No!"
 msgstr "No!"
 
 msgid "Thank you!"
-msgstr "Grazie!"
+msgstr "Thank you!"
 
 msgid "You're welcome."
-msgstr "Prego."
+msgstr "You're welcome."
 
 msgid "Bitte sehr."
 msgstr "Bitte sehr."
@@ -5909,7 +5909,7 @@ msgid "^1Spam Protection^7: VoiceChat ignored"
 msgstr "^1Protezione Anti-Spam^7: VoiceChat ignorata"
 
 msgid "Mines have been reported in this area."
-msgstr "Delle mine sono state individuate in quest'area."
+msgstr "Sono state individuate delle mine in quest'area."
 
 msgid "'s Landmine"
 msgstr "."
@@ -6362,7 +6362,7 @@ msgid "Server disconnected for unknown reason"
 msgstr "Server disconnesso per motivi sconosciuti"
 
 msgid "'s Akimbo Luger 9mms"
-msgstr " con la sua Akimbo Luger 9mms"
+msgstr " con una Akimbo Luger 9mm"
 
 msgid "Cheats are not enabled on this server.\n"
 msgstr "Trucchi non abilitati in questo server.\n"
@@ -6614,16 +6614,16 @@ msgid "- K43 Rifle"
 msgstr "- Fucile K43"
 
 msgid "- M1 Garand"
-msgstr "- M1 Garand"
+msgstr "- Garand M1"
 
 msgid "- M7"
 msgstr "- M7"
 
 msgid "- Scoped M1 Garand"
-msgstr "- M1 Garand Con Mirino"
+msgstr "- Garand M1 Con Mirino"
 
 msgid "- M1 Garand Scope"
-msgstr "- Mirino Per M1 Garand"
+msgstr "- Mirino Per Garand M1"
 
 msgid "- FG 42 Paratroop Rifle"
 msgstr "- Fucile FG 42"
@@ -6723,66 +6723,6 @@ msgid ""
 "Couldn't load an official pak file; verify your installation and make sure "
 "it has been updated to the latest version."
 msgstr ""
-
-msgid "Private"
-msgstr "Private"
-
-msgid "Private 1st Class"
-msgstr "Private 1st Class"
-
-msgid "Corporal"
-msgstr "Corporal"
-
-msgid "Sergeant"
-msgstr "Sergeant"
-
-msgid "Lieutenant"
-msgstr "Lieutenant"
-
-msgid "Captain"
-msgstr "Captain"
-
-msgid "Major"
-msgstr "Major"
-
-msgid "Colonel"
-msgstr "Colonel"
-
-msgid "Brigadier General"
-msgstr "Brigadier General"
-
-msgid "Lieutenant General"
-msgstr "Lieutenant General"
-
-msgid "General"
-msgstr "General"
-
-msgid "Schutze"
-msgstr "Schutze"
-
-msgid "Oberschutze"
-msgstr "Oberschutze"
-
-msgid "Gefreiter"
-msgstr "Gefreiter"
-
-msgid "Feldwebel"
-msgstr "Feldwebel"
-
-msgid "Leutnant"
-msgstr "Leutnant"
-
-msgid "Hauptmann"
-msgstr "Hauptmann"
-
-msgid "Oberst"
-msgstr "Oberst"
-
-msgid "Generalmajor"
-msgstr "Generalmajor"
-
-msgid "Generalleutnant"
-msgstr "Generalleutnant"
 
 msgid "Battle Sense"
 msgstr "Tattica"
