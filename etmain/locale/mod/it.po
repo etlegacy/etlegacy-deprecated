@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: ET:Legacy\n"
 "Report-Msgid-Bugs-To: mail@etlegacy.com\n"
 "POT-Creation-Date: 2015-01-10 20:22+0100\n"
-"PO-Revision-Date: 2015-12-22 17:35+0000\n"
+"PO-Revision-Date: 2015-12-23 14:21+0000\n"
 "Last-Translator: redtide <redtid3@gmail.com>\n"
 "Language-Team: Italian (http://www.transifex.com/etlegacy/etlegacy/language/it/)\n"
 "MIME-Version: 1.0\n"
@@ -982,7 +982,7 @@ msgstr "Permette ai giocatori di scaricare i file mancanti dal server"
 
 #: etmain/ui/hostgame_advanced.menu:159
 msgid "Maximum Download Rate:"
-msgstr ""
+msgstr "Velocità Max Scaricamenti:"
 
 #: etmain/ui/hostgame_advanced.menu:159
 msgid ""
@@ -1362,7 +1362,7 @@ msgstr "Numero bot:"
 
 #: etmain/ui/ingame_vote_bot.menu:39
 msgid "Move skill:"
-msgstr ""
+msgstr "Abilità movimento:"
 
 #: etmain/ui/ingame_vote_bot.menu:45
 msgid "Difficulty:"
@@ -3070,11 +3070,11 @@ msgstr "Grandezza Caratteri:"
 
 #: etmain/ui/options_customise_hud.menu:114
 msgid "Sets the size of the in-game fonts"
-msgstr ""
+msgstr "Grandezza dei caratteri nel gioco"
 
 #: etmain/ui/options_customise_hud.menu:116
 msgid "Top Print:"
-msgstr ""
+msgstr "Scritte Sopra:"
 
 #: etmain/ui/options_customise_hud.menu:116
 msgid "Set font size for Warmup message and Spectator label"
@@ -3082,24 +3082,24 @@ msgstr "Imposta la grandezza del carattere per il messaggio di Riscaldamento e l
 
 #: etmain/ui/options_customise_hud.menu:118
 msgid "Side Print:"
-msgstr ""
+msgstr "Scritte Laterali:"
 
 #: etmain/ui/options_customise_hud.menu:118
 msgid ""
 "Set font size for Limbo/Fireteam/Vote/Obituaries/Skill upgrade messages"
-msgstr ""
+msgstr "Grandezza caratteri di Limbo/Fireteam/Voti/Obitori/Promozioni"
 
 #: etmain/ui/options_customise_hud.menu:120
 msgid "Center Print:"
-msgstr ""
+msgstr "Scritte Centro:"
 
 #: etmain/ui/options_customise_hud.menu:120
 msgid "Set font size for CenterPrint/Objective Info/Skill reward messages"
-msgstr ""
+msgstr "Grandezza caratteri di Centro/Info Obiettivi/Premiazioni"
 
 #: etmain/ui/options_customise_hud.menu:122
 msgid "Set font size for Crosshair Name label"
-msgstr ""
+msgstr "Grandezza caratteri dei nomi sopra il mirino"
 
 #: etmain/ui/options_customise_hud.menu:128
 msgid "PopUpTimeStay:"
@@ -3239,19 +3239,19 @@ msgstr "Intensità Delle Texture (richiede vid_restart)"
 
 #: etmain/ui/options_graphics.menu:47
 msgid "Map overbright bits:"
-msgstr ""
+msgstr "Overbright bits mappa:"
 
 #: etmain/ui/options_graphics.menu:47
 msgid "The World Gets Brighter, But Paler (requires vid_restart)"
-msgstr ""
+msgstr "Maggiore luminosità globale, ma opaca (richiede vid_restart)"
 
 #: etmain/ui/options_graphics.menu:48
 msgid "Overbright Bits:"
-msgstr ""
+msgstr "Overbright bits:"
 
 #: etmain/ui/options_graphics.menu:48
 msgid "Map shines brighter (requires vid_restart)"
-msgstr ""
+msgstr "Luminosità della mappa (richiede vid_restart)"
 
 #: etmain/ui/options_graphics.menu:53
 msgid "Low Quality Sky:"
@@ -3502,7 +3502,7 @@ msgstr ""
 
 #: etmain/ui/options_system.menu:52
 msgid "Max Packets:"
-msgstr ""
+msgstr "Max Pacchetti:"
 
 #: etmain/ui/options_system.menu:52
 msgid "Very Low"
@@ -3510,7 +3510,7 @@ msgstr "Molto Basso"
 
 #: etmain/ui/options_system.menu:52
 msgid "Cap for upstream data packet transmissions"
-msgstr ""
+msgstr "Limitazione di invio dei pacchetti di dati"
 
 #: etmain/ui/options_system.menu:53
 msgid "Packet Duplication:"
@@ -4296,7 +4296,7 @@ msgstr "M. Mine Disinnescate"
 
 #: etmain/ui/wm_ftquickmessage.menu:104 etmain/ui/wm_quickmessage.menu:104
 msgid "E. Enemy Disguised"
-msgstr ""
+msgstr "E. Nemico Camuffato"
 
 #: etmain/ui/wm_ftquickmessage.menu:110 etmain/ui/wm_quickmessage.menu:110
 msgid "M. Need Medic!"
@@ -4693,15 +4693,15 @@ msgstr "Reclamo destituito"
 
 #: src/cgame/cg_draw.c:1940
 msgid "Server Host cannot be complained against"
-msgstr ""
+msgstr "Non puoi far reclamo contro il Server Host"
 
 #: src/cgame/cg_draw.c:1946
 msgid "You were team-killed by the Server Host"
-msgstr ""
+msgstr "Sei stato ucciso da fuoco amico del Server Host"
 
 #: src/cgame/cg_draw.c:1952
 msgid "You were team-killed by a bot."
-msgstr ""
+msgstr "Sei stato ucciso da fuoco amico di un bot."
 
 #: src/cgame/cg_draw.c:1962
 msgid "Your application has been submitted"
@@ -4952,7 +4952,7 @@ msgstr "Prossimo"
 
 #: src/cgame/cg_info.c:718
 msgid "PLAYER STATS"
-msgstr "STAT GIOCATORE"
+msgstr "STATISTICHE"
 
 #: src/cgame/cg_info.c:729 src/cgame/cg_info.c:931
 msgid "Weapon"
@@ -4968,7 +4968,7 @@ msgstr "Colpi / Spari"
 
 #: src/cgame/cg_info.c:735 src/cgame/cg_info.c:937
 msgid "Kills"
-msgstr "Uccisioni"
+msgstr "Uccisi"
 
 #: src/cgame/cg_info.c:737
 msgid "Deaths"
@@ -4976,7 +4976,7 @@ msgstr "Morti"
 
 #: src/cgame/cg_info.c:739
 msgid "Headshots"
-msgstr "Colpi alla testa"
+msgstr "Colpi Testa"
 
 #: src/cgame/cg_info.c:748
 msgid "No weapon info available."
@@ -5232,7 +5232,7 @@ msgstr ""
 #: src/cgame/cg_servercmds.c:1879
 #, c-format
 msgid "Deaths: %3d    Self Kills: %3d    Headshots: %5.1f%%"
-msgstr ""
+msgstr "Morti: %3d    Suicidi: %3d    Colpi Testa: %5.1f%%"
 
 #: src/cgame/cg_servercmds.c:2035
 msgid "^7Weapon     Acrcy Hits/Atts Kills Deaths Headshots\n"
