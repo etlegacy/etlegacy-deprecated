@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: ET:Legacy\n"
 "Report-Msgid-Bugs-To: mail@etlegacy.com\n"
 "POT-Creation-Date: 2015-01-10 20:22+0100\n"
-"PO-Revision-Date: 2015-12-23 14:21+0000\n"
+"PO-Revision-Date: 2015-12-26 17:43+0000\n"
 "Last-Translator: redtide <redtid3@gmail.com>\n"
 "Language-Team: Italian (http://www.transifex.com/etlegacy/etlegacy/language/it/)\n"
 "MIME-Version: 1.0\n"
@@ -4697,11 +4697,11 @@ msgstr "Non puoi far reclamo contro il Server Host"
 
 #: src/cgame/cg_draw.c:1946
 msgid "You were team-killed by the Server Host"
-msgstr "Sei stato ucciso da fuoco amico del Server Host"
+msgstr "Sei stato ucciso dal fuoco amico del Server Host"
 
 #: src/cgame/cg_draw.c:1952
 msgid "You were team-killed by a bot."
-msgstr "Sei stato ucciso da fuoco amico di un bot."
+msgstr "Sei stato ucciso dal fuoco amico di un bot."
 
 #: src/cgame/cg_draw.c:1962
 msgid "Your application has been submitted"
@@ -5527,7 +5527,7 @@ msgid "Heavy Weapon Proficiency"
 msgstr "competenza sulle armi pesanti"
 
 msgid "Improved use of Sabotage and Misdirection"
-msgstr "abilità nel missioni di sabotaggio"
+msgstr "maggiore abilità nelle azioni di sabotaggio"
 
 msgid "Improved Health"
 msgstr "salute migliorata"
@@ -5566,7 +5566,7 @@ msgid "Improved Weapon Handling"
 msgstr "l'uso avanzato delle armi"
 
 msgid "Assassin"
-msgstr "Assassino"
+msgstr "assassino"
 
 #: src/cgame/cg_consolecmds:1233
 msgid "You will spawn as an %s %s with a %s and %s."
@@ -5909,7 +5909,7 @@ msgid "^1Spam Protection^7: VoiceChat ignored"
 msgstr "^1Protezione Anti-Spam^7: VoiceChat ignorata"
 
 msgid "Mines have been reported in this area."
-msgstr "Sono state individuate delle mine in quest'area."
+msgstr "Sono state rilevate delle mine in quest'area."
 
 msgid "'s Landmine"
 msgstr "."
