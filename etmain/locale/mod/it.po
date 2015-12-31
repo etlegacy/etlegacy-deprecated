@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: ET:Legacy\n"
 "Report-Msgid-Bugs-To: mail@etlegacy.com\n"
 "POT-Creation-Date: 2015-01-10 20:22+0100\n"
-"PO-Revision-Date: 2015-12-26 17:43+0000\n"
+"PO-Revision-Date: 2015-12-31 16:35+0000\n"
 "Last-Translator: redtide <redtid3@gmail.com>\n"
 "Language-Team: Italian (http://www.transifex.com/etlegacy/etlegacy/language/it/)\n"
 "MIME-Version: 1.0\n"
@@ -166,11 +166,11 @@ msgstr "ARTISTI VOCE"
 
 #: etmain/ui/credits_additional.menu:203
 msgid "Voice of Allied / Axis soldiers"
-msgstr "Voce dei soldati Allied / Axis"
+msgstr "Voce dei soldati Alleati / Asse"
 
 #: etmain/ui/credits_additional.menu:205
 msgid "Voice of Axis Commander"
-msgstr "Voce del Comandante Axis"
+msgstr "Voce del Comandante dell'Asse"
 
 #: etmain/ui/credits_additional.menu:207
 msgid "Voice of Allied Commander"
@@ -685,11 +685,11 @@ msgstr "Imposta il tempo per rientrare in gioco nella squadra Allied"
 
 #: etmain/ui/hostgame_advanced.menu:55
 msgid "Axis Spawn Time:"
-msgstr "Tempo Spawn Axis:"
+msgstr "Tempo Spawn Asse:"
 
 #: etmain/ui/hostgame_advanced.menu:55
 msgid "Override the default Axis spawn time"
-msgstr "Imposta il tempo per rientrare in gioco nella squadra Axis"
+msgstr "Imposta il tempo per rientrare in gioco nel team dell'Asse"
 
 #: etmain/ui/hostgame_advanced.menu:56
 msgid "Allied Max Lives:"
@@ -701,11 +701,11 @@ msgstr "Specifica il numero di vite per giocatore in un gioco con limite assegna
 
 #: etmain/ui/hostgame_advanced.menu:57
 msgid "Axis Max Lives:"
-msgstr "Vite Axis:"
+msgstr "Max Vite Asse:"
 
 #: etmain/ui/hostgame_advanced.menu:57
 msgid "Specify the number of Axis lives in a max lives game"
-msgstr "Specifica il numero di vite per giocatore in un gioco con limite assegnato alla squadra Axis"
+msgstr "Specifica il numero di vite per giocatore in un gioco con limite assegnato al team dell'Asse"
 
 #: etmain/ui/hostgame_advanced.menu:58
 msgid "Stopwatch Round-Type:"
@@ -852,7 +852,7 @@ msgstr "Mappa:"
 
 #: etmain/ui/hostgame_advanced.menu:84
 msgid "Allow players to vote for a different campaign or map"
-msgstr "Permette ai giocatori di votare per una compagnia o mappa diversa"
+msgstr "Permette ai giocatori di votare per una campagna o mappa diversa"
 
 #: etmain/ui/hostgame_advanced.menu:85
 msgid "Match Reset:"
@@ -868,7 +868,7 @@ msgstr ""
 
 #: etmain/ui/hostgame_advanced.menu:86
 msgid "Allow players to vote for spectators to be muted"
-msgstr ""
+msgstr "Permette ai giocatori di votare per zittire gli spettatori"
 
 #: etmain/ui/hostgame_advanced.menu:87
 msgid "Next Map:"
@@ -876,7 +876,7 @@ msgstr "Prossima Mappa:"
 
 #: etmain/ui/hostgame_advanced.menu:87
 msgid "Allow players to vote for the next campaign or map"
-msgstr ""
+msgstr "Permette ai giocatori di votare per la campagna o mappa successiva"
 
 #: etmain/ui/hostgame_advanced.menu:88
 msgid "Balanced Teams:"
@@ -1100,7 +1100,7 @@ msgstr "Specifica il nome del tuo server di gioco"
 #: etmain/ui/hostgame.menu:39 etmain/ui/playonline.menu:83
 #: src/cgame/cg_loadpanel.c:259
 msgid "Campaign"
-msgstr "Compagnia"
+msgstr "Campagna"
 
 #: etmain/ui/hostgame.menu:39 etmain/ui/ingame_vote_misc.menu:78
 #: etmain/ui/ingame_vote_misc_refrcon.menu:77 src/cgame/cg_loadpanel.c:261
@@ -1228,7 +1228,7 @@ msgstr "NOME"
 
 #: etmain/ui/hostgame.menu:133
 msgid "Select the campaign or map that the server should load"
-msgstr "Seleziona la compagnia o mappa da avviare nel server"
+msgstr "Seleziona la campagna o mappa da avviare nel server"
 
 #: etmain/ui/hostgame.menu:142 etmain/ui/playonline.menu:219
 msgid "PREVIEW"
@@ -1374,11 +1374,11 @@ msgstr "CACCIA TUTTI I BOT"
 
 #: etmain/ui/ingame_vote_bot.menu:55
 msgid "AXIS BOTS"
-msgstr "BOT AXIS"
+msgstr "BOT ASSE"
 
 #: etmain/ui/ingame_vote_bot.menu:56
 msgid "ALLIED BOTS"
-msgstr "BOT ALLIED"
+msgstr "BOT ALLEATI"
 
 #: etmain/ui/ingame_vote_bot.menu:57
 msgid "BALANCED"
@@ -1407,7 +1407,7 @@ msgstr "MAPPE"
 
 #: etmain/ui/ingame_vote_map.menu:38
 msgid "CAMPAIGNS"
-msgstr "COMPAGNIE"
+msgstr "CAMPAGNE"
 
 #: etmain/ui/ingame_vote_map.menu:82 etmain/ui/ingame_vote_map.menu:83
 #: etmain/ui/ingame_vote_map.menu:84 etmain/ui/ingame_vote_misc.menu:62
@@ -1452,7 +1452,7 @@ msgstr "PROSSIMA MAPPA"
 #: etmain/ui/ingame_vote_misc.menu:45
 #: etmain/ui/ingame_vote_misc_refrcon.menu:44
 msgid "NEXT CAMPAIGN"
-msgstr "PROSSIMA COMPAGNIA"
+msgstr "PROSSIMA CAMPAGNA"
 
 #: etmain/ui/ingame_vote_misc.menu:46
 #: etmain/ui/ingame_vote_misc_refrcon.menu:45
@@ -1608,15 +1608,15 @@ msgstr ""
 
 #: etmain/ui/ingame_vote_players.menu:66
 msgid "MAKE AXIS"
-msgstr ""
+msgstr "NELL'ASSE"
 
 #: etmain/ui/ingame_vote_players.menu:67
 msgid "MAKE ALLIED"
-msgstr ""
+msgstr "NEGLI ALLEATI"
 
 #: etmain/ui/ingame_vote_players.menu:68
 msgid "MAKE SPEC"
-msgstr ""
+msgstr "NEGLI SPETT"
 
 #: etmain/ui/ingame_vote_players.menu:70
 #: etmain/ui/ingame_vote_players_warn.menu:64 src/cgame/cg_fireteams.c:362
@@ -3688,7 +3688,7 @@ msgstr "NOME MAPPA"
 
 #: etmain/ui/playonline.menu:384
 msgid "Click here to sort by Campaign or Map name"
-msgstr "Clicca qui per ordinare per Compagnia o Nome mappa"
+msgstr "Clicca qui per ordinare per Campagna o Nome mappa"
 
 #: etmain/ui/playonline.menu:414
 msgid "#PLAYERS"
@@ -4481,12 +4481,12 @@ msgstr ""
 #: src/cgame/cg_consolecmds.c:1143 src/cgame/cg_popupmessages.c:733
 #: src/cgame/cg_popupmessages.c:735
 msgid "Axis"
-msgstr "Axis"
+msgstr "Asse"
 
 #: src/cgame/cg_consolecmds.c:1147 src/cgame/cg_popupmessages.c:733
 #: src/cgame/cg_popupmessages.c:735
 msgid "Allies"
-msgstr "Allies"
+msgstr "Alleati"
 
 #: src/cgame/cg_consolecmds.c:1221
 #, c-format
@@ -4557,11 +4557,11 @@ msgstr "^2A TUTTI"
 
 #: src/cgame/cg_debriefing.c:3175
 msgid "ALLIES WIN!"
-msgstr "ALLIES VINCONO!"
+msgstr "ALLEATI VINCONO!"
 
 #: src/cgame/cg_debriefing.c:3177
 msgid "AXIS WIN!"
-msgstr "AXIS VINCONO!"
+msgstr "ASSE VINCE!"
 
 #: src/cgame/cg_debriefing.c:3179
 msgid "IT'S A TIE!"
@@ -4586,7 +4586,7 @@ msgstr ""
 #: src/cgame/cg_debriefing.c:3236
 #, c-format
 msgid "CAMPAIGN STATUS: %s"
-msgstr ""
+msgstr "STATO CAMPAGNA: %s"
 
 #: src/cgame/cg_debriefing.c:3245
 msgid "SECS TO NEXT MAP"
@@ -4595,7 +4595,7 @@ msgstr "SEC PER PROSSIMA"
 #: src/cgame/cg_debriefing.c:3371
 #, c-format
 msgid "Campaign: %s"
-msgstr "Compagnia: %s"
+msgstr "Campagna: %s"
 
 #: src/cgame/cg_draw.c:382 src/cgame/cg_draw.c:391 src/cgame/cg_draw.c:407
 #, c-format
@@ -4903,7 +4903,7 @@ msgstr "^7ha ucciso"
 
 #: src/cgame/cg_event.c:566
 msgid "died"
-msgstr "morto"
+msgstr "è morto"
 
 #: src/cgame/cg_event.c:614
 #, c-format
@@ -5180,7 +5180,7 @@ msgstr "^3SPETTATORE"
 
 #: src/cgame/cg_scoreboard.c:811 src/cgame/cg_scoreboard.c:828
 msgid "AXIS"
-msgstr "AXIS"
+msgstr "ASSE"
 
 #: src/cgame/cg_scoreboard.c:812 src/cgame/cg_scoreboard.c:819
 msgid "FIRST BLOOD"
@@ -5188,7 +5188,7 @@ msgstr "PRIMA VITTIMA"
 
 #: src/cgame/cg_scoreboard.c:818 src/cgame/cg_scoreboard.c:832
 msgid "ALLIES"
-msgstr "ALLIES"
+msgstr "ALLEATI"
 
 #: src/cgame/cg_scoreboard.c:855
 msgid "C R"
@@ -5377,7 +5377,7 @@ msgstr "Non trovo la campagna '%s'\n"
 #: src/ui/ui_main.c:8435
 #, c-format
 msgid "Corrupted campaign '%s'\n"
-msgstr ""
+msgstr "Campagna '%s' danneggiata\n"
 
 #: src/ui/ui_main.c:8466
 #, c-format
@@ -5386,7 +5386,7 @@ msgstr "%i campagne trovate:\n"
 
 #: src/ui/ui_main.c:8470
 msgid "No campaigns found.\n"
-msgstr "Nessuna compagnia trovata.\n"
+msgstr "Nessuna campagna trovata.\n"
 
 #: src/ui/ui_main.c:8518
 msgid "No favourite servers found."
@@ -5401,10 +5401,10 @@ msgid "You are near"
 msgstr "Sei vicino a:"
 
 msgid "joined the Axis team\n"
-msgstr "si è unito al team Axis\n"
+msgstr "si è unito all'Asse\n"
 
 msgid "joined the Allies team\n"
-msgstr "si è unito al team Allies\n"
+msgstr "si è unito agli Alleati\n"
 
 msgid "entered the game\n"
 msgstr "è entrato in gioco\n"
@@ -5577,10 +5577,10 @@ msgid "^1THE TEAM"
 msgstr "^1IL TEAM"
 
 msgid "Axis team"
-msgstr "al team Axis"
+msgstr "all'Asse"
 
 msgid "Allied team"
-msgstr "al team Allied"
+msgstr "agli Alleati"
 
 msgid "Spectators"
 msgstr "agli spettatori"
@@ -5610,10 +5610,10 @@ msgid "Your fireteam is now private"
 msgstr "ora Il tuo fireteam è privato"
 
 msgid "The Allies have too many players.\n"
-msgstr "Gli Allies hanno troppi giocatori.\n"
+msgstr "Gli Alleati hanno troppi giocatori.\n"
 
 msgid "The Axis has too many players.\n"
-msgstr "Gli Axis hanno troppi giocatori.\n"
+msgstr "L'Asse ha troppi giocatori.\n"
 
 msgid "Attack!"
 msgstr "Attacco!"
@@ -5939,10 +5939,10 @@ msgid "Constructing..."
 msgstr "Costruzione..."
 
 msgid "Allied Command Post constructed. Charge speed increased!"
-msgstr "Posto di Comando Allied costruito. Velocità di ricarica aumentata!"
+msgstr "Posto di Comando Alleati costruito. Velocità di ricarica aumentata!"
 
 msgid "Axis Command Post constructed. Charge speed increased!"
-msgstr "Posto di Comando Axis costruito. Velocità di ricarica aumentata!"
+msgstr "Posto di Comando Asse costruito. Velocità di ricarica aumentata!"
 
 msgid ""
 "^3All players ready!^7\n"
@@ -5950,13 +5950,13 @@ msgid ""
 msgstr "^3Giocatori pronti!^7\nInizia l'incontro...\n"
 
 msgid "You are on the Allied team"
-msgstr "Sei nel team Allied"
+msgstr "Fai parte degli Alleati"
 
 msgid "^1*** Match Reset! ***\n"
 msgstr "^1*** Reset incontro! ***\n"
 
 msgid "You are on the Axis team"
-msgstr "Sei nel team Axis"
+msgstr "Fai parte dell'Asse"
 
 msgid "Warning, leave the construction area..."
 msgstr "Attenzione, allontanarsi dall'area di costruzione..."
@@ -5984,7 +5984,7 @@ msgid "You cannot arm dynamite near a friendly objective!"
 msgstr "Non puoi armare una dinamite vicino a un obiettivo amico!"
 
 msgid "'s tank-mounted MG42"
-msgstr " con un MG 42 montato su carro armato"
+msgstr " con un MG 42 da carro armato"
 
 msgid "'s dynamite"
 msgstr " con della dinamite"
@@ -6125,10 +6125,10 @@ msgid "You have UNLOCKED teams\n"
 msgstr ""
 
 msgid "The ^4Allies^7 team is LOCKED!\n"
-msgstr "Il team ^4Allies^7 è BLOCCATO!\n"
+msgstr "Il team ^4Alleati^7 è BLOCCATO!\n"
 
 msgid "The ^1Axis^7 team is LOCKED!\n"
-msgstr "Il team ^4Axis^7 è BLOCCATO!\n"
+msgstr "Il team ^4Asse^7 è BLOCCATO!\n"
 
 msgid "^3Referee ^1PAUSED^3 the match^3!\n"
 msgstr ""
@@ -6164,10 +6164,10 @@ msgid "is not on the server\n"
 msgstr "non è sul server\n"
 
 msgid "^5You've been removed from the ^4Allies^7 team\n"
-msgstr "^5Sei stato rimosso dal team ^4Allies^7\n"
+msgstr "^5Sei stato rimosso dagli ^4Alleati^7\n"
 
 msgid "^5You've been removed from the ^1Axis^7 team\n"
-msgstr "^5Sei stato rimosso dal team ^1Axis^7\n"
+msgstr "^5Sei stato rimosso dall'^1Asse^7\n"
 
 msgid "Referee has ^3SPECTATOR LOCKED^7 teams\n"
 msgstr ""
@@ -6228,13 +6228,13 @@ msgid "Spectators can't lock a team!\n"
 msgstr "Gli spettatori non possono bloccare un team!\n"
 
 msgid "The ^4Allies^7 team is now locked!\n"
-msgstr "Ora il team ^4Allies^7 è bloccato!\n"
+msgstr "Ora il team ^4Alleati^7 è bloccato!\n"
 
 msgid "^3Your team is already locked!\n"
 msgstr "^3Il tuo team è già bloccato!\n"
 
 msgid "The ^4Allies^7 team is now unlocked!\n"
-msgstr "Ora il team ^4Allies^7 è sbloccato!\n"
+msgstr "Ora il team ^4Alleati^7 è sbloccato!\n"
 
 msgid "^3Your team is already unlocked!\n"
 msgstr "^3Il tuo team è già sbloccato!\n"
@@ -6243,10 +6243,10 @@ msgid "Spectators can't unlock a team!\n"
 msgstr "Gli spettatori non possono sbloccare un team!\n"
 
 msgid "The ^1Axis^7 team is now locked!\n"
-msgstr "Il team ^1Axis^7 ora è bloccato!\n"
+msgstr "Il team ^1Asse^7 ora è bloccato!\n"
 
 msgid "The ^1Axis^7 team is now unlocked!\n"
-msgstr "Il team ^1Axis^7 ora è sbloccato!\n"
+msgstr "Il team ^1Asse^7 ora è sbloccato!\n"
 
 msgid "Team commands not enabled on this server.\n"
 msgstr "Comandi team non abilitati su questo server.\n"
@@ -6275,10 +6275,10 @@ msgid "Spectators can't ready a team!\n"
 msgstr ""
 
 msgid "The ^4Allies^7 team is ready!\n"
-msgstr "Il team ^4Allies^7 è pronto!\n"
+msgstr "Il team ^4Alleati^7 è pronto!\n"
 
 msgid "The ^1Axis^7 team is ready!\n"
-msgstr "Il team ^1Axis^7 è pronto!\n"
+msgstr "Il team ^1Asse^7 è pronto!\n"
 
 msgid "A vote is already in progress.\n"
 msgstr "È già in corso una votazione.\n"
@@ -6293,10 +6293,10 @@ msgid "Spectator team\n"
 msgstr "Spettatore\n"
 
 msgid "Allies team\n"
-msgstr "Team Allies\n"
+msgstr "Team Alleati\n"
 
 msgid "Axis team\n"
-msgstr "Team Axis\n"
+msgstr "Team dell'Asse\n"
 
 msgid "Sorry, "
 msgstr "Spiacente, "
@@ -6389,10 +6389,10 @@ msgid "You must be alive to use this command.\n"
 msgstr "Devi essere vivo per usare questo comando.\n"
 
 msgid "The ^1Axis^7 team is empty!  Follow command ignored.\n"
-msgstr ""
+msgstr "Team dell'^1Asse^7 vuoto! Comando ignorato.\n"
 
 msgid "The ^4Allies^7 team is empty!  Follow command ignored.\n"
-msgstr ""
+msgstr "Team degli^1Alleati^7 vuoto! Comando ignorato.\n"
 
 msgid "Can't follow a player on an enemy team!\n"
 msgstr "Non puoi seguire un giocatore del team avversario!\n"
@@ -6443,7 +6443,7 @@ msgid "^1*** Level Restarted! ***\n"
 msgstr ""
 
 msgid "You have been switched to the Axis team"
-msgstr "Sei stato spostato nel team Axis"
+msgstr "Sei stato spostato nel team dell'Asse"
 
 msgid "Keep the Allies from beating the clock!"
 msgstr ""
@@ -6452,7 +6452,7 @@ msgid "Keep the Axis from beating the clock!"
 msgstr ""
 
 msgid "You have been switched to the Allied team"
-msgstr "Sei stato spostato nel team Allied"
+msgstr "Sei stato spostato nel team degli Alleati"
 
 msgid "Try to beat the clock!"
 msgstr ""
