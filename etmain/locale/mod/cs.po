@@ -4,13 +4,13 @@
 # Translators:
 # Jan Šimek <jsimek.cz@gmail.com>, 2015
 # Michal Mitter <mittermichal@gmail.com>, 2015
-# yfcz <yfcz@wolfenstein.cz>, 2015
+# yfcz <yfcz@wolfenstein.cz>, 2015-2016
 msgid ""
 msgstr ""
 "Project-Id-Version: ET:Legacy\n"
 "Report-Msgid-Bugs-To: mail@etlegacy.com\n"
 "POT-Creation-Date: 2015-01-10 20:22+0100\n"
-"PO-Revision-Date: 2015-12-30 18:17+0000\n"
+"PO-Revision-Date: 2016-01-02 22:47+0000\n"
 "Last-Translator: yfcz <yfcz@wolfenstein.cz>\n"
 "Language-Team: Czech (http://www.transifex.com/etlegacy/etlegacy/language/cs/)\n"
 "MIME-Version: 1.0\n"
@@ -4472,157 +4472,157 @@ msgstr "2. Rozkaz zamítnut"
 #: src/cgame/cg_consolecmds.c:362 src/cgame/cg_consolecmds.c:400
 #: src/cgame/cg_consolecmds.c:436
 msgid "Can't team voice chat as a spectator.\n"
-msgstr "Neni mozne vydavat hlasove prikazy tymu jako pozorovatel.\n"
+msgstr "Divák nemůže zasílat Rychlé hlasové zprávy.\n"
 
 #: src/cgame/cg_consolecmds.c:461
 msgid "Can't buddy voice chat as a spectator.\n"
-msgstr "Neni mozne vydavat hlasove prikazy spoluhraci jako pozorovatel.\n"
+msgstr "Divák nemůže zasílat Rychlé hlasové zprávy.\n"
 
 #: src/cgame/cg_consolecmds.c:1143 src/cgame/cg_popupmessages.c:733
 #: src/cgame/cg_popupmessages.c:735
 msgid "Axis"
-msgstr ""
+msgstr "Osa"
 
 #: src/cgame/cg_consolecmds.c:1147 src/cgame/cg_popupmessages.c:733
 #: src/cgame/cg_popupmessages.c:735
 msgid "Allies"
-msgstr ""
+msgstr "Spojenci"
 
 #: src/cgame/cg_consolecmds.c:1221
 #, c-format
 msgid "You will spawn as a %s %s with a %s."
-msgstr ""
+msgstr "Zrodíš se jako %s %s s %s."
 
 #: src/cgame/cg_consolecmds.c:1225
 #, c-format
 msgid "You will spawn as a %s %s with a %s and a %s."
-msgstr ""
+msgstr "Zrodíš se jako %s %s s %s a %s."
 
 #: src/cgame/cg_debriefing.c:1340
 #, c-format
 msgid "Last Played             : %s"
-msgstr ""
+msgstr "Naposledy: %s"
 
 #: src/cgame/cg_debriefing.c:1341
 msgid "Never"
-msgstr ""
+msgstr "Nikdy"
 
 #: src/cgame/cg_debriefing.c:1341
 #, c-format
 msgid "%d maps ago"
-msgstr ""
+msgstr "%d úrovní nazpět"
 
 #: src/cgame/cg_debriefing.c:1347
 #, c-format
 msgid "Total Accumulated Votes : %d"
-msgstr ""
+msgstr "Nasbíráno hlasů: %d"
 
 #: src/cgame/cg_debriefing.c:2013 src/cgame/cg_debriefing.c:3202
 #: src/cgame/cg_scoreboard.c:723
 #, c-format
 msgid "CLOCK IS NOW SET TO %s!"
-msgstr "HODINY JSOU NYNI NASTAVENY NA %s!"
+msgstr "ČASOVAČ NASTAVEN NA %s!"
 
 #: src/cgame/cg_debriefing.c:2615
 msgid "ACC:"
-msgstr ""
+msgstr "PŘE:"
 
 #: src/cgame/cg_debriefing.c:2624
 msgid "HS:"
-msgstr ""
+msgstr "SDH:"
 
 #: src/cgame/cg_debriefing.c:2659
 msgid "Time:"
-msgstr ""
+msgstr "Čas:"
 
 #: src/cgame/cg_debriefing.c:2671
 msgid "Medals:"
-msgstr ""
+msgstr "Medailí:"
 
 #: src/cgame/cg_debriefing.c:2690
 msgid "Rank:"
-msgstr ""
+msgstr "Hodnost:"
 
 #: src/cgame/cg_debriefing.c:2810
 msgid "^5TO TEAM"
-msgstr ""
+msgstr "^5TÝMU"
 
 #: src/cgame/cg_debriefing.c:2813
 msgid "^3TO FIRETEAM"
-msgstr ""
+msgstr "^3ČETĚ"
 
 #: src/cgame/cg_debriefing.c:2816
 msgid "^2TO GLOBAL"
-msgstr ""
+msgstr "^2VŠEM"
 
 #: src/cgame/cg_debriefing.c:3175
 msgid "ALLIES WIN!"
-msgstr ""
+msgstr "SPOJENCI VYHRÁVAJÍ!"
 
 #: src/cgame/cg_debriefing.c:3177
 msgid "AXIS WIN!"
-msgstr ""
+msgstr "OSA VYHRÁVA!"
 
 #: src/cgame/cg_debriefing.c:3179
 msgid "IT'S A TIE!"
-msgstr ""
+msgstr "REMÍZA!"
 
 #: src/cgame/cg_debriefing.c:3211
 msgid "ALLIES SUCCESSFULLY BEAT THE CLOCK!"
-msgstr ""
+msgstr "SPOJENCI PŘEKONALI ČAS!"
 
 #: src/cgame/cg_debriefing.c:3215
 msgid "ALLIES COULDN'T BEAT THE CLOCK!"
-msgstr ""
+msgstr "SPOJENCI NEDOKÁZALI PŘEKONAT ČAS!"
 
 #: src/cgame/cg_debriefing.c:3222
 msgid "AXIS SUCCESSFULLY BEAT THE CLOCK!"
-msgstr ""
+msgstr "OSA PŘEKONALA ČAS!"
 
 #: src/cgame/cg_debriefing.c:3226
 msgid "AXIS COULDN'T BEAT THE CLOCK!"
-msgstr ""
+msgstr "OSA NEDOKÁZALA PŘEKONAT ČAS!"
 
 #: src/cgame/cg_debriefing.c:3236
 #, c-format
 msgid "CAMPAIGN STATUS: %s"
-msgstr ""
+msgstr "STAV KAMPANĚ: %s"
 
 #: src/cgame/cg_debriefing.c:3245
 msgid "SECS TO NEXT MAP"
-msgstr ""
+msgstr "SEKUND DO DALŠÍ ÚROVNĚ"
 
 #: src/cgame/cg_debriefing.c:3371
 #, c-format
 msgid "Campaign: %s"
-msgstr ""
+msgstr "Kampaň: %s"
 
 #: src/cgame/cg_draw.c:382 src/cgame/cg_draw.c:391 src/cgame/cg_draw.c:407
 #, c-format
 msgid "a %s"
-msgstr ""
+msgstr "%s"
 
 #: src/cgame/cg_draw.c:396
 msgid "an Objective"
-msgstr ""
+msgstr "Úkol"
 
 #: src/cgame/cg_draw.c:403
 #, c-format
 msgid "an %s"
-msgstr ""
+msgstr "%s"
 
 #: src/cgame/cg_draw.c:1507
 msgid "Disguised Enemy!"
-msgstr "Prevleceny nepritel!"
+msgstr "Přestrojený nepřítel!"
 
 #: src/cgame/cg_draw.c:1717
 msgid "SPECTATOR"
-msgstr "POZOROVATEL"
+msgstr "DIVÁK"
 
 #: src/cgame/cg_draw.c:1744
 #, c-format
 msgid "File complaint against ^7%s^3 for team-killing?"
-msgstr "Podat stížnost proti %s^3 za zabití spoluhráče?"
+msgstr "Podat stížnost na ^7%s^3 za zabití spoluhráčem?"
 
 #: src/cgame/cg_draw.c:1748 src/cgame/cg_draw.c:1762 src/cgame/cg_draw.c:1776
 #: src/cgame/cg_draw.c:1790 src/cgame/cg_draw.c:1804 src/cgame/cg_draw.c:1818
@@ -4634,21 +4634,21 @@ msgstr "Stiskni '%s' pro ANO nebo '%s' pro NE"
 #: src/cgame/cg_draw.c:1758
 #, c-format
 msgid "Accept %s^3's application to join your fireteam?"
-msgstr "Prijmout zadost od %s^3 k pripojeni do vasi cety?"
+msgstr "Přijmout hráče %s^3 do čety?"
 
 #: src/cgame/cg_draw.c:1772
 #, c-format
 msgid "Accept %s^3's proposition to invite %s^3 to join your fireteam?"
-msgstr "Prijmout navrh od %s^3 pro pozvani %s^3 do vasi cety?"
+msgstr "Přijmout návrh od %s^3 na pozvání %s^3 do čety?"
 
 #: src/cgame/cg_draw.c:1786
 #, c-format
 msgid "Accept %s^3's invitation to join their fireteam?"
-msgstr "Prijmout zadost od %s^3 pro pripojeni do vasi cety?"
+msgstr "Připojit se do čety hráče %s^3?"
 
 #: src/cgame/cg_draw.c:1800
 msgid "Make Fireteam private?"
-msgstr "Udělat četu privátní?"
+msgstr "Nastavit četu jako soukromou?"
 
 #: src/cgame/cg_draw.c:1814
 msgid "Create a Fireteam?"
@@ -4662,130 +4662,130 @@ msgstr "VOLBA(%i): %s"
 #: src/cgame/cg_draw.c:1905
 #, c-format
 msgid "YES:%i, NO:%i"
-msgstr ""
+msgstr "ANO: %i, NE: %i"
 
 #: src/cgame/cg_draw.c:1909
 msgid "Can't vote as Spectator"
-msgstr ""
+msgstr "Diváci nemohou hlasovat"
 
 #: src/cgame/cg_draw.c:1913
 #, c-format
 msgid "YES(%s):%i, NO(%s):%i"
-msgstr "ANO(%s):%i, NE(%s):%i"
+msgstr "ANO(%s): %i, NE(%s): %i"
 
 #: src/cgame/cg_draw.c:1920
 #, c-format
 msgid "YOU VOTED ON: %s"
-msgstr "VOLIL JSI: %s"
+msgstr "ZVOLIL JSI: %s"
 
 #: src/cgame/cg_draw.c:1925
 #, c-format
 msgid "Y:%i, N:%i"
-msgstr "A:%i, N:%i"
+msgstr "A: %i, N: %i"
 
 #: src/cgame/cg_draw.c:1928
 msgid "Your complaint has been filed"
-msgstr ""
+msgstr "Stížnost vyplněna"
 
 #: src/cgame/cg_draw.c:1934
 msgid "Complaint dismissed"
-msgstr ""
+msgstr "Stížnost zavržena"
 
 #: src/cgame/cg_draw.c:1940
 msgid "Server Host cannot be complained against"
-msgstr ""
+msgstr "Nelze podat stížnost na hostitele hry"
 
 #: src/cgame/cg_draw.c:1946
 msgid "You were team-killed by the Server Host"
-msgstr ""
+msgstr "Byl jsi zabit hostitelem serveru"
 
 #: src/cgame/cg_draw.c:1952
 msgid "You were team-killed by a bot."
-msgstr ""
+msgstr "Byl jsi zabit botem."
 
 #: src/cgame/cg_draw.c:1962
 msgid "Your application has been submitted"
-msgstr ""
+msgstr "Stížnost podána"
 
 #: src/cgame/cg_draw.c:1969
 msgid "Your application failed"
-msgstr ""
+msgstr "Žádost neuspěla"
 
 #: src/cgame/cg_draw.c:1976
 msgid "Your application has been approved"
-msgstr ""
+msgstr "Žádost byla schválena"
 
 #: src/cgame/cg_draw.c:1983
 msgid "Your application reply has been sent"
-msgstr ""
+msgstr "Odpověď na žádost odeslána"
 
 #: src/cgame/cg_draw.c:1993
 msgid "Your proposition has been submitted"
-msgstr ""
+msgstr "Návrh podán"
 
 #: src/cgame/cg_draw.c:2000
 msgid "Your proposition was rejected"
-msgstr ""
+msgstr "Návrh byl zamítnut"
 
 #: src/cgame/cg_draw.c:2007
 msgid "Your proposition was accepted"
-msgstr ""
+msgstr "Návrh byl přijat"
 
 #: src/cgame/cg_draw.c:2014
 msgid "Your proposition reply has been sent"
-msgstr ""
+msgstr "Odpověď na návrh odeslána"
 
 #: src/cgame/cg_draw.c:2024
 msgid "Your invitation has been submitted"
-msgstr ""
+msgstr "Pozvánka podána"
 
 #: src/cgame/cg_draw.c:2031
 msgid "Your invitation was rejected"
-msgstr ""
+msgstr "Pozvánka byla zamítnuta"
 
 #: src/cgame/cg_draw.c:2038
 msgid "Your invitation was accepted"
-msgstr ""
+msgstr "Pozvánka přijata"
 
 #: src/cgame/cg_draw.c:2045
 msgid "Your invitation reply has been sent"
-msgstr ""
+msgstr "Odpověď na pozvánku odeslána"
 
 #: src/cgame/cg_draw.c:2058
 msgid "Response Sent"
-msgstr ""
+msgstr "Odpověď odeslána"
 
 #: src/cgame/cg_draw.c:2152
 #, c-format
 msgid "Press %s to open Limbo Menu"
-msgstr "Stiskni %s pro otevreni Limbo nabidky"
+msgstr "Stiskni %s pro otevření Předpeklí"
 
 #: src/cgame/cg_draw.c:2157
 #, c-format
 msgid "Press %s to follow next player"
-msgstr "Stiskni %s pro nasledovani dalsiho hrace"
+msgstr "Stiskni %s pro sledování dalšího hráče"
 
 #: src/cgame/cg_draw.c:2162
 #, c-format
 msgid "Press %s to follow previous player"
-msgstr ""
+msgstr "Stiskni %s pro sledování předchozího hráče"
 
 #: src/cgame/cg_draw.c:2168
 #, c-format
 msgid "Press %s to %s multiview mode"
-msgstr "Stiskni %s pro %s multiview zobrazeni"
+msgstr "Stiskni %s pro %s víceobrazovkové zobrazení"
 
 #: src/cgame/cg_draw.c:2168
 msgid "disable"
-msgstr ""
+msgstr "deaktivovat"
 
 #: src/cgame/cg_draw.c:2168
 msgid "activate"
-msgstr ""
+msgstr "aktivovat"
 
 #: src/cgame/cg_draw.c:2231
 msgid "You are wounded and waiting for a medic."
-msgstr "Jsi ranen a cekas na zdravotnika."
+msgstr "Jsi raněn a čekáš na medika."
 
 #: src/cgame/cg_draw.c:2240
 #, c-format
@@ -4794,31 +4794,31 @@ msgstr "Stiskni %s pro návrat do fronty posil."
 
 #: src/cgame/cg_draw.c:2251
 msgid "No more reinforcements this round."
-msgstr "Toto kolo uz nebudou zadne posily."
+msgstr "Toto kolo už nebudou žádné posily."
 
 #: src/cgame/cg_draw.c:2259 src/cgame/cg_draw.c:2347
 #, c-format
 msgid "Deploying in ^3%d ^7seconds"
-msgstr "Rozmisteni za ^3%d ^7vterin"
+msgstr "Nasazení za ^3%d ^7sekund"
 
 #: src/cgame/cg_draw.c:2263 src/cgame/cg_draw.c:2351
 #, c-format
 msgid "Deploying in ^3%d ^7second"
-msgstr ""
+msgstr "Nasazení za ^3%d ^7sekundu"
 
 #: src/cgame/cg_draw.c:2329
 #, c-format
 msgid "Bonus Life! Deploying in ^3%d ^7seconds"
-msgstr "Zivot navic! Rozmisteni za ^3%d ^7vterin"
+msgstr "Život navíc! Nasazení za ^3%d ^7sekund"
 
 #: src/cgame/cg_draw.c:2333
 #, c-format
 msgid "Bonus Life! Deploying in ^3%d ^7second"
-msgstr "Život navÍc! Rozmistění za ^3%d ^7vteřin"
+msgstr "Život navíc! Nasazení za ^3%d ^7sekundu"
 
 #: src/cgame/cg_draw.c:2338
 msgid "No more deployments this round"
-msgstr "Zadne dalsi rozmisteni toto kolo"
+msgstr "Žádné další nasazení v tomto kole"
 
 #: src/cgame/cg_draw.c:2362 src/cgame/cg_draw.c:2388
 msgid "Following"
@@ -4827,29 +4827,29 @@ msgstr "Sleduješ"
 #: src/cgame/cg_draw.c:2429
 #, c-format
 msgid "^3Config: ^7%s^7"
-msgstr ""
+msgstr "^3Konfig: ^7%s^7"
 
 #: src/cgame/cg_draw.c:2435
 #, c-format
 msgid "^3WARMUP:^7 Waiting on ^2%i^7 %s"
-msgstr "^3ZAHRIVANI:^7 Ceka se na ^2%i^7 %s"
+msgstr "^3ROZCVIČKA:^7 čeká se na ^2%i^7 %s"
 
 #: src/cgame/cg_draw.c:2435
 msgid "player"
-msgstr ""
+msgstr "hráče"
 
 #: src/cgame/cg_draw.c:2435
 msgid "players"
-msgstr ""
+msgstr "hráčů"
 
 #: src/cgame/cg_draw.c:2448
 msgid "Type ^3\\ready^7 in the console to start"
-msgstr ""
+msgstr "Pro start napiš ^3\\ready^7 do konzole"
 
 #: src/cgame/cg_draw.c:2452
 #, c-format
 msgid "Press ^3%s^7 to start"
-msgstr ""
+msgstr "Pro start stiskni ^3%s^7"
 
 #: src/cgame/cg_draw.c:2470
 msgid "^3WARMUP:^7 Match begins in"
