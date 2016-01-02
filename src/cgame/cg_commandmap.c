@@ -1152,6 +1152,8 @@ void CG_DrawMap(float x, float y, float w, float h, int mEntFilter, mapScissor_t
 	}
 
 	exspawn = CG_DrawSpawnPointInfo(x, y, w, h, qfalse, scissor, -1);
+	
+	CG_DrawSpawnPointInfo(x, y, w, h, qtrue, scissor, exspawn);
 
 	// entnfo data
 	for (i = 0, mEnt = &mapEntities[0]; i < mapEntityCount; ++i, ++mEnt)
@@ -1194,8 +1196,6 @@ CG_DrawMap_draw:
 	//for(i = 0, mEnt = &mapEntities2[0]; i < mapEntityCount2; ++i, ++mEnt ) {
 	//  CG_DrawMapEntity( mEnt, x, y, w, h, mEntFilter, scissor, interactive, snap, icon_size );
 	//}
-
-	CG_DrawSpawnPointInfo(x, y, w, h, qtrue, scissor, exspawn);
 
 	CG_DrawMortarMarker(x, y, w, h, qtrue, scissor, exspawn);
 
