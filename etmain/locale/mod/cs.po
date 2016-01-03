@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: ET:Legacy\n"
 "Report-Msgid-Bugs-To: mail@etlegacy.com\n"
 "POT-Creation-Date: 2015-01-10 20:22+0100\n"
-"PO-Revision-Date: 2016-01-02 22:47+0000\n"
+"PO-Revision-Date: 2016-01-03 21:45+0000\n"
 "Last-Translator: yfcz <yfcz@wolfenstein.cz>\n"
 "Language-Team: Czech (http://www.transifex.com/etlegacy/etlegacy/language/cs/)\n"
 "MIME-Version: 1.0\n"
@@ -4853,25 +4853,25 @@ msgstr "Pro start stiskni ^3%s^7"
 
 #: src/cgame/cg_draw.c:2470
 msgid "^3WARMUP:^7 Match begins in"
-msgstr ""
+msgstr "^3ROZCVIČKA:^7 zápas začne za"
 
 #: src/cgame/cg_draw.c:2481
 msgid "^3PREPARE TO FIGHT!\n"
-msgstr ""
+msgstr "^3K BOJI PŘIPRAVIT!\n"
 
 #: src/cgame/cg_draw.c:2504 src/cgame/cg_scoreboard.c:242
 msgid "STOPWATCH ROUND"
-msgstr ""
+msgstr "KOLO STOPEK"
 
 #: src/cgame/cg_draw.c:2678
 #, c-format
 msgid "The %s team is speclocked!"
-msgstr ""
+msgstr "Tým %s nelze sledovat!"
 
 #: src/cgame/cg_draw_hud.c:1754 src/cgame/cg_draw_hud.c:1852
 #: src/cgame/cg_scoreboard.c:178
 msgid "WARMUP"
-msgstr "ZAHŘÍVÁNÍ"
+msgstr "ROZCVIČKA"
 
 #: src/cgame/cg_draw_hud.c:2052
 msgid "Connection Interrupted"
@@ -4879,7 +4879,7 @@ msgstr "Spojení přerušeno"
 
 #: src/cgame/cg_event.c:271
 msgid "You swapped places with"
-msgstr "Vymenil jsis misto s"
+msgstr "Vyměnil jsi si místo s"
 
 #: src/cgame/cg_event.c:275
 msgid "You killed ^1TEAMMATE^7"
@@ -4891,29 +4891,29 @@ msgstr "Zabil jsi"
 
 #: src/cgame/cg_event.c:293
 msgid "^7swapped places with"
-msgstr ""
+msgstr "^7vyměněna místa s"
 
 #: src/cgame/cg_event.c:297
 msgid "^7killed ^1TEAMMATE^7"
-msgstr ""
+msgstr "^7zabil ^1SPOLURHÁČE^7"
 
 #: src/cgame/cg_event.c:302
 msgid "^7killed"
-msgstr ""
+msgstr "^7zabit"
 
 #: src/cgame/cg_event.c:566
 msgid "died"
-msgstr ""
+msgstr "zemřel"
 
 #: src/cgame/cg_event.c:614
 #, c-format
 msgid "Picked up %s"
-msgstr "Podniosl %s"
+msgstr "Získáno: %s"
 
 #: src/cgame/cg_fireteamoverlay.c:475
 #, c-format
 msgid "Private Fireteam: %s"
-msgstr "Privátní Četa: %s"
+msgstr "Soukromá četa: %s"
 
 #: src/cgame/cg_fireteamoverlay.c:479
 #, c-format
@@ -4926,231 +4926,231 @@ msgstr "ČETY"
 
 #: src/cgame/cg_fireteams.c:347
 msgid "JOIN"
-msgstr ""
+msgstr "PŘIPOJIT SE"
 
 #: src/cgame/cg_fireteams.c:350
 msgid "PROPOSE"
-msgstr ""
+msgstr "NAVRHNOUT"
 
 #: src/cgame/cg_fireteams.c:356
 msgid "INVITE"
-msgstr ""
+msgstr "POZVAT"
 
 #: src/cgame/cg_fireteams.c:365
 msgid "SET ADMIN"
-msgstr ""
+msgstr "URČIT SPRÁVCE"
 
 #: src/cgame/cg_fireteams.c:701 src/cgame/cg_fireteams.c:705
 #: src/cgame/cg_fireteams.c:762 src/cgame/cg_fireteams.c:766
 msgid "Previous"
-msgstr ""
+msgstr "Předchozí"
 
 #: src/cgame/cg_fireteams.c:717 src/cgame/cg_fireteams.c:721
 #: src/cgame/cg_fireteams.c:778 src/cgame/cg_fireteams.c:782
 msgid "Next"
-msgstr ""
+msgstr "Další"
 
 #: src/cgame/cg_info.c:718
 msgid "PLAYER STATS"
-msgstr "HRACU"
+msgstr "STATISTIKY HRÁČE"
 
 #: src/cgame/cg_info.c:729 src/cgame/cg_info.c:931
 msgid "Weapon"
-msgstr "Dalsi zbran:"
+msgstr "Zbraň:"
 
 #: src/cgame/cg_info.c:731 src/cgame/cg_info.c:933
 msgid "Accuracy"
-msgstr ""
+msgstr "Přesnost"
 
 #: src/cgame/cg_info.c:733 src/cgame/cg_info.c:935
 msgid "Hits / Shots"
-msgstr ""
+msgstr "Zásahy / Pokusy"
 
 #: src/cgame/cg_info.c:735 src/cgame/cg_info.c:937
 msgid "Kills"
-msgstr ""
+msgstr "Zabití"
 
 #: src/cgame/cg_info.c:737
 msgid "Deaths"
-msgstr ""
+msgstr "Úmrtí"
 
 #: src/cgame/cg_info.c:739
 msgid "Headshots"
-msgstr "6. Skvela trefa"
+msgstr "Zásahy do hlavy"
 
 #: src/cgame/cg_info.c:748
 msgid "No weapon info available."
-msgstr ""
+msgstr "Nedostupné info o zbrani."
 
 #: src/cgame/cg_info.c:799
 msgid "Skills"
-msgstr ""
+msgstr "Dovednosti"
 
 #: src/cgame/cg_info.c:801
 msgid "Level"
-msgstr ""
+msgstr "Úroveň"
 
 #: src/cgame/cg_info.c:803
 msgid "XP / Next Level"
-msgstr ""
+msgstr "ZK / Další úroveň"
 
 #: src/cgame/cg_info.c:807
 msgid "Medals"
-msgstr ""
+msgstr "Medajlí"
 
 #: src/cgame/cg_info.c:816
 msgid "No skills acquired!"
-msgstr ""
+msgstr "Nezískány dovednosti!"
 
 #: src/cgame/cg_info.c:921
 msgid "\"TOPSHOT\" ACCURACIES"
-msgstr ""
+msgstr "NEJPŘESNĚJŠÍ STŘELCI"
 
 #: src/cgame/cg_info.c:939
 msgid "Player"
-msgstr "Vykopnuti hrace:"
+msgstr "Hráč"
 
 #: src/cgame/cg_info.c:947
 msgid "No qualifying weapon info available."
-msgstr ""
+msgstr "Nedostatek informací o zbrani."
 
 #: src/cgame/cg_info.c:1193
 msgid "OBJECTIVES"
-msgstr ""
+msgstr "ÚKOLY"
 
 #: src/cgame/cg_info.c:1421
 msgid "DEMO STATUS"
-msgstr ""
+msgstr "STAV DEMA"
 
 #: src/cgame/cg_info.c:1571
 msgid "DEMO CONTROLS"
-msgstr ""
+msgstr "OVLÁDÁNÍ DEMA"
 
 #: src/cgame/cg_info.c:1599
 msgid "^nBACKSPACE ^mhelp on/off"
-msgstr ""
+msgstr "^nBACKSPACE ^m zapne/vypne nápovědu"
 
 #: src/cgame/cg_limbopanel.c:1224
 #, c-format
 msgid "You will spawn as an %s %s with a %s."
-msgstr ""
+msgstr "Zrodíš se jako %s %s s %s."
 
 #: src/cgame/cg_limbopanel.c:1228
 #, c-format
 msgid "You will spawn as an %s %s with a %s and a %s."
-msgstr ""
+msgstr "Zrodíš se jako %s %s s %s a %s."
 
 #: src/cgame/cg_loadpanel.c:251
 msgid "Single Player"
-msgstr ""
+msgstr "Jeden hráč"
 
 #: src/cgame/cg_loadpanel.c:253
 msgid "Co-op"
-msgstr ""
+msgstr "Spolupráce"
 
 #: src/cgame/cg_main.c:935
 msgid "User"
-msgstr "Uzivatel"
+msgstr "Uživatel"
 
 #: src/cgame/cg_main.c:935
 msgid "is not on the server"
-msgstr "neni na tomto serveru"
+msgstr "není na serveru"
 
 #: src/cgame/cg_players.c:309
 #, c-format
 msgid "Promoted to rank %s!"
-msgstr ""
+msgstr "Jsi povýšen na hodnost %s!"
 
 #: src/cgame/cg_players.c:359
 #, c-format
 msgid "Increased %s skill to level %i!"
-msgstr ""
+msgstr "Úroveň dovednosti %s zvýšena na %i!"
 
 #: src/cgame/cg_players.c:361
 #, c-format
 msgid "You have been rewarded with %s"
-msgstr ""
+msgstr "Získána odměna: %s"
 
 #: src/cgame/cg_popupmessages.c:680
 #, c-format
 msgid "Planted at %s."
-msgstr ""
+msgstr "Nastražen u %s."
 
 #: src/cgame/cg_popupmessages.c:682
 #, c-format
 msgid "Defused at %s."
-msgstr ""
+msgstr "Zneškodněn u %s."
 
 #: src/cgame/cg_popupmessages.c:691
 #, c-format
 msgid "%s has been constructed."
-msgstr ""
+msgstr "Postaveno: %s."
 
 #: src/cgame/cg_popupmessages.c:698
 #, c-format
 msgid "%s has been damaged."
-msgstr ""
+msgstr "Poškozeno: %s."
 
 #: src/cgame/cg_popupmessages.c:700
 #, c-format
 msgid "%s has been destroyed."
-msgstr ""
+msgstr "Zničeno: %s."
 
 #: src/cgame/cg_popupmessages.c:722
 #, c-format
 msgid "Spotted by %s^7 at %s"
-msgstr ""
+msgstr "Objeveno %s^7 na %s"
 
 #: src/cgame/cg_popupmessages.c:726
 #, c-format
 msgid "Spotted by %s"
-msgstr ""
+msgstr "Objeveno %s"
 
 #: src/cgame/cg_popupmessages.c:733
 #, c-format
 msgid "%s have stolen %s!"
-msgstr ""
+msgstr "%s odcizil %s!"
 
 #: src/cgame/cg_popupmessages.c:735
 #, c-format
 msgid "%s have returned %s!"
-msgstr ""
+msgstr "%s navrátil %s!"
 
 #: src/cgame/cg_popupmessages.c:758
 #, c-format
 msgid "%s^7 has joined the %s^7!"
-msgstr ""
+msgstr "%s^7 se připojil k: %s^7!"
 
 #: src/cgame/cg_popupmessages.c:761
 #, c-format
 msgid "%s^7 disconnected"
-msgstr ""
+msgstr "%s^7 se odpojil"
 
 #: src/cgame/cg_scoreboard.c:178 src/cgame/cg_scoreboard.c:184
 #: src/cgame/cg_scoreboard.c:188 src/cgame/cg_scoreboard.c:193
 msgid "MISSION TIME:"
-msgstr "CAS MISE:"
+msgstr "ČAS MISE:"
 
 #: src/cgame/cg_scoreboard.c:184
 msgid "GAME STOPPED"
-msgstr "HRA ZASTAVENA"
+msgstr "HRA POZASTAVENA"
 
 #: src/cgame/cg_scoreboard.c:188
 msgid "SUDDEN DEATH"
-msgstr "NAHLA SMRT"
+msgstr "NÁHLÁ SMRT"
 
 #: src/cgame/cg_scoreboard.c:200
 msgid "MATCH BEGINS IN:"
-msgstr ""
+msgstr "ZÁPAS ZAČNE ZA:"
 
 #: src/cgame/cg_scoreboard.c:205
 #, c-format
 msgid "WAITING ON ^2%i ^9%s"
-msgstr ""
+msgstr "ČEKÁ SE NA ^2%i ^9%s"
 
 #: src/cgame/cg_scoreboard.c:229 src/cgame/cg_scoreboard.c:233
 msgid "REINFORCE TIME:"
-msgstr "CAS POSIL:"
+msgstr "ČAS POSIL:"
 
 #: src/cgame/cg_scoreboard.c:248
 msgid "ROUND"
@@ -5158,25 +5158,25 @@ msgstr "KOLO"
 
 #: src/cgame/cg_scoreboard.c:248
 msgid "SCORE"
-msgstr "SKORE"
+msgstr "BILANCE"
 
 #: src/cgame/cg_scoreboard.c:254 src/cgame/cg_scoreboard.c:260
 #, c-format
 msgid "MAP %i of %i"
-msgstr ""
+msgstr "ÚROVEŇ %i Z %i"
 
 #: src/cgame/cg_scoreboard.c:273
 #, c-format
 msgid "Config: ^7%s^7"
-msgstr ""
+msgstr "Konfig: ^7%s^7"
 
 #: src/cgame/cg_scoreboard.c:451 src/cgame/cg_scoreboard.c:642
 msgid "^3CONNECTING"
-msgstr "^3PRIPOJUJE"
+msgstr "^3PŘIPOJUJE SE"
 
 #: src/cgame/cg_scoreboard.c:455 src/cgame/cg_scoreboard.c:646
 msgid "^3SPECTATOR"
-msgstr "^3POZORUJE"
+msgstr "^3DIVÁK"
 
 #: src/cgame/cg_scoreboard.c:811 src/cgame/cg_scoreboard.c:828
 msgid "AXIS"
@@ -5184,7 +5184,7 @@ msgstr "OSA"
 
 #: src/cgame/cg_scoreboard.c:812 src/cgame/cg_scoreboard.c:819
 msgid "FIRST BLOOD"
-msgstr "PRVNI KREV"
+msgstr "PRVNÍ KREV"
 
 #: src/cgame/cg_scoreboard.c:818 src/cgame/cg_scoreboard.c:832
 msgid "ALLIES"
@@ -5196,7 +5196,7 @@ msgstr "T H"
 
 #: src/cgame/cg_scoreboard.c:860
 msgid "Score"
-msgstr "Skore"
+msgstr "Bilance"
 
 #: src/cgame/cg_scoreboard.c:865
 msgid "XP"
@@ -5204,63 +5204,63 @@ msgstr "XP"
 
 #: src/cgame/cg_scoreboard.c:869
 msgid "Ping"
-msgstr "Odezva"
+msgstr "Ping"
 
 #: src/cgame/cg_servercmds.c:387
 msgid "^1FIGHT!\n"
-msgstr ""
+msgstr "^1BOJ!\n"
 
 #: src/cgame/cg_servercmds.c:421
 msgid "Auto Pick"
-msgstr "Vzdy sbirat"
+msgstr "Samočinný sběr"
 
 #: src/cgame/cg_servercmds.c:1875
 #, c-format
 msgid "Damage Given: %6d      Team Damage Given: %6d"
-msgstr ""
+msgstr "Udělené poškození: %6d Udělené poškození týmu: %6d"
 
 #: src/cgame/cg_servercmds.c:1876
 #, c-format
 msgid "Damage Recvd: %6d      Team Damage Recvd: %6d"
-msgstr ""
+msgstr "Obdržené poškození: %6d Obdržené poškození od týmu: %6d"
 
 #: src/cgame/cg_servercmds.c:1878
 #, c-format
 msgid "Kills:  %3d    Team Kills: %3d    Accuracy:  %5.1f%%"
-msgstr ""
+msgstr "Zabití: %3d Zabití spoluhráčů: %3d Přesnost: %5.1f%%"
 
 #: src/cgame/cg_servercmds.c:1879
 #, c-format
 msgid "Deaths: %3d    Self Kills: %3d    Headshots: %5.1f%%"
-msgstr ""
+msgstr "Smrtí: %3d Sebevražd: %3d Zásahů do hlavy: %5.1f%%"
 
 #: src/cgame/cg_servercmds.c:2035
 msgid "^7Weapon     Acrcy Hits/Atts Kills Deaths Headshots\n"
-msgstr ""
+msgstr "^7Weapon Acrcy Hits/Atts Kills Deaths Headshots\n"
 
 #: src/cgame/cg_servercmds.c:2040
 msgid "^7Weapon     Acrcy Hits/Atts Kll Dth HS\n"
-msgstr ""
+msgstr "^7Weapon Acrcy Hits/Atts Kll Dth HS\n"
 
 #: src/cgame/cg_servercmds.c:2047
 msgid "^3No weapon info available.\n"
-msgstr ""
+msgstr "^3Nedostupné info o zbrani.\n"
 
 #: src/cgame/cg_servercmds.c:2153
 msgid "  Medals"
-msgstr " Vyznamenání"
+msgstr " Medaile"
 
 #: src/cgame/cg_servercmds.c:2165
 msgid "^3No skills acquired!\n"
-msgstr ""
+msgstr "^3Nezískány dovednosti!\n"
 
 #: src/cgame/cg_servercmds.c:2344
 msgid "Map"
-msgstr "Mapa"
+msgstr "Úroveň"
 
 #: src/cgame/cg_servercmds.c:2366
 msgid "Could not create logfile"
-msgstr "Nebylo mozne vytvorit soubor s logem"
+msgstr "Nebylo možné vytvořit soubor s logem"
 
 #: src/cgame/cg_servercmds.c:2903
 msgid "^3Server Restarting"
@@ -5268,11 +5268,11 @@ msgstr "^3Server se restartuje"
 
 #: src/ui/ui_loadpanel.c:192
 msgid "DOWNLOADING..."
-msgstr ""
+msgstr "STAHUJI.."
 
 #: src/ui/ui_loadpanel.c:196
 msgid "CONNECTING..."
-msgstr ""
+msgstr "PŘIPOJUJI..."
 
 #: src/ui/ui_loadpanel.c:322
 #, c-format
@@ -5281,166 +5281,166 @@ msgid ""
 " %s^*\n"
 "\n"
 "%s"
-msgstr ""
+msgstr "Připojuji se k:\n%s^*\n\n%s"
 
 #: src/ui/ui_loadpanel.c:338
 #, c-format
 msgid "Awaiting connection...%i"
-msgstr "Ceka se na spojeni...%i"
+msgstr "Očekávám spojení...%i"
 
 #: src/ui/ui_loadpanel.c:341
 #, c-format
 msgid "Awaiting challenge...%i"
-msgstr "Ceka se na odezvu...%i"
+msgstr "Očekávám výzvu...%i"
 
 #: src/ui/ui_loadpanel.c:351
 msgid "Awaiting gamestate..."
-msgstr "Ceka se na nacteni hry..."
+msgstr "Očekávám nahrávání hry..."
 
 #: src/ui/ui_main.c:2401 src/ui/ui_main.c:2642
 msgid "Waiting for new key... Press ESCAPE to cancel"
-msgstr "Ceka se na novou klavesu... Stiskni ESCAPE pro zruseni"
+msgstr "Očekávám novou klávesu... Stiskni ESCAPE pro zrušení"
 
 #: src/ui/ui_main.c:2405 src/ui/ui_main.c:2646
 msgid "Press ENTER or CLICK to change, Press BACKSPACE to clear"
-msgstr ""
+msgstr "Stiskni ENTER nebo KLIKNI pro změnu, stiskni BACKSPACE pro vyčistění"
 
 #: src/ui/ui_main.c:2543
 #, c-format
 msgid "Getting info for %d servers (ESC to cancel)"
-msgstr ""
+msgstr "Získávám info o %d serverech (ESC pro zrušení)"
 
 #: src/ui/ui_main.c:2547
 msgid "Waiting for response from Master Server"
-msgstr ""
+msgstr "Očekávám odpověď z Master Serveru"
 
 #: src/ui/ui_main.c:2555
 #, c-format
 msgid "Refresh Time: %s"
-msgstr ""
+msgstr "Čas obnovení: %s"
 
 #: src/ui/ui_main.c:4084
 msgid "Can't show Server Info (not found, or local server)\n"
-msgstr ""
+msgstr "Nelze zobrazit info o serveru (nenalezen nebo je místní)\n"
 
 #: src/ui/ui_main.c:4343 src/ui/ui_main.c:4397 src/ui/ui_main.c:4432
 msgid "Favorite already in list\n"
-msgstr ""
+msgstr "Již je v seznamu oblíbených\n"
 
 #: src/ui/ui_main.c:4348 src/ui/ui_main.c:4402 src/ui/ui_main.c:4437
 msgid "Favorite list full\n"
-msgstr ""
+msgstr "Seznam oblíbených je plný\n"
 
 #: src/ui/ui_main.c:4353 src/ui/ui_main.c:4407 src/ui/ui_main.c:4442
 #, c-format
 msgid "Added favorite server %s\n"
-msgstr ""
+msgstr "Server %s přidán mezi oblíbené\n"
 
 #: src/ui/ui_main.c:5874
 #, c-format
 msgid "^3Filtered/Total: %04i/%04i"
-msgstr ""
+msgstr "^3Filtrované/Celkem: %04i/%04i"
 
 #: src/ui/ui_main.c:5878
 #, c-format
 msgid ""
 "^3Check your filters - no servers found!              Filtered/Total: "
 "%04i/%04i"
-msgstr ""
+msgstr "^3Zkontroluj filtry — nenalezeny servery! Filtrováno/Celkem: %04i/%04i"
 
 #: src/ui/ui_main.c:5883
 msgid ""
 "^1No Connection or master down - no servers found!    Filtered/Total: "
 "0000/0000"
-msgstr ""
+msgstr "^1Není spojení s Master serverem — nenalezeny servery. Celkem serverů: 0000"
 
 #: src/ui/ui_main.c:7752
 #, c-format
 msgid "Server is full, redirect to: %s\n"
-msgstr ""
+msgstr "Server je plný, přesměrovávám na: %s\n"
 
 #: src/ui/ui_main.c:8295
 #, c-format
 msgid "%d servers listed in browser with %d players.\n"
-msgstr ""
+msgstr "V prohlížeči uvedeno %d serverů s %d hráči.\n"
 
 #: src/ui/ui_main.c:8301
 #, c-format
 msgid "%d servers not listed (filtered out by game browser settings)\n"
-msgstr ""
+msgstr "%d serverů neuvedeno (filtrováno nastavením prohlížeče)\n"
 
 #: src/ui/ui_main.c:8429
 #, c-format
 msgid "Can't find campaign '%s'\n"
-msgstr ""
+msgstr "Kampaň '%s' nenalezena\n"
 
 #: src/ui/ui_main.c:8435
 #, c-format
 msgid "Corrupted campaign '%s'\n"
-msgstr ""
+msgstr "Kampaň '%s' poškozena\n"
 
 #: src/ui/ui_main.c:8466
 #, c-format
 msgid "%i campaigns found:\n"
-msgstr ""
+msgstr "%i kampaní nalezeno:\n"
 
 #: src/ui/ui_main.c:8470
 msgid "No campaigns found.\n"
-msgstr ""
+msgstr "Nenalezeny kampaně.\n"
 
 #: src/ui/ui_main.c:8518
 msgid "No favourite servers found."
-msgstr "Žádné oblíbené servery nenalezeny."
+msgstr "Nenalezeny oblíbené servery."
 
 #: src/ui/ui_main.c:8529
 msgid "All favourite servers removed."
-msgstr "Všechny oblíbené servery byly odebrány."
+msgstr "Odebrány všechny oblíbené servery."
 
 #: src/cgame/cg_predict.c:641
 msgid "You are near"
-msgstr ""
+msgstr "Jsi u"
 
 msgid "joined the Axis team\n"
-msgstr ""
+msgstr "se připojil k týmu Osy\n"
 
 msgid "joined the Allies team\n"
-msgstr ""
+msgstr "se připojil k týmu Spojenců\n"
 
 msgid "entered the game\n"
-msgstr ""
+msgstr "vstoupil do hry\n"
 
 msgid "rediscovered gravity"
-msgstr ""
+msgstr "znovuobjevil gravitaci"
 
 msgid "was crushed"
-msgstr ""
+msgstr "byl rozmačkán"
 
 msgid "drowned"
-msgstr ""
+msgstr "utonul"
 
 msgid "slagged"
 msgstr ""
 
 msgid "was killed"
-msgstr ""
+msgstr "byl zabit"
 
 msgid "got buried under a pile of rubble"
-msgstr ""
+msgstr "byl pohřben pod hromadou trosek"
 
 msgid "was incinerated"
-msgstr ""
+msgstr "byl upálen"
 
 msgid "had an appointment with the map mortar"
-msgstr ""
+msgstr "se setkal s automatickým mimometem"
 
 msgid "took a map mortar shell shower"
-msgstr ""
+msgstr "byl osprchován automatickým minometem"
 
 msgid "was pulverized by an explosion"
-msgstr ""
+msgstr "byl rozmělněn výbuchem"
 
 msgid "dynamited himself to pieces"
-msgstr ""
+msgstr "se rozmetal dynamitem na kousky"
 
 msgid "dove on his own grenade"
 msgstr ""
@@ -6304,7 +6304,7 @@ msgstr ""
 msgid "voting has been disabled"
 msgstr ""
 
-msgid "Not allowed to call a vote as a spectator.\n"
+msgid "Not allowed to call a vote as a spectator."
 msgstr ""
 
 msgid "called a vote."
@@ -7004,4 +7004,46 @@ msgstr ""
 
 #: src/cgame/cg_scoreboard.c:211
 msgid "MATCH BEGINS NOW!"
+msgstr ""
+
+msgid "Mute Players:"
+msgstr ""
+
+msgid "Allow players to vote for muting players"
+msgstr ""
+
+msgid "Surrender:"
+msgstr ""
+
+msgid "Allow players to vote for surrender"
+msgstr ""
+
+msgid "XP Shuffle No Restart:"
+msgstr ""
+
+msgid "Allow players to vote for teams to be shuffled without a restart"
+msgstr ""
+
+msgid "Restart Campaign:"
+msgstr ""
+
+msgid "Allow players to vote for restarting campaign"
+msgstr ""
+
+msgid "Next Campaign:"
+msgstr ""
+
+msgid "Allow players to vote for next campaign"
+msgstr ""
+
+msgid "CHANGE SYSTEM SETTINGS"
+msgstr ""
+
+msgid "RESTART CAMPAIGN"
+msgstr ""
+
+msgid "SURRENDER"
+msgstr ""
+
+msgid "NO XP SHUFFLE"
 msgstr ""
