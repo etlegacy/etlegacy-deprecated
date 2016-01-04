@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: ET:Legacy\n"
 "Report-Msgid-Bugs-To: mail@etlegacy.com\n"
 "POT-Creation-Date: 2015-01-10 20:22+0100\n"
-"PO-Revision-Date: 2016-01-03 21:45+0000\n"
+"PO-Revision-Date: 2016-01-04 19:34+0000\n"
 "Last-Translator: yfcz <yfcz@wolfenstein.cz>\n"
 "Language-Team: Czech (http://www.transifex.com/etlegacy/etlegacy/language/cs/)\n"
 "MIME-Version: 1.0\n"
@@ -4012,7 +4012,7 @@ msgstr "0. Nepřítel v přestrojení!"
 #: etmain/ui/wm_ftquickmessageAlt.menu:110
 #: etmain/ui/wm_quickmessageAlt.menu:110
 msgid "1. Need Medic!"
-msgstr "1. Potřebuji zdravotníka!"
+msgstr "1. Potřebuji medika!"
 
 #: etmain/ui/wm_ftquickmessageAlt.menu:111
 #: etmain/ui/wm_quickmessageAlt.menu:111
@@ -4027,7 +4027,7 @@ msgstr "3. Potřebuji podporu!"
 #: etmain/ui/wm_ftquickmessageAlt.menu:113
 #: etmain/ui/wm_quickmessageAlt.menu:113
 msgid "4. Need Engineer!"
-msgstr "4. Potřebuji inženýra!"
+msgstr "4. Je třeba inženýra!"
 
 #: etmain/ui/wm_ftquickmessageAlt.menu:114
 #: etmain/ui/wm_quickmessageAlt.menu:114
@@ -4077,7 +4077,7 @@ msgstr "5. Braňte náš úkol!"
 #: etmain/ui/wm_ftquickmessageAlt.menu:128
 #: etmain/ui/wm_quickmessageAlt.menu:128
 msgid "6. Disarm Dynamite!"
-msgstr "6. Deaktivujte dynamit!"
+msgstr "6. Zneškodněte dynamit!"
 
 #: etmain/ui/wm_ftquickmessageAlt.menu:129
 #: etmain/ui/wm_quickmessageAlt.menu:129
@@ -4108,7 +4108,7 @@ msgstr "2. Ne"
 #: etmain/ui/wm_ftquickmessageAlt.menu:139
 #: etmain/ui/wm_quickmessageAlt.menu:139
 msgid "3. Thanks"
-msgstr "3. Děkuji"
+msgstr "3. Díky"
 
 #: etmain/ui/wm_ftquickmessageAlt.menu:140
 #: etmain/ui/wm_quickmessageAlt.menu:140
@@ -4300,7 +4300,7 @@ msgstr "E. Nepřítel v přestrojení!"
 
 #: etmain/ui/wm_ftquickmessage.menu:110 etmain/ui/wm_quickmessage.menu:110
 msgid "M. Need Medic!"
-msgstr "M. Potřebuji zdravotníka!"
+msgstr "M. Potřebuji medika!"
 
 #: etmain/ui/wm_ftquickmessage.menu:111 etmain/ui/wm_quickmessage.menu:111
 msgid "A. Need Ammo!"
@@ -4312,7 +4312,7 @@ msgstr "B. Potřebuji podporu!"
 
 #: etmain/ui/wm_ftquickmessage.menu:113 etmain/ui/wm_quickmessage.menu:113
 msgid "E. Need Engineer!"
-msgstr "E. Potřebuji inženýra!"
+msgstr "E. Je třeba inženýra!"
 
 #: etmain/ui/wm_ftquickmessage.menu:114 etmain/ui/wm_quickmessage.menu:114
 msgid "C. Cover Me!"
@@ -4353,7 +4353,7 @@ msgstr "O. Braňte náš úkol!"
 
 #: etmain/ui/wm_ftquickmessage.menu:128 etmain/ui/wm_quickmessage.menu:128
 msgid "D. Disarm Dynamite!"
-msgstr "D. Deaktivujte dynamit!"
+msgstr "D. Zneškodněte dynamit!"
 
 #: etmain/ui/wm_ftquickmessage.menu:129 etmain/ui/wm_quickmessage.menu:129
 msgid "N. Clear Mines!"
@@ -5419,7 +5419,7 @@ msgid "drowned"
 msgstr "utonul"
 
 msgid "slagged"
-msgstr ""
+msgstr "byl uškvařen"
 
 msgid "was killed"
 msgstr "byl zabit"
@@ -5443,473 +5443,473 @@ msgid "dynamited himself to pieces"
 msgstr "se rozmetal dynamitem na kousky"
 
 msgid "dove on his own grenade"
-msgstr ""
+msgstr "se proletěl na vlastním granátu"
 
 msgid "vaporized himself"
-msgstr ""
+msgstr "se odpařil"
 
 msgid "played with fire"
-msgstr ""
+msgstr "si zahrával s ohněm"
 
 msgid "obliterated himself"
-msgstr ""
+msgstr "se vymazal z povrchu zemského"
 
 msgid "fired-for-effect on himself"
-msgstr ""
+msgstr "se stal obětí vlastní dělostřelby"
 
 msgid "died in his own explosion"
-msgstr ""
+msgstr "zabila vlastní exploze"
 
 msgid "ate his own rifle grenade"
-msgstr ""
+msgstr "posvačil vlastní puškový granát"
 
 msgid "failed to spot his own landmine"
-msgstr ""
+msgstr "přehlédnul vlastní minu"
 
 msgid "embraced his own satchel explosion"
-msgstr ""
+msgstr "objímal svou brašnu při výbuchu"
 
 msgid "engineered himself into oblivion"
-msgstr ""
+msgstr "ukonstruoval se do bezvědomí"
 
 msgid "buried himself alive"
-msgstr ""
+msgstr "se pohřbil zaživa"
 
 msgid "never saw his own mortar round coming"
-msgstr ""
+msgstr "nezahlédl přilétat vlastní minometný granát"
 
 msgid "danced on his airstrike marker"
-msgstr ""
+msgstr "tančil na značkovači letecké podpory"
 
 msgid "committed suicide"
-msgstr ""
+msgstr "spáchal sebevraždu"
 
 msgid "killed himself"
-msgstr ""
+msgstr "spáchal sebevraždu"
 
 msgid "Improved use of Explosive Ammunition"
-msgstr ""
+msgstr "Vylepšeno využití výbušné munice"
 
 msgid "Improved Dexterity"
-msgstr ""
+msgstr "Vylepšena zručnost"
 
 msgid "Binoculars for any Class"
-msgstr ""
+msgstr "Dalekohled pro všechny třídy"
 
 msgid "Medic Ammo"
-msgstr ""
+msgstr "Zásobník navíc"
 
 msgid "Improved First Aid Resources"
-msgstr ""
+msgstr "Vylepšeno využití prostředků první pomoci"
 
 msgid "Improved use of Light Weapon Ammunition"
-msgstr ""
+msgstr "Vylepšeno využití munice do lehkých zbraní"
 
 msgid "Improved Projectile Resources"
-msgstr ""
+msgstr "Vylepšeno využití raket"
 
 msgid "Improved use of Scoped Weapon Ammunition"
-msgstr ""
+msgstr "Vylepšeno využití munice u zbraní s optikou"
 
 msgid "Improved Physical Fitness"
-msgstr ""
+msgstr "Vylepšena fyzická zdatnost"
 
 msgid "Improved Ammo Resources"
-msgstr ""
+msgstr "Vylepšeny zdroje munice"
 
 msgid "Improved Signals"
-msgstr ""
+msgstr "Vylepšena signalizace"
 
 msgid "Faster Reload"
-msgstr ""
+msgstr "Rychlejší přebití"
 
 msgid "Heavy Weapon Proficiency"
-msgstr ""
+msgstr "Zdatnější využívání těžkých zbraní"
 
 msgid "Improved use of Sabotage and Misdirection"
-msgstr ""
+msgstr "Vylepšeno využití sabotáže a ukrývání"
 
 msgid "Improved Health"
-msgstr ""
+msgstr "Vylepšeno zdraví"
 
 msgid "Improved Construction and Destruction"
-msgstr ""
+msgstr "Vylepšeno konstruování a demolice"
 
 msgid "Full Revive"
-msgstr ""
+msgstr "Plné vzkříšení"
 
 msgid "Improved Air and Ground Support"
-msgstr ""
+msgstr "Vylepšena dělostřelecká a letecká podpora"
 
 msgid "Improved Light Weapon Handling"
-msgstr ""
+msgstr "Vylepšeno zacházení s lehkými zbraněmi"
 
 msgid "Breath Control"
-msgstr ""
+msgstr "Vylepšena kontrola dýchání"
 
 msgid "Trap Awareness"
-msgstr ""
+msgstr "Odhalování pastí"
 
 msgid "a Flak Jacket"
-msgstr ""
+msgstr "Ochranná vesta"
 
 msgid "Adrenalin Self"
-msgstr ""
+msgstr "Aplikace adrenalinu sobě"
 
 msgid "Enemy Recognition"
-msgstr ""
+msgstr "Rozpoznání nepřítele"
 
 msgid "Dual-Wield Pistols"
-msgstr ""
+msgstr "Pistole do obou rukou"
 
 msgid "Improved Weapon Handling"
-msgstr ""
+msgstr "Vylepšeno ovládání zbraní"
 
 msgid "Assassin"
-msgstr ""
+msgstr "Zabiják"
 
 #: src/cgame/cg_consolecmds:1233
 msgid "You will spawn as an %s %s with a %s and %s."
-msgstr ""
+msgstr "Zrodíš se jako %s %s s %s a %s."
 
 #: etmain/ui/credits_etlegacy.menu:85
 msgid "^1THE TEAM"
-msgstr ""
+msgstr "^1TÝM"
 
 msgid "Axis team"
-msgstr ""
+msgstr "Tým Osy"
 
 msgid "Allied team"
-msgstr ""
+msgstr "Tým Spojenců"
 
 msgid "Spectators"
-msgstr ""
+msgstr "Diváci"
 
 msgid "You must be a player or following a player to use +stats\n"
-msgstr ""
+msgstr "Je třeba být hráčem nebo jej sledovat k využití +stats\n"
 
 msgid "^9You must be alive to use ^3/kill."
-msgstr ""
+msgstr "^9Musíš být naživu pro použití ^3/kill^9."
 
 msgid "No vote in progress.\n"
-msgstr ""
+msgstr "Neprobíhá hlasování.\n"
 
 msgid "No or bad challenge for address.\n"
-msgstr ""
+msgstr "Žádná nebo špatná výzva pro adresu.\n"
 
 msgid "Match is already in progress!\n"
-msgstr ""
+msgstr "Zápas již začal.\n"
 
 msgid "^1** Referee Server Setting Change **\n"
-msgstr ""
+msgstr "^1**Sudí změnil nastavení**\n"
 
 msgid "Your fireteam is now public"
-msgstr ""
+msgstr "Tvá četa je nyní veřejná"
 
 msgid "Your fireteam is now private"
-msgstr ""
+msgstr "Tvá četa je nyní soukromá"
 
 msgid "The Allies have too many players.\n"
-msgstr ""
+msgstr "Spojenci mají příliš mnoho hráčů.\n"
 
 msgid "The Axis has too many players.\n"
-msgstr ""
+msgstr "Osa má příliš mnoho hráčů.\n"
 
 msgid "Attack!"
-msgstr ""
+msgstr "Attack!"
 
 msgid "Fall back!"
-msgstr ""
+msgstr "Fall back!"
 
 msgid ""
 "^3All players ready!^7\n"
 "Match starting..."
-msgstr ""
+msgstr "^3Všichni jsou připraveni!^7\nZápas začíná..."
 
 msgid "Path cleared."
-msgstr ""
+msgstr "Path cleared."
 
 msgid "The enemy is weakened."
-msgstr ""
+msgstr "The enemy is weakened."
 
 msgid "All clear."
-msgstr ""
+msgstr "All clear."
 
 msgid "Incoming!"
-msgstr ""
+msgstr "Incoming!"
 
 msgid "Fire in the hole!"
-msgstr ""
+msgstr "Fire in the hole!"
 
 msgid "I'm on defense."
-msgstr ""
+msgstr "I'm on defense."
 
 msgid "I'm on offense."
-msgstr ""
+msgstr "I'm on offense."
 
 msgid "Taking fire!"
-msgstr ""
+msgstr "Taking fire!"
 
 msgid "Mines cleared."
-msgstr ""
+msgstr "Mines cleared."
 
 msgid "Enemy in disguise."
-msgstr ""
+msgstr "Enemy in disguise."
 
 msgid "Need a Medic!"
-msgstr ""
+msgstr "Need a Medic!"
 
 msgid "I need ammo!"
-msgstr ""
+msgstr "I need ammo!"
 
 msgid "I need backup!"
-msgstr ""
+msgstr "I need backup!"
 
 msgid "We need an engineer!"
-msgstr ""
+msgstr "We need an engineer!"
 
 msgid "Cover me!"
-msgstr ""
+msgstr "Cover me!"
 
 msgid "Hold your fire!"
-msgstr ""
+msgstr "Hold your fire!"
 
 msgid "Where to?"
-msgstr ""
+msgstr "Where to?"
 
 msgid "We need Covert Ops!"
-msgstr ""
+msgstr "We need Covert Ops!"
 
 msgid "Follow me!"
-msgstr ""
+msgstr "Follow me!"
 
 msgid "Let's go!"
-msgstr ""
+msgstr "Let's go!"
 
 msgid "Move!"
-msgstr ""
+msgstr "Move!"
 
 msgid "Clear the path!"
-msgstr ""
+msgstr "Clear the path!"
 
 msgid "Defend our objective!"
-msgstr ""
+msgstr "Defend our objective!"
 
 msgid "Disarm the dynamite!"
-msgstr ""
+msgstr "Disarm the dynamite!"
 
 msgid "Clear the mines!"
-msgstr ""
+msgstr "Clear the mines!"
 
 msgid "Reinforce the offense!"
-msgstr ""
+msgstr "Reinforce the offense!"
 
 msgid "Reinforce the defense!"
-msgstr ""
+msgstr "Reinforce the defense!"
 
 msgid "Affirmative!"
-msgstr ""
+msgstr "Affirmative!"
 
 msgid "No!"
-msgstr ""
+msgstr "No!"
 
 msgid "Thank you!"
-msgstr ""
+msgstr "Thank you!"
 
 msgid "You're welcome."
-msgstr ""
+msgstr "You're welcome."
 
 msgid "Bitte sehr."
-msgstr ""
+msgstr "Bitte sehr."
 
 msgid "Ja!"
-msgstr ""
+msgstr "Ja!"
 
 msgid "Nein!"
-msgstr ""
+msgstr "Nein!"
 
 msgid "Kein problem."
-msgstr ""
+msgstr "Kein problem."
 
 msgid "Sorry!"
-msgstr ""
+msgstr "Sorry!"
 
 msgid "Oops!"
-msgstr ""
+msgstr "Oops!"
 
 msgid "Yes!"
-msgstr ""
+msgstr "Yes!"
 
 msgid "Jawohl!"
-msgstr ""
+msgstr "Jawohl!"
 
 msgid "Negative!"
-msgstr ""
+msgstr "Negative!"
 
 msgid "Hi!"
-msgstr ""
+msgstr "Hi!"
 
 msgid "Hello!"
-msgstr ""
+msgstr "Hello!"
 
 msgid "Hallo!"
-msgstr ""
+msgstr "Hallo!"
 
 msgid "Good bye."
-msgstr ""
+msgstr "Good bye."
 
 msgid "Auf wiedersehen."
-msgstr ""
+msgstr "Auf wiedersehen."
 
 msgid "Bye."
-msgstr ""
+msgstr "Bye."
 
 msgid "Great shot!"
-msgstr ""
+msgstr "Great shot!"
 
 msgid "You got it, man!"
-msgstr ""
+msgstr "You got it, man!"
 
 msgid "Yeah!"
-msgstr ""
+msgstr "Yeah!"
 
 msgid "Yoohoo!"
-msgstr ""
+msgstr "Yoohoo!"
 
 msgid "Hahaa!"
-msgstr ""
+msgstr "Hahaa!"
 
 msgid "Alright!"
-msgstr ""
+msgstr "Alright!"
 
 msgid "Woo!"
-msgstr ""
+msgstr "Woo!"
 
 msgid "Yeehaa!"
-msgstr ""
+msgstr "Yeehaa!"
 
 msgid "'Atta way, baby!"
-msgstr ""
+msgstr "'Atta way, baby!"
 
 msgid "Jahaa!"
-msgstr ""
+msgstr "Jahaa!"
 
 msgid "Wunderbar!"
-msgstr ""
+msgstr "Wunderbar!"
 
 msgid "Excellent!"
-msgstr ""
+msgstr "Excellent!"
 
 msgid "Oh yes!"
-msgstr ""
+msgstr "Oh yes!"
 
 msgid "Sehr gut!"
-msgstr ""
+msgstr "Sehr gut!"
 
 msgid "Thanks!"
-msgstr ""
+msgstr "Thanks!"
 
 msgid "Danke!"
-msgstr ""
+msgstr "Danke!"
 
 msgid "Danke sehr!"
-msgstr ""
+msgstr "Danke sehr!"
 
 msgid "No problem."
-msgstr ""
+msgstr "No problem."
 
 msgid "Good game!"
-msgstr ""
+msgstr "Good game!"
 
 msgid "Command acknowledged!"
-msgstr ""
+msgstr "Command acknowledged!"
 
 msgid "Command declined!"
-msgstr ""
+msgstr "Command declined!"
 
 msgid "Command completed!"
-msgstr ""
+msgstr "Command completed!"
 
 msgid "Destroy primary objective!"
-msgstr ""
+msgstr "Destroy primary objective!"
 
 msgid "Destroy secondary objective!"
-msgstr ""
+msgstr "Destroy secondary objective!"
 
 msgid "Destroy construction!"
-msgstr ""
+msgstr "Destroy construction!"
 
 msgid "I'm constructing!"
-msgstr ""
+msgstr "I'm constructing!"
 
 msgid "Repair the vehicle!"
-msgstr ""
+msgstr "Repair the vehicle!"
 
 msgid "Disable the vehicle!"
-msgstr ""
+msgstr "Disable the vehicle!"
 
 msgid "Escort the vehicle!"
-msgstr ""
+msgstr "Escort the vehicle!"
 
 msgid "Covering fire!"
-msgstr ""
+msgstr "Covering fire!"
 
 msgid "I'm a soldier."
-msgstr ""
+msgstr "I'm a soldier."
 
 msgid "I'm an engineer."
-msgstr ""
+msgstr "I'm an engineer."
 
 msgid "I'm a medic."
-msgstr ""
+msgstr "I'm a medic."
 
 msgid "I'm a field ops."
-msgstr ""
+msgstr "I'm a field ops."
 
 msgid "I'm a covert ops."
-msgstr ""
+msgstr "I'm a covert ops."
 
 msgid "unknown cmd"
-msgstr ""
+msgstr "neznámý příkaz"
 
 msgid "Server:"
-msgstr ""
+msgstr "Server:"
 
 msgid "changed to"
-msgstr ""
+msgstr "změněn na"
 
 msgid "Arming landmine..."
-msgstr ""
+msgstr "Nastražování miny..."
 
 msgid "Landmine armed..."
-msgstr ""
+msgstr "Mina nastražena..."
 
 msgid "Dynamite is set, but NOT armed!"
-msgstr ""
+msgstr "Dynamit je nastaven, ale NEAKTIVOVÁN!"
 
 msgid "Arming dynamite..."
-msgstr ""
+msgstr "Aktivace dynamitu..."
 
 msgid "Dynamite is now armed with a 30 second timer!"
-msgstr ""
+msgstr "Dynamit je aktivován se zpožděním 30 sekund!"
 
 msgid "Defusing landmine"
-msgstr ""
+msgstr "Zneškodňování miny..."
 
 msgid "Landmine defused..."
-msgstr ""
+msgstr "Mina zneškodněna..."
 
 msgid "Defusing dynamite..."
-msgstr ""
+msgstr "Dynamit zneškodněn..."
 
 msgid "Affirmative!!"
-msgstr ""
+msgstr "Affirmative!!"
 
 msgid "^1Spam Protection^7: VoiceChat ignored"
-msgstr ""
+msgstr "^1Spamová ochrana^7: hlasová zpráva ignorována"
 
 msgid "Mines have been reported in this area."
-msgstr ""
+msgstr "V těchto místech jsou hlášeny miny."
 
 msgid "'s Landmine"
 msgstr ""
@@ -5930,36 +5930,36 @@ msgid "'s crew-served MG"
 msgstr ""
 
 msgid "was thrown to his doom by"
-msgstr ""
+msgstr "byl uvržen do záhuby hráčem"
 
 msgid "You have been revived by "
-msgstr ""
+msgstr "Byl jsi vzkříšen hráčem"
 
 msgid "Constructing..."
-msgstr ""
+msgstr "Konstruování..."
 
 msgid "Allied Command Post constructed. Charge speed increased!"
-msgstr ""
+msgstr "Velitelské stanoviště Spojenců vybudováno. Obnovování urychleno!"
 
 msgid "Axis Command Post constructed. Charge speed increased!"
-msgstr ""
+msgstr "Velitelské stanoviště Osy vybudováno. Obnovování urychleno!"
 
 msgid ""
 "^3All players ready!^7\n"
 "Match starting...\n"
-msgstr ""
+msgstr "^3Všichni jsou připraveni!^7\nZápas začíná...\n"
 
 msgid "You are on the Allied team"
-msgstr ""
+msgstr "Jsi v týmu Spojenců"
 
 msgid "^1*** Match Reset! ***\n"
-msgstr ""
+msgstr "^1*** Zápas resetován! ***\n"
 
 msgid "You are on the Axis team"
-msgstr ""
+msgstr "Jsi v týmu Osy"
 
 msgid "Warning, leave the construction area..."
-msgstr ""
+msgstr "Varování — opusť stavební prostor..."
 
 msgid "got caught in"
 msgstr ""
@@ -5969,10 +5969,10 @@ msgstr ""
 
 #: src/qcommon/download.c:244
 msgid "Need paks: %s\n"
-msgstr ""
+msgstr "Chybějící balíčky: %s\n"
 
 msgid "Not enough players to start match!\n"
-msgstr ""
+msgstr "Nedostatek hráčů ke startu!\n"
 
 msgid "'s flamethrower"
 msgstr ""
@@ -5990,10 +5990,10 @@ msgid "'s dynamite"
 msgstr ""
 
 msgid "Timelimit hit.\n"
-msgstr ""
+msgstr "Vypršel časový limit.\n"
 
 msgid "Landmine revealed"
-msgstr ""
+msgstr "Mina odhalena"
 
 msgid "'s tank-mounted browning 30cal"
 msgstr ""
@@ -6002,142 +6002,142 @@ msgid "'s grenade"
 msgstr ""
 
 msgid "Competition Settings Loaded!\n"
-msgstr ""
+msgstr "Soutěžní nastavení nahrána!\n"
 
 msgid "Public Settings Loaded!\n"
-msgstr ""
+msgstr "Běžná nastavení nahrána!\n"
 
 msgid "Landmine cannot be armed here..."
-msgstr ""
+msgstr "Zde nelze nastražit minu..."
 
 msgid "Your team has too many landmines placed..."
-msgstr ""
+msgstr "Tvůj tým nastražil příliš mnoho min..."
 
 msgid "You cannot arm dynamite near a friendly construction!"
-msgstr ""
+msgstr "Nelze aktivovat dynamit u spřátelené konstrukce!"
 
 msgid "Countdown started.... ^3notready^7 ignored!\n"
-msgstr ""
+msgstr "Odpočet zahájen... ^3nepřipravenost^7 ignorována!\n"
 
 msgid "No complaint filed against you.\n"
-msgstr ""
+msgstr "Nebyla na tebe podána stížnost.\n"
 
 msgid "You are not the leader of a fireteam\n"
-msgstr ""
+msgstr "Nejsi velitelem čety.\n"
 
 msgid "You have been warned by your Fireteam Commander\n"
-msgstr ""
+msgstr "Byl jsi varován velitelem tvé čety.\n"
 
 msgid "You have been kicked from the fireteam"
-msgstr ""
+msgstr "Byl jsi vyhozen z čety"
 
 msgid "You are now the leader of your fireteam"
-msgstr ""
+msgstr "Stáváš se velitelem čety"
 
 msgid "The fireteam you are on has been disbanded"
-msgstr ""
+msgstr "Četa byla rozpuštěna"
 
 msgid "You have been given fireteam admin rights"
-msgstr ""
+msgstr "Obdržel jsi práva správce čety"
 
 msgid "Too many players already on this Fireteam"
-msgstr ""
+msgstr "V četě je příliš mnoho hráčů"
 
 msgid "The leader has now left the Fireteam you applied to"
-msgstr ""
+msgstr "Velitel opustil četu, do níž jsi podal žádost"
 
 msgid "The other player is already on a fireteam"
-msgstr ""
+msgstr "Hráč již v četě je"
 
 msgid "You are not on the same team as the other player"
-msgstr ""
+msgstr "Nejsi ve stejném týmu jako druhý hráč"
 
 msgid "You are not on the same Fireteam as the other player"
-msgstr ""
+msgstr "Nejsi ve stejné četě jako druhý hráč"
 
 msgid "Invalid client selected"
-msgstr ""
+msgstr "Neplatné vybrání hráče"
 
 msgid "usage: fireteam admin <clientname|clientnumber>"
-msgstr ""
+msgstr "použití: fireteam admin <přezdívka_hráče|číslo_hráče>"
 
 msgid "usage: fireteam propose <clientname|clientnumber>"
-msgstr ""
+msgstr "použití: fireteam propose <přezdívka_hráče|číslo_hráče>"
 
 msgid "usage: fireteam kick <clientname|clientnumber>"
-msgstr ""
+msgstr "použití: fireteam kick <přezdívka_hráče|číslo_hráče>"
 
 msgid "usage: fireteam warn <clientname|clientnumber>"
-msgstr ""
+msgstr "použití: fireteam warn <přezdívka_hráče|číslo_hráče>"
 
 msgid "usage: fireteam invite <clientname|clientnumber>"
-msgstr ""
+msgstr "použití: fireteam invite <přezdívka_hráče|číslo_hráče>"
 
 msgid "usage: fireteam apply <fireteamname|fireteamnumber>"
-msgstr ""
+msgstr "použití: fireteam apply <přezdívka_hráče|číslo_hráče>"
 
 msgid "usage: fireteam <create|leave|apply|invite>"
-msgstr ""
+msgstr "použití: fireteam <create|leave|apply|invite>"
 
 msgid "You are already on a fireteam, leave it first"
-msgstr ""
+msgstr "Již v četě jsi, nejprve ji musíš opustit"
 
 msgid ""
 "The other player must be on the same fireteam for you to give admin rights "
 "to"
-msgstr ""
+msgstr "Hráč musí být ve stejné četě, abys mu mohl přidělit práva správce čety"
 
 msgid "You must be a fireteam admin to give admin rights to someone else"
-msgstr ""
+msgstr "Musíš být správce čety, abys mohl udělovat oprávnění čety"
 
 msgid "Invalid referee password!\n"
-msgstr ""
+msgstr "Neplatné heslo sudího!\n"
 
 msgid "Usage: ref [password]\n"
-msgstr ""
+msgstr "Použití: ref[heslo]\n"
 
 msgid ""
 "^3Referee commands:^7\n"
 "------------------------------------------\n"
-msgstr ""
+msgstr "^3Příkazy sudího:^7\n------------------------------------------\n"
 
 msgid ""
 "Usage: ^3\\ref <cmd> [params]\n"
 "\n"
-msgstr ""
+msgstr "Použití: ^3\\ref <příkaz> [parametry]\n\n"
 
 msgid "^5pause speclock warmup ^7[value]\n"
-msgstr ""
+msgstr "^5pause speclock warmup ^7[hodnota]\n"
 
 msgid "Sorry, referee status disabled on this server.\n"
-msgstr ""
+msgstr "Promiň, status sudího je deaktivován.\n"
 
 msgid "Referee has ^3LOCKED^7 teams\n"
-msgstr ""
+msgstr "Sudí ^3UZAMKL^7 týmy\n"
 
 msgid "You have LOCKED teams\n"
-msgstr ""
+msgstr "UZAMKL jsi týmy\n"
 
 msgid "Referee has ^3UNLOCKED^7 teams\n"
-msgstr ""
+msgstr "Sudí ^3ODEMKL^7 týmy\n"
 
 msgid "You have UNLOCKED teams\n"
-msgstr ""
+msgstr "ODEMKL jsi týmy\n"
 
 msgid "The ^4Allies^7 team is LOCKED!\n"
-msgstr ""
+msgstr "Tým ^4Spojenců^7 je UZAMČEN!\n"
 
 msgid "The ^1Axis^7 team is LOCKED!\n"
-msgstr ""
+msgstr "Tým ^1Osy^7 je UZAMČEN!\n"
 
 msgid "^3Referee ^1PAUSED^3 the match^3!\n"
-msgstr ""
+msgstr "^3Sudí ^1POZASTAVIL^3 zápas!\n"
 
 msgid "^3Match is ^1PAUSED^3! (^7Referee^3)\n"
-msgstr ""
+msgstr "^3Zápas je ^1POZASTAVEN^3 (^7sudí^3)\n"
 
 msgid "The match is already ^1PAUSED!\n"
-msgstr ""
+msgstr "Zápas je už ^1POZASTAVEN!\n"
 
 msgid "^3Referee ^5UNPAUSES^3 the match ... resuming in 10 seconds!\n"
 msgstr ""
@@ -7018,7 +7018,7 @@ msgstr ""
 msgid "Allow players to vote for surrender"
 msgstr ""
 
-msgid "XP Shuffle No Restart:"
+msgid "XP Shuffle No Rstrt:"
 msgstr ""
 
 msgid "Allow players to vote for teams to be shuffled without a restart"
