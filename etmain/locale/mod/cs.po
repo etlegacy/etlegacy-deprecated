@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: ET:Legacy\n"
 "Report-Msgid-Bugs-To: mail@etlegacy.com\n"
 "POT-Creation-Date: 2015-01-10 20:22+0100\n"
-"PO-Revision-Date: 2016-01-04 19:34+0000\n"
+"PO-Revision-Date: 2016-01-05 12:49+0000\n"
 "Last-Translator: yfcz <yfcz@wolfenstein.cz>\n"
 "Language-Team: Czech (http://www.transifex.com/etlegacy/etlegacy/language/cs/)\n"
 "MIME-Version: 1.0\n"
@@ -5912,22 +5912,22 @@ msgid "Mines have been reported in this area."
 msgstr "V těchto místech jsou hlášeny miny."
 
 msgid "'s Landmine"
-msgstr ""
+msgstr " [nášlapná mina]"
 
 msgid "'s Mobile MG 42"
-msgstr ""
+msgstr " [mobilní MG 42]"
 
 msgid "'s Mobile Browning"
-msgstr ""
+msgstr " [mobilní Browning]"
 
 msgid "'s rifle grenade"
-msgstr ""
+msgstr " [puškový granát]"
 
 msgid "'s support fire"
-msgstr ""
+msgstr " [dělostřelecká podpora]"
 
 msgid "'s crew-served MG"
-msgstr ""
+msgstr " [statický kulomet]"
 
 msgid "was thrown to his doom by"
 msgstr "byl uvržen do záhuby hráčem"
@@ -5962,10 +5962,10 @@ msgid "Warning, leave the construction area..."
 msgstr "Varování — opusť stavební prostor..."
 
 msgid "got caught in"
-msgstr ""
+msgstr "zachycen hráčem"
 
 msgid "'s construction madness"
-msgstr ""
+msgstr " v budovatelském šílenství"
 
 #: src/qcommon/download.c:244
 msgid "Need paks: %s\n"
@@ -5975,19 +5975,19 @@ msgid "Not enough players to start match!\n"
 msgstr "Nedostatek hráčů ke startu!\n"
 
 msgid "'s flamethrower"
-msgstr ""
+msgstr " [plamenomet]"
 
 msgid "'s Satchel Charge"
-msgstr ""
+msgstr " [brašnová nálož]"
 
 msgid "You cannot arm dynamite near a friendly objective!"
-msgstr ""
+msgstr "Nemůžeš aktivovat dynamit u spřátelené konstrukce!"
 
 msgid "'s tank-mounted MG42"
-msgstr ""
+msgstr " [MG 42 na tanku]"
 
 msgid "'s dynamite"
-msgstr ""
+msgstr " [dynamit]"
 
 msgid "Timelimit hit.\n"
 msgstr "Vypršel časový limit.\n"
@@ -5996,10 +5996,10 @@ msgid "Landmine revealed"
 msgstr "Mina odhalena"
 
 msgid "'s tank-mounted browning 30cal"
-msgstr ""
+msgstr " [Browning .30 cal na tanku]"
 
 msgid "'s grenade"
-msgstr ""
+msgstr " [granát]"
 
 msgid "Competition Settings Loaded!\n"
 msgstr "Soutěžní nastavení nahrána!\n"
@@ -6140,235 +6140,235 @@ msgid "The match is already ^1PAUSED!\n"
 msgstr "Zápas je už ^1POZASTAVEN!\n"
 
 msgid "^3Referee ^5UNPAUSES^3 the match ... resuming in 10 seconds!\n"
-msgstr ""
+msgstr "^3Sudí ^5OBNOVIL^3 zápas... pokračuje se za 10 sekund!\n"
 
 msgid "The match is already ^5UNPAUSED!\n"
-msgstr ""
+msgstr "Zápas již ^5POKRAČUJE!\n"
 
 msgid "Bad client slot: "
-msgstr ""
+msgstr "Neplatný slot hráče:"
 
 msgid "Client"
-msgstr ""
+msgstr "Hráč"
 
 msgid "is not active\n"
-msgstr ""
+msgstr "je neaktivní\n"
 
 msgid "You can only remove people in the game!\n"
-msgstr ""
+msgstr "Lze odebrat pouze hráče ve hře!\n"
 
 msgid "User "
-msgstr ""
+msgstr "Hráč"
 
 msgid "is not on the server\n"
-msgstr ""
+msgstr "není na serveru\n"
 
 msgid "^5You've been removed from the ^4Allies^7 team\n"
-msgstr ""
+msgstr "^5Byl jsi vyjmut z týmu ^4Spojenců^7\n"
 
 msgid "^5You've been removed from the ^1Axis^7 team\n"
-msgstr ""
+msgstr "^5Byl jsi vyjmut z týmu ^1Osy^7\n"
 
 msgid "Referee has ^3SPECTATOR LOCKED^7 teams\n"
-msgstr ""
+msgstr "Sudí ^3UZAMKL DIVÁKŮM^7 týmy\n"
 
 msgid "Referee has ^3SPECTATOR UNLOCKED^7 teams\n"
-msgstr ""
+msgstr "Sudí ^3ODEMKL DIVÁKŮM^7 týmy\n"
 
 msgid "usage: ref warn <clientname> [reason].\n"
-msgstr ""
+msgstr "použití: ref warn <přezdívka_hráče> [důvod]\n"
 
 msgid "Client not on server.\n"
-msgstr ""
+msgstr "Hráč není na serveru.\n"
 
 msgid "%s^7 was issued a ^1Warning^7 (No Reason Supplied)\n"
-msgstr ""
+msgstr "%s^7 byl ^1VAROVÁN^7 (důvod neuveden)\n"
 
 msgid "Cannot mute a referee.\n"
-msgstr ""
+msgstr "Nelze umlčet sudího.\n"
 
 msgid "^5You've been muted\n"
-msgstr ""
+msgstr "^5Byl jsi umčen\n"
 
 msgid "Can't chat - you are muted\n"
-msgstr ""
+msgstr "Nelze posílat zprávy — jsi umlčen\n"
 
 msgid "^5You've been unmuted\n"
-msgstr ""
+msgstr "^5Umlčení zrušeno\n"
 
 msgid ""
 "^7 ID : Player                    Nudge  Rate  MaxPkts  Snaps  Specials\n"
-msgstr ""
+msgstr "^7 ID : Hráč                    Nudge  Rate  MaxPkts  Snaps  Specials\n"
 
 msgid ""
 "^7----------------------------------------------------------------------\n"
-msgstr ""
+msgstr "^7----------------------------------------------------------------------\n"
 
 msgid ""
 "^7Status   : ID : Player                    Nudge  Rate  MaxPkts  Snaps  "
 "Specials\n"
-msgstr ""
+msgstr "^7Stav   : ID : Hráč                    Nudge  Rate  MaxPkts  Snaps  Specials\n"
 
 msgid ""
 "^7-------------------------------------------------------------------------------\n"
-msgstr ""
+msgstr "^7-------------------------------------------------------------------------------\n"
 
 msgid ""
 "^5\n"
 "Available Game Commands:\n"
 "------------------------\n"
-msgstr ""
+msgstr "^5\nDostupné příkazy:\n------------------------\n"
 
 msgid ""
 "\n"
 "Type: ^3\\command_name ?^7 for more information\n"
-msgstr ""
+msgstr "\nNapiš: ^3\\název_příkazu ?^7 pro více informací\n"
 
 msgid "Spectators can't lock a team!\n"
-msgstr ""
+msgstr "Divák nemůže uzamknout tým!\n"
 
 msgid "The ^4Allies^7 team is now locked!\n"
-msgstr ""
+msgstr "Tým ^4Spojenců^7 je uzamčen!\n"
 
 msgid "^3Your team is already locked!\n"
-msgstr ""
+msgstr "^3Tvůj tým již je uzamčen!\n"
 
 msgid "The ^4Allies^7 team is now unlocked!\n"
-msgstr ""
+msgstr "Tým ^4Spojenců^7 je odemčen!\n"
 
 msgid "^3Your team is already unlocked!\n"
-msgstr ""
+msgstr "^3Tvůj tým již je odemčen!\n"
 
 msgid "Spectators can't unlock a team!\n"
-msgstr ""
+msgstr "Diváci nemohou odemknout tým!\n"
 
 msgid "The ^1Axis^7 team is now locked!\n"
-msgstr ""
+msgstr "Tým ^1Osy^7 je uzamčen!\n"
 
 msgid "The ^1Axis^7 team is now unlocked!\n"
-msgstr ""
+msgstr "Tým ^1Osy^7 je odemčen!\n"
 
 msgid "Team commands not enabled on this server.\n"
-msgstr ""
+msgstr "Příkazy týmu nejsou povoleny na tomto serveru.\n"
 
 msgid ""
 "\n"
 "^3>>> Unknown vote command: ^7 \n"
-msgstr ""
+msgstr "\n^3>>> Neznámý příkaz hlasování: ^7 \n"
 
 msgid ""
 "\n"
 "Valid ^3callvote^7 commands are:\n"
 "^3----------------------------\n"
-msgstr ""
+msgstr "\nPlatné parametry ^3callvote^7 jsou:\n^3----------------------------\n"
 
 msgid ""
 "\n"
 "Usage: ^3\\callvote <command> <params>\n"
 "^7For current settings/help, use: ^3\\callvote <command> ?\n"
-msgstr ""
+msgstr "\nPoužití: ^3\\callvote <příkaz> <parametry>\n^7Pro současná nastavení nebo nápovědu použij:: ^3\\callvote <příkaz> ?\n"
 
 msgid "Type ^3\\stats <player_id>^7 to see stats on an active player.\n"
-msgstr ""
+msgstr "Pro zobrazení statistik hrajícího hráče napiš: ^3\\stats <id_hráče>^7\n"
 
 msgid "Spectators can't ready a team!\n"
-msgstr ""
+msgstr "Diváci nemohou označit tým jako připravený!\n"
 
 msgid "The ^4Allies^7 team is ready!\n"
-msgstr ""
+msgstr "Tým ^4Spojenců^7 je připraven!\n"
 
 msgid "The ^1Axis^7 team is ready!\n"
-msgstr ""
+msgstr "Tým ^1Osy^7 he připraven!\n"
 
 msgid "A vote is already in progress.\n"
-msgstr ""
+msgstr "Hlasování již probíhá.\n"
 
 msgid "called a vote.\n"
-msgstr ""
+msgstr "vyvolal hlasování.\n"
 
 msgid "^5Vote passed!\n"
-msgstr ""
+msgstr "^5Hlasování: schváleno!\n"
 
 msgid "Spectator team\n"
-msgstr ""
+msgstr "Tým diváků\n"
 
 msgid "Allies team\n"
-msgstr ""
+msgstr "Tým Spojenců\n"
 
 msgid "Axis team\n"
-msgstr ""
+msgstr "Tým Osy\n"
 
 msgid "Sorry, "
-msgstr ""
+msgstr "Promiň,"
 
 msgid "voting has been disabled"
-msgstr ""
+msgstr "hlasování je zakázáno"
 
 msgid "Not allowed to call a vote as a spectator."
-msgstr ""
+msgstr "Divák nemá povoleno vyvolávat hlasování."
 
 msgid "called a vote."
-msgstr ""
+msgstr "vyvolal hlasování."
 
 msgid "Vote cast.\n"
-msgstr ""
+msgstr "Hlas odevzdán.\n"
 
 msgid "'s KA-BAR"
-msgstr ""
+msgstr " [KA-BAR]"
 
 msgid "'s .45ACP 1911"
-msgstr ""
+msgstr " [.45ACP 1911]"
 
 msgid "'s Thompson"
-msgstr ""
+msgstr " [Thompson]"
 
 msgid "'s MP 40"
-msgstr ""
+msgstr " [MP 40]"
 
 msgid "'s knife"
-msgstr ""
+msgstr " [nůž]"
 
 msgid "'s Luger 9mm"
-msgstr ""
+msgstr " [Luger 9mm]"
 
 msgid "'s Panzerfaust"
-msgstr ""
+msgstr " [Panzerfaust]"
 
 msgid "'s Garand"
-msgstr ""
+msgstr " [Garand]"
 
 msgid "'s Sten"
-msgstr ""
+msgstr " [Sten]"
 
 msgid "'s FG 42"
-msgstr ""
+msgstr " [FG 42]"
 
 msgid "'s K43"
-msgstr ""
+msgstr " [K43]"
 
 msgid "'s Bazooka"
-msgstr ""
+msgstr " [Bazooka]"
 
 msgid "'s Akimbo .45ACP 1911s"
-msgstr ""
+msgstr " [dvojice .45ACP 1911]"
 
 msgid "Server disconnected"
-msgstr ""
+msgstr "Server odpojen"
 
 msgid "Server connection timed out."
-msgstr ""
+msgstr "Spojení se serverem vypršelo."
 
 msgid "Server disconnected for unknown reason"
-msgstr ""
+msgstr "Server odpojen z neznámého důvodu"
 
 msgid "'s Akimbo Luger 9mms"
-msgstr ""
+msgstr " [dvojice Luger 9mm]"
 
 msgid "Cheats are not enabled on this server.\n"
-msgstr ""
+msgstr "Švindly nejsou povoleny na tomto serveru.\n"
 
 msgid "team: class is not available\n"
-msgstr ""
+msgstr "tým: třída není dostupná\n"
 
 msgid "^1Soldier^7 is not available! Choose another class!\n"
 msgstr ""
@@ -6470,7 +6470,7 @@ msgid "^3moved to spectator for inactivity!\n"
 msgstr ""
 
 msgid "was killed by"
-msgstr ""
+msgstr "usmrcen hráčem"
 
 msgid "was stabbed by"
 msgstr ""
