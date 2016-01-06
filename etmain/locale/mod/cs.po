@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: ET:Legacy\n"
 "Report-Msgid-Bugs-To: mail@etlegacy.com\n"
 "POT-Creation-Date: 2015-01-10 20:22+0100\n"
-"PO-Revision-Date: 2016-01-05 12:49+0000\n"
+"PO-Revision-Date: 2016-01-06 14:33+0000\n"
 "Last-Translator: yfcz <yfcz@wolfenstein.cz>\n"
 "Language-Team: Czech (http://www.transifex.com/etlegacy/etlegacy/language/cs/)\n"
 "MIME-Version: 1.0\n"
@@ -49,7 +49,7 @@ msgstr "St. výkonný producent"
 
 #: etmain/ui/credits_activision.menu:94
 msgid "VP North American Studios"
-msgstr ""
+msgstr "Viceprezident North American Studios"
 
 #: etmain/ui/credits_activision.menu:97 etmain/ui/credits_activision.menu:99
 msgid "QA Project Lead"
@@ -1467,7 +1467,7 @@ msgstr "VYPNOUT ANTILAG"
 #: etmain/ui/ingame_vote_misc.menu:49
 #: etmain/ui/ingame_vote_misc_refrcon.menu:48
 msgid "XP SHUFFLE"
-msgstr "PROMICHANI XP"
+msgstr "PROMÍCHÁNÍ DLE ZK"
 
 #: etmain/ui/ingame_vote_misc.menu:50
 #: etmain/ui/ingame_vote_misc_refrcon.menu:49
@@ -1726,13 +1726,13 @@ msgstr "Tímto budou smazány všechny nepotřebné soubory uložené v fs_homep
 
 #: etmain/ui/options_clean.menu:36
 msgid "A simple clean will remove tmp and custom pk3 files."
-msgstr ""
+msgstr "Jednoduché vyčistění odstraní dočasné soubory TMP a pomocné PK3 soubory."
 
 #: etmain/ui/options_clean.menu:37
 msgid ""
 "A full clean will remove all downloaded files like maps,\n"
 " campaigns and custom pk3 files."
-msgstr ""
+msgstr "Úplné vyčistění odstraní všechny neoriginální PK3 soubory \nvčetně souborů s herními úrovněmi a kampaněmi."
 
 #: etmain/ui/options_clean.menu:38
 msgid "^1WARNING: Use at your own risk!"
@@ -1900,27 +1900,27 @@ msgstr "Vertikální citlivost zaměřovače"
 
 #: etmain/ui/options_controls.menu:56 etmain/ui/options_customise_game.menu:62
 msgid "CHAT"
-msgstr "CHAT"
+msgstr "ZPRÁVY"
 
 #: etmain/ui/options_controls.menu:57
 msgid "Chat:"
-msgstr "Chat:"
+msgstr "Zprávy:"
 
 #: etmain/ui/options_controls.menu:58
 msgid "Team Chat:"
-msgstr "Chat týmu:"
+msgstr "Zprávy týmu:"
 
 #: etmain/ui/options_controls.menu:59
 msgid "Fire-Team Chat:"
-msgstr "Chat čety:"
+msgstr "Zprávy čety:"
 
 #: etmain/ui/options_controls.menu:60
 msgid "Quick Chat:"
-msgstr "Hlasový chat:"
+msgstr "Rychlé zprávy:"
 
 #: etmain/ui/options_controls.menu:61
 msgid "Fire-Team Quick Chat:"
-msgstr "Hlasový chat čety:"
+msgstr "Rychlé zprávy četě:"
 
 #: etmain/ui/options_controls.menu:65
 msgid "POP-UPS"
@@ -2269,7 +2269,7 @@ msgstr "Udává velikost změny přiblížení"
 
 #: etmain/ui/options_customise_game.menu:63
 msgid "Quick Chat Mode:"
-msgstr "Hlasové zprávy:"
+msgstr "Mód rychlých zpráv:"
 
 #: etmain/ui/options_customise_game.menu:63
 msgid "Alpha"
@@ -2344,7 +2344,7 @@ msgstr "Povolí nebo zakáže hlas oznamovatele"
 
 #: etmain/ui/options_customise_game.menu:72
 msgid "No voice chat:"
-msgstr "Bez RHZ:"
+msgstr "Bez hlasových zpráv:"
 
 #: etmain/ui/options_customise_game.menu:72
 msgid "Don't play voice chat in-game"
@@ -6371,679 +6371,679 @@ msgid "team: class is not available\n"
 msgstr "tým: třída není dostupná\n"
 
 msgid "^1Soldier^7 is not available! Choose another class!\n"
-msgstr ""
+msgstr "^1Voják^7 není dostupný! Vyber jinou třídu!\n"
 
 msgid "^1Medic^7 is not available! Choose another class!\n"
-msgstr ""
+msgstr "^1Medik^7 není dostupný! Vyber jinou třídu!\n"
 
 msgid "^1Engineer^7 is not available! Choose another class!\n"
-msgstr ""
+msgstr "^1Inženýr^7 není dostupný! Vyber jinou třídu!\n"
 
 msgid "^1Field Ops^7 is not available! Choose another class!\n"
-msgstr ""
+msgstr "^1Field Ops^7 není dostupný! Vyber jinou třídu!\n"
 
 msgid "^1Covert Ops^7 is not available! Choose another class!\n"
-msgstr ""
+msgstr "^1Agent^7 není dostupný! Vyber jinou třídu!\n"
 
 msgid "You must be alive to use this command.\n"
-msgstr ""
+msgstr "K provedení tohoto příkazu musíš být naživu.\n"
 
 msgid "The ^1Axis^7 team is empty!  Follow command ignored.\n"
-msgstr ""
+msgstr "Tým ^1Osy^7 je prázdný! Příkaz pro sledování ignorován.\n"
 
 msgid "The ^4Allies^7 team is empty!  Follow command ignored.\n"
-msgstr ""
+msgstr "Tým ^4Spojenců^7 je prázdný! Příkaz pro sledování ignorován.\n"
 
 msgid "Can't follow a player on an enemy team!\n"
-msgstr ""
+msgstr "Nelze sledovat hráče z jiného týmu!\n"
 
 msgid "Can't follow while not in limbo if on a team!\n"
-msgstr ""
+msgstr "Nelze sledovat hráče mimo Předpeklí!\n"
 
 msgid "Partial Name Matches more than 1 Player.\n"
-msgstr ""
+msgstr "Částečná přezdívka pasuje na více než: 1 hráčů.\n"
 
 msgid "Spectator follow is now locked on the ^1Axis^7 team.\n"
-msgstr ""
+msgstr "Diváci mohou již sledovat pouze tým ^1Osy^7.\n"
 
 msgid "^1Axis^7 team spectating is now disabled.\n"
-msgstr ""
+msgstr "Sledovat tým ^1Osy^7 již není možné.\n"
 
 msgid "Spectator follow is now locked on the ^4Allies^7 team.\n"
-msgstr ""
+msgstr "Diváci mohou již sledovat pouze tým ^4Spojenců^7.\n"
 
 msgid "^4Allies^7 team spectating is now disabled.\n"
-msgstr ""
+msgstr "Sledovat tým ^4Spojenců^7 již není možné.\n"
 
 msgid "Sorry, the ^4Allies^7 team is locked from spectators.\n"
-msgstr ""
+msgstr "Promiň, tým ^4Spojenců^7 je pro diváky uzamčen.\n"
 
 msgid "Sorry, the ^1Axis^7 team is locked from spectators.\n"
-msgstr ""
+msgstr "Promiň, tým ^1Osy^7 je pro diváky uzamčen.\n"
 
 msgid "Server quit\n"
-msgstr ""
+msgstr "Server opuštěn\n"
 
 msgid "You cannot switch during a match, please wait until the round ends."
-msgstr ""
+msgstr "Nelze přepnout tým během probíhajícího zápasu, počkej do konce kola."
 
 msgid "Use the ^3players^7 command to find a valid player ID.\n"
-msgstr ""
+msgstr "Použij příkaz ^3players^7 pro zjištění platného ID hráče.\n"
 
 msgid "^3Match is already in progress!\n"
-msgstr ""
+msgstr "^3Zápas již začal!\n"
 
 msgid "^1Teams have been shuffled!\n"
-msgstr ""
+msgstr "^1Týmy byly promíchány!\n"
 
 msgid "^3*** Loading nextmap! ***\n"
-msgstr ""
+msgstr "^3*** nahrávám další úroveň! ***\n"
 
 msgid "^1*** Level Restarted! ***\n"
-msgstr ""
+msgstr "^1*** Úroveň restartována! ***\n"
 
 msgid "You have been switched to the Axis team"
-msgstr ""
+msgstr "Byl jsi přesunut do týmu Osy"
 
 msgid "Keep the Allies from beating the clock!"
-msgstr ""
+msgstr "Nedovolte Spojencům překonat váš čas!"
 
 msgid "Keep the Axis from beating the clock!"
-msgstr ""
+msgstr "Nedovolte Ose překonat váš čas!"
 
 msgid "You have been switched to the Allied team"
-msgstr ""
+msgstr "Byl jsi přesunut do týmu Spojenců"
 
 msgid "Try to beat the clock!"
-msgstr ""
+msgstr "Zkus překonat čas soupeře!"
 
 msgid "You have been been stripped of fireteam admin rights"
-msgstr ""
+msgstr "Byl jsi zbaven práv správce čety"
 
 msgid "%s ^7has left the fireteam\n"
-msgstr ""
+msgstr "%s ^7opustil četu\n"
 
 msgid "You have been warned by your fireteam leader\n"
-msgstr ""
+msgstr "Byl jsi varován velitelem čety\n"
 
 msgid "^3moved to spectator for inactivity!\n"
-msgstr ""
+msgstr "^3 pro neaktivitu přesunut mezi diváky!\n"
 
 msgid "was killed by"
 msgstr "usmrcen hráčem"
 
 msgid "was stabbed by"
-msgstr ""
+msgstr "pobodán hráčem"
 
 msgid "was blasted by"
-msgstr ""
+msgstr "rozmetán hráčem"
 
 msgid "was exploded by"
-msgstr ""
+msgstr "odpálen hráčem"
 
 msgid "was cooked by"
-msgstr ""
+msgstr "upečen hráčem"
 
 msgid "never saw"
-msgstr ""
+msgstr "přehlédnul přilétající minometný granát hráče"
 
 msgid "'s mortar round coming"
-msgstr ""
+msgstr " [minomet]"
 
 msgid "was perforated by"
-msgstr ""
+msgstr "rozstřílen hráčem"
 
 msgid "'s tank-mounted MG 42"
-msgstr ""
+msgstr " [MG 42 na tanku]"
 
 msgid "was shelled by"
-msgstr ""
+msgstr "rozstřílen hráčem"
 
 msgid "'s artillery support"
-msgstr ""
+msgstr " [dělostřelecká podpora]"
 
 msgid "^2swapped places with^7"
-msgstr ""
+msgstr "^2 si vyměnil místo s^7"
 
 msgid "failed to spot"
-msgstr ""
+msgstr "si nevšiml"
 
 msgid "was mown down by"
-msgstr ""
+msgstr "pokosen hráčem"
 
 msgid "was silenced by"
-msgstr ""
+msgstr "umlčen hráčem"
 
 msgid "was sniped by"
-msgstr ""
+msgstr "odstřelen hráčem"
 
 msgid "stood on"
-msgstr ""
+msgstr "stál na značkovači letecké podpory hráče"
 
 msgid "'s airstrike marker"
-msgstr ""
+msgstr " [značkovač letecké podpory]"
 
 msgid "- Small Health"
-msgstr ""
+msgstr "— Malé zdraví"
 
 msgid "- Med Health"
-msgstr ""
+msgstr "—  Střední zdraví"
 
 msgid "- Health Pack"
-msgstr ""
+msgstr "— Lékárnička"
 
 msgid "- Hot Meal"
-msgstr ""
+msgstr "— Teplé jídlo"
 
 msgid "- Cold Meal"
-msgstr ""
+msgstr "— Studené jídlo"
 
 msgid "- Health"
-msgstr ""
+msgstr "— Zdraví"
 
 msgid "- Knife"
-msgstr ""
+msgstr "— Dýka"
 
 msgid "- Ka-Bar"
-msgstr ""
+msgstr "— Ka-Bar"
 
 msgid "- Luger"
-msgstr ""
+msgstr "— Luger"
 
 msgid "- Akimbo Luger"
-msgstr ""
+msgstr "— Dvojice Lugerů"
 
 msgid "- Silenced Akimbo Luger"
-msgstr ""
+msgstr "— Dvojice Lugerů s tlumičem"
 
 msgid "- Thompson"
-msgstr ""
+msgstr "— Thompson"
 
 msgid "- Sten gun"
-msgstr ""
+msgstr "— Sten"
 
 msgid "- Colt"
-msgstr ""
+msgstr "— Colt"
 
 msgid "- Akimbo Colt"
-msgstr ""
+msgstr "— Dvojice Coltů"
 
 msgid "- Silenced Akimbo Colt"
-msgstr ""
+msgstr "— Dvojice Coltů s tlumičem"
 
 msgid "- MP 40"
-msgstr ""
+msgstr "— MP 40"
 
 msgid "- Panzerfaust"
-msgstr ""
+msgstr "— Panzerfaust"
 
 msgid "- Bazooka"
-msgstr ""
+msgstr "— Bazooka"
 
 msgid "- Grenade"
-msgstr ""
+msgstr "— Granát"
 
 msgid "- Pineapple"
-msgstr ""
+msgstr "— Granát"
 
 msgid "- Flamethrower"
-msgstr ""
+msgstr "— Plamenomet"
 
 msgid "- Syringe"
-msgstr ""
+msgstr "— Injekce"
 
 msgid "- Adrenaline Syringe"
-msgstr ""
+msgstr "— Injekce adrenalinu"
 
 msgid "- Ammo Pack"
-msgstr ""
+msgstr "— Balíček nábojů"
 
 msgid "- Mega Ammo Pack"
-msgstr ""
+msgstr "— Velký balíček nábojů"
 
 msgid "- Binoculars"
-msgstr ""
+msgstr "— Dalekohled"
 
 msgid "- Scoped K43 Rifle"
-msgstr ""
+msgstr "— K 43 puška s optikou"
 
 msgid "- K43 Rifle Scope"
-msgstr ""
+msgstr "— Optika pušky K 43"
 
 msgid "- K43 Rifle"
-msgstr ""
+msgstr "— K 43 puška"
 
 msgid "- M1 Garand"
-msgstr ""
+msgstr "— M1 Garand"
 
 msgid "- M7"
-msgstr ""
+msgstr "— M7"
 
 msgid "- Scoped M1 Garand"
-msgstr ""
+msgstr "— M1 Garand s optikou"
 
 msgid "- M1 Garand Scope"
-msgstr ""
+msgstr "— Optika M1 Garand"
 
 msgid "- FG 42 Paratroop Rifle"
-msgstr ""
+msgstr "— FG 42 výsadkářská puška"
 
 msgid "- FG 42 Paratroop Rifle Scope"
-msgstr ""
+msgstr "— FG 42 výsadkářská puška s optikou"
 
 msgid "- Mortar"
-msgstr ""
+msgstr "— Minomet"
 
 msgid "- Granatwerfer"
-msgstr ""
+msgstr "— Granátomet"
 
 msgid "- Mobile MG 42"
-msgstr ""
+msgstr "— Mobilní MG 42"
 
 msgid "- Mobile Browning"
-msgstr ""
+msgstr "— Mobilní Browning"
 
 msgid "- Silenced Luger"
-msgstr ""
+msgstr "— Luger s tlumičem"
 
 msgid "- Silenced Colt"
-msgstr ""
+msgstr "— Colt s tlumičem"
 
 msgid "Includes or excludes empty and full servers from the server list"
-msgstr ""
+msgstr "Zahrne nebo vyřadí prázdné a plné servery ze seznamu serverů"
 
 msgid "Includes or excludes password protected servers from the server list"
-msgstr ""
+msgstr "Zahrne nebo vyřadí servery vyžadující heslo ze seznamu serverů"
 
 msgid ""
 "Includes or excludes servers where team mates can damage each other from the"
 " server list"
-msgstr ""
+msgstr "Zahrne nebo vyřadí servery, kde si spoluhráči mohou udělovat poškození, ze seznamu serverů"
 
 msgid ""
 "Includes or excludes servers that limit the number of player lives per match"
 " from the server list"
-msgstr ""
+msgstr "Zahrne nebo vyřadí servery, kde je stanoven limit životů, ze seznamu serverů"
 
 msgid ""
 "Includes or excludes servers that limit the number of\n"
 " available heavy weapons from the server list"
-msgstr ""
+msgstr "Zahrne nebo vyřadí servery, které omezují těžké zbraně, ze seznamu serverů"
 
 msgid ""
 "Includes or excludes servers with support for modem players from the server "
 "list"
-msgstr ""
+msgstr "Zahrne nebo vyřadí servery s podporou pomalého připojení k intertu ze seznamu serverů"
 
 msgid ""
 "Includes or excludes servers that enforce balanced teams from the server "
 "list"
-msgstr ""
+msgstr "Zahrne nebo vyřadí servery, které vynucují vyváženost týmů, ze seznamu serverů"
 
 msgid "Includes or excludes servers with bots from the server list"
-msgstr ""
+msgstr "Zahrne nebo vyřadí servery s boty ze seznamu serverů"
 
 msgid "Click here to sort by Ping"
-msgstr ""
+msgstr "Zde klikni pro řazení dle Pingu"
 
 msgid "FAV"
-msgstr ""
+msgstr "OBL"
 
 msgid "Sets field of view"
-msgstr ""
+msgstr "Nastavuje zorné pole"
 
 msgid "Selfkill:"
-msgstr ""
+msgstr "Sebevražda:"
 
 msgid "Fireteam Chat:"
-msgstr ""
+msgstr "Zprávy četě:"
 
 msgid "Fireteam Quick Chat:"
-msgstr ""
+msgstr "Rychlé zprávy četě:"
 
 msgid "Ready:"
-msgstr ""
+msgstr "Připraven:"
 
 msgid "Not Ready:"
-msgstr ""
+msgstr "Nepřipraven:"
 
 msgid "CONTROLS: ADVANCED"
-msgstr ""
+msgstr "OVLÁDÁNÍ: POKROČILÉ"
 
 msgid "Deselect All Members:"
-msgstr ""
+msgstr "Odoznačit všechny členy:"
 
 msgid "Select Member #7:"
-msgstr ""
+msgstr "Vybrat člena #7:"
 
 msgid "Select Member #8:"
-msgstr ""
+msgstr "Vybrat člena #8:"
 
 msgid ""
 "Couldn't load an official pak file; verify your installation and make sure "
 "it has been updated to the latest version."
-msgstr ""
+msgstr "Nelze načíst oficiální balíček. Ověř instalaci hry a ujisti se, že je nejnovější verze."
 
 msgid "Battle Sense"
-msgstr ""
+msgstr "Bojové smysly"
 
 msgid "Engineering"
-msgstr ""
+msgstr "Technika"
 
 msgid "First Aid"
-msgstr ""
+msgstr "První pomoc"
 
 msgid "Signals"
-msgstr ""
+msgstr "Signály"
 
 msgid "Light Weapons"
-msgstr ""
+msgstr "Lehké zbraně"
 
 msgid "Heavy Weapons"
-msgstr ""
+msgstr "Těžké zbraně"
 
 msgid "Covert Ops"
-msgstr ""
+msgstr "Tajné operace"
 
 msgid "Fire Mission: ^3Firing for effect!"
-msgstr ""
+msgstr "Dělostřelectvo: ^3Zahájili jsme palbu!"
 
 msgid "Fire Mission: ^3Insufficient fire support."
-msgstr ""
+msgstr "Dělostřelectvo: ^3Nedostatečná palebná podpora."
 
 msgid "Fire Mission: ^3Aborting, can't see target."
-msgstr ""
+msgstr "Dělostřelectvo: ^3Ruším střelbu, cíl není vidět."
 
 msgid "I need a Medic!"
-msgstr ""
+msgstr "Potřebuji medika!"
 
 msgid "New version available. Do you want to update now?"
-msgstr ""
+msgstr "Je dostupná nová verze hry. Aktualizovat teď?"
 
 msgid "20 Med Health"
-msgstr ""
+msgstr "20 Střední zdraví"
 
 msgid "Pilot: ^3Aborting, can't see target."
-msgstr ""
+msgstr "Pilot: ^3Ruším shoz, cíl není vidět."
 
 msgid "Pilot: ^3Affirmative, on my way!"
-msgstr ""
+msgstr "Pilot: ^3Potvrzuji, zahajuji nálet!"
 
 msgid "HQ: ^3All available planes are already en-route."
-msgstr ""
+msgstr "Velitelství: ^3Všechny dostupné bombardéry jsou na misi."
 
 #: src/cgame/cg_draw.c:1830
 msgid "Join a Fireteam?"
-msgstr ""
+msgstr "Připojit k četě?"
 
 msgid "Apply"
-msgstr ""
+msgstr "Požádat"
 
 msgid "Create"
-msgstr ""
+msgstr "Vytvořit"
 
 msgid "Attack"
-msgstr ""
+msgstr "Zaútočte"
 
 msgid "Fall Back"
-msgstr ""
+msgstr "Ústup"
 
 msgid "Disband"
-msgstr ""
+msgstr "Rozpustit"
 
 msgid "Leave"
-msgstr ""
+msgstr "Opustit"
 
 msgid "Invite"
-msgstr ""
+msgstr "Pozvat"
 
 msgid "Change privacy"
-msgstr ""
+msgstr "Změnit typ"
 
 msgid "Kick"
-msgstr ""
+msgstr "Vyloučit"
 
 msgid "Warn"
-msgstr ""
+msgstr "Varovat"
 
 msgid "Change admin"
-msgstr ""
+msgstr "Změnit správce"
 
 msgid "Highest Fragger"
-msgstr ""
+msgstr "Nejvíce fragů"
 
 msgid "Highest Experience Points"
-msgstr ""
+msgstr "Nejvíce bodů zkušeností"
 
 msgid "Highest Ranking Officer"
-msgstr ""
+msgstr "Nejvyšší hodnost"
 
 msgid "Most Highly Decorated"
-msgstr ""
+msgstr "Nejvíce vyznamenání"
 
 msgid "Highest Battle Sense"
-msgstr ""
+msgstr "Nelepší bojové smysly"
 
 msgid "Best Engineer"
-msgstr ""
+msgstr "Nejlepší inženýr"
 
 msgid "Best Medic"
-msgstr ""
+msgstr "Nejlepší medik"
 
 msgid "Best Field Ops"
-msgstr ""
+msgstr "Nejlepší Field Ops"
 
 msgid "Highest Light Weapons"
-msgstr ""
+msgstr "Nejlepší lehké zbraně"
 
 msgid "Best Soldier"
-msgstr ""
+msgstr "Nejlepší řadový voják"
 
 msgid "Best Covert Ops"
-msgstr ""
+msgstr "Nejlepší agent"
 
 msgid "Highest Accuracy"
-msgstr ""
+msgstr "Nejvyšší přesnost"
 
 msgid "I Ain't Got No Friends Award"
-msgstr ""
+msgstr "Ocenění: Nezná bratra"
 
 msgid "Welcome Newbie! Award"
-msgstr ""
+msgstr "Ocenění: Vítej zelenáči!"
 
 msgid ""
 "\n"
 "ET: Legacy with OpenGL 3.x renderer can not run on this machine since it is missing one or more required OpenGL extensions. Please update your video card drivers and try again.\n"
-msgstr ""
+msgstr "\nET: Legacy s OpenGL 3.x rendererem nebude fungovat na tomto počítači, protože nepodporuje některá z vyžadovaných rozšíření OpenGL. Aktualizuj ovladače grafické karty a zkus hru spustit znovu.\n"
 
 msgid "Gib command not allowed during intermission.\n"
-msgstr ""
+msgstr "Příkaz 'gib' není povolen během přestávky.\n"
 
 msgid "^9%d players gibbed."
-msgstr ""
+msgstr "^9%d hráčů bylo vykucháno."
 
 msgid "There is no player to gib."
-msgstr ""
+msgstr "Není zde hráč vhodný k vykuchání."
 
 msgid "Error - can't gib - %s."
-msgstr ""
+msgstr "Chyba, nelze vykuchat hráče: %s."
 
 msgid "Player must be on a team to be gibbed.\n"
-msgstr ""
+msgstr "Aby hráče bylo možné vykuchat, musí být v týmu.\n"
 
 msgid "^7%s^7 was gibbed."
-msgstr ""
+msgstr "^7%s^7 byl vykuchán."
 
 msgid "Die command not allowed during intermission.\n"
-msgstr ""
+msgstr "Příkaz 'die' není povolen během přestávky.\n"
 
 msgid "^9%d players died."
-msgstr ""
+msgstr "^9%d hráčů zemřelo."
 
 msgid "There is no player to die.\n"
-msgstr ""
+msgstr "Není zde hráč vhodný k usmrcení.\n"
 
 msgid "Error - can't execute die command - %s.\n"
-msgstr ""
+msgstr "Chyba, nelze usmrtit hráče: %s.\n"
 
 msgid "Player must be on a team to die.\n"
-msgstr ""
+msgstr "Aby hráče bylo možné usmrtit, musí být v týmu.\n"
 
 msgid "^7%s^7 died."
-msgstr ""
+msgstr "^7%s^7 zemřel."
 
 msgid "Freeze command not allowed during intermission.\n"
-msgstr ""
+msgstr "Příkaz 'freeze' není povolen během přestávky.\n"
 
 msgid "^9%d players are frozen."
-msgstr ""
+msgstr "^9%d hráčů zmrazeno."
 
 msgid "No players in team or they are already frozen.\n"
-msgstr ""
+msgstr "Není zde vhodný hráč ke zmrazení.\n"
 
 msgid "Error - can't freeze - %s.\n"
-msgstr ""
+msgstr "Chyba, nelze zmrazit hráče: %s.\n"
 
 msgid "Player must be on a team to be frozen.\n"
-msgstr ""
+msgstr "Aby hráče bylo možné zmrazit, musí být v týmu.\n"
 
 msgid "^7%s^7 is frozen."
-msgstr ""
+msgstr "^7%s^7 zmražen."
 
 msgid "^9%d players are unfrozen."
-msgstr ""
+msgstr "^9%d hráčů rozmrazeno."
 
 msgid "No players in team or they are already unfrozen.\n"
-msgstr ""
+msgstr "Není zde vhodný hráč ke rozmrazení.\n"
 
 msgid "Error - can't unfreeze - %s.\n"
-msgstr ""
+msgstr "Chyba, nelze rozmrazit hráče: %s.\n"
 
 msgid "Player must be on a team to be unfrozen.\n"
-msgstr ""
+msgstr "Aby hráče bylo možné rozmrazit, musí být v týmu.\n"
 
 msgid "^7%s^7 is unfrozen."
-msgstr ""
+msgstr "^7%s^7 rozmražen."
 
 msgid "Burn command not allowed during intermission.\n"
-msgstr ""
+msgstr "Příkaz 'burn' není povolen během přestávky.\n"
 
 msgid "^9%d players burned."
-msgstr ""
+msgstr "^9%d hráčů bylo popáleno."
 
 msgid "No players in team or they are already burned.\n"
-msgstr ""
+msgstr "Není zde vhodný hráč k popálení.\n"
 
 msgid "Error - can't burn - %s.\n"
-msgstr ""
+msgstr "Chyba, nelze popálit hráče: %s.\n"
 
 msgid "Player must be on a team to be burned.\n"
-msgstr ""
+msgstr "Aby hráče bylo možné popálit, musí být v týmu.\n"
 
 msgid "^7%s^7 is burned."
-msgstr ""
+msgstr "^7%s^7 popálen."
 
 msgid "Pip command not allowed during intermission.\n"
-msgstr ""
+msgstr "Příkaz 'pip' není povolen během přestávky.\n"
 
 msgid "^9%d players pipped."
-msgstr ""
+msgstr "^9%d hráčů dostalo pohlavek."
 
 msgid "No players in team or they are already pipped.\n"
-msgstr ""
+msgstr "Není zde vhodný hráč pro pohlavek.\n"
 
 msgid "Error - can't pip - %s.\n"
-msgstr ""
+msgstr "Chyba, nelze dát pohlavek hráči: %s.\n"
 
 msgid "Player must be on a team to be pipped.\n"
-msgstr ""
+msgstr "Aby bylo možné dát hráči pohlavek, musí být v týmu.\n"
 
 msgid "^7%s^7 is pipped."
-msgstr ""
+msgstr "^7%s^7 dostal pohlavek."
 
 msgid "%s command not allowed during intermission.\n"
-msgstr ""
+msgstr "Příkaz %s není povolen během přestávky.\n"
 
 msgid "^9%d players %s."
-msgstr ""
+msgstr "^9Na %d hráčů aplikováno: %s."
 
 msgid "No players in team or they are already %s.\n"
-msgstr ""
+msgstr "Nejsou zde vhodní hráči k: %s.\n"
 
 msgid "Player must be on a team to be %s.\n"
-msgstr ""
+msgstr "Aby na hráče bylo možné aplikovat: %s, musí být v týmu.\n"
 
 msgid "^7%s^7 was %s."
-msgstr ""
+msgstr "^7Na hráče %s^7 aplikováno: %s."
 
 #: etmain/ui/options_system.menu:48
 msgid "System Sound Control:"
-msgstr ""
+msgstr "Systémové ovládání zvuku:"
 
 #: etmain/ui/options_system.menu:48
 msgid "Base"
-msgstr ""
+msgstr "Základní"
 
 #: etmain/ui/options_system.menu:48
 msgid "OpenAL"
-msgstr ""
+msgstr "OpenAL"
 
 #: etmain/ui/options_system.menu:48
 msgid "Set the system sound control"
-msgstr ""
+msgstr "Nastavuje systém kontroly zvuků"
 
 msgid "No can do!"
-msgstr ""
+msgstr "Nemohu!"
 
 msgid "Right away!"
-msgstr ""
+msgstr "Hned to bude!"
 
 #: src/cgame/cg_draw.c:2505
 msgid "^3WARMUP:^7 Match begins now!"
-msgstr ""
+msgstr "^3ROZCVIČKA:^7 zápas začíná teď!"
 
 #: src/cgame/cg_scoreboard.c:211
 msgid "MATCH BEGINS NOW!"
-msgstr ""
+msgstr "ZÁPAS ZAČÍNÁ TEĎ!"
 
 msgid "Mute Players:"
-msgstr ""
+msgstr "Umlčování hráčů:"
 
 msgid "Allow players to vote for muting players"
-msgstr ""
+msgstr "Povoluje hráčům vyvolat hlasování o umlčení"
 
 msgid "Surrender:"
-msgstr ""
+msgstr "Kapitulace:"
 
 msgid "Allow players to vote for surrender"
-msgstr ""
+msgstr "Povoluje hráčům vyvolat hlasování o kapitulaci"
 
 msgid "XP Shuffle No Rstrt:"
-msgstr ""
+msgstr "ZK promíchání bez:"
 
 msgid "Allow players to vote for teams to be shuffled without a restart"
-msgstr ""
+msgstr "Povoluje hráčům vyvolat hlasování o promíchání týmu bez restartu"
 
 msgid "Restart Campaign:"
-msgstr ""
+msgstr "Restart kampaně:"
 
 msgid "Allow players to vote for restarting campaign"
-msgstr ""
+msgstr "Povoluje hráčům vyvolat hlasování o restartu kampaně"
 
 msgid "Next Campaign:"
-msgstr ""
+msgstr "Další kampaň:"
 
 msgid "Allow players to vote for next campaign"
-msgstr ""
+msgstr "Povoluje hráčům vyvolat hlasování o další kampani"
 
 msgid "CHANGE SYSTEM SETTINGS"
-msgstr ""
+msgstr "ZMĚNIT NASTAVENÍ SYSTÉMU"
 
 msgid "RESTART CAMPAIGN"
-msgstr ""
+msgstr "RESTARTOVAT KAMPAŇ"
 
 msgid "SURRENDER"
-msgstr ""
+msgstr "KAPITULACE"
 
 msgid "NO XP SHUFFLE"
-msgstr ""
+msgstr "BEZ PROMÍCHÁNÍ DLE ZK"
