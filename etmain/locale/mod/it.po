@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: ET:Legacy\n"
 "Report-Msgid-Bugs-To: mail@etlegacy.com\n"
 "POT-Creation-Date: 2015-01-10 20:22+0100\n"
-"PO-Revision-Date: 2016-01-06 14:48+0000\n"
+"PO-Revision-Date: 2016-01-08 06:32+0000\n"
 "Last-Translator: redtide <redtid3@gmail.com>\n"
 "Language-Team: Italian (http://www.transifex.com/etlegacy/etlegacy/language/it/)\n"
 "MIME-Version: 1.0\n"
@@ -49,7 +49,7 @@ msgstr "Produttore Esecutivo Superiore"
 
 #: etmain/ui/credits_activision.menu:94
 msgid "VP North American Studios"
-msgstr ""
+msgstr "VP North American Studios"
 
 #: etmain/ui/credits_activision.menu:97 etmain/ui/credits_activision.menu:99
 msgid "QA Project Lead"
@@ -355,7 +355,7 @@ msgstr ""
 
 #: etmain/ui/credits_splashdamage.menu:104
 msgid "Lead Artist / Creative Director"
-msgstr ""
+msgstr "Artista Guida / Direttore Creativo"
 
 #: etmain/ui/credits_splashdamage.menu:106
 msgid "Artist / Animator"
@@ -3132,12 +3132,12 @@ msgstr "Calibrazione Luminosità Generale (Tutte Profondità Colore)"
 msgid ""
 "1. Move the slider below and/or the brightness on your monitor until you can"
 " see 16"
-msgstr ""
+msgstr "1. Muovi il cursore qui sotto o regola la luminosità del tuo monitor finché vedrai 16"
 
 #: etmain/ui/options_graphics_gamma.menu:35
 #: etmain/ui/options_system_gamma.menu:38
 msgid "     separate bars below of equal differing brightness."
-msgstr ""
+msgstr "     differenti barre di diverso colore."
 
 #: etmain/ui/options_graphics_gamma.menu:36
 #: etmain/ui/options_system_gamma.menu:39
@@ -3147,19 +3147,19 @@ msgstr "2. Clicca il pulsante INDIETRO."
 #: etmain/ui/options_graphics_gamma.menu:50
 #: etmain/ui/options_system_gamma.menu:53
 msgid "Brightness Fine-Tuning (32 bit Textures and Color Depth)"
-msgstr ""
+msgstr "Regolazione Luminosità (Texture a 32 bit e Profondità Colore)"
 
 #: etmain/ui/options_graphics_gamma.menu:51
 #: etmain/ui/options_system_gamma.menu:54
 msgid "1. Move the slider below until you can see 3 separate bars below."
-msgstr ""
+msgstr "1. Muovi il cursore qui sotto finché vedrai 3 barre di diverso colore."
 
 #: etmain/ui/options_graphics_gamma.menu:52
 #: etmain/ui/options_system_gamma.menu:55
 msgid ""
 "2. Adjust the slider until there is no difference between the left and "
 "middle boxes."
-msgstr ""
+msgstr "2. Muovi il cursore finché non ci saranno differenze tra i riquadri di sinistra e di destra."
 
 #: etmain/ui/options_graphics_gamma.menu:53
 #: etmain/ui/options_system_gamma.menu:56
@@ -3259,7 +3259,7 @@ msgstr "Bassa Qualità Cielo:"
 
 #: etmain/ui/options_graphics.menu:53
 msgid "Toggles wether the detailed skybox is drawn or just a basic sky"
-msgstr ""
+msgstr "Scegli tra un disegno dettagliato o semplificato del cielo"
 
 #: etmain/ui/options_graphics.menu:55
 msgid "Shadow Detail:"
@@ -3802,7 +3802,7 @@ msgstr "Usa questo slider per impostare la sensibilità del mouse"
 msgid ""
 "Choose invert mouse if you prefer flight-simulator style mouse pitch "
 "controls"
-msgstr ""
+msgstr "Scegli mouse invertito se preferisci un controllo stile simulatore di volo"
 
 #: etmain/ui/profile_create_initial.menu:116 etmain/ui/profile_create.menu:110
 msgid "DEFAULT SETTINGS"
@@ -4629,7 +4629,7 @@ msgstr "Registrare un reclamo contro ^7%s^3 per team-killing?"
 #: src/cgame/cg_draw.c:1832
 #, c-format
 msgid "Press '%s' for YES, or '%s' for NO"
-msgstr "Premi '%s' per SI, o '%s' per NO"
+msgstr "Premi '%s' per SI, '%s' per NO"
 
 #: src/cgame/cg_draw.c:1758
 #, c-format
@@ -4794,7 +4794,7 @@ msgstr "Premi %s per metterti in coda e ripartire."
 
 #: src/cgame/cg_draw.c:2251
 msgid "No more reinforcements this round."
-msgstr ""
+msgstr "Nessun altro rinforzo per questo turno"
 
 #: src/cgame/cg_draw.c:2259 src/cgame/cg_draw.c:2347
 #, c-format
@@ -4818,7 +4818,7 @@ msgstr "Vita Bonus! Schieramento in ^3%d ^7secondo"
 
 #: src/cgame/cg_draw.c:2338
 msgid "No more deployments this round"
-msgstr ""
+msgstr "Nessun altro schieramento per questo turno"
 
 #: src/cgame/cg_draw.c:2362 src/cgame/cg_draw.c:2388
 msgid "Following"
@@ -5074,12 +5074,12 @@ msgstr "Sei stato premiato con %s"
 #: src/cgame/cg_popupmessages.c:680
 #, c-format
 msgid "Planted at %s."
-msgstr "Piantata: %s."
+msgstr "Piantata %s."
 
 #: src/cgame/cg_popupmessages.c:682
 #, c-format
 msgid "Defused at %s."
-msgstr "Disinnescata: %s."
+msgstr "Disinnescata %s."
 
 #: src/cgame/cg_popupmessages.c:691
 #, c-format
@@ -5109,12 +5109,12 @@ msgstr "Individuata da %s"
 #: src/cgame/cg_popupmessages.c:733
 #, c-format
 msgid "%s have stolen %s!"
-msgstr "%s ha rubato: %s!"
+msgstr "%s hanno rubato %s!"
 
 #: src/cgame/cg_popupmessages.c:735
 #, c-format
 msgid "%s have returned %s!"
-msgstr "%s ha ripreso: %s!"
+msgstr "%s hanno ripreso %s!"
 
 #: src/cgame/cg_popupmessages.c:758
 #, c-format
@@ -5227,7 +5227,7 @@ msgstr ""
 #: src/cgame/cg_servercmds.c:1878
 #, c-format
 msgid "Kills:  %3d    Team Kills: %3d    Accuracy:  %5.1f%%"
-msgstr ""
+msgstr "Uccisi: %3d  Team Kills: %3d  Precisione:  %5.1f%%"
 
 #: src/cgame/cg_servercmds.c:1879
 #, c-format
@@ -6155,7 +6155,7 @@ msgid "is not active\n"
 msgstr "non è attivo\n"
 
 msgid "You can only remove people in the game!\n"
-msgstr ""
+msgstr "Puoi solo rimuovere i giocatori!\n"
 
 msgid "User "
 msgstr "Utente"
@@ -6182,7 +6182,7 @@ msgid "Client not on server.\n"
 msgstr "Utente non sul server.\n"
 
 msgid "%s^7 was issued a ^1Warning^7 (No Reason Supplied)\n"
-msgstr ""
+msgstr "%s^7 ha emesso un ^1Avviso^7 (Nessun Motivo Fornito)\n"
 
 msgid "Cannot mute a referee.\n"
 msgstr ""
@@ -6222,7 +6222,7 @@ msgstr "^5\nComandi Disponibili:\n------------------------\n"
 msgid ""
 "\n"
 "Type: ^3\\command_name ?^7 for more information\n"
-msgstr ""
+msgstr "\nScrivi: ^3\\nome_comando ?^7 per ulteriori informazioni\n"
 
 msgid "Spectators can't lock a team!\n"
 msgstr "Gli spettatori non possono bloccare un team!\n"
@@ -6266,10 +6266,10 @@ msgid ""
 "\n"
 "Usage: ^3\\callvote <command> <params>\n"
 "^7For current settings/help, use: ^3\\callvote <command> ?\n"
-msgstr ""
+msgstr "\nUso: ^3\\callvote <comando> <parametri>\n^7Per le impostazioni/aiuto correnti: ^3\\callvote <comando> ?\n"
 
 msgid "Type ^3\\stats <player_id>^7 to see stats on an active player.\n"
-msgstr ""
+msgstr "Scrivi ^3\\stats <id_giocatore>^7 per vedere le sue statistiche.\n"
 
 msgid "Spectators can't ready a team!\n"
 msgstr ""
@@ -6422,10 +6422,10 @@ msgid "Sorry, the ^1Axis^7 team is locked from spectators.\n"
 msgstr ""
 
 msgid "Server quit\n"
-msgstr ""
+msgstr "Server chiuso\n"
 
 msgid "You cannot switch during a match, please wait until the round ends."
-msgstr ""
+msgstr "Non puoi cambiare durante la partita, dovrai attendere la fine del turno."
 
 msgid "Use the ^3players^7 command to find a valid player ID.\n"
 msgstr "Usa il comando ^3players^7 per trovare un valido ID giocatore.\n"
@@ -6458,7 +6458,7 @@ msgid "Try to beat the clock!"
 msgstr ""
 
 msgid "You have been been stripped of fireteam admin rights"
-msgstr ""
+msgstr "Ti sono stati rimossi i diritti di amministratore del fireteam"
 
 msgid "%s ^7has left the fireteam\n"
 msgstr "%s ^7ha abbandonato il fireteam\n"
@@ -6494,7 +6494,7 @@ msgid "was perforated by"
 msgstr "è stato perforato da"
 
 msgid "'s tank-mounted MG 42"
-msgstr " con un MG 42 montato su carro armato"
+msgstr " con un MG 42 da carro armato"
 
 msgid "was shelled by"
 msgstr "è stato bombardato da"
@@ -6722,7 +6722,7 @@ msgstr "Seleziona Membro #8:"
 msgid ""
 "Couldn't load an official pak file; verify your installation and make sure "
 "it has been updated to the latest version."
-msgstr ""
+msgstr "Impossibile caricare un pak file ufficiale; verifica l'installazione e assicurati che sia aggiornata all'ultima versione."
 
 msgid "Battle Sense"
 msgstr "Tattica"
