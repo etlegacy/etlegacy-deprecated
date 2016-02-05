@@ -777,6 +777,7 @@ static const gentity_field_t gclient_fields[] =
 	_et_gclient_addfield(ps.ammo,                        FIELD_INT_ARRAY,   0),
 	_et_gclient_addfield(ps.ammoclip,                    FIELD_INT_ARRAY,   0),
 	_et_gclient_addfield(ps.classWeaponTime,             FIELD_INT_ARRAY,   0),
+	_et_gclient_addfield(ps.weapon,			     FIELD_INT,		0),
 
 	// same order as in g_local.h
 	_et_gclient_addfield(sess.sessionTeam,               FIELD_INT,         0),
