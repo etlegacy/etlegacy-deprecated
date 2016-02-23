@@ -3102,7 +3102,7 @@ void CG_GetBleedOrigin(vec3_t head_origin, vec3_t body_origin, int fleshEntityNu
 CG_GetTag
 ===============
 */
-qboolean CG_GetTag(int clientNum, char *tagname, orientation_t *or)
+qboolean CG_GetTag(int clientNum, char *tagname, orientation_t *ori)
 {
 	clientInfo_t *ci = &cgs.clientinfo[clientNum];
 	centity_t    *cent;
@@ -3126,7 +3126,7 @@ qboolean CG_GetTag(int clientNum, char *tagname, orientation_t *or)
 
 	refent = &cent->pe.bodyRefEnt;
 
-	if (trap_R_LerpTag(or, refent, tagname, 0) < 0)
+	if (trap_R_LerpTag(ori, refent, tagname, 0) < 0)
 	{
 		return qfalse;
 	}
@@ -3135,14 +3135,14 @@ qboolean CG_GetTag(int clientNum, char *tagname, orientation_t *or)
 
 	for (i = 0 ; i < 3 ; i++)
 	{
-		VectorMA(org, or->origin[i], refent->axis[i], org);
+		VectorMA(org, ori->origin[i], refent->axis[i], org);
 	}
 
-	VectorCopy(org, or->origin);
+	VectorCopy(org, ori->origin);
 
 	// rotate with entity
-	MatrixMultiply(refent->axis, or->axis, tempAxis);
-	memcpy(or->axis, tempAxis, sizeof(vec3_t) * 3);
+	MatrixMultiply(refent->axis, ori->axis, tempAxis);
+	memcpy(ori->axis, tempAxis, sizeof(vec3_t) * 3);
 
 	return qtrue;
 }
@@ -3152,7 +3152,7 @@ qboolean CG_GetTag(int clientNum, char *tagname, orientation_t *or)
 CG_GetWeaponTag
 ===============
 */
-qboolean CG_GetWeaponTag(int clientNum, char *tagname, orientation_t *or)
+qboolean CG_GetWeaponTag(int clientNum, char *tagname, orientation_t *ori)
 {
 	clientInfo_t *ci = &cgs.clientinfo[clientNum];
 	centity_t    *cent;
@@ -3181,7 +3181,7 @@ qboolean CG_GetWeaponTag(int clientNum, char *tagname, orientation_t *or)
 
 	refent = &cent->pe.gunRefEnt;
 
-	if (trap_R_LerpTag(or, refent, tagname, 0) < 0)
+	if (trap_R_LerpTag(ori, refent, tagname, 0) < 0)
 	{
 		return qfalse;
 	}
@@ -3190,14 +3190,14 @@ qboolean CG_GetWeaponTag(int clientNum, char *tagname, orientation_t *or)
 
 	for (i = 0 ; i < 3 ; i++)
 	{
-		VectorMA(org, or->origin[i], refent->axis[i], org);
+		VectorMA(org, ori->origin[i], refent->axis[i], org);
 	}
 
-	VectorCopy(org, or->origin);
+	VectorCopy(org, ori->origin);
 
 	// rotate with entity
-	MatrixMultiply(refent->axis, or->axis, tempAxis);
-	memcpy(or->axis, tempAxis, sizeof(vec3_t) * 3);
+	MatrixMultiply(refent->axis, ori->axis, tempAxis);
+	memcpy(ori->axis, tempAxis, sizeof(vec3_t) * 3);
 
 	return qtrue;
 }

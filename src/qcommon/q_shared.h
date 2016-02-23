@@ -339,7 +339,10 @@ static ID_INLINE float idSqrt(float x)
 
 typedef unsigned char byte;
 
-typedef enum { qfalse, qtrue }    qboolean;
+//typedef enum { qfalse, qtrue }    qboolean;
+typedef bool qboolean;
+#define qtrue true
+#define qfalse false
 
 typedef union
 {
@@ -1970,7 +1973,7 @@ typedef struct demoPlayInfo_s
 } demoPlayInfo_t;
 
 //c99 issue pre 2013 VS do not have support for this
-#if defined(_MSC_VER) && (_MSC_VER < 1800)
+#if __cplusplus//defined(_MSC_VER) && (_MSC_VER < 1800)
 // source http://smackerelofopinion.blogspot.fi/2011/10/determining-number-of-arguments-in-c.html
 #define NUMARGSFAST PP_NARG_FAST
 #define NUMARGS PP_NARG
