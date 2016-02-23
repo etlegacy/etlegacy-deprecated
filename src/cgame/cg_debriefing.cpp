@@ -1970,7 +1970,7 @@ void CG_Debriefing_ParseAwards(void)
 
 		// team
 		token               = COM_Parse(&cs);
-		cgs.dbAwardTeams[i] = atoi(token);
+		cgs.dbAwardTeams[i] = (team_t)atoi(token);
 	}
 
 	cgs.dbAwardsParsed = qtrue;

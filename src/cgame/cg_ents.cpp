@@ -1082,7 +1082,7 @@ static void CG_Missile(centity_t *cent)
 	}
 	else
 	{
-		team_t missileTeam = cent->currentState.weapon == WP_LANDMINE ? cent->currentState.teamNum % 4 : cent->currentState.teamNum;
+		team_t missileTeam = (team_t)(cent->currentState.weapon == WP_LANDMINE ? cent->currentState.teamNum % 4 : cent->currentState.teamNum);
 
 		ent.hModel = weapon->missileModel;
 

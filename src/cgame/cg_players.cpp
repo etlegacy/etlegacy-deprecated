@@ -57,13 +57,13 @@ qboolean CG_EntOnFire(centity_t *cent)
 	{
 		// the player is always starting out on fire, which is easily seen in cinematics
 		//      so make sure onFireStart is not 0
-		return  (cg.snap->ps.onFireStart
+		return  (qboolean)(cg.snap->ps.onFireStart
 		         && (cg.snap->ps.onFireStart < cg.time)
 		         && ((cg.snap->ps.onFireStart + 2000) > cg.time));
 	}
 	else
 	{
-		return  ((cent->currentState.onFireStart < cg.time) &&
+		return  (qboolean)((cent->currentState.onFireStart < cg.time) &&
 		         (cent->currentState.onFireEnd > cg.time));
 	}
 }
@@ -209,7 +209,7 @@ void CG_NewClientInfo(int clientNum)
 
 	// team
 	v            = Info_ValueForKey(configstring, "t");
-	newInfo.team = atoi(v);
+	newInfo.team = (team_t)atoi(v);
 
 	// class
 	v           = Info_ValueForKey(configstring, "c");
@@ -725,7 +725,7 @@ void CG_RunLerpFrameRate(clientInfo_t *ci, lerpFrame_t *lf, int newAnimation, ce
 		return;
 	}
 
-	isLadderAnim = lf->animation && (lf->animation->flags & ANIMFL_LADDERANIM);
+	isLadderAnim = (qboolean)(lf->animation && (lf->animation->flags & ANIMFL_LADDERANIM));
 	oldAnim      = lf->animation;
 
 	// see if the animation sequence is switching
@@ -1307,7 +1307,7 @@ static void CG_SwingAngles(float destination, float swingTolerance, float clampT
 		}
 		else
 		{
-			*swinging = SWING_LEFT;     // left
+			*swinging = (qboolean)SWING_LEFT;     // left
 		}
 		*angle = AngleMod(*angle + move);
 	}
@@ -1321,7 +1321,7 @@ static void CG_SwingAngles(float destination, float swingTolerance, float clampT
 		}
 		else
 		{
-			*swinging = SWING_RIGHT;    // right
+			*swinging = (qboolean)SWING_RIGHT;    // right
 		}
 		*angle = AngleMod(*angle + move);
 	}

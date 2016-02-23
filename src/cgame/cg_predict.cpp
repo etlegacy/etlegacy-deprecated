@@ -534,7 +534,7 @@ static void CG_TouchTriggerPrediction(void)
 		return;
 	}
 
-	spectator = ((cg.predictedPlayerState.pm_type == PM_SPECTATOR) || (cg.predictedPlayerState.pm_flags & PMF_LIMBO));
+	spectator = (qboolean)((cg.predictedPlayerState.pm_type == PM_SPECTATOR) || (cg.predictedPlayerState.pm_flags & PMF_LIMBO));
 
 	if (cg.predictedPlayerState.pm_type != PM_NORMAL && !spectator)
 	{

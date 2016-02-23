@@ -76,6 +76,7 @@ FILE(GLOB UI_SHARED
 
 FILE(GLOB CGAME_SRC
 	"src/cgame/*.c"
+	"src/cgame/*.cpp"
 	"src/cgame/*.h"
 	"src/qcommon/q_math.c"
 	"src/qcommon/q_shared.c"

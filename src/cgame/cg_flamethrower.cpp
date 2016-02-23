@@ -263,7 +263,7 @@ void CG_FireFlameChunks(centity_t *cent, vec3_t origin, vec3_t angles, float spe
 			f->velSpeed     = FLAME_START_SPEED * (0.5 + 0.5 * speedScale) * (firing ? 1.0 : 4.5);
 			f->ownerCent    = cent->currentState.number;
 			f->rollAngle    = crandom() * 179;
-			f->ignitionOnly = !firing;
+			f->ignitionOnly = (qboolean)!firing;
 
 			if (!firing)
 			{
@@ -336,7 +336,7 @@ void CG_FireFlameChunks(centity_t *cent, vec3_t origin, vec3_t angles, float spe
 		f->velSpeed     = FLAME_START_SPEED * (0.5 + 0.5 * speedScale);
 		f->ownerCent    = cent->currentState.number;
 		f->rollAngle    = crandom() * 179;
-		f->ignitionOnly = !firing;
+		f->ignitionOnly = (qboolean)!firing;
 		f->speedScale   = speedScale;
 		if (!firing)
 		{
@@ -644,7 +644,7 @@ void CG_MoveFlameChunk(flameChunk_t *f)
 		if (trace.startsolid)
 		{
 			f->velSpeed = 0;
-			f->dead     = 1; // water fixes
+			f->dead     = qtrue; // water fixes
 			break;
 		}
 
@@ -863,7 +863,7 @@ void CG_AddFlameToScene(flameChunk_t *fHead)
 	float         lightFlameCount;
 	float         lastFuelAlpha;
 
-	isClientFlame = (fHead == centFlameInfo[fHead->ownerCent].lastFlameChunk);
+	isClientFlame = (qboolean)(fHead == centFlameInfo[fHead->ownerCent].lastFlameChunk);
 
 	if ((cg_entities[fHead->ownerCent].currentState.eFlags & EF_FIRING) && (centFlameInfo[fHead->ownerCent].lastFlameChunk == fHead))
 	{

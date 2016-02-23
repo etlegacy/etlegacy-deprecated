@@ -1175,7 +1175,7 @@ static void CG_DamageBlendBlob(void)
 			continue;
 		}
 
-		pointDamage = !(!vd->damageX && !vd->damageY);
+		pointDamage = (qboolean)!(!vd->damageX && !vd->damageY);
 
 		// if not point Damage, only do flash blend
 		if (!pointDamage)
@@ -2013,7 +2013,7 @@ void CG_DrawActiveFrame(int serverTime, stereoFrame_t stereoView, qboolean demoP
 		DEBUGTIME
 
 		// decide on third person view
-		cg.renderingThirdPerson = cg_thirdPerson.integer || (cg.snap->ps.stats[STAT_HEALTH] <= 0) || cg.showGameView;
+		cg.renderingThirdPerson = (qboolean)(cg_thirdPerson.integer || (cg.snap->ps.stats[STAT_HEALTH] <= 0) || cg.showGameView);
 
 		// build cg.refdef
 		inwater = CG_CalcViewValues();

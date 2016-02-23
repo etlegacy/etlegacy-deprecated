@@ -362,7 +362,7 @@ int trap_S_StartStreamingSound(const char *intro, const char *loop, int entnum, 
 
 qboolean trap_R_GetSkinModel(qhandle_t skinid, const char *type, char *name)
 {
-	return syscall(CG_R_GETSKINMODEL, skinid, type, name);
+	return (qboolean)syscall(CG_R_GETSKINMODEL, skinid, type, name);
 }
 
 qhandle_t trap_R_GetShaderFromModel(qhandle_t modelid, int surfnum, int withlightmap)
@@ -536,7 +536,7 @@ void trap_GetCurrentSnapshotNumber(int *snapshotNumber, int *serverTime)
 qboolean trap_GetSnapshot(int snapshotNumber, snapshot_t *snapshot)
 {
 #ifndef FAKELAG
-	return syscall(CG_GETSNAPSHOT, snapshotNumber, snapshot);
+	return (qboolean)syscall(CG_GETSNAPSHOT, snapshotNumber, snapshot);
 #else
 	{
 		char s[MAX_STRING_CHARS];
@@ -600,7 +600,7 @@ qboolean trap_GetSnapshot(int snapshotNumber, snapshot_t *snapshot)
 
 qboolean trap_GetServerCommand(int serverCommandNumber)
 {
-	return syscall(CG_GETSERVERCOMMAND, serverCommandNumber);
+	return (qboolean)syscall(CG_GETSERVERCOMMAND, serverCommandNumber);
 }
 
 int trap_GetCurrentCmdNumber(void)
@@ -610,7 +610,7 @@ int trap_GetCurrentCmdNumber(void)
 
 qboolean trap_GetUserCmd(int cmdNumber, usercmd_t *ucmd)
 {
-	return syscall(CG_GETUSERCMD, cmdNumber, ucmd);
+	return (qboolean)syscall(CG_GETUSERCMD, cmdNumber, ucmd);
 }
 
 void trap_SetUserCmdValue(int stateValue, int flags, float sensitivityScale, int mpIdentClient)
@@ -640,7 +640,7 @@ int trap_MemoryRemaining(void)
 
 qboolean trap_loadCamera(int camNum, const char *name)
 {
-	return 0;
+	return qfalse;
 }
 
 void trap_startCamera(int camNum, int time)
@@ -653,12 +653,12 @@ void trap_stopCamera(int camNum)
 
 qboolean trap_getCameraInfo(int camNum, int time, vec3_t *origin, vec3_t *angles, float *fov)
 {
-	return 0;
+	return qfalse;
 }
 
 qboolean trap_Key_IsDown(int keynum)
 {
-	return syscall(CG_KEY_ISDOWN, keynum);
+	return (qboolean)syscall(CG_KEY_ISDOWN, keynum);
 }
 
 int trap_Key_GetCatcher(void)
@@ -668,7 +668,7 @@ int trap_Key_GetCatcher(void)
 
 qboolean trap_Key_GetOverstrikeMode(void)
 {
-	return syscall(CG_KEY_GETOVERSTRIKEMODE);
+	return (qboolean)syscall(CG_KEY_GETOVERSTRIKEMODE);
 }
 
 void trap_Key_SetOverstrikeMode(qboolean state)
@@ -747,13 +747,13 @@ int trap_CIN_PlayCinematic(const char *arg0, int xpos, int ypos, int width, int 
 // cinematics must be stopped in reverse order of when they are started
 e_status trap_CIN_StopCinematic(int handle)
 {
-	return syscall(CG_CIN_STOPCINEMATIC, handle);
+	return (e_status)syscall(CG_CIN_STOPCINEMATIC, handle);
 }
 
 // will run a frame of the cinematic but will not draw it.  Will return FMV_EOF if the end of the cinematic has been reached.
 e_status trap_CIN_RunCinematic(int handle)
 {
-	return syscall(CG_CIN_RUNCINEMATIC, handle);
+	return (e_status)syscall(CG_CIN_RUNCINEMATIC, handle);
 }
 
 // draws the current frame
@@ -770,7 +770,7 @@ void trap_CIN_SetExtents(int handle, int x, int y, int w, int h)
 
 qboolean trap_GetEntityToken(char *buffer, int bufferSize)
 {
-	return syscall(CG_GET_ENTITY_TOKEN, buffer, bufferSize);
+	return (qboolean)syscall(CG_GET_ENTITY_TOKEN, buffer, bufferSize);
 }
 
 //void trap_UI_Popup( const char *arg0) {
@@ -1001,7 +1001,7 @@ void trap_R_LoadWorldMap(const char *mapname)
 
 qboolean trap_R_inPVS(const vec3_t p1, const vec3_t p2)
 {
-	return syscall(CG_R_INPVS, p1, p2);
+	return (qboolean)syscall(CG_R_INPVS, p1, p2);
 }
 
 void trap_GetHunkData(int *hunkused, int *hunkexpected)
@@ -1017,13 +1017,13 @@ void trap_SendMessage(char *buf, int buflen)
 
 messageStatus_t trap_MessageStatus(void)
 {
-	return syscall(CG_MESSAGESTATUS);
+	return (messageStatus_t)syscall(CG_MESSAGESTATUS);
 }
 
 // dynamic shaders
 qboolean trap_R_LoadDynamicShader(const char *shadername, const char *shadertext)
 {
-	return syscall(CG_R_LOADDYNAMICSHADER, shadername, shadertext);
+	return (qboolean)syscall(CG_R_LOADDYNAMICSHADER, shadername, shadertext);
 }
 
 //  render to texture

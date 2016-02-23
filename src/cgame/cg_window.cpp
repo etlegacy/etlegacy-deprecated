@@ -258,7 +258,7 @@ void CG_windowCleanup(void)
 
 void CG_demoAviFPSDraw(void)
 {
-	qboolean fKeyDown = cgs.fKeyPressed[K_F1] | cgs.fKeyPressed[K_F2] | cgs.fKeyPressed[K_F3] | cgs.fKeyPressed[K_F4] | cgs.fKeyPressed[K_F5];
+	qboolean fKeyDown = (qboolean)(cgs.fKeyPressed[K_F1] | cgs.fKeyPressed[K_F2] | cgs.fKeyPressed[K_F3] | cgs.fKeyPressed[K_F4] | cgs.fKeyPressed[K_F5]);
 
 	if (cg.demoPlayback && fKeyDown && cgs.aviDemoRate >= 0)
 	{
@@ -291,7 +291,7 @@ void CG_windowDraw(void)
 	cg_window_t *w;
 	qboolean    fCleanup = qfalse;
 #if FEATURE_MULTIVIEW
-	qboolean fAllowMV = (cg.snap != NULL && cg.snap->ps.pm_type != PM_INTERMISSION && cgs.mvAllowed);
+	qboolean fAllowMV = (qboolean)(cg.snap != NULL && cg.snap->ps.pm_type != PM_INTERMISSION && cgs.mvAllowed);
 #endif
 	vec4_t *bg;
 	vec4_t textColor, borderColor, bgColor;

@@ -985,7 +985,7 @@ void CG_AddFragment(localEntity_t *le)
 				if (nle->sizeScale < 0.7)
 				{
 					nle->sizeScale         = 0.7;
-					nle->leBounceSoundType = 0;
+					nle->leBounceSoundType = (leBounceSoundType_t)0;
 				}
 				// move us a bit
 				VectorNormalize2(nle->pos.trDelta, dir);

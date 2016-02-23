@@ -414,7 +414,7 @@ void CG_mvUpdateClientInfo(int pID)
 
 		ci->ammo        = (ps->ammo[id - 1])       & 0x3FF;
 		ci->weaponState = (ps->ammo[id - 1] >> 11) & 0x03;
-		ci->fCrewgun    = (ps->ammo[id - 1] >> 13) & 0x01;
+		ci->fCrewgun    = (qboolean)((ps->ammo[id - 1] >> 13) & 0x01);
 		ci->cursorHint  = (ps->ammo[id - 1] >> 14) & 0x03;
 
 		ci->ammoclip   = (ps->ammoclip[id - 1])       & 0x1FF;
@@ -468,7 +468,7 @@ void CG_mvTransitionPlayerState(playerState_t *ps)
 	cent->currentState.eType       = ET_PLAYER;
 	ps->eFlags                     = cent->currentState.eFlags;
 	cg.predictedPlayerState.eFlags = cent->currentState.eFlags;
-	cg.zoomedBinoc                 = ((cent->currentState.eFlags & EF_ZOOMING) != 0 && ci->health > 0);
+	cg.zoomedBinoc                 = (qboolean)((cent->currentState.eFlags & EF_ZOOMING) != 0 && ci->health > 0);
 
 	x = cent->currentState.teamNum;
 	if (x == PC_MEDIC)
@@ -508,8 +508,8 @@ void CG_mvTransitionPlayerState(playerState_t *ps)
 	ps->grenadeTimeLeft = ci->grenadeTimeLeft;
 
 	// Safe as we've already pull data before clobbering
-	ps->ammo[BG_FindAmmoForWeapon(ps->weapon)]     = ci->ammo;
-	ps->ammoclip[BG_FindClipForWeapon(ps->weapon)] = ci->ammoclip;
+	ps->ammo[BG_FindAmmoForWeapon((weapon_t)ps->weapon)]     = ci->ammo;
+	ps->ammoclip[BG_FindClipForWeapon((weapon_t)ps->weapon)] = ci->ammoclip;
 
 	ps->persistant[PERS_SCORE] = ci->score;
 	ps->persistant[PERS_TEAM]  = ci->team;
@@ -711,7 +711,7 @@ void CG_mvDraw(cg_window_t *sw)
 	cg.refdef_current = &cg.refdef;
 #endif
 
-	CG_mvWindowOverlay(pID, b_x, b_y, b_w, b_h, s, sw->state, (sw == cg.mvCurrentActive));
+	CG_mvWindowOverlay(pID, b_x, b_y, b_w, b_h, s, sw->state, (qboolean)(sw == cg.mvCurrentActive));
 	if (sw == cg.mvCurrentActive)
 	{
 		trap_S_Respatialize(cg.clientNum, refdef.vieworg, refdef.viewaxis, qfalse);
@@ -798,7 +798,7 @@ void CG_mvWindowOverlay(int pID, float b_x, float b_y, float b_w, float b_h, flo
 	rect.h                                  = 25;
 	cg.predictedPlayerState.grenadeTimeLeft = 0;
 	cg.predictedPlayerState.weapon          = cent->currentState.weapon;
-	CG_DrawPlayerWeaponIcon(&rect, (ci->weaponState > WSTATE_IDLE), ITEM_ALIGN_RIGHT,
+	CG_DrawPlayerWeaponIcon(&rect, (qboolean)(ci->weaponState > WSTATE_IDLE), ITEM_ALIGN_RIGHT,
 	                        ((ci->weaponState == WSTATE_SWITCH || ci->weaponState == WSTATE_RELOAD) ? &colorYellow : (ci->weaponState == WSTATE_FIRE) ? &colorRed : &colorWhite));
 
 	// Sprint charge info

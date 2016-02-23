@@ -511,7 +511,7 @@ void CG_PyroSmokeTrail(centity_t *ent, const weaponInfo_t *wi)
 	}
 	else
 	{
-		team = ent->currentState.teamNum;
+		team = (team_t)ent->currentState.teamNum;
 	}
 
 	step      = 50;
@@ -2480,7 +2480,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 	refEntity_t  barrel;
 	refEntity_t  flash;
 	vec3_t       angles;
-	weapon_t     weaponNum = cent->currentState.weapon;
+	weapon_t     weaponNum = (weapon_t)cent->currentState.weapon;
 	weaponInfo_t *weapon;
 	centity_t    *nonPredictedCent;
 	qboolean     firing;
@@ -2562,11 +2562,11 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 	{
 		if (isPlayer)
 		{
-			akimboFire = BG_AkimboFireSequence(weaponNum, cg.predictedPlayerState.ammoclip[BG_FindClipForWeapon(weaponNum)], cg.predictedPlayerState.ammoclip[BG_FindClipForWeapon(weaponTable[weaponNum].akimboSideram)]);
+			akimboFire = BG_AkimboFireSequence(weaponNum, cg.predictedPlayerState.ammoclip[BG_FindClipForWeapon(weaponNum)], cg.predictedPlayerState.ammoclip[BG_FindClipForWeapon((weapon_t)weaponTable[weaponNum].akimboSideram)]);
 		}
 		else if (ps)
 		{
-			akimboFire = BG_AkimboFireSequence(weaponNum, ps->ammoclip[BG_FindClipForWeapon(weaponNum)], ps->ammoclip[BG_FindClipForWeapon(weaponTable[weaponNum].akimboSideram)]);
+			akimboFire = BG_AkimboFireSequence(weaponNum, ps->ammoclip[BG_FindClipForWeapon(weaponNum)], ps->ammoclip[BG_FindClipForWeapon((weapon_t)weaponTable[weaponNum].akimboSideram)]);
 		}
 		// alternate for other clients, store flip-flop on cent or smuffin
 	}
@@ -2579,7 +2579,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 
 	if (ps)
 	{
-		team_t team = ps->persistant[PERS_TEAM];
+		team_t team = (team_t)ps->persistant[PERS_TEAM];
 
 		if ((weaponNum != WP_SATCHEL) && (cent->currentState.powerups & (1 << PW_OPS_DISGUISED)))
 		{
@@ -2658,7 +2658,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 		}
 	}
 
-	firing = ((cent->currentState.eFlags & EF_FIRING) != 0);
+	firing = (qboolean)((cent->currentState.eFlags & EF_FIRING) != 0);
 
 	if (ps && !cg.renderingThirdPerson && IS_MORTAR_WEAPON_SET(cg.predictedPlayerState.weapon) && cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
 	{
@@ -3543,8 +3543,8 @@ static qboolean CG_WeaponHasAmmo(int i)
 		break;
 	}
 
-	if (!(cg.predictedPlayerState.ammo[BG_FindAmmoForWeapon(i)]) &&
-	    !(cg.predictedPlayerState.ammoclip[BG_FindClipForWeapon(i)]))
+	if (!(cg.predictedPlayerState.ammo[BG_FindAmmoForWeapon((weapon_t)i)]) &&
+	    !(cg.predictedPlayerState.ammoclip[BG_FindClipForWeapon((weapon_t)i)]))
 	{
 		return qfalse;
 	}

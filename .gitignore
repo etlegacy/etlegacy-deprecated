@@ -11,6 +11,7 @@
 /*.make
 CMakeLists.txt.user
 etmain/ui/git_version.h
+*.aps
 
 #
 # OS specific

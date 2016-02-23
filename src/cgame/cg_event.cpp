@@ -57,7 +57,7 @@ static void CG_Obituary(entityState_t *ent)
 	int          mod          = ent->eventParm;
 	int          target       = ent->otherEntityNum;
 	int          attacker     = ent->otherEntityNum2;
-	weapon_t     weapon       = ent->weapon;
+	weapon_t     weapon       = (weapon_t)ent->weapon;
 	char         *message     = NULL;
 	char         *message2    = NULL;
 	char         targetName[MAX_NAME_LENGTH];
@@ -1271,7 +1271,7 @@ void CG_RubbleFx(vec3_t origin, vec3_t dir, int mass, int type, sfxHandle_t soun
 
 			le->lifeRate   = 1.0 / (le->endTime - le->startTime);
 			le->leFlags    = LEF_TUMBLE;
-			le->leMarkType = 0;
+			le->leMarkType = (leMarkType_t)0;
 
 			VectorCopy(origin, re->origin);
 			AxisCopy(axisDefault, re->axis);
@@ -1643,7 +1643,7 @@ void CG_Explodef(vec3_t origin, vec3_t dir, int mass, int type, qhandle_t sound,
 
 			le->lifeRate   = 1.0 / (le->endTime - le->startTime);
 			le->leFlags    = LEF_TUMBLE;
-			le->leMarkType = 0;
+			le->leMarkType = (leMarkType_t)0;
 
 			VectorCopy(origin, re->origin);
 			AxisCopy(axisDefault, re->axis);
@@ -1798,7 +1798,7 @@ void CG_Effect(centity_t *cent, vec3_t origin, vec3_t dir)
 	{     // share the cg_explode code with func_explosives
 		const char *s;
 		qhandle_t  sh     = 0;     // shader handle
-		vec3_t     newdir = { 0, 0, 0 };
+		vec3_t     newdir = { 0.f, 0.f, 0.f };
 
 		if (cent->currentState.angles2[0] || cent->currentState.angles2[1] || cent->currentState.angles2[2])
 		{
@@ -1901,7 +1901,7 @@ void CG_Shard(centity_t *cent, vec3_t origin, vec3_t dir)
 		le->leFlags      = LEF_TUMBLE;
 		le->bounceFactor = 0.4;
 		// le->leBounceSoundType    = LEBS_WOOD;
-		le->leMarkType = 0;
+		le->leMarkType = (leMarkType_t)0;
 
 		VectorCopy(origin, re->origin);
 		AxisCopy(axisDefault, re->axis);
@@ -2028,7 +2028,7 @@ void CG_ShardJunk(vec3_t origin, vec3_t dir)
 	le->lifeRate     = 1.0 / (le->endTime - le->startTime);
 	le->leFlags      = LEF_TUMBLE;
 	le->bounceFactor = 0.4;
-	le->leMarkType   = 0;
+	le->leMarkType   = (leMarkType_t)0;
 
 	VectorCopy(origin, re->origin);
 	AxisCopy(axisDefault, re->axis);
@@ -2074,7 +2074,7 @@ void CG_Debris(centity_t *cent, vec3_t origin, vec3_t dir)
 	le->lifeRate     = 1.0 / (le->endTime - le->startTime);
 	le->leFlags      = LEF_TUMBLE | LEF_TUMBLE_SLOW;
 	le->bounceFactor = 0.4;
-	le->leMarkType   = 0;
+	le->leMarkType   = (leMarkType_t)0;
 	le->breakCount   = 1;
 	le->sizeScale    = 0.5;
 
@@ -3044,7 +3044,7 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 		break;
 	case EV_FLAMETHROWER_EFFECT:
 		DEBUGNAME("EV_FLAMETHROWER_EFFECT");
-		CG_FireFlameChunks(cent, cent->currentState.origin, cent->currentState.apos.trBase, 0.6, 2);
+		CG_FireFlameChunks(cent, cent->currentState.origin, cent->currentState.apos.trBase, 0.6, qtrue);
 		break;
 	case EV_DUST:
 		DEBUGNAME("EV_DUST");
@@ -3251,7 +3251,7 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 		DEBUGNAME("EV_POPUPMESSAGE");
 		if (str)
 		{
-			CG_AddPMItem(cent->currentState.effect1Time, str, " ", shader, 0, 0, NULL);
+			CG_AddPMItem((popupMessageType_t)cent->currentState.effect1Time, str, " ", shader, 0, 0, NULL);
 		}
 		CG_PlayPMItemSound(cent);
 	}

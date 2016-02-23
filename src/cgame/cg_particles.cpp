@@ -1449,7 +1449,7 @@ void CG_ParticleDirtBulletDebris_Core(vec3_t org, vec3_t vel, int duration, floa
 	p->endheight = p->height;
 	p->endwidth  = p->width;
 
-	p->rotate = 0;
+	p->rotate = qfalse;
 
 	p->type = P_SMOKE;
 

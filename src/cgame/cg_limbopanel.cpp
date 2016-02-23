@@ -3438,7 +3438,7 @@ int ExtractInt(char *src)
 	int  i;
 	int  srclen = strlen(src) + 1;
 	int  destIx = 0;
-	char *tmp   = malloc(srclen);
+	char *tmp   = (char *)malloc(srclen);
 	int  result = 0;
 
 	// Go through all the characters in the source string

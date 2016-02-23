@@ -597,7 +597,7 @@ static void CG_DrawPicShadowed(float x, float y, float w, float h, qhandle_t ico
 
 static void CG_DrawPlayerStatusHead(hudComponent_t comp)
 {
-	hudHeadAnimNumber_t anim           = cg.idleAnim;
+	hudHeadAnimNumber_t anim           = (hudHeadAnimNumber_t)cg.idleAnim;
 	bg_character_t      *character     = CG_CharacterForPlayerstate(&cg.snap->ps);
 	bg_character_t      *headcharacter = BG_GetCharacter(cgs.clientinfo[cg.snap->ps.clientNum].team, cgs.clientinfo[cg.snap->ps.clientNum].cls);
 	qhandle_t           painshader     = 0;
@@ -740,14 +740,14 @@ static int CG_PlayerAmmoValue(int *ammo, int *clips, int *akimboammo)
 	}
 
 	// total ammo in clips
-	*clips = cg.snap->ps.ammo[BG_FindAmmoForWeapon(weap)];
+	*clips = cg.snap->ps.ammo[BG_FindAmmoForWeapon((weapon_t)weap)];
 
 	// current clip
-	*ammo = ps->ammoclip[BG_FindClipForWeapon(weap)];
+	*ammo = ps->ammoclip[BG_FindClipForWeapon((weapon_t)weap)];
 
 	if (IS_AKIMBO_WEAPON(weap))
 	{
-		*akimboammo = ps->ammoclip[BG_FindClipForWeapon(weaponTable[weap].akimboSideram)];
+		*akimboammo = ps->ammoclip[BG_FindClipForWeapon((weapon_t)weaponTable[weap].akimboSideram)];
 	}
 	else
 	{
@@ -1104,7 +1104,7 @@ static void CG_DrawGunIcon(rectDef_t location)
 #endif
 		    BG_simpleWeaponState(cg.snap->ps.weaponstate);
 
-		CG_DrawPlayerWeaponIcon(&rect, (ws != WSTATE_IDLE), ITEM_ALIGN_RIGHT, ((ws == WSTATE_SWITCH || ws == WSTATE_RELOAD) ? &colorYellow : (ws == WSTATE_FIRE) ? &colorRed : &colorWhite));
+		CG_DrawPlayerWeaponIcon(&rect, (qboolean)(ws != WSTATE_IDLE), ITEM_ALIGN_RIGHT, ((ws == WSTATE_SWITCH || ws == WSTATE_RELOAD) ? &colorYellow : (ws == WSTATE_FIRE) ? &colorRed : &colorWhite));
 	}
 }
 
@@ -2413,7 +2413,7 @@ static void CG_DrawPlayerStatus(void)
 
 			VectorCopy(cg.snap->ps.origin, origin);
 			origin[2] += 36;
-			underwater = (CG_PointContents(origin, cg.snap->ps.clientNum) & CONTENTS_WATER);
+			underwater = (qboolean)(CG_PointContents(origin, cg.snap->ps.clientNum) & CONTENTS_WATER);
 		}
 		else
 		{

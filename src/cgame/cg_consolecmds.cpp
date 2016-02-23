@@ -612,7 +612,7 @@ static void CG_SelectBuddy_f(void)
 			break;     // there was no-one in this position
 		}
 
-		ci->selected ^= qtrue;
+		ci->selected = qtrue;
 		break;
 
 	case -1:
@@ -705,7 +705,7 @@ static void CG_AutomapExpandUp_f(void)
 
 static void CG_ToggleAutomap_f(void)
 {
-	cgs.autoMapOff = !cgs.autoMapOff;
+	cgs.autoMapOff = (qboolean)!cgs.autoMapOff;
 }
 
 const char *aMonths[12] =

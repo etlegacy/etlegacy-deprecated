@@ -2731,7 +2731,7 @@ CG_DrawFlashFade
 static void CG_DrawFlashFade(void)
 {
 	static int lastTime;
-	qboolean   fBlackout = (int_ui_blackout.integer > 0);
+	qboolean   fBlackout = (qboolean)(int_ui_blackout.integer > 0);
 
 	if (cgs.fadeStartTime + cgs.fadeDuration < cg.time)
 	{

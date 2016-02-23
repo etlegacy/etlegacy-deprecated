@@ -704,7 +704,7 @@ void C_PanelButtonsSetup(panel_button_t **buttons, float xoffset);      // calle
 #define IS_FUNC_SUPPORTED(x) (uiInfo.legacyClient >= x)
 #endif
 
-#define RegisterFont(fontName, pointSize, font) Q_UTF8_RegisterFont(fontName, pointSize, font, IS_FUNC_SUPPORTED(UNICODE_SUPPORT_VERSION), &trap_R_RegisterFont)
+#define RegisterFont(fontName, pointSize, font) Q_UTF8_RegisterFont(fontName, pointSize, font, (qboolean)IS_FUNC_SUPPORTED(UNICODE_SUPPORT_VERSION), &trap_R_RegisterFont)
 #define Q_UTF8_GlyphScale(font) ((fontInfo_t *)font->fontData)->glyphScale
 #define Q_UTF8_GetGlyph(font, string) font->GetGlyph(font->fontData, Q_UTF8_CodePoint(string))
 //#define Q_UTF8_GetGlyph(font, string) Q_UTF8_GetGlyphSafe(font, IS_FUNC_SUPPORTED(UNICODE_SUPPORT_VERSION), string)

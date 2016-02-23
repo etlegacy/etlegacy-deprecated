@@ -165,7 +165,7 @@ void CG_ParseFireteams()
 		cg.fireTeams[i].leader = atoi(s);
 
 		s                    = Info_ValueForKey(p, "p");
-		cg.fireTeams[i].priv = atoi(s);
+		cg.fireTeams[i].priv = (qboolean)atoi(s);
 
 		s = Info_ValueForKey(p, "c");
 		Q_strncpyz(hexbuffer + 2, s, 9);

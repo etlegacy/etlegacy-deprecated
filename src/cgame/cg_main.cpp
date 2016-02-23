@@ -52,7 +52,7 @@ Q_EXPORT intptr_t vmMain(intptr_t command, intptr_t arg0, intptr_t arg1, intptr_
 	switch (command)
 	{
 	case CG_INIT:
-		CG_Init(arg0, arg1, arg2, arg3, arg4, (demoPlayInfo_t *)arg5, arg6);
+		CG_Init(arg0, arg1, arg2, (qboolean)arg3, arg4, (demoPlayInfo_t *)arg5, arg6);
 		cgs.initing = qfalse;
 		return 0;
 	case CG_SHUTDOWN:
@@ -61,14 +61,14 @@ Q_EXPORT intptr_t vmMain(intptr_t command, intptr_t arg0, intptr_t arg1, intptr_
 	case CG_CONSOLE_COMMAND:
 		return CG_ConsoleCommand();
 	case CG_DRAW_ACTIVE_FRAME:
-		CG_DrawActiveFrame(arg0, arg1, arg2);
+		CG_DrawActiveFrame(arg0, (stereoFrame_t)arg1, (qboolean)arg2);
 		return 0;
 	case CG_CROSSHAIR_PLAYER:
 		return CG_CrosshairPlayer();
 	case CG_LAST_ATTACKER:
 		return CG_LastAttacker();
 	case CG_KEY_EVENT:
-		CG_KeyEvent(arg0, arg1);
+		CG_KeyEvent(arg0, (qboolean)arg1);
 		return 0;
 	case CG_MOUSE_EVENT:
 		cgDC.cursorx = cgs.cursorX;
@@ -576,7 +576,7 @@ void CG_RegisterCvars(void)
 
 	// see if we are also running the server on this machine
 	trap_Cvar_VariableStringBuffer("sv_running", var, sizeof(var));
-	cgs.localServer = atoi(var);
+	cgs.localServer = (qboolean)atoi(var);
 
 	// um, here, why?
 	CG_setClientFlags();
@@ -710,7 +710,7 @@ void CG_setClientFlags(void)
 		return;
 	}
 
-	cg.pmext.bAutoReload = (cg_autoReload.integer > 0);
+	cg.pmext.bAutoReload = (qboolean)(cg_autoReload.integer > 0);
 	trap_Cvar_Set("cg_uinfo", va("%d %d %d",
 	                             // Client Flags
 	                             (
