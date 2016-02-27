@@ -33,11 +33,8 @@
 #include <sstream>
 #include <iomanip>
 
-extern "C"
-{
 #include "g_etbot_interface.h"
 qboolean G_IsOnFireteam(int entityNum, fireteamData_t **teamNum);
-};
 
 #include "../Omnibot/Common/BotExports.h"
 #include "../Omnibot/ET/ET_Config.h"
@@ -6340,7 +6337,7 @@ void Bot_Interface_ConsoleCommand()
 
 }
 
-extern "C" void script_mover_spawn(gentity_t *ent);
+void script_mover_spawn(gentity_t *ent);
 void Bot_Interface_Update()
 {
 	if (IsOmnibotLoaded())
@@ -7080,8 +7077,6 @@ void Bot_Event_EntityCreated(gentity_t *pEnt)
 	}
 }
 
-extern "C"
-{
 void Bot_Queue_EntityCreated(gentity_t *pEnt)
 {
 	if (pEnt)
@@ -7151,4 +7146,3 @@ void Bot_AddFallenTeammateGoals(gentity_t *_teammate, int _team)
 		Bot_Util_AddGoal("revive", _teammate, (1 << ET_TEAM_ALLIES), _GetEntityName(_teammate));
 	}
 }
-};

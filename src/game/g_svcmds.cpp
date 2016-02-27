@@ -872,9 +872,6 @@ void Svcmd_ListCampaigns_f(void)
 }
 
 // modified from maddoc sp func
-extern void ReviveEntity(gentity_t *ent, gentity_t *traceEnt);
-extern int FindClientByName(char *name);
-
 void Svcmd_RevivePlayer(char *name)
 {
 	int       clientNum;

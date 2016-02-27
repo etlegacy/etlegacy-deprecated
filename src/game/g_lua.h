@@ -24,6 +24,10 @@
 #include "../qcommon/q_shared.h"
 #include "g_local.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef BUNDLED_LUA
 #    include "lua.h"
 #    include "lauxlib.h"
@@ -32,6 +36,10 @@
 #    include <lua.h>
 #    include <lauxlib.h>
 #    include <lualib.h>
+#endif
+
+#ifdef __cplusplus
+};
 #endif
 
 #define LUA_NUM_VM 16

@@ -803,6 +803,20 @@ void trap_TranslateString(const char *string, char *buf)
 	syscall(CG_TRANSLATE_STRING, string, buf);
 }
 
+char *trap_TranslateString(const char *string)
+{
+	// Allows the fnc to be used twice in same context
+	static char staticbuf[2][MAX_VA_STRING];
+	static int  bufcount = 0;
+	char        *buf;
+
+	buf = staticbuf[bufcount++ % 2];
+
+	trap_TranslateString(string, buf);
+
+	return buf;
+}
+
 // Media register functions
 
 // FIXME: unique debug marcos

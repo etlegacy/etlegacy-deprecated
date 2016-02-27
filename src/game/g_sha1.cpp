@@ -6,7 +6,13 @@
  */
 #include "g_local.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include "../qcommon/crypto/sha-1/sha1.h"
+#ifdef __cplusplus
+};
+#endif
 
 char *G_SHA1(char *string)
 {

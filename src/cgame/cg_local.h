@@ -2925,6 +2925,7 @@ void trap_Key_SetBinding(int keynum, const char *binding);
 void trap_Key_KeynumToStringBuf(int keynum, char *buf, int buflen);
 
 void trap_TranslateString(const char *string, char *buf);       //  localization
+char *trap_TranslateString(const char *string);
 
 int trap_CIN_PlayCinematic(const char *arg0, int xpos, int ypos, int width, int height, int bits);
 e_status trap_CIN_StopCinematic(int handle);
