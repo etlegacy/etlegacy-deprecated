@@ -176,7 +176,7 @@ qboolean G_ScriptAction_SetAutoSpawn(gentity_t *ent, char *params)
 	{
 		G_Error("G_ScriptAction_SetAutoSpawn: setautospawn must have a target team\n");
 	}
-	team           = atoi(token);
+	team           = (team_t)atoi(token);
 	pTeamAutoSpawn = team == 0 ? &(level.axisAutoSpawn) : &(level.alliesAutoSpawn);
 
 	tent = G_Find(NULL, FOFS(message), spawnname);
@@ -918,7 +918,7 @@ qboolean G_ScriptAction_SetChargeTimeFactor(gentity_t *ent, char *params)
 		G_Error("G_ScriptAction_SetChargeTimeFactor: setchargetimefactor must have a team\n");
 	}
 
-	team = atoi(token);
+	team = (team_t)atoi(token);
 
 	token = COM_ParseExt(&pString, qfalse);
 	if (!token[0])
@@ -1408,7 +1408,7 @@ qboolean G_ScriptAction_GotoMarker(gentity_t *ent, char *params)
 			if (trType != TR_LINEAR_STOP)     // allow for acceleration/decceleration
 			{
 				ent->s.pos.trDuration = 1000.0 * dist / (speed / 2.0);
-				ent->s.pos.trType     = trType;
+				ent->s.pos.trType     = (trType_t)trType;
 			}
 			ent->reached = NULL;
 
@@ -1451,7 +1451,7 @@ qboolean G_ScriptAction_GotoMarker(gentity_t *ent, char *params)
 				if (trType != TR_LINEAR_STOP)     // allow for acceleration/decceleration
 				{
 					ent->s.pos.trDuration = 1000.0 * dist / (speed / 2.0);
-					ent->s.pos.trType     = trType;
+					ent->s.pos.trType     = (trType_t)trType;
 				}
 			}
 		}
@@ -2944,7 +2944,7 @@ qboolean G_ScriptAction_FaceAngles(gentity_t *ent, char *params)
 				// else ... vector is already cleared
 
 			}
-			ent->s.apos.trType = trType;
+			ent->s.apos.trType = (trType_t)trType;
 		}
 #ifdef FEATURE_OMNIBOT
 		{
@@ -3397,7 +3397,7 @@ qboolean G_ScriptAction_VoiceAnnounce(gentity_t *ent, char *params)
 		G_Error("G_ScriptAction_VoiceAnnounce: invalid system message\n");
 	}
 
-	G_SendSystemMessage(sysmsg, !num ? TEAM_AXIS : TEAM_ALLIES);
+	G_SendSystemMessage((sysMsg_t)sysmsg, !num ? TEAM_AXIS : TEAM_ALLIES);
 
 	return qtrue;
 }
@@ -4003,7 +4003,7 @@ qboolean G_ScriptAction_SetHQStatus(gentity_t *ent, char *params)
 		G_Error("G_ScriptAction_SetHQStatus: sethqstatus must have a team\n");
 	}
 
-	team = atoi(token);
+	team = (team_t)atoi(token);
 
 	token = COM_ParseExt(&pString, qfalse);
 	if (!token[0])

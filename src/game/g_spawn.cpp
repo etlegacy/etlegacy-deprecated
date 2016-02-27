@@ -37,6 +37,10 @@
 
 #include "g_local.h"
 
+#ifdef FEATURE_LUA
+#include "g_lua.h"
+#endif
+
 qboolean G_SpawnStringExt(const char *key, const char *defaultString, char **out, const char *file, int line)
 {
 	int i;
@@ -660,7 +664,7 @@ char *G_NewString(const char *string)
 
 	l = strlen(string) + 1;
 
-	newb = G_Alloc(l);
+	newb = (char *)G_Alloc(l);
 
 	new_p = newb;
 

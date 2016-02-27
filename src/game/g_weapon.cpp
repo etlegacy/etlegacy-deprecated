@@ -1548,7 +1548,7 @@ qboolean G_LandmineUnarmed(gentity_t *ent)
 
 team_t G_LandmineTeam(gentity_t *ent)
 {
-	return (ent->s.teamNum % 4);
+	return (team_t)(ent->s.teamNum % 4);
 }
 
 qboolean G_LandmineSpotted(gentity_t *ent)
@@ -4312,5 +4312,5 @@ void FireWeapon(gentity_t *ent)
 #ifndef DEBUG_STATS
 	if (g_gamestate.integer == GS_PLAYING)
 #endif
-	ent->client->sess.aWeaponStats[BG_WeapStatForWeapon(ent->s.weapon)].atts += shots;
+	ent->client->sess.aWeaponStats[BG_WeapStatForWeapon((weapon_t)ent->s.weapon)].atts += shots;
 }

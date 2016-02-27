@@ -2165,7 +2165,7 @@ IsFakepConnection
 // FIXME: IPv6
 int GetIPLength(char const *ip)
 {
-	char *start = strchr(ip, ':');
+	char *start = (char *)strchr(ip, ':');
 
 	return (start == NULL ? INT_MAX : start - ip);
 }

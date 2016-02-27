@@ -1043,7 +1043,7 @@ void MatchTeam(gentity_t *teamLeader, int moverState, int time)
 			slave->flags |= FL_SOFTACTIVATE;
 		}
 
-		SetMoverState(slave, moverState, time);
+		SetMoverState(slave, (moverState_t)moverState, time);
 	}
 }
 
@@ -1071,7 +1071,7 @@ void MatchTeamReverseAngleOnSlaves(gentity_t *teamLeader, int moverState, int ti
 			slave->flags |= FL_SOFTACTIVATE;
 		}
 
-		SetMoverState(slave, moverState, time);
+		SetMoverState(slave, (moverState_t)moverState, time);
 	}
 }
 
@@ -4338,9 +4338,9 @@ void func_explosive_explode(gentity_t *self, gentity_t *inflictor, gentity_t *at
 #endif
 
 	// Skills stuff
-	if (G_GetWeaponClassForMOD(mod) >= self->constructibleStats.weaponclass)
+	if (G_GetWeaponClassForMOD((meansOfDeath_t)mod) >= self->constructibleStats.weaponclass)
 	{
-		G_AddKillSkillPointsForDestruction(attacker, mod, &self->constructibleStats);
+		G_AddKillSkillPointsForDestruction(attacker, (meansOfDeath_t)mod, &self->constructibleStats);
 	}
 }
 
@@ -5105,9 +5105,9 @@ void func_constructible_explode(gentity_t *self, gentity_t *inflictor, gentity_t
 			}
 
 			// Skills stuff
-			if (G_GetWeaponClassForMOD(mod) >= self->constructibleStats.weaponclass)
+			if (G_GetWeaponClassForMOD((meansOfDeath_t)mod) >= self->constructibleStats.weaponclass)
 			{
-				G_AddKillSkillPointsForDestruction(attacker, mod, &self->constructibleStats);
+				G_AddKillSkillPointsForDestruction(attacker, (meansOfDeath_t)mod, &self->constructibleStats);
 			}
 		}
 		else
@@ -5143,9 +5143,9 @@ void func_constructible_explode(gentity_t *self, gentity_t *inflictor, gentity_t
 			G_Script_ScriptEvent(self, "death", "");
 
 			// Skills stuff
-			if (G_GetWeaponClassForMOD(mod) >= self->constructibleStats.weaponclass)
+			if (G_GetWeaponClassForMOD((meansOfDeath_t)mod) >= self->constructibleStats.weaponclass)
 			{
-				G_AddKillSkillPointsForDestruction(attacker, mod, &self->constructibleStats);
+				G_AddKillSkillPointsForDestruction(attacker, (meansOfDeath_t)mod, &self->constructibleStats);
 			}
 
 			// unlink
@@ -5183,9 +5183,9 @@ void func_constructible_explode(gentity_t *self, gentity_t *inflictor, gentity_t
 		}
 
 		// Skills stuff
-		if (G_GetWeaponClassForMOD(mod) >= self->constructibleStats.weaponclass)
+		if (G_GetWeaponClassForMOD((meansOfDeath_t)mod) >= self->constructibleStats.weaponclass)
 		{
-			G_AddKillSkillPointsForDestruction(attacker, mod, &self->constructibleStats);
+			G_AddKillSkillPointsForDestruction(attacker, (meansOfDeath_t)mod, &self->constructibleStats);
 		}
 
 		// unlink

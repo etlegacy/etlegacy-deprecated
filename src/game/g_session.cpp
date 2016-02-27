@@ -206,7 +206,7 @@ void G_CalcRank(gclient_t *client)
 
 	for (i = 0; i < SK_NUM_SKILLS; i++)
 	{
-		G_SetPlayerSkill(client, i);
+		G_SetPlayerSkill(client, (skillType_t)i);
 		if (client->sess.skill[i] > highestskill)
 		{
 			highestskill = client->sess.skill[i];

@@ -86,7 +86,7 @@ void G_PrintAccuracyLog(gentity_t *ent)
 
 	for (i = WP_KNIFE; i < WP_NUM_WEAPONS; i++)
 	{
-		if (BG_WeapStatForWeapon(i) == WS_MAX)
+		if (BG_WeapStatForWeapon((weapon_t)i) == WS_MAX)
 		{
 			continue;
 		}

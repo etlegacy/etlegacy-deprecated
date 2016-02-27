@@ -700,7 +700,7 @@ void Svcmd_ForceTeam_f(void)
 
 	// set the team
 	trap_Argv(2, str, sizeof(str));
-	SetTeam(&g_entities[cl - level.clients], str, qfalse, cl->sess.playerWeapon, cl->sess.playerWeapon2, qtrue);
+	SetTeam(&g_entities[cl - level.clients], str, qfalse, (weapon_t)cl->sess.playerWeapon, (weapon_t)cl->sess.playerWeapon2, qtrue);
 }
 
 /**

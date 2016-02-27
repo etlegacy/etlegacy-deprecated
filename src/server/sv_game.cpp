@@ -406,10 +406,10 @@ intptr_t SV_GameSystemCalls(intptr_t *args)
 	case G_MILLISECONDS:
 		return Sys_Milliseconds();
 	case G_CVAR_REGISTER:
-		Cvar_Register(VMA(1), VMA(2), VMA(3), args[4]);
+		Cvar_Register((vmCvar_t *)VMA(1), (const char *)VMA(2), (const char *)VMA(3), args[4]);
 		return 0;
 	case G_CVAR_UPDATE:
-		Cvar_Update(VMA(1));
+		Cvar_Update((vmCvar_t *)VMA(1));
 		return 0;
 	case G_CVAR_SET:
 		Cvar_SetSafe((const char *)VMA(1), (const char *)VMA(2));
@@ -417,62 +417,62 @@ intptr_t SV_GameSystemCalls(intptr_t *args)
 	case G_CVAR_VARIABLE_INTEGER_VALUE:
 		return Cvar_VariableIntegerValue((const char *)VMA(1));
 	case G_CVAR_VARIABLE_STRING_BUFFER:
-		Cvar_VariableStringBuffer(VMA(1), VMA(2), args[3]);
+		Cvar_VariableStringBuffer((const char *)VMA(1), (char *)VMA(2), args[3]);
 		return 0;
 	case G_CVAR_LATCHEDVARIABLESTRINGBUFFER:
-		Cvar_LatchedVariableStringBuffer(VMA(1), VMA(2), args[3]);
+		Cvar_LatchedVariableStringBuffer((const char *)VMA(1), (char *)VMA(2), args[3]);
 		return 0;
 	case G_ARGC:
 		return Cmd_Argc();
 	case G_ARGV:
-		Cmd_ArgvBuffer(args[1], VMA(2), args[3]);
+		Cmd_ArgvBuffer(args[1], (char *)VMA(2), args[3]);
 		return 0;
 	case G_SEND_CONSOLE_COMMAND:
-		Cbuf_ExecuteText(args[1], VMA(2));
+		Cbuf_ExecuteText(args[1], (const char *)VMA(2));
 		return 0;
 
 	case G_FS_FOPEN_FILE:
-		return FS_FOpenFileByMode(VMA(1), VMA(2), args[3]);
+		return FS_FOpenFileByMode((const char *)VMA(1), (fileHandle_t *)VMA(2), (fsMode_t)args[3]);
 	case G_FS_READ:
 		FS_Read(VMA(1), args[2], args[3]);
 		return 0;
 	case G_FS_WRITE:
 		return FS_Write(VMA(1), args[2], args[3]);
 	case G_FS_RENAME:
-		FS_Rename(VMA(1), VMA(2));
+		FS_Rename((const char *)VMA(1), (const char *)VMA(2));
 		return 0;
 	case G_FS_FCLOSE_FILE:
 		FS_FCloseFile(args[1]);
 		return 0;
 	case G_FS_GETFILELIST:
-		return FS_GetFileList(VMA(1), VMA(2), VMA(3), args[4]);
+		return FS_GetFileList((const char *)VMA(1), (const char *)VMA(2), (char *)VMA(3), args[4]);
 
 	case G_LOCATE_GAME_DATA:
-		SV_LocateGameData(VMA(1), args[2], args[3], VMA(4), args[5]);
+		SV_LocateGameData((sharedEntity_t *)VMA(1), args[2], args[3], (playerState_t *)VMA(4), args[5]);
 		return 0;
 	case G_DROP_CLIENT:
-		SV_GameDropClient(args[1], VMA(2), args[3]);
+		SV_GameDropClient(args[1], (const char *)VMA(2), args[3]);
 		return 0;
 	case G_SEND_SERVER_COMMAND:
 #ifdef FEATURE_TRACKER
 		if (!Tracker_catchServerCommand(args[1], VMA(2)))
 #endif
 		{
-			SV_GameSendServerCommand(args[1], VMA(2));
+			SV_GameSendServerCommand(args[1], (const char *)VMA(2));
 		}
 		return 0;
 	case G_LINKENTITY:
-		SV_LinkEntity(VMA(1));
+		SV_LinkEntity((sharedEntity_t *)VMA(1));
 		return 0;
 	case G_UNLINKENTITY:
-		SV_UnlinkEntity(VMA(1));
+		SV_UnlinkEntity((sharedEntity_t *)VMA(1));
 		return 0;
 	case G_ENTITIES_IN_BOX:
-		return SV_AreaEntities(VMA(1), VMA(2), VMA(3), args[4]);
+		return SV_AreaEntities((const vec_t *)VMA(1), (const vec_t *)VMA(2), (int *)VMA(3), args[4]);
 	case G_ENTITY_CONTACT:
-		return SV_EntityContact(VMA(1), VMA(2), VMA(3), /* int capsule */ qfalse);
+		return SV_EntityContact((const vec_t *)VMA(1), (const vec_t *)VMA(2), (const sharedEntity_t *)VMA(3), /* int capsule */ qfalse);
 	case G_ENTITY_CONTACTCAPSULE:
-		return SV_EntityContact(VMA(1), VMA(2), VMA(3), /* int capsule */ qtrue);
+		return SV_EntityContact((const vec_t *)VMA(1), (const vec_t *)VMA(2), (const sharedEntity_t *)VMA(3), /* int capsule */ qtrue);
 	case G_TRACE:
 		SV_Trace(VMA(1), VMA(2), VMA(3), VMA(4), VMA(5), args[6], args[7], /* int capsule */ qfalse);
 		return 0;

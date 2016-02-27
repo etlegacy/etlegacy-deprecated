@@ -80,7 +80,7 @@ FILE(GLOB CGAME_SRC
 	"src/qcommon/q_math.cpp"
 	"src/qcommon/q_shared.cpp"
 	"src/qcommon/q_unicode.cpp"
-	"src/game/bg_*.c"
+	"src/game/bg_*.cpp"
 )
 
 LIST(APPEND CGAME_SRC ${UI_SHARED})

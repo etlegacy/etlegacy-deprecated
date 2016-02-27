@@ -977,7 +977,7 @@ void SP_team_WOLF_objective(gentity_t *ent)
 	G_SpawnString("description", "WARNING: No objective description set", &desc);
 
 	// wtf is this g_alloced? just use a static buffer fgs...
-	ent->message = G_Alloc(strlen(desc) + 1);
+	ent->message = (char *)G_Alloc(strlen(desc) + 1);
 	Q_strncpyz(ent->message, desc, strlen(desc) + 1);
 
 	ent->nextthink = level.time + FRAMETIME;
@@ -1619,7 +1619,7 @@ void G_shuffleTeams(void)
 			G_FadeItems(g_entities + sortClients[i], MOD_SATCHEL);
 		}
 
-		cl->sess.sessionTeam = cTeam;
+		cl->sess.sessionTeam = (team_t)cTeam;
 
 		G_UpdateCharacter(cl);
 		ClientUserinfoChanged(sortClients[i]);
@@ -1723,7 +1723,7 @@ void G_verifyMatchState(int nTeam)
 	if ((level.lastRestartTime + 1000) < level.time && (nTeam == TEAM_ALLIES || nTeam == TEAM_AXIS) &&
 	    (g_gamestate.integer == GS_PLAYING || g_gamestate.integer == GS_WARMUP_COUNTDOWN || g_gamestate.integer == GS_INTERMISSION))
 	{
-		if (TeamCount(-1, nTeam) == 0)
+		if (TeamCount(-1, (team_t)nTeam) == 0)
 		{
 			if (g_doWarmup.integer > 0)
 			{
@@ -1753,7 +1753,7 @@ void G_verifyMatchState(int nTeam)
 // Checks to see if a specified team is allowing players to join.
 qboolean G_teamJoinCheck(int team_num, gentity_t *ent)
 {
-	int cnt = TeamCount(-1, team_num);
+	int cnt = TeamCount(-1, (team_t)team_num);
 
 	// Sanity check
 	if (cnt == 0)
@@ -1854,7 +1854,7 @@ void G_updateSpecLock(int nTeam, qboolean fLock)
 		if (ent->client->pers.mvCount < 1)
 		{
 #endif
-		SetTeam(ent, "s", qtrue, -1, -1, qfalse);
+		SetTeam(ent, "s", qtrue, (weapon_t)-1, (weapon_t)-1, qfalse);
 #ifdef FEATURE_MULTIVIEW
 	}
 #endif

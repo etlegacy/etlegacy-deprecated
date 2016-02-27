@@ -862,7 +862,7 @@ gentity_t *G_TempEntity(vec3_t origin, int event)
 
 	e = G_Spawn();
 
-	e->s.eType = ET_EVENTS + event;
+	e->s.eType = (entityType_t)(ET_EVENTS + event);
 
 	e->classname      = "tempEntity";
 	e->eventTime      = level.time;
@@ -895,7 +895,7 @@ gentity_t *G_TempEntityNotLinked(int event)
 
 	e = G_Spawn();
 
-	e->s.eType        = ET_EVENTS + event;
+	e->s.eType        = (entityType_t)(ET_EVENTS + event);
 	e->classname      = "tempEntity";
 	e->eventTime      = level.time;
 	e->r.eventTime    = level.time;
@@ -911,7 +911,7 @@ gentity_t *G_PopupMessage(popupMessageType_t type)
 
 	e = G_Spawn();
 
-	e->s.eType        = ET_EVENTS + EV_POPUPMESSAGE;
+	e->s.eType        = (entityType_t)(ET_EVENTS + EV_POPUPMESSAGE);
 	e->classname      = "messageent";
 	e->eventTime      = level.time;
 	e->r.eventTime    = level.time;
@@ -1733,21 +1733,21 @@ team_t G_GetTeamFromEntity(gentity_t *ent)
 		case MOD_MORTAR:
 		case MOD_MORTAR2:
 		case MOD_SMOKEGRENADE:
-			return ent->s.teamNum;
+			return (team_t)ent->s.teamNum;
 		case MOD_SATCHEL:
 		case MOD_DYNAMITE:
 		case MOD_LANDMINE:
-			return ent->s.teamNum % 4;
+			return (team_t)(ent->s.teamNum % 4);
 		}
 		break;
 	case ET_MOVER:
 		if (!Q_stricmp(ent->classname, "script_mover"))
 		{
-			return ent->s.teamNum;
+			return (team_t)ent->s.teamNum;
 		}
 		break;
 	case ET_CONSTRUCTIBLE:
-		return ent->s.teamNum;
+		return (team_t)ent->s.teamNum;
 	case ET_MG42_BARREL:
 	case ET_AAGUN:
 		return G_GetTeamFromEntity(&g_entities[ent->r.ownerNum]);
