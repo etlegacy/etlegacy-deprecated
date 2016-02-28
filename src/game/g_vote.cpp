@@ -219,7 +219,7 @@ void G_voteFlags(void)
 qboolean G_voteDescription(gentity_t *ent, qboolean fRefereeCmd, int cmd)
 {
 	char arg[MAX_TOKEN_CHARS];
-	char *ref_cmd = (fRefereeCmd) ? "\\ref" : "\\callvote";
+	char *ref_cmd = (char *)((fRefereeCmd) ? "\\ref" : "\\callvote");
 
 	if (!ent)
 	{

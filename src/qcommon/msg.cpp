@@ -731,7 +731,7 @@ int kbitmask[32] =
 	0x0001FFFF, 0x0003FFFF, 0x0007FFFF, 0x000FFFFF,
 	0x001FFFFf, 0x003FFFFF, 0x007FFFFF, 0x00FFFFFF,
 	0x01FFFFFF, 0x03FFFFFF, 0x07FFFFFF, 0x0FFFFFFF,
-	0x1FFFFFFF, 0x3FFFFFFF, 0x7FFFFFFF, 0xFFFFFFFF,
+	0x1FFFFFFF, 0x3FFFFFFF, 0x7FFFFFFF, static_cast<int>(0xFFFFFFFF), // Narrowing conversion error with gcc
 };
 
 void MSG_WriteDeltaKey(msg_t *msg, int key, int oldV, int newV, int bits)

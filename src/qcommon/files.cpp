@@ -4444,7 +4444,7 @@ void FS_CalcModHashes(void)
 {
 	char *tmp = Cvar_VariableString("fs_game");
 
-	modHashes.defaultMod = Com_BlockChecksum(DEFAULT_MODGAME, strlen(DEFAULT_MODGAME));
+	modHashes.defaultMod = Com_BlockChecksum((void *)DEFAULT_MODGAME, strlen(DEFAULT_MODGAME));
 	modHashes.currentMod = Com_BlockChecksum(tmp, strlen(tmp));
 }
 

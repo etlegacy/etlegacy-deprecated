@@ -387,9 +387,9 @@ void trap_SnapVector(float *v)
 	return;
 }
 
-qboolean trap_GetTag(int clientNum, int tagFileNumber, char *tagName, orientation_t *or)
+qboolean trap_GetTag(int clientNum, int tagFileNumber, char *tagName, orientation_t *orientation)
 {
-	return syscall(G_GETTAG, clientNum, tagFileNumber, tagName, or);
+	return syscall(G_GETTAG, clientNum, tagFileNumber, tagName, orientation);
 }
 
 qboolean trap_LoadTag(const char *filename)

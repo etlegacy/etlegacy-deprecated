@@ -3299,7 +3299,7 @@ qboolean G_ScriptAction_ObjectiveStatus(gentity_t *ent, char *params)
 	{
 		G_Error("G_ScriptAction_ObjectiveStatus: team parameter required\n");
 	}
-	parm = atoi(token) == 0 ? "x" : "a";
+	parm = (char *)(atoi(token) == 0 ? "x" : "a");
 
 	token = COM_Parse(&pString);
 	if (!token[0])
