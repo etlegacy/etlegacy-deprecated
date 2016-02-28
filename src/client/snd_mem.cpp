@@ -88,13 +88,13 @@ void SND_setup(void)
 	cv  = Cvar_Get("com_soundMegs", DEF_COMSOUNDMEGS, CVAR_LATCH | CVAR_ARCHIVE);
 	scs = (cv->integer * 512); // q3 uses a value of 1536 - reverted to genuine ET value
 
-	buffer = malloc(scs * sizeof(sndBuffer));
+	buffer = (sndBuffer *)malloc(scs * sizeof(sndBuffer));
 	if (!buffer)
 	{
 		Com_Error(ERR_FATAL, "Sound buffer failed to allocate %1.1f megs", (float)scs / (1024 * 1024));
 	}
 	// allocate the stack based hunk allocator
-	sfxScratchBuffer = malloc(SND_CHUNK_SIZE * sizeof(short) * 4);      //Hunk_Alloc(SND_CHUNK_SIZE * sizeof(short) * 4);
+	sfxScratchBuffer = (short *)malloc(SND_CHUNK_SIZE * sizeof(short) * 4);      //Hunk_Alloc(SND_CHUNK_SIZE * sizeof(short) * 4);
 	if (!sfxScratchBuffer)
 	{
 		Com_Error(ERR_FATAL, "Unable to allocate sound scratch buffer");
@@ -240,7 +240,7 @@ qboolean S_LoadSound(sfx_t *sfx)
 	}
 
 	// load it in
-	data = S_CodecLoad(sfx->soundName, &info);
+	data = (byte *)S_CodecLoad(sfx->soundName, &info);
 	if (!data)
 	{
 		return qfalse;
@@ -256,7 +256,7 @@ qboolean S_LoadSound(sfx_t *sfx)
 		Com_DPrintf(S_COLOR_YELLOW "WARNING: %s is not a 11kHz, 22kHz nor 44kHz audio file. It has sample rate %i\n", sfx->soundName, info.rate);
 	}
 
-	samples = Hunk_AllocateTempMemory(info.channels * info.samples * sizeof(short) * 2);
+	samples = (short *)Hunk_AllocateTempMemory(info.channels * info.samples * sizeof(short) * 2);
 
 	sfx->lastTimeUsed = Sys_Milliseconds() + 1;
 

@@ -161,7 +161,7 @@ void Con_Dump_f(void)
 	bufferlen = con.linewidth + 2 * sizeof(char);
 #endif
 
-	buffer = Hunk_AllocateTempMemory(bufferlen);
+	buffer = (char *)Hunk_AllocateTempMemory(bufferlen);
 
 	// write the remaining lines
 	buffer[bufferlen - 1] = 0;

@@ -76,7 +76,7 @@ char *IN_GetClipboardData(void)
 		//len = u8_strlen(temp) + 1;
 		len = strlen(temp) + 1;
 
-		data = Z_Malloc(len);
+		data = (char *)Z_Malloc(len);
 
 		//u8_escape(data, len, temp, qfalse);
 		Q_strncpyz(data, temp, len);
@@ -244,13 +244,13 @@ static qboolean IN_IsConsoleKey(keyNum_t key, int character)
 
 			if (charCode > 0)
 			{
-				c->type        = CHARACTER;
+				c->type        = consoleKey_t::CHARACTER;
 				c->u.character = charCode;
 			}
 			else
 			{
-				c->type  = KEY;
-				c->u.key = Key_StringToKeynum(token);
+				c->type  = consoleKey_t::KEY;
+				c->u.key = (keyNum_t)Key_StringToKeynum(token);
 
 				// 0 isn't a key
 				if (c->u.key <= 0)
@@ -266,7 +266,7 @@ static qboolean IN_IsConsoleKey(keyNum_t key, int character)
 	// If the character is the same as the key, prefer the character
 	if (key == character)
 	{
-		key = 0;
+		key = K_NONE;
 	}
 
 	for (i = 0; i < numConsoleKeys; i++)
@@ -275,13 +275,13 @@ static qboolean IN_IsConsoleKey(keyNum_t key, int character)
 
 		switch (c->type)
 		{
-		case KEY:
+		case consoleKey_t::KEY:
 			if (key && c->u.key == key)
 			{
 				return qtrue;
 			}
 			break;
-		case CHARACTER:
+		case consoleKey_t::CHARACTER:
 			if (c->u.character == character)
 			{
 				return qtrue;
@@ -298,12 +298,12 @@ static qboolean IN_IsConsoleKey(keyNum_t key, int character)
  */
 static keyNum_t IN_TranslateSDLToQ3Key(SDL_Keysym *keysym, qboolean down)
 {
-	keyNum_t key = 0;
+	keyNum_t key = (keyNum_t)0;
 
 	if (keysym->sym >= SDLK_SPACE && keysym->sym < SDLK_DELETE)
 	{
 		// These happen to match the ASCII chars
-		key = (int)keysym->sym;
+		key = (keyNum_t)keysym->sym;
 	}
 	else
 	{
@@ -810,7 +810,7 @@ static void IN_InitJoystick(void)
 static void IN_ShutdownJoystick(void)
 {
 	// in_joystick cvar is latched
-	if (!in_joystick->integer || !SDL_WasInit(SDL_INIT_JOYSTICK))
+	if (!in_joystick || !in_joystick->integer || !SDL_WasInit(SDL_INIT_JOYSTICK))
 	{
 		return;
 	}
@@ -1087,8 +1087,8 @@ static void IN_WindowFocusLost()
 static void IN_ProcessEvents(void)
 {
 	SDL_Event       e;
-	keyNum_t        key         = 0;
-	static keyNum_t lastKeyDown = 0;
+	keyNum_t        key         = K_NONE;
+	static keyNum_t lastKeyDown = K_NONE;
 
 	if (!SDL_WasInit(SDL_INIT_VIDEO))
 	{
@@ -1126,7 +1126,7 @@ static void IN_ProcessEvents(void)
 			{
 				Com_QueueEvent(0, SE_KEY, key, qfalse, 0, NULL);
 			}
-			lastKeyDown = 0;
+			lastKeyDown = K_NONE;
 			break;
 		case SDL_TEXTINPUT:
 			if (lastKeyDown != CONSOLE_KEY)
@@ -1168,7 +1168,7 @@ static void IN_ProcessEvents(void)
 
 					if (utf32 != 0)
 					{
-						if (IN_IsConsoleKey(0, utf32))
+						if (IN_IsConsoleKey(K_NONE, utf32))
 						{
 							Com_QueueEvent(0, SE_KEY, CONSOLE_KEY, qtrue, 0, NULL);
 							Com_QueueEvent(0, SE_KEY, CONSOLE_KEY, qfalse, 0, NULL);

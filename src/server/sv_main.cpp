@@ -86,7 +86,6 @@ cvar_t *sv_wwwDlDisconnected;
 cvar_t *sv_wwwFallbackURL; // URL to send to if an http/ftp fails or is refused client side
 
 cvar_t *sv_cheats;
-cvar_t *sv_packetdelay;
 
 cvar_t *sv_fullmsg;
 
@@ -114,7 +113,6 @@ cvar_t *sv_wh_check_fov;
 cvar_t *sv_demopath;
 cvar_t *sv_demoState;
 cvar_t *sv_autoDemo;
-cvar_t *cl_freezeDemo;  // to freeze server-side demos
 cvar_t *sv_demoTolerant;
 
 static void SVC_Status(netadr_t from, qboolean force);
@@ -631,7 +629,7 @@ static leakyBucket_t *SVC_BucketForAddress(netadr_t address, int burst, int peri
 
 		if (bucket->type == NA_BAD)
 		{
-			bucket->type = address.type;
+			bucket->type = (netadrtype_t)address.type;
 			switch (address.type)
 			{
 			case NA_IP:  Com_Memcpy(bucket->ipv._4, address.ip, 4);

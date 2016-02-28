@@ -768,7 +768,7 @@ static qboolean GLimp_StartDriverAndSetMode(glconfig_t *glConfig, int mode, qboo
 		fullscreen             = qfalse;
 	}
 
-	err = GLimp_SetMode(glConfig, mode, fullscreen, noborder, context);
+	err = (rserr_t)GLimp_SetMode(glConfig, mode, fullscreen, noborder, context);
 
 	switch (err)
 	{

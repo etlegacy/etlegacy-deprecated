@@ -474,43 +474,43 @@ intptr_t SV_GameSystemCalls(intptr_t *args)
 	case G_ENTITY_CONTACTCAPSULE:
 		return SV_EntityContact((const vec_t *)VMA(1), (const vec_t *)VMA(2), (const sharedEntity_t *)VMA(3), /* int capsule */ qtrue);
 	case G_TRACE:
-		SV_Trace(VMA(1), VMA(2), VMA(3), VMA(4), VMA(5), args[6], args[7], /* int capsule */ qfalse);
+		SV_Trace((trace_t *)VMA(1), (const vec_t *)VMA(2), (const vec_t *)VMA(3), (const vec_t *)VMA(4), (const vec_t *)VMA(5), args[6], args[7], /* int capsule */ qfalse);
 		return 0;
 	case G_TRACECAPSULE:
-		SV_Trace(VMA(1), VMA(2), VMA(3), VMA(4), VMA(5), args[6], args[7], /* int capsule */ qtrue);
+		SV_Trace((trace_t *)VMA(1), (const vec_t *)VMA(2), (const vec_t *)VMA(3), (const vec_t *)VMA(4), (const vec_t *)VMA(5), args[6], args[7], /* int capsule */ qtrue);
 		return 0;
 	case G_POINT_CONTENTS:
-		return SV_PointContents(VMA(1), args[2]);
+		return SV_PointContents((const vec_t *)VMA(1), args[2]);
 	case G_SET_BRUSH_MODEL:
-		SV_SetBrushModel(VMA(1), VMA(2));
+		SV_SetBrushModel((sharedEntity_t *)VMA(1), (const char *)VMA(2));
 		return 0;
 	case G_IN_PVS:
-		return SV_inPVS(VMA(1), VMA(2));
+		return SV_inPVS((const vec_t *)VMA(1), (const vec_t *)VMA(2));
 	case G_IN_PVS_IGNORE_PORTALS:
-		return SV_inPVSIgnorePortals(VMA(1), VMA(2));
+		return SV_inPVSIgnorePortals((const vec_t *)VMA(1), (const vec_t *)VMA(2));
 
 	case G_SET_CONFIGSTRING:
 		// Don't allow the game to overwrite demo configstrings (unless it modifies the normal spectator clients configstrings, this exception allows for player connecting during a demo playback to be correctly rendered, else they will get an empty configstring so no icon, no name, nothing...)
 		// ATTENTION: sv.demoState check must be placed LAST! Else, it will short-circuit and prevent normal players configstrings from being set!
 		if ((sv_democlients->integer > 0 && args[1] >= CS_PLAYERS + sv_democlients->integer && args[1] < CS_PLAYERS + sv_maxclients->integer) || sv.demoState != DS_PLAYBACK)
 		{
-			SV_SetConfigstring(args[1], VMA(2));
+			SV_SetConfigstring(args[1], (const char *)VMA(2));
 		}
 		return 0;
 	case G_GET_CONFIGSTRING:
-		SV_GetConfigstring(args[1], VMA(2), args[3]);
+		SV_GetConfigstring(args[1], (char *)VMA(2), args[3]);
 		return 0;
 	case G_SET_USERINFO:
-		SV_SetUserinfo(args[1], VMA(2));
+		SV_SetUserinfo(args[1], (const char *)VMA(2));
 		return 0;
 	case G_GET_USERINFO:
-		SV_GetUserinfo(args[1], VMA(2), args[3]);
+		SV_GetUserinfo(args[1], (char *)VMA(2), args[3]);
 		return 0;
 	case G_GET_SERVERINFO:
-		SV_GetServerinfo(VMA(1), args[2]);
+		SV_GetServerinfo((char *)VMA(1), args[2]);
 		return 0;
 	case G_ADJUST_AREA_PORTAL_STATE:
-		SV_AdjustAreaPortalState(VMA(1), args[2]);
+		SV_AdjustAreaPortalState((sharedEntity_t *)VMA(1), args[2]);
 		return 0;
 	case G_AREAS_CONNECTED:
 		return CM_AreasConnected(args[1], args[2]);
@@ -519,14 +519,14 @@ intptr_t SV_GameSystemCalls(intptr_t *args)
 		return SV_BotAllocateClient(args[1]);
 
 	case G_GET_USERCMD:
-		SV_GetUsercmd(args[1], VMA(2));
+		SV_GetUsercmd(args[1], (usercmd_t *)VMA(2));
 		return 0;
 	case G_GET_ENTITY_TOKEN:
 	{
 		const char *s;
 
 		s = COM_Parse(&sv.entityParsePoint);
-		Q_strncpyz(VMA(1), s, args[2]);
+		Q_strncpyz((char *)VMA(1), s, args[2]);
 		if (!sv.entityParsePoint && !s[0])
 		{
 			return qfalse;
@@ -538,23 +538,23 @@ intptr_t SV_GameSystemCalls(intptr_t *args)
 	}
 
 	case G_DEBUG_POLYGON_CREATE:
-		return BotImport_DebugPolygonCreate(args[1], args[2], VMA(3));
+		return BotImport_DebugPolygonCreate(args[1], args[2], (vec3_t *)VMA(3));
 	case G_DEBUG_POLYGON_DELETE:
 		BotImport_DebugPolygonDelete(args[1]);
 		return 0;
 	case G_REAL_TIME:
-		return Com_RealTime(VMA(1));
+		return Com_RealTime((qtime_t *)VMA(1));
 	case G_SNAPVECTOR:
-		Sys_SnapVector(VMA(1));
+		Sys_SnapVector((float *)VMA(1));
 		return 0;
 	case G_GETTAG:
-		return SV_GetTag(args[1], args[2], VMA(3), VMA(4));
+		return SV_GetTag(args[1], args[2], (char *)VMA(3), (orientation_t *)VMA(4));
 
 	case G_REGISTERTAG:
-		return SV_LoadTag(VMA(1));
+		return SV_LoadTag((const char *)VMA(1));
 
 	case G_REGISTERSOUND:
-		return S_RegisterSound(VMA(1), args[2]);
+		return S_RegisterSound((const char *)VMA(1), args[2]);
 	case G_GET_SOUND_LENGTH:
 		return S_GetSoundLength(args[1]);
 
@@ -570,25 +570,25 @@ intptr_t SV_GameSystemCalls(intptr_t *args)
 		return 0;
 
 	case BOTLIB_PC_LOAD_SOURCE:
-		return botlib_export->PC_LoadSourceHandle(VMA(1));
+		return botlib_export->PC_LoadSourceHandle((const char *)VMA(1));
 	case BOTLIB_PC_FREE_SOURCE:
 		return botlib_export->PC_FreeSourceHandle(args[1]);
 	case BOTLIB_PC_READ_TOKEN:
-		return botlib_export->PC_ReadTokenHandle(args[1], VMA(2));
+		return botlib_export->PC_ReadTokenHandle(args[1], (pc_token_t *)VMA(2));
 	case BOTLIB_PC_SOURCE_FILE_AND_LINE:
-		return botlib_export->PC_SourceFileAndLine(args[1], VMA(2), VMA(3));
+		return botlib_export->PC_SourceFileAndLine(args[1], (char *)VMA(2), (int *)VMA(3));
 	case BOTLIB_PC_UNREAD_TOKEN:
 		botlib_export->PC_UnreadLastTokenHandle(args[1]);
 		return 0;
 
 	case BOTLIB_GET_CONSOLE_MESSAGE:
-		return SV_BotGetConsoleMessage(args[1], VMA(2), args[3]);
+		return SV_BotGetConsoleMessage(args[1], (char *)VMA(2), args[3]);
 	case BOTLIB_USER_COMMAND:
-		SV_ClientThink(&svs.clients[args[1]], VMA(2));
+		SV_ClientThink(&svs.clients[args[1]], (usercmd_t *)VMA(2));
 		return 0;
 
 	case BOTLIB_EA_COMMAND:
-		SV_ExecuteClientCommand(&svs.clients[args[1]], VMA(2), qtrue, qfalse);
+		SV_ExecuteClientCommand(&svs.clients[args[1]], (const char *)VMA(2), qtrue, qfalse);
 		return 0;
 
 	case TRAP_MEMSET:
@@ -600,7 +600,7 @@ intptr_t SV_GameSystemCalls(intptr_t *args)
 		return 0;
 
 	case TRAP_STRNCPY:
-		return (intptr_t)strncpy(VMA(1), VMA(2), args[3]);
+		return (intptr_t)strncpy((char *)VMA(1), (const char *)VMA(2), args[3]);
 
 	case TRAP_SIN:
 		return FloatAsInt(sin(VMF(1)));
@@ -615,15 +615,15 @@ intptr_t SV_GameSystemCalls(intptr_t *args)
 		return FloatAsInt(sqrt(VMF(1)));
 
 	case TRAP_MATRIXMULTIPLY: // never called for real
-		_MatrixMultiply(VMA(1), VMA(2), VMA(3));
+		_MatrixMultiply((float (*)[3])VMA(1), (float(*)[3])VMA(2), (float(*)[3])VMA(3));
 		return 0;
 
 	case TRAP_ANGLEVECTORS:
-		AngleVectors(VMA(1), VMA(2), VMA(3), VMA(4));
+		AngleVectors((const vec_t *)VMA(1), (vec_t *)VMA(2), (vec_t *)VMA(3), (vec_t *)VMA(4));
 		return 0;
 
 	case TRAP_PERPENDICULARVECTOR:
-		PerpendicularVector(VMA(1), VMA(2));
+		PerpendicularVector((vec_t *)VMA(1), (const vec_t *)VMA(2));
 		return 0;
 
 	case TRAP_FLOOR:
@@ -636,7 +636,7 @@ intptr_t SV_GameSystemCalls(intptr_t *args)
 		return 0 ;
 
 	case G_SENDMESSAGE:
-		SV_SendBinaryMessage(args[1], VMA(2), args[3]);
+		SV_SendBinaryMessage(args[1], (char *)VMA(2), args[3]);
 		return 0;
 	case G_MESSAGESTATUS:
 		return SV_BinaryMessageStatus(args[1]);

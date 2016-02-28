@@ -44,6 +44,7 @@ cvar_t *s_doppler;
 cvar_t *s_backend;
 cvar_t *s_muteWhenMinimized;
 cvar_t *s_muteWhenUnfocused;
+cvar_t *s_debugStreams;
 
 static soundInterface_t si;
 
@@ -649,6 +650,7 @@ void S_Init(void)
 	s_backend           = Cvar_Get("s_backend", "", CVAR_ROM);
 	s_muteWhenMinimized = Cvar_Get("s_muteWhenMinimized", "1", CVAR_ARCHIVE);
 	s_muteWhenUnfocused = Cvar_Get("s_muteWhenUnfocused", "0", CVAR_ARCHIVE);
+	s_debugStreams = Cvar_Get("s_debugStreams", "0", CVAR_TEMP);
 
 	if (!cv->integer)
 	{

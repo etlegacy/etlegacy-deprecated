@@ -60,7 +60,6 @@ cvar_t *cl_maxpackets;
 cvar_t *cl_packetdup;
 cvar_t *cl_timeNudge;
 cvar_t *cl_showTimeDelta;
-cvar_t *cl_freezeDemo;
 
 cvar_t *cl_shownet = NULL;      // This is referenced in msg.c and we need to make sure it is NULL
 cvar_t *cl_shownuments;
@@ -107,8 +106,6 @@ cvar_t *cl_demooffset;
 cvar_t *cl_waverecording;
 cvar_t *cl_wavefilename;
 cvar_t *cl_waveoffset;
-
-cvar_t *cl_packetdelay;
 
 cvar_t *cl_consoleKeys;
 
@@ -2000,7 +1997,7 @@ void CL_CheckTimeout(void)
 	if ((!cl_paused->integer || !sv_paused->integer)
 	    && cls.state >= CA_CONNECTED && cls.state != CA_CINEMATIC
 	    && cls.realtime - clc.lastPacketTime > cl_timeout->value * 1000
-	    && !(clc.demoplaying && cl_freezeDemo->integer))
+	    && !(clc.demoplaying && com_freezeDemo->integer))
 	{
 		if (++cl.timeoutcount > 5)        // timeoutcount saves debugger
 		{
@@ -2582,9 +2579,6 @@ int CL_ScaledMilliseconds(void)
 {
 	return Sys_Milliseconds() * com_timescale->value;
 }
-#ifndef USE_RENDERER_DLOPEN
-extern refexport_t *GetRefAPI(int apiVersion, refimport_t *rimp);
-#endif
 
 /*
 ============
@@ -2632,7 +2626,7 @@ void CL_InitRef(void)
 		Com_Error(ERR_FATAL, "Failed to load renderer lib");
 	}
 
-	GetRefAPI = Sys_LoadFunction(rendererLib, "GetRefAPI");
+	GetRefAPI = (GetRefAPI_t)Sys_LoadFunction(rendererLib, "GetRefAPI");
 	if (!GetRefAPI)
 	{
 		Com_Error(ERR_FATAL, "Can't load symbol GetRefAPI: '%s'", Sys_LibraryError());
@@ -2767,7 +2761,6 @@ void CL_Init(void)
 	cl_showServerCommands = Cvar_Get("cl_showServerCommands", "0", 0);
 	cl_showSend           = Cvar_Get("cl_showSend", "0", CVAR_TEMP);
 	cl_showTimeDelta      = Cvar_Get("cl_showTimeDelta", "0", CVAR_TEMP);
-	cl_freezeDemo         = Cvar_Get("cl_freezeDemo", "0", CVAR_TEMP);
 	rcon_client_password  = Cvar_Get("rconPassword", "", CVAR_TEMP);
 	cl_activeAction       = Cvar_Get("activeAction", "", CVAR_TEMP);
 	cl_autorecord         = Cvar_Get("cl_autorecord", "0", CVAR_TEMP);

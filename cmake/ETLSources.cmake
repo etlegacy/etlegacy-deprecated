@@ -172,3 +172,9 @@ FILE(GLOB IRC_CLIENT_FILES
 	"src/qcommon/htable.cpp"
 	"src/qcommon/htable.h"
 )
+
+FILE(GLOB DBMS_SRC
+	"src/db/db_sql.h"
+	"src/db/db_sqlite3.cpp"
+	"src/db/db_sql_console.cpp"
+)

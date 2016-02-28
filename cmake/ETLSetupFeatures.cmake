@@ -95,7 +95,7 @@ if(BUILD_CLIENT)
 		add_definitions(-DFEATURE_GETTEXT)
 		FILE(GLOB GETTEXT_SRC
 			"src/qcommon/i18n_main.cpp"
-			"src/qcommon/i18n_findlocale.c"
+			"src/qcommon/i18n_findlocale.cpp"
 			"src/qcommon/i18n_findlocale.h"
 			"src/tinygettext/tinygettext/dictionary.hpp"
 			"src/tinygettext/tinygettext/dictionary_manager.hpp"
@@ -229,11 +229,6 @@ if(BUILD_CLIENT OR BUILD_SERVER)
 			include_directories(SYSTEM ${SQLITE3_BUNDLED_INCLUDE_DIR})
 		endif()
 		add_definitions(-DFEATURE_DBMS)
-		FILE(GLOB DBMS_SRC
-			"src/db/db_sql.h"
-			"src/db/db_sqlite3.c"
-			"src/db/db_sql_console.c"
-		)
 		set(CLIENT_SRC ${CLIENT_SRC} ${DBMS_SRC})
 		set(SERVER_SRC ${SERVER_SRC} ${DBMS_SRC})
 	endif(FEATURE_DBMS)

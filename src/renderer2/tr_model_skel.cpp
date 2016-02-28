@@ -230,7 +230,7 @@ void AddSurfaceToVBOSurfacesList(growList_t *vboSurfaces, growList_t *vboTriangl
 	md5Vertex_t     *v;
 
 	// create surface
-	vboSurf = ri.Hunk_Alloc(sizeof(*vboSurf), h_low);
+	vboSurf = (srfVBOMD5Mesh_t *)ri.Hunk_Alloc(sizeof(*vboSurf), h_low);
 	Com_AddToGrowList(vboSurfaces, vboSurf);
 
 	vboSurf->surfaceType = SF_VBO_MD5MESH;
@@ -241,11 +241,11 @@ void AddSurfaceToVBOSurfacesList(growList_t *vboSurfaces, growList_t *vboTriangl
 	vboSurf->numVerts    = vertexesNum;
 
 	dataSize = vertexesNum * (sizeof(vec4_t) * 8);
-	data     = ri.Hunk_AllocateTempMemory(dataSize);
+	data     = (byte *)ri.Hunk_AllocateTempMemory(dataSize);
 	dataOfs  = 0;
 
 	indexesSize = indexesNum * sizeof(int);
-	indexes     = ri.Hunk_AllocateTempMemory(indexesSize);
+	indexes     = (byte *)ri.Hunk_AllocateTempMemory(indexesSize);
 	indexesOfs  = 0;
 
 	//Ren_Print("AddSurfaceToVBOSurfacesList( %i verts, %i tris )\n", surf->numVerts, vboTriangles->currentElements);
@@ -273,7 +273,7 @@ void AddSurfaceToVBOSurfacesList(growList_t *vboSurfaces, growList_t *vboTriangl
 	//for(j = 0, tri = surf->triangles; j < surf->numTriangles; j++, tri++)
 	for (j = 0; j < vboTriangles->currentElements; j++)
 	{
-		tri = Com_GrowListElement(vboTriangles, j);
+		tri = (skelTriangle_t *)Com_GrowListElement(vboTriangles, j);
 
 		for (k = 0; k < 3; k++)
 		{
@@ -451,7 +451,7 @@ void AddSurfaceToVBOSurfacesList2(growList_t *vboSurfaces, growList_t *vboTriang
 	int             shaderIndex;
 
 	// create surface
-	vboSurf = ri.Hunk_Alloc(sizeof(*vboSurf), h_low);
+	vboSurf = (srfVBOMD5Mesh_t *)ri.Hunk_Alloc(sizeof(*vboSurf), h_low);
 	Com_AddToGrowList(vboSurfaces, vboSurf);
 
 	vboSurf->surfaceType = SF_VBO_MD5MESH;
@@ -476,11 +476,11 @@ void AddSurfaceToVBOSurfacesList2(growList_t *vboSurfaces, growList_t *vboTriang
 	vboSurf->numVerts   = vertexesNum;
 
 	dataSize = vertexesNum * (sizeof(vec4_t) * 8);
-	data     = ri.Hunk_AllocateTempMemory(dataSize);
+	data     = (byte *)ri.Hunk_AllocateTempMemory(dataSize);
 	dataOfs  = 0;
 
 	indexesSize = indexesNum * sizeof(int);
-	indexes     = ri.Hunk_AllocateTempMemory(indexesSize);
+	indexes     = (byte *)ri.Hunk_AllocateTempMemory(indexesSize);
 	indexesOfs  = 0;
 
 	//Ren_Print("AddSurfaceToVBOSurfacesList( %i verts, %i tris )\n", surf->numVerts, vboTriangles->currentElements);
@@ -508,7 +508,7 @@ void AddSurfaceToVBOSurfacesList2(growList_t *vboSurfaces, growList_t *vboTriang
 	//for(j = 0, tri = surf->triangles; j < surf->numTriangles; j++, tri++)
 	for (j = 0; j < vboTriangles->currentElements; j++)
 	{
-		tri = Com_GrowListElement(vboTriangles, j);
+		tri = (skelTriangle_t *)Com_GrowListElement(vboTriangles, j);
 
 		for (k = 0; k < 3; k++)
 		{
@@ -522,7 +522,7 @@ void AddSurfaceToVBOSurfacesList2(growList_t *vboSurfaces, growList_t *vboTriang
 	// feed vertex XYZ
 	for (j = 0; j < vertexesNum; j++)
 	{
-		v = Com_GrowListElement(vboVertexes, j);
+		v = (md5Vertex_t *)Com_GrowListElement(vboVertexes, j);
 
 		for (k = 0; k < 3; k++)
 		{
@@ -539,7 +539,7 @@ void AddSurfaceToVBOSurfacesList2(growList_t *vboSurfaces, growList_t *vboTriang
 
 	for (j = 0; j < vertexesNum; j++)
 	{
-		v = Com_GrowListElement(vboVertexes, j);
+		v = (md5Vertex_t *)Com_GrowListElement(vboVertexes, j);
 
 		for (k = 0; k < 2; k++)
 		{
@@ -557,7 +557,7 @@ void AddSurfaceToVBOSurfacesList2(growList_t *vboSurfaces, growList_t *vboTriang
 
 	for (j = 0; j < vertexesNum; j++)
 	{
-		v = Com_GrowListElement(vboVertexes, j);
+		v = (md5Vertex_t *)Com_GrowListElement(vboVertexes, j);
 
 		for (k = 0; k < 3; k++)
 		{
@@ -574,7 +574,7 @@ void AddSurfaceToVBOSurfacesList2(growList_t *vboSurfaces, growList_t *vboTriang
 
 	for (j = 0; j < vertexesNum; j++)
 	{
-		v = Com_GrowListElement(vboVertexes, j);
+		v = (md5Vertex_t *)Com_GrowListElement(vboVertexes, j);
 
 		for (k = 0; k < 3; k++)
 		{
@@ -591,7 +591,7 @@ void AddSurfaceToVBOSurfacesList2(growList_t *vboSurfaces, growList_t *vboTriang
 
 	for (j = 0; j < vertexesNum; j++)
 	{
-		v = Com_GrowListElement(vboVertexes, j);
+		v = (md5Vertex_t *)Com_GrowListElement(vboVertexes, j);
 
 		for (k = 0; k < 3; k++)
 		{
@@ -608,7 +608,7 @@ void AddSurfaceToVBOSurfacesList2(growList_t *vboSurfaces, growList_t *vboTriang
 
 	for (j = 0; j < vertexesNum; j++)
 	{
-		v = Com_GrowListElement(vboVertexes, j);
+		v = (md5Vertex_t *)Com_GrowListElement(vboVertexes, j);
 
 		for (k = 0; k < MAX_WEIGHTS; k++)
 		{
@@ -631,7 +631,7 @@ void AddSurfaceToVBOSurfacesList2(growList_t *vboSurfaces, growList_t *vboTriang
 
 	for (j = 0; j < vertexesNum; j++)
 	{
-		v = Com_GrowListElement(vboVertexes, j);
+		v = (md5Vertex_t *)Com_GrowListElement(vboVertexes, j);
 
 		for (k = 0; k < MAX_WEIGHTS; k++)
 		{

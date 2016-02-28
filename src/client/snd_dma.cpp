@@ -90,7 +90,6 @@ cvar_t *s_testsound;
 cvar_t *s_show;
 cvar_t *s_mixahead;
 cvar_t *s_mixPreStep;
-cvar_t *s_debugStreams;
 
 static loopSound_t loopSounds[MAX_LOOP_SOUNDS];
 static vec3_t      entityPositions[MAX_GENTITIES];
@@ -2093,7 +2092,6 @@ qboolean S_Base_Init(soundInterface_t *si)
 	s_mixPreStep   = Cvar_Get("s_mixPreStep", "0.05", CVAR_ARCHIVE);
 	s_show         = Cvar_Get("s_show", "0", CVAR_CHEAT);
 	s_testsound    = Cvar_Get("s_testsound", "0", CVAR_CHEAT);
-	s_debugStreams = Cvar_Get("s_debugStreams", "0", CVAR_TEMP);
 
 	r = SNDDMA_Init();
 

@@ -276,11 +276,11 @@ static void SV_MapRestart_f(void)
 	}
 
 	// read in gamestate or just default to GS_PLAYING
-	old_gs = atoi(Cvar_VariableString("gamestate"));
+	old_gs = (gamestate_t)atoi(Cvar_VariableString("gamestate"));
 
 	if (Cmd_Argc() > 2)
 	{
-		new_gs = atoi(Cmd_Argv(2));
+		new_gs = (gamestate_t)atoi(Cmd_Argv(2));
 	}
 	else
 	{
@@ -359,7 +359,7 @@ static void SV_MapRestart_f(void)
 		SV_AddServerCommand(client, "map_restart\n");
 
 		// connect the client again, without the firstTime flag
-		denied = VM_ExplicitArgPtr(gvm, VM_Call(gvm, GAME_CLIENT_CONNECT, i, qfalse, isBot));
+		denied = (char *)VM_ExplicitArgPtr(gvm, VM_Call(gvm, GAME_CLIENT_CONNECT, i, qfalse, isBot));
 		if (denied)
 		{
 			// this generally shouldn't happen, because the client

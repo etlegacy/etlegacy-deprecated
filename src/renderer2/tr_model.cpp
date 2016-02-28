@@ -42,8 +42,8 @@ qboolean R_LoadMDC(model_t *mod, int lod, void *buffer, int bufferSize, const ch
 qboolean R_LoadMDM(model_t *mod, void *buffer, const char *name);
 static qboolean R_LoadMDX(model_t *mod, void *buffer, const char *name);
 
-qboolean R_LoadMD5(model_t *mod, byte *buffer, int bufferSize, const char *name);
-qboolean R_LoadPSK(model_t *mod, byte *buffer, int bufferSize, const char *name);
+qboolean R_LoadMD5(model_t *mod, void *buffer, int bufferSize, const char *modName);
+qboolean R_LoadPSK(model_t *mod, void *buffer, int bufferSize, const char *modName);
 
 model_t *loadmodel;
 

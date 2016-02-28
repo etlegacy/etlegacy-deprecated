@@ -339,7 +339,7 @@ void SV_Startup(void)
 	SV_BoundMaxClients(1);
 
 	// avoid trying to allocate large chunk on a fragmented zone
-	svs.clients = calloc(sizeof(client_t) * sv_maxclients->integer, 1);
+	svs.clients = (client_t *)calloc(sizeof(client_t) * sv_maxclients->integer, 1);
 	if (!svs.clients)
 	{
 		Com_Error(ERR_FATAL, "SV_Startup: unable to allocate svs.clients");
@@ -397,7 +397,7 @@ void SV_ChangeMaxClients(void)
 		return;
 	}
 
-	oldClients = Hunk_AllocateTempMemory(count * sizeof(client_t));
+	oldClients = (client_t *)Hunk_AllocateTempMemory(count * sizeof(client_t));
 	// copy the clients to hunk memory
 	for (i = 0 ; i < count ; i++)
 	{
@@ -417,7 +417,7 @@ void SV_ChangeMaxClients(void)
 
 	// allocate new clients
 	// avoid trying to allocate large chunk on a fragmented zone
-	svs.clients = calloc(sizeof(client_t) * sv_maxclients->integer, 1);
+	svs.clients = (client_t *)calloc(sizeof(client_t) * sv_maxclients->integer, 1);
 	if (!svs.clients)
 	{
 		Com_Error(ERR_FATAL, "SV_Startup: unable to allocate svs.clients");
@@ -554,7 +554,7 @@ void SV_DemoChangeMaxClients(void)
 	// Note: we save in a temporary variables the clients, because after we will wipe completely the svs.clients struct
 
 	// copy the clients to hunk memory
-	oldClients = Hunk_AllocateTempMemory((sv_maxclients->integer - sv_democlients->integer) * sizeof(client_t));   // we allocate just enough memory for the real clients (not counting in the democlients)
+	oldClients = (client_t *)Hunk_AllocateTempMemory((sv_maxclients->integer - sv_democlients->integer) * sizeof(client_t));   // we allocate just enough memory for the real clients (not counting in the democlients)
 	// For all previous clients slots, we copy the entire client into a temporary var
 	for (i = 0, j = 0, k = sv_privateClients->integer ; i < oldMaxClients ; i++)     // for all the previously connected clients, we copy them to a temporary var
 	{   // If there is a real client in this slot
@@ -589,7 +589,7 @@ void SV_DemoChangeMaxClients(void)
 	// == Allocating the new svs.clients and moving the saved clients over from the temporary var
 
 	// allocate new svs.clients
-	svs.clients = Z_Malloc(sv_maxclients->integer * sizeof(client_t));
+	svs.clients = (client_t *)Z_Malloc(sv_maxclients->integer * sizeof(client_t));
 	Com_Memset(svs.clients, 0, sv_maxclients->integer * sizeof(client_t));
 
 	// copy the clients over (and move them depending on sv_democlients: if >0, move them upwards, if == 0, move them to their original slots)
@@ -740,7 +740,7 @@ void SV_SpawnServer(char *server)
 	FS_ClearPakReferences(0);
 
 	// allocate the snapshot entities on the hunk
-	svs.snapshotEntities     = Hunk_Alloc(sizeof(entityState_t) * svs.numSnapshotEntities, h_high);
+	svs.snapshotEntities     = (entityState_t *)Hunk_Alloc(sizeof(entityState_t) * svs.numSnapshotEntities, h_high);
 	svs.nextSnapshotEntities = 0;
 
 	// toggle the server bit so clients can detect that a
@@ -816,7 +816,7 @@ void SV_SpawnServer(char *server)
 			}
 
 			// connect the client again
-			denied = VM_ExplicitArgPtr(gvm, VM_Call(gvm, GAME_CLIENT_CONNECT, i, qfalse, isBot));       // firstTime = qfalse
+			denied = (char *)VM_ExplicitArgPtr(gvm, VM_Call(gvm, GAME_CLIENT_CONNECT, i, qfalse, isBot));       // firstTime = qfalse
 			if (denied)
 			{
 				// this generally shouldn't happen, because the client
@@ -1142,7 +1142,6 @@ void SV_Init(void)
 	sv_demoState    = Cvar_Get("sv_demoState", "0", CVAR_ROM);
 	sv_democlients  = Cvar_Get("sv_democlients", "0", CVAR_ROM);
 	sv_autoDemo     = Cvar_Get("sv_autoDemo", "0", CVAR_ARCHIVE);
-	cl_freezeDemo   = Cvar_Get("cl_freezeDemo", "0", CVAR_TEMP); // port from client-side to freeze server-side demos
 	sv_demoTolerant = Cvar_Get("sv_demoTolerant", "0", CVAR_ARCHIVE);
 	sv_demopath     = Cvar_Get("sv_demopath", "", CVAR_ARCHIVE);
 

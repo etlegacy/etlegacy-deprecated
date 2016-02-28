@@ -1508,7 +1508,7 @@ static void SV_DemoReadClientConfigString(msg_t *msg)
 			    )
 			{
 				// If the client changed team, we manually issue a team change (workaround by using a clientCommand team)
-				char *svdnewteamstr = malloc(10 * sizeof *svdnewteamstr);
+				char *svdnewteamstr = (char *)malloc(10 * sizeof *svdnewteamstr);
 
 				// random string, we just want the server to considerate the democlient in a team, whatever the team is. It will be automatically adjusted later with a clientCommand or userinfo string.
 				switch (svdnewteam)

@@ -79,7 +79,7 @@ model_t *R_AllocModel(void)
 		return NULL;
 	}
 
-	mod                     = ri.Hunk_Alloc(sizeof(*tr.models[tr.numModels]), h_low);
+	mod                     = (model_t *)ri.Hunk_Alloc(sizeof(*tr.models[tr.numModels]), h_low);
 	mod->index              = tr.numModels;
 	tr.models[tr.numModels] = mod;
 	tr.numModels++;
@@ -870,7 +870,7 @@ static qboolean R_LoadMDC(model_t *mod, int lod, void *buffer, const char *mod_n
 	mod->type           = MOD_MDC;
 	size                = LittleLong(pinmodel->ofsEnd);
 	mod->dataSize      += size;
-	mod->model.mdc[lod] = ri.Hunk_Alloc(size, h_low);
+	mod->model.mdc[lod] = (mdcHeader_t *)ri.Hunk_Alloc(size, h_low);
 
 	memcpy(mod->model.mdc[lod], buffer, LittleLong(pinmodel->ofsEnd));
 
@@ -1091,7 +1091,7 @@ static qboolean R_LoadMD3(model_t *mod, int lod, void *buffer, const char *mod_n
 	mod->type           = MOD_MESH;
 	size                = LittleLong(pinmodel->ofsEnd);
 	mod->dataSize      += size;
-	mod->model.md3[lod] = ri.Hunk_Alloc(size, h_low);
+	mod->model.md3[lod] = (md3Header_t *)ri.Hunk_Alloc(size, h_low);
 
 	memcpy(mod->model.md3[lod], buffer, LittleLong(pinmodel->ofsEnd));
 
@@ -1299,7 +1299,7 @@ static qboolean R_LoadMDS(model_t *mod, void *buffer, const char *mod_name)
 	mod->type      = MOD_MDS;
 	size           = LittleLong(pinmodel->ofsEnd);
 	mod->dataSize += size;
-	mds            = mod->model.mds = ri.Hunk_Alloc(size, h_low);
+	mds            = mod->model.mds = (mdsHeader_t *)ri.Hunk_Alloc(size, h_low);
 
 	memcpy(mds, buffer, LittleLong(pinmodel->ofsEnd));
 
@@ -1523,7 +1523,7 @@ static qboolean R_LoadMDM(model_t *mod, void *buffer, const char *mod_name)
 	mod->type      = MOD_MDM;
 	size           = LittleLong(pinmodel->ofsEnd);
 	mod->dataSize += size;
-	mdm            = mod->model.mdm = ri.Hunk_Alloc(size, h_low);
+	mdm            = mod->model.mdm = (mdmHeader_t *)ri.Hunk_Alloc(size, h_low);
 
 	memcpy(mdm, buffer, LittleLong(pinmodel->ofsEnd));
 
@@ -1735,7 +1735,7 @@ static qboolean R_LoadMDX(model_t *mod, void *buffer, const char *mod_name)
 	mod->type      = MOD_MDX;
 	size           = LittleLong(pinmodel->ofsEnd);
 	mod->dataSize += size;
-	mdx            = mod->model.mdx = ri.Hunk_Alloc(size, h_low);
+	mdx            = mod->model.mdx = (mdxHeader_t *)ri.Hunk_Alloc(size, h_low);
 
 	memcpy(mdx, buffer, LittleLong(pinmodel->ofsEnd));
 
@@ -2201,7 +2201,7 @@ void *R_Hunk_Begin(void)
 		// this will "reserve" a chunk of memory for use by this application
 		// it will not be "committed" just yet, but the swap file will grow
 		// now if needed
-		membase = VirtualAlloc(NULL, maxsize, MEM_RESERVE, PAGE_NOACCESS);
+		membase = (byte *)VirtualAlloc(NULL, maxsize, MEM_RESERVE, PAGE_NOACCESS);
 #else
 		// if not win32, then just allocate it now
 		// it is possible that we have been allocated already, in case we don't do anything
@@ -2398,7 +2398,7 @@ void R_BackupModels(void)
 					{
 						if ((j == MD3_MAX_LODS - 1) || (mod->model.md3[j] != mod->model.md3[j + 1]))
 						{
-							modBack->model.md3[j] = R_CacheModelAlloc(mod->model.md3[j]->ofsEnd);
+							modBack->model.md3[j] = (md3Header_t *)R_CacheModelAlloc(mod->model.md3[j]->ofsEnd);
 							memcpy(modBack->model.md3[j], mod->model.md3[j], mod->model.md3[j]->ofsEnd);
 						}
 						else
@@ -2415,7 +2415,7 @@ void R_BackupModels(void)
 					{
 						if ((j == MD3_MAX_LODS - 1) || (mod->model.mdc[j] != mod->model.mdc[j + 1]))
 						{
-							modBack->model.mdc[j] = R_CacheModelAlloc(mod->model.mdc[j]->ofsEnd);
+							modBack->model.mdc[j] = (mdcHeader_t *)R_CacheModelAlloc(mod->model.mdc[j]->ofsEnd);
 							memcpy(modBack->model.mdc[j], mod->model.mdc[j], mod->model.mdc[j]->ofsEnd);
 						}
 						else
@@ -2554,7 +2554,7 @@ qboolean R_FindCachedModel(const char *name, model_t *newmod)
 					{
 						if ((j == MD3_MAX_LODS - 1) || (mod->model.md3[j] != mod->model.md3[j + 1]))
 						{
-							newmod->model.md3[j] = ri.Hunk_Alloc(mod->model.md3[j]->ofsEnd, h_low);
+							newmod->model.md3[j] = (md3Header_t *)ri.Hunk_Alloc(mod->model.md3[j]->ofsEnd, h_low);
 							memcpy(newmod->model.md3[j], mod->model.md3[j], mod->model.md3[j]->ofsEnd);
 							R_RegisterMD3Shaders(newmod, j);
 							R_CacheModelFree(mod->model.md3[j]);
@@ -2573,7 +2573,7 @@ qboolean R_FindCachedModel(const char *name, model_t *newmod)
 					{
 						if ((j == MD3_MAX_LODS - 1) || (mod->model.mdc[j] != mod->model.mdc[j + 1]))
 						{
-							newmod->model.mdc[j] = ri.Hunk_Alloc(mod->model.mdc[j]->ofsEnd, h_low);
+							newmod->model.mdc[j] = (mdcHeader_t *)ri.Hunk_Alloc(mod->model.mdc[j]->ofsEnd, h_low);
 							memcpy(newmod->model.mdc[j], mod->model.mdc[j], mod->model.mdc[j]->ofsEnd);
 							R_RegisterMDCShaders(newmod, j);
 							R_CacheModelFree(mod->model.mdc[j]);

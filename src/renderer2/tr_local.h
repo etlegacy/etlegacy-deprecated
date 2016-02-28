@@ -808,6 +808,8 @@ typedef struct
 	opcode_t type;
 } opstring_t;
 
+extern const opstring_t opStrings[];
+
 typedef struct
 {
 	opcode_t type;

@@ -673,7 +673,7 @@ qboolean NET_GetPacket(netadr_t *net_from, msg_t *net_message, fd_set *fdr)
 	if (ip_socket != INVALID_SOCKET && FD_ISSET(ip_socket, fdr))
 	{
 		fromlen = sizeof(from);
-		ret     = recvfrom(ip_socket, (void *)net_message->data, net_message->maxsize, 0, (struct sockaddr *) &from, &fromlen);
+		ret     = recvfrom(ip_socket, (char *)net_message->data, net_message->maxsize, 0, (struct sockaddr *) &from, &fromlen);
 
 		if (ret == SOCKET_ERROR)
 		{
@@ -845,7 +845,7 @@ void Sys_SendPacket(int length, const void *data, netadr_t to)
 	{
 		if (addr.ss_family == AF_INET)
 		{
-			ret = sendto(ip_socket, data, length, 0, (struct sockaddr *) &addr, sizeof(struct sockaddr_in));
+			ret = sendto(ip_socket, (const char *)data, length, 0, (struct sockaddr *) &addr, sizeof(struct sockaddr_in));
 		}
 #ifdef FEATURE_IPV6
 		else if (addr.ss_family == AF_INET6)
@@ -1081,7 +1081,7 @@ int NET_IPSocket(char *net_interface, int port, int *err)
 		address.sin_port = htons((short)port);
 	}
 
-	if (bind(newsocket, (void *)&address, sizeof(address)) == SOCKET_ERROR)
+	if (bind(newsocket, (const sockaddr *)&address, sizeof(address)) == SOCKET_ERROR)
 	{
 		Com_Printf("WARNING: NET_IPSocket - bind: %s\n", NET_ErrorString());
 		*err = socketError;
@@ -1382,14 +1382,14 @@ void NET_OpenSocks(int port)
 	{
 		buf[2] = 2;     // method #2 - method id #02: username/password
 	}
-	if (send(socks_socket, (void *)buf, len, 0) == SOCKET_ERROR)
+	if (send(socks_socket, (const char *)buf, len, 0) == SOCKET_ERROR)
 	{
 		Com_Printf("NET_OpenSocks: send: %s\n", NET_ErrorString());
 		return;
 	}
 
 	// get the response
-	len = recv(socks_socket, (void *)buf, 64, 0);
+	len = recv(socks_socket, (char *)buf, 64, 0);
 	if (len == SOCKET_ERROR)
 	{
 		Com_Printf("NET_OpenSocks: recv: %s\n", NET_ErrorString());
@@ -1434,14 +1434,14 @@ void NET_OpenSocks(int port)
 		}
 
 		// send it
-		if (send(socks_socket, (void *)buf, 3 + ulen + plen, 0) == SOCKET_ERROR)
+		if (send(socks_socket, (const char *)buf, 3 + ulen + plen, 0) == SOCKET_ERROR)
 		{
 			Com_Printf("NET_OpenSocks: send: %s\n", NET_ErrorString());
 			return;
 		}
 
 		// get the response
-		len = recv(socks_socket, (void *)buf, 64, 0);
+		len = recv(socks_socket, (char *)buf, 64, 0);
 		if (len == SOCKET_ERROR)
 		{
 			Com_Printf("NET_OpenSocks: recv: %s\n", NET_ErrorString());
@@ -1466,14 +1466,14 @@ void NET_OpenSocks(int port)
 	buf[3]            = 1; // address type: IPV4
 	*(int *)&buf[4]   = INADDR_ANY;
 	*(short *)&buf[8] = htons((short)port);         // port
-	if (send(socks_socket, (void *)buf, 10, 0) == SOCKET_ERROR)
+	if (send(socks_socket, (const char *)buf, 10, 0) == SOCKET_ERROR)
 	{
 		Com_Printf("NET_OpenSocks: send: %s\n", NET_ErrorString());
 		return;
 	}
 
 	// get the response
-	len = recv(socks_socket, (void *)buf, 64, 0);
+	len = recv(socks_socket, (char *)buf, 64, 0);
 	if (len == SOCKET_ERROR)
 	{
 		Com_Printf("NET_OpenSocks: recv: %s\n", NET_ErrorString());

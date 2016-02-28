@@ -2,6 +2,9 @@
 /* Command-line: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/gperf -t7C --language=C++ input_tokens.gperf  */
 /* Computed positions: -k'1-2' */
 
+#ifndef INCLUDE_MATCH_TOKENS
+#define INCLUDE_MATCH_TOKENS
+
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
       && ('%' == 37) && ('&' == 38) && ('\'' == 39) && ('(' == 40) \
       && (')' == 41) && ('*' == 42) && ('+' == 43) && (',' == 44) \
@@ -219,4 +222,4 @@ Perfect_Hash::in_word_set(register const char *str, register unsigned int len)
 	return 0;
 }
 #line 55 "input_tokens.gperf"
-
+#endif

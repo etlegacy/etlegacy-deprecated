@@ -103,11 +103,11 @@
 #endif
 
 #if (defined _MSC_VER)
-#define Q_EXPORT __declspec(dllexport)
+#define Q_EXPORT extern "C" __declspec(dllexport)
 #elif (defined __SUNPRO_C)
-#define Q_EXPORT __global
+#define Q_EXPORT extern "C" __global
 #elif ((__GNUC__ >= 3) && (!__EMX__) && (!sun))
-#define Q_EXPORT __attribute__((visibility("default")))
+#define Q_EXPORT extern "C" __attribute__((visibility("default")))
 #else
 #define Q_EXPORT
 #endif

@@ -227,7 +227,6 @@ float RB_EvalExpression(const expression_t *exp, float defaultValue)
 	float                   value  = 0;
 	float                   value1 = 0;
 	float                   value2 = 0;
-	extern const opstring_t opStrings[];
 
 	if (!exp || !exp->active)
 	{

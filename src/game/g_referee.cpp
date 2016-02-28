@@ -261,7 +261,7 @@ void G_refLockTeams_cmd(gentity_t *ent, qboolean fLock)
 void G_refPause_cmd(gentity_t *ent, qboolean fPause)
 {
 	char *status[2] = { "^5UN", "^1" };
-	char *referee   = (ent) ? "Referee" : "ref";
+	char *referee   = (char *)((ent) ? "Referee" : "ref");
 
 	if ((PAUSE_UNPAUSING >= level.match_pause && !fPause) || (PAUSE_NONE != level.match_pause && fPause))
 	{

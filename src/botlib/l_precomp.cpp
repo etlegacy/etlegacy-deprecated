@@ -508,8 +508,8 @@ void PC_AddBuiltinDefines(source_t *source)
 	struct builtin
 	{
 		char *string;
-		int builtin;
-	} builtin[] =
+		int value;
+	} builtin[5] =
 	{
 		{ "__LINE__", BUILTIN_LINE },
 		{ "__FILE__", BUILTIN_FILE },
@@ -526,7 +526,7 @@ void PC_AddBuiltinDefines(source_t *source)
 		define->name = (char *) define + sizeof(define_t);
 		strcpy(define->name, builtin[i].string);
 		define->flags  |= DEFINE_FIXED;
-		define->builtin = builtin[i].builtin;
+		define->builtin = builtin[i].value;
 		// add the define to the source
 #if DEFINEHASHING
 		PC_AddDefineToHash(define, source->definehash);
@@ -1176,7 +1176,7 @@ define_t *PC_DefineFromString(char *string)
 	strncpy(src.filename, "*extern", _MAX_PATH);
 	src.scriptstack = script;
 #if DEFINEHASHING
-	src.definehash = GetClearedMemory(DEFINEHASHSIZE * sizeof(define_t *));
+	src.definehash = (define_t **)GetClearedMemory(DEFINEHASHSIZE * sizeof(define_t *));
 #endif //DEFINEHASHING
 	   // create a define from the source
 	res = PC_Directive_define(&src);
@@ -1414,7 +1414,7 @@ int PC_Directive_endif(source_t *source)
 
 typedef struct operator_s
 {
-	int operator;
+	int optype;
 	int priority;
 	int parentheses;
 	struct operator_s *prev, *next;
@@ -1764,7 +1764,7 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, signed long int *intval
 			{
 				//o = (operator_t *) GetClearedMemory(sizeof(operator_t));
 				AllocOperator(o);
-				o->operator    = t->subtype;
+				o->optype = t->subtype;
 				o->priority    = PC_OperatorPriority(t->subtype);
 				o->parentheses = parentheses;
 				o->next        = NULL;
@@ -1834,8 +1834,8 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, signed long int *intval
 				}
 			}
 			// if the arity of the operator isn't equal to 1
-			if (o->operator != P_LOGIC_NOT
-			    && o->operator != P_BIN_NOT)
+			if (o->optype != P_LOGIC_NOT
+			    && o->optype != P_BIN_NOT)
 			{
 				v = v->next;
 			}
@@ -1856,7 +1856,7 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, signed long int *intval
 #ifdef DEBUG_EVAL
 		if (integer)
 		{
-			Com_Printf("operator %s, value1 = %d", PunctuationFromNum(source->scriptstack, o->operator), v1->intvalue);
+			Com_Printf("operator %s, value1 = %d", PunctuationFromNum(source->scriptstack, o->optype), v1->intvalue);
 			if (v2)
 			{
 				Com_Printf("value2 = %d", v2->intvalue);
@@ -1864,14 +1864,14 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, signed long int *intval
 		}
 		else
 		{
-			Com_Printf("operator %s, value1 = %f", PunctuationFromNum(source->scriptstack, o->operator), v1->floatvalue);
+			Com_Printf("operator %s, value1 = %f", PunctuationFromNum(source->scriptstack, o->optype), v1->floatvalue);
 			if (v2)
 			{
 				Com_Printf("value2 = %f", v2->floatvalue);
 			}
 		}
 #endif //DEBUG_EVAL
-		switch (o->operator)
+		switch (o->optype)
 		{
 		case P_LOGIC_NOT:
 			v1->intvalue   = !v1->intvalue;
@@ -2013,11 +2013,11 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, signed long int *intval
 			break;
 		}
 		// if not an operator with arity 1
-		if (o->operator != P_LOGIC_NOT
-		    && o->operator != P_BIN_NOT)
+		if (o->optype != P_LOGIC_NOT
+		    && o->optype != P_BIN_NOT)
 		{
 			// remove the second value if not question mark operator
-			if (o->operator != P_QUESTIONMARK)
+			if (o->optype != P_QUESTIONMARK)
 			{
 				v = v->next;
 			}
@@ -2973,7 +2973,7 @@ source_t *LoadSourceFile(const char *filename)
 	source->skip        = 0;
 
 #if DEFINEHASHING
-	source->definehash = GetClearedMemory(DEFINEHASHSIZE * sizeof(define_t *));
+	source->definehash = (define_t **)GetClearedMemory(DEFINEHASHSIZE * sizeof(define_t *));
 #endif //DEFINEHASHING
 	PC_AddGlobalDefinesToSource(source);
 	return source;
@@ -3003,7 +3003,7 @@ source_t *LoadSourceMemory(char *ptr, int length, char *name)
 	source->skip        = 0;
 
 #if DEFINEHASHING
-	source->definehash = GetClearedMemory(DEFINEHASHSIZE * sizeof(define_t *));
+	source->definehash = (define_t **)GetClearedMemory(DEFINEHASHSIZE * sizeof(define_t *));
 #endif //DEFINEHASHING
 	PC_AddGlobalDefinesToSource(source);
 	return source;

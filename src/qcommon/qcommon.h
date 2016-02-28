@@ -915,7 +915,7 @@ void QDECL Com_Error(int code, const char *fmt, ...) __attribute__ ((noreturn, f
 void Com_Quit_f(void) __attribute__ ((noreturn));
 
 int Com_Milliseconds(void);     // will be journaled properly
-unsigned int Com_BlockChecksum(const void *buffer, int length);
+unsigned int Com_BlockChecksum(void *buffer, int length);
 unsigned int Com_BlockChecksumKey(void *buffer, int length, int key);
 char *Com_MD5FileETCompat(const char *filename);
 int Com_HashKey(char *string, int maxlen);
@@ -975,6 +975,8 @@ extern cvar_t *sv_paused;
 
 extern cvar_t *cl_packetdelay;
 extern cvar_t *sv_packetdelay;
+
+extern cvar_t *com_freezeDemo;
 
 // com_speeds times
 extern int time_game;

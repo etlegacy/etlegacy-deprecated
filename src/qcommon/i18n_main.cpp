@@ -40,12 +40,17 @@
 #error This file should only be compiled if you want i18n support
 #endif
 
+#ifndef __cplusplus
 extern "C"
 {
+#endif
 #include "q_shared.h"
 #include "qcommon.h"
 #include "i18n_findlocale.h"
+
+#ifndef __cplusplus
 }
+#endif
 
 #include <iostream>
 #include <string.h>

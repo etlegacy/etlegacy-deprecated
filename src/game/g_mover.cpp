@@ -4800,7 +4800,7 @@ void use_invisible_user(gentity_t *ent, gentity_t *other, gentity_t *activator)
 
 	if (other->client)
 	{
-		G_Script_ScriptEvent(ent, "activate", other->client->sess.sessionTeam == TEAM_AXIS ? "axis" : "allies");
+		G_Script_ScriptEvent(ent, "activate", (char *)(other->client->sess.sessionTeam == TEAM_AXIS ? "axis" : "allies"));
 	}
 	G_UseTargets(ent, other);   // how about this so the triggered targets have an 'activator' as well as an 'other'?
 	                            // Please let me know if you forsee any problems with this.

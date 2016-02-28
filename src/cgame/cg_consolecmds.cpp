@@ -612,7 +612,7 @@ static void CG_SelectBuddy_f(void)
 			break;     // there was no-one in this position
 		}
 
-		ci->selected = qtrue;
+		ci->selected = !ci->selected;
 		break;
 
 	case -1:

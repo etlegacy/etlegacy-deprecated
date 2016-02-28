@@ -2,7 +2,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #include <winnt.h>
 #endif
@@ -29,7 +29,7 @@ static void lang_country_variant_from_envstring(const char *str, char **lang, ch
 	{
 		int  i;
 		int  len = end - start;
-		char *s  = malloc(len + 1);
+		char *s  = (char *)malloc(len + 1);
 
 		for (i = 0; i < len; ++i)
 		{
@@ -58,7 +58,7 @@ static void lang_country_variant_from_envstring(const char *str, char **lang, ch
 	{
 		int  i;
 		int  len = end - start;
-		char *s  = malloc(len + 1);
+		char *s  = (char *)malloc(len + 1);
 
 		for (i = 0; i < len; ++i)
 		{
@@ -87,7 +87,7 @@ static void lang_country_variant_from_envstring(const char *str, char **lang, ch
 	{
 		int  i;
 		int  len = end - start;
-		char *s  = malloc(len + 1);
+		char *s  = (char *)malloc(len + 1);
 
 		for (i = 0; i < len; ++i)
 		{
@@ -166,7 +166,7 @@ static void canonise_fl(FL_Locale *l)
 	}
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 
 #include <stdio.h>
 
@@ -451,13 +451,13 @@ static const int lcid_to_fl(LCID lcid, FL_Locale *rtn)
 FL_Success FL_FindLocale(FL_Locale **locale)
 {
 	FL_Success success = FL_FAILED;
-	FL_Locale  *rtn    = malloc(sizeof(FL_Locale));
+	FL_Locale  *rtn    = (FL_Locale *)malloc(sizeof(FL_Locale));
 
 	rtn->lang    = NULL;
 	rtn->country = NULL;
 	rtn->variant = NULL;
 
-#ifdef WIN32
+#ifdef _WIN32
 	// win32 >= mswindows95
 	{
 		LCID lcid = GetThreadLocale();

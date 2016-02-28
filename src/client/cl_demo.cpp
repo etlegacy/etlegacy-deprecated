@@ -1195,7 +1195,7 @@ void CL_DemoRun(void)
 		cl.serverTime = clc.timeDemoBaseTime + clc.timeDemoFrames * 50;
 	}
 
-	if (cl_freezeDemo->integer)
+	if (com_freezeDemo->integer)
 	{
 		return;
 	}
@@ -1724,18 +1724,18 @@ void CL_PauseDemo_f(void)
 	}
 
 #if NEW_DEMOFUNC
-	if (!cl_freezeDemo->integer)
+	if (!com_freezeDemo->integer)
 	{
 		pauseTime = cl.serverTime;
 	}
 	else
 	{
-		// TODO: this is just a hack, actually fix the cl_freezeDemo instead of this
+		// TODO: this is just a hack, actually fix the com_freezeDemo instead of this
 		CL_DemoSeekMs(0, pauseTime);
 	}
 #endif
 
-	Cvar_SetValue("cl_freezeDemo", !cl_freezeDemo->integer);
+	Cvar_SetValue("cl_freezeDemo", !com_freezeDemo->integer);
 }
 
 void CL_DemoInit(void)

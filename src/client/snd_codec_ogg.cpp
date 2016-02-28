@@ -259,7 +259,7 @@ snd_stream_t *S_OGG_CodecOpenStream(const char *filename)
 	}
 
 	// alloctate the OggVorbis_File
-	vf = Z_Malloc(sizeof(OggVorbis_File));
+	vf = (OggVorbis_File *)Z_Malloc(sizeof(OggVorbis_File));
 	if (!vf)
 	{
 		S_CodecUtilClose(&stream);
@@ -391,7 +391,7 @@ int S_OGG_CodecReadStream(snd_stream_t *stream, int bytes, void *buffer)
 
 	bytesRead = 0;
 	bytesLeft = bytes;
-	bufPtr    = buffer;
+	bufPtr    = (char *)buffer;
 
 	// cycle until we have the requested or all available bytes read
 	while (-1)
@@ -456,7 +456,7 @@ void *S_OGG_CodecLoad(const char *filename, snd_info_t *info)
 
 	// allocate a buffer
 	// this buffer must be free-ed by the caller of this function
-	buffer = Hunk_AllocateTempMemory(info->size);
+	buffer = (byte *)Hunk_AllocateTempMemory(info->size);
 	if (!buffer)
 	{
 		S_OGG_CodecCloseStream(stream);

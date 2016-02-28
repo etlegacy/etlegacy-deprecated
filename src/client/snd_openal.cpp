@@ -53,7 +53,6 @@ cvar_t *s_alGraceDistance;
 cvar_t *s_alDriver;
 cvar_t *s_alDevice;
 cvar_t *s_alAvailableDevices;
-cvar_t *s_debugStreams;
 
 // sound fading
 static float    s_volStart, s_volTarget;
@@ -1169,7 +1168,7 @@ static void S_AL_SrcKill(srcHandle_t src)
 
 	curSource->sfx          = 0;
 	curSource->lastUsedTime = 0;
-	curSource->priority     = 0;
+	curSource->priority     = (alSrcPriority_t)0;
 	curSource->entity       = -1;
 	curSource->channel      = -1;
 	if (curSource->isActive)
@@ -3272,7 +3271,6 @@ qboolean S_AL_Init(soundInterface_t *si)
 	s_alDriver = Cvar_Get("s_alDriver", ALDRIVER_DEFAULT, CVAR_ARCHIVE | CVAR_LATCH);
 
 	s_alDevice     = Cvar_Get("s_alDevice", "", CVAR_ARCHIVE | CVAR_LATCH);
-	s_debugStreams = Cvar_Get("s_debugStreams", "0", CVAR_TEMP);
 
 	// Load QAL
 	if (!QAL_Init(s_alDriver->string))
@@ -3360,6 +3358,9 @@ qboolean S_AL_Init(soundInterface_t *si)
 	qalDopplerFactor(s_alDopplerFactor->value);
 	qalDopplerVelocity(s_alDopplerSpeed->value);
 
+	//FIXME: why the fuck doesn't this work!?
+#if 0
+
 	qalGenEffects(QAL_EFX_MAX, effect);
 	qalGenAuxiliaryEffectSlots(QAL_EFX_MAX, auxslot);
 
@@ -3367,6 +3368,8 @@ qboolean S_AL_Init(soundInterface_t *si)
 	qalEffecti(effect[QAL_EFX_DEDICATED_LFE], AL_EFFECT_TYPE, AL_EFFECT_DEDICATED_LOW_FREQUENCY_EFFECT);
 	qalEffectf(effect[QAL_EFX_DEDICATED_LFE], AL_DEDICATED_GAIN, 0.05f);
 	qalAuxiliaryEffectSloti(auxslot[QAL_EFX_DEDICATED_LFE], AL_EFFECTSLOT_EFFECT, effect[QAL_EFX_DEDICATED_LFE]);
+#endif
+
 #endif
 
 #ifdef USE_VOIP
