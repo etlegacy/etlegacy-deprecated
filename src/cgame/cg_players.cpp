@@ -1968,7 +1968,7 @@ static void CG_PlayerFloatText(centity_t *cent, const char *text, int height)
 	}
 	else
 	{
-		if ((qboolean)cent->currentState.animMovetype)
+		if (cent->currentState.animMovetype)
 		{
 			origin[2] -= 18;
 		}

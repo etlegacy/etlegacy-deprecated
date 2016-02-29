@@ -587,7 +587,7 @@ static void CG_ParseGlobalFog(void)
 	int        duration;
 
 	token    = COM_Parse((char **)&info);
-	restore  = (qboolean)atoi(token);
+	restore  = bool(atoi(token));
 	token    = COM_Parse((char **)&info);
 	duration = atoi(token);
 
@@ -872,7 +872,7 @@ static void CG_ConfigStringModified(void)
 		Q_strncpyz(cgs.voteString, CG_ConfigString(num), sizeof(cgs.voteString));
 		break;
 	case CS_INTERMISSION:
-		cg.intermissionStarted = (qboolean)atoi(CG_ConfigString(num));
+		cg.intermissionStarted = bool(atoi(CG_ConfigString(num)));
 		break;
 	case CS_SCREENFADE:
 		CG_ParseScreenFade();
@@ -1647,7 +1647,7 @@ void CG_VoiceChat(int mode)
 	qboolean   voiceOnly;
 	vec3_t     origin;
 
-	voiceOnly = (qboolean)atoi(CG_Argv(1));
+	voiceOnly = bool(atoi(CG_Argv(1)));
 	clientNum = atoi(CG_Argv(2));
 	color     = atoi(CG_Argv(3));
 
@@ -2911,7 +2911,7 @@ static void CG_ServerCommand(void)
 	}
 	else if (!Q_stricmp(cmd, "snd_fade"))
 	{
-		trap_S_FadeAllSound(atof(CG_Argv(1)), atoi(CG_Argv(2)), (qboolean)atoi(CG_Argv(3)));
+		trap_S_FadeAllSound(atof(CG_Argv(1)), atoi(CG_Argv(2)), bool(atoi(CG_Argv(3))));
 		return;
 	}
 	// ensure a file gets into a build (mainly for scripted music calls)

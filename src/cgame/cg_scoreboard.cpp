@@ -36,7 +36,7 @@
 #include "cg_local.h"
 
 // colors and fonts for overlays
-vec4_t SB_bg = { 0.16, 0.2f, 0.17f, 0.8f };
+vec4_t SB_bg = { 0.16f, 0.2f, 0.17f, 0.8f };
 vec4_t SB_bg2 = { 0.0f, 0.0f, 0.0f, 0.6f };
 vec4_t SB_border = { 1.0f, 1.0f, 1.0f, 0.3f };
 vec4_t SB_text = { 0.6f, 0.6f, 0.6f, 1.0f };

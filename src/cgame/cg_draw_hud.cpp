@@ -2413,7 +2413,7 @@ static void CG_DrawPlayerStatus(void)
 
 			VectorCopy(cg.snap->ps.origin, origin);
 			origin[2] += 36;
-			underwater = (qboolean)(CG_PointContents(origin, cg.snap->ps.clientNum) & CONTENTS_WATER);
+			underwater = (CG_PointContents(origin, cg.snap->ps.clientNum) & CONTENTS_WATER ? true : false);
 		}
 		else
 		{
