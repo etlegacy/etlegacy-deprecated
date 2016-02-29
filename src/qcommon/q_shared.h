@@ -340,6 +340,7 @@ static ID_INLINE float idSqrt(float x)
 typedef unsigned char byte;
 
 //typedef enum { qfalse, qtrue }    qboolean;
+typedef int intbool; // To make the old mods compatible with the c++ client
 typedef bool qboolean;
 #define qtrue true
 #define qfalse false
@@ -1256,8 +1257,8 @@ typedef struct cplane_s
 // a trace is returned when a box is swept through the world
 typedef struct
 {
-	qboolean allsolid;      // if true, plane is not valid
-	qboolean startsolid;    // if true, the initial point was in a solid area
+	intbool allsolid;       // if true, plane is not valid
+	intbool startsolid;     // if true, the initial point was in a solid area
 	float fraction;         // time completed, 1.0 = didn't hit anything
 	vec3_t endpos;          // final position
 	cplane_t plane;         // surface normal at impact, transformed to world space
@@ -1539,7 +1540,7 @@ typedef struct playerState_s
 
 	int weapAnim;                   // mask off ANIM_TOGGLEBIT, DOES get send over the network
 
-	qboolean releasedFire;
+	intbool releasedFire;
 
 	float aimSpreadScaleFloat;      // the server-side aimspreadscale that lets it track finer changes but still only
 	// transmit the 8bit int to the client

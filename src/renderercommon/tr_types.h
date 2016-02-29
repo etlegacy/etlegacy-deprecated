@@ -403,15 +403,15 @@ typedef struct
 	glDriverType_t driverType;
 	glHardwareType_t hardwareType;
 
-	int deviceSupportsGamma;
+	intbool deviceSupportsGamma;
 	textureCompression_t textureCompression;
-	int textureEnvAddAvailable;
-	int anisotropicAvailable;
+	intbool textureEnvAddAvailable;
+	intbool anisotropicAvailable;
 	float maxAnisotropy;
 
 	// vendor-specific support
 	// NVidia
-	int NVFogAvailable;
+	intbool NVFogAvailable;
 	int NVFogMode;
 	// ATI
 	int ATIMaxTruformTess;                          // for truform support
@@ -428,9 +428,9 @@ typedef struct
 	int displayFrequency;
 
 	// synonymous with "does rendering consume the entire screen?"
-	int isFullscreen;
-	int stereoEnabled;
-	int smpActive;                     // obsolete, kept for compatibility
+	intbool isFullscreen;
+	intbool stereoEnabled;
+	intbool smpActive;                     // obsolete, kept for compatibility
 } glconfig_t;
 
 typedef enum

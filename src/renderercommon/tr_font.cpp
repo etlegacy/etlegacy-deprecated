@@ -478,7 +478,7 @@ static qboolean R_LoadScalableFont(const char *fontName, int pointSize, fontInfo
 
 	if (!formatFound)
 	{
-		Ren_Warning("R_LoadScalableFont: Unable to find any supported font files by the name of %s\n", fontName);
+		Ren_Developer("R_LoadScalableFont: Unable to find any supported font files by the name of %s\n", fontName);
 		return qfalse;
 	}
 
@@ -502,7 +502,7 @@ static qboolean R_LoadScalableFont(const char *fontName, int pointSize, fontInfo
 	len = ri.FS_ReadFile(name, (void **)&faceData);
 	if (len <= 0)
 	{
-		Ren_Warning("R_LoadScalableFont: Unable to read font file '%s'\n", name);
+		Ren_Developer("R_LoadScalableFont: Unable to read font file '%s'\n", name);
 		return qfalse;
 	}
 
