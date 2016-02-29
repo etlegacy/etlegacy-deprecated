@@ -3358,9 +3358,6 @@ qboolean S_AL_Init(soundInterface_t *si)
 	qalDopplerFactor(s_alDopplerFactor->value);
 	qalDopplerVelocity(s_alDopplerSpeed->value);
 
-	//FIXME: why the fuck doesn't this work!?
-#if 0
-
 	qalGenEffects(QAL_EFX_MAX, effect);
 	qalGenAuxiliaryEffectSlots(QAL_EFX_MAX, auxslot);
 
@@ -3368,8 +3365,6 @@ qboolean S_AL_Init(soundInterface_t *si)
 	qalEffecti(effect[QAL_EFX_DEDICATED_LFE], AL_EFFECT_TYPE, AL_EFFECT_DEDICATED_LOW_FREQUENCY_EFFECT);
 	qalEffectf(effect[QAL_EFX_DEDICATED_LFE], AL_DEDICATED_GAIN, 0.05f);
 	qalAuxiliaryEffectSloti(auxslot[QAL_EFX_DEDICATED_LFE], AL_EFFECTSLOT_EFFECT, effect[QAL_EFX_DEDICATED_LFE]);
-#endif
-
 #endif
 
 #ifdef USE_VOIP
