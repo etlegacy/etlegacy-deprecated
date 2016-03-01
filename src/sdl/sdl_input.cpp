@@ -1394,3 +1394,105 @@ void IN_Restart(void)
 	IN_ShutdownJoystick();
 	IN_Init();
 }
+
+#ifdef __APPLE__
+
+dialogResult_t Sys_Dialoggg(dialogType_t type, const char *message, const char *title)
+{
+	SDL_MessageBoxButtonData buttonData[2];
+	int usedButtons = 0;
+
+	const SDL_MessageBoxColorScheme colorScheme = {
+			{ /* .colors (.r, .g, .b) */
+					/* [SDL_MESSAGEBOX_COLOR_BACKGROUND] */
+					{ 255,   0,   0 },
+					/* [SDL_MESSAGEBOX_COLOR_TEXT] */
+					{   0, 255,   0 },
+					/* [SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] */
+					{ 255, 255,   0 },
+					/* [SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] */
+					{   0,   0, 255 },
+					/* [SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] */
+					{ 255,   0, 255 }
+			}
+	};
+
+	switch (type)
+	{
+		case DT_INFO:
+		case DT_WARNING:
+		case DT_ERROR:
+		{
+			SDL_MessageBoxButtonData okBtn = {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "Ok"};
+			buttonData[usedButtons++] = okBtn;
+		}
+			break;
+		case DT_YES_NO:
+		{
+			SDL_MessageBoxButtonData noBtn = {0, 0, "No"};
+			SDL_MessageBoxButtonData yesBtn = {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Yes"};
+
+			buttonData[usedButtons++] = noBtn;
+			buttonData[usedButtons++] = yesBtn;
+		}
+			break;
+		case DT_OK_CANCEL: {
+			SDL_MessageBoxButtonData okBtn = {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "Ok"};
+			SDL_MessageBoxButtonData cancelBtn = {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 1, "Cancel"};
+
+			buttonData[usedButtons++] = okBtn;
+			buttonData[usedButtons++] = cancelBtn;
+		}
+			break;
+	}
+
+	const SDL_MessageBoxData messageboxdata = {
+			SDL_MESSAGEBOX_INFORMATION, /* .flags */
+			NULL, /* .window */
+			title, /* .title */
+			message, /* .message */
+			usedButtons, /* .numbuttons */
+			buttonData, /* .buttons */
+			&colorScheme /* .colorScheme */
+	};
+
+	int buttonid;
+	if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0) {
+		Com_Printf("error displaying message box\n");
+		return DR_NO;
+	}
+
+	if (buttonid == -1) {
+		// No selection
+		return DR_NO;
+	}/* else {
+		SDL_Log("selection was %s", buttons[buttonid].text);
+	}
+	return 0;
+	*/
+
+	switch (type)
+	{
+		case DT_YES_NO:
+			if(buttonid == 0)
+			{
+				return DR_YES;
+			}
+			else
+			{
+				return DR_NO;
+			}
+		case DT_OK_CANCEL:
+			if(buttonid == 0)
+			{
+				return DR_OK;
+			}
+			else
+			{
+				return DR_CANCEL;
+			}
+		default:
+			return DR_YES;
+	}
+}
+#endif

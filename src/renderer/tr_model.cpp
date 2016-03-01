@@ -2205,7 +2205,7 @@ void *R_Hunk_Begin(void)
 #else
 		// if not win32, then just allocate it now
 		// it is possible that we have been allocated already, in case we don't do anything
-		membase = malloc(maxsize);
+		membase = (byte *)malloc(maxsize);
 		// NOTE: initially, I was doing the memset even if we had an existing membase
 		// but this breaks some shaders (i.e. /map mp_beach, then go back to the main menu .. some shaders are missing)
 		// I assume the shader missing is because we don't clear memory either on win32

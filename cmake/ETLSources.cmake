@@ -20,8 +20,8 @@ LIST(REMOVE_ITEM COMMON_SRC ${COMMON_SRC_REMOVE})
 # Platform specific code for server and client
 if(UNIX)
 	if(APPLE)
-		LIST(APPEND PLATFORM_SRC "src/sys/sys_osx.m")
-		SET_SOURCE_FILES_PROPERTIES("src/sys/sys_osx.m" PROPERTIES LANGUAGE C)
+		LIST(APPEND PLATFORM_SRC "src/sys/sys_osx.mm")
+		SET_SOURCE_FILES_PROPERTIES("src/sys/sys_osx.mm" PROPERTIES LANGUAGE C)
 	endif(APPLE)
 
 	LIST(APPEND PLATFORM_SRC "src/sys/sys_unix.cpp")

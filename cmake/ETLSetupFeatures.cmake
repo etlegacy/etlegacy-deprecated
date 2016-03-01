@@ -50,7 +50,8 @@ if(BUILD_CLIENT)
 		add_definitions(-DHAVE_SDL) # for tinygettext
 	endif()
 	if(APPLE)
-		add_library(INTERNAL_SDLMain ${CMAKE_SOURCE_DIR}/src/sys/SDLMain.m )
+		# FIXME: i doubth this is actually needed anymore (builds without it)
+		add_library(INTERNAL_SDLMain ${CMAKE_SOURCE_DIR}/src/sys/SDLMain.mm )
 		list(APPEND RENDERER_LIBRARIES ${INTERNAL_SDLMain})
 	endif(APPLE)
 
