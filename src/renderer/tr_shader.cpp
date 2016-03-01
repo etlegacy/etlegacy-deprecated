@@ -1531,7 +1531,7 @@ void ParseSort(char **text)
 typedef struct
 {
 	char *name;
-	int clearSolid, surfaceFlags, contents; // clearSolid is never used
+	unsigned int clearSolid, surfaceFlags, contents; // clearSolid is never used
 } infoParm_t;
 
 infoParm_t infoParms[] =

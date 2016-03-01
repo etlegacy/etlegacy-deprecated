@@ -55,7 +55,7 @@ panel_button_t fireteamTopBorder =
 	NULL,
 	NULL,
 	{ 10,                     129,        204,       136 },
-	{ 1,                      255 * .5f,  255 * .5f, 255 * .5f, 255 * .5f, 1, 0, 0},
+	{ 1, static_cast<int>(255 * .5f), static_cast<int>(255 * .5f), static_cast<int>(255 * .5f), static_cast<int>(255 * .5f), 1, 0, 0},
 	NULL,                     /* font     */
 	NULL,                     /* keyDown  */
 	NULL,                     /* keyUp    */
@@ -68,7 +68,7 @@ panel_button_t fireteamTopBorderBack =
 	"white",
 	NULL,
 	{ 11,                     130,202, 134 },
-	{ 1,                      0,  0,   0, 255 * 0.75f, 0, 0, 0},
+	{ 1,                      0,  0,   0, static_cast<int>(255 * 0.75f), 0, 0, 0},
 	NULL,                     /* font     */
 	NULL,                     /* keyDown  */
 	NULL,                     /* keyUp    */

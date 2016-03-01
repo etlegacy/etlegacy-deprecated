@@ -383,8 +383,8 @@ typedef struct shader_s
 
 	qboolean explicitlyDefined;         // found in a .shader file
 
-	int surfaceFlags;                   // if explicitlyDefined, this will have SURF_* flags
-	int contentFlags;
+	unsigned int surfaceFlags;                   // if explicitlyDefined, this will have SURF_* flags
+	unsigned int contentFlags;
 
 	qboolean entityMergable;            // merge across entites optimizable (smoke, blood)
 
