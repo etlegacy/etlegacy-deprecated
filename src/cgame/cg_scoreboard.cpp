@@ -163,7 +163,7 @@ int WM_DrawObjectives(int x, int y, int width, float fade)
 
 		if (cgs.timelimit > 0.0f)
 		{
-			msec = (cgs.timelimit * 60.f * 1000.f) - (cg.time - cgs.levelStartTime);
+			msec = (cgs.timelimit * 60000.f) - (cg.time - cgs.levelStartTime); // 60.f * 1000.f
 
 			seconds  = msec / 1000;
 			mins     = seconds / 60;
@@ -493,7 +493,7 @@ static void WM_DrawClientScore(int x, int y, score_t *score, float *color, float
 	tempx += INFO_CLASS_WIDTH;
 
 #ifdef FEATURE_RATING
-	// FIXME: 	if (cgs.skillRating)
+	// FIXME:   if (cgs.skillRating)
 	if (cg_scoreboard.integer == SCOREBOARD_XP)
 	{
 		CG_Text_Paint_Ext(tempx, y, 0.24, 0.28, colorWhite, va("^7%6i", score->score), 0, 0, ITEM_TEXTSTYLE_SHADOWED, FONT_TEXT);
@@ -695,7 +695,7 @@ static void WM_DrawClientScore_Small(int x, int y, score_t *score, float *color,
 	tempx += INFO_CLASS_WIDTH + 6;
 
 #ifdef FEATURE_RATING
-	// FIXME: 	if (cgs.skillRating)
+	// FIXME:   if (cgs.skillRating)
 	if (cg_scoreboard.integer == SCOREBOARD_XP)
 	{
 		CG_Text_Paint_Ext(tempx, y, 0.20, 0.25, colorWhite, va("^7%6i", score->score), 0, 0, ITEM_TEXTSTYLE_SHADOWED, FONT_TEXT);
@@ -767,7 +767,7 @@ static int WM_DrawInfoLine(int x, int y, float fade)
 	if (cgs.currentRound)
 	{
 		// first round
-		s = va(CG_TranslateString("CLOCK IS NOW SET TO %s!"), WM_TimeToString(cgs.nextTimeLimit * 60.f * 1000.f));
+		s = va(CG_TranslateString("CLOCK IS NOW SET TO %s!"), WM_TimeToString(cgs.nextTimeLimit * 60000.f)); // 60.f * 1000.f
 	}
 	else
 	{
@@ -876,7 +876,7 @@ static int WM_TeamScoreboard(int x, int y, team_t team, float fade, int maxrows,
 		if (team == TEAM_AXIS)
 		{
 #ifdef FEATURE_RATING
-			// FIXME: 	if (cgs.skillRating)
+			// FIXME:   if (cgs.skillRating)
 			if (cg_scoreboard.integer == SCOREBOARD_XP)
 			{
 				s = va("%s [%d] (%d %s)", CG_TranslateString("AXIS"), cg.teamScores[0], cg.teamPlayers[team], cg.teamPlayers[team] < 2 ? CG_TranslateString("PLAYER") : CG_TranslateString("PLAYERS"));
@@ -894,7 +894,7 @@ static int WM_TeamScoreboard(int x, int y, team_t team, float fade, int maxrows,
 		else if (team == TEAM_ALLIES)
 		{
 #ifdef FEATURE_RATING
-			// FIXME: 	if (cgs.skillRating)
+			// FIXME:   if (cgs.skillRating)
 			if (cg_scoreboard.integer == SCOREBOARD_XP)
 			{
 				s = va("%s [%d] (%d %s)", CG_TranslateString("ALLIES"), cg.teamScores[1], cg.teamPlayers[team], cg.teamPlayers[team] < 2 ? CG_TranslateString("PLAYER") : CG_TranslateString("PLAYERS"));
@@ -941,7 +941,7 @@ static int WM_TeamScoreboard(int x, int y, team_t team, float fade, int maxrows,
 	else
 	{
 #ifdef FEATURE_RATING
-		// FIXME: 	if (cgs.skillRating)
+		// FIXME:   if (cgs.skillRating)
 		if (cg_scoreboard.integer == SCOREBOARD_XP)
 		{
 			CG_Text_Paint_Ext(tempx + 30, y + 13, 0.24, 0.28, colorWhite, CG_TranslateString("XP"), 0, 0, ITEM_TEXTSTYLE_SHADOWED, FONT_TEXT);
