@@ -1025,6 +1025,34 @@ int main(int argc, char **argv)
 
 	Sys_SetUpConsoleAndSignals();
 
+#ifdef _WIN32
+
+#ifndef DEDICATED
+	if(com_viewlog->integer)
+	{
+		Sys_ShowConsoleWindow(1, qfalse);
+	}
+#endif
+
+	Sys_Splash(qfalse);
+
+	{
+		char cwd[MAX_OSPATH];
+		_getcwd(cwd, sizeof(cwd));
+		Com_Printf("Working directory: %s\n", cwd);
+	}
+
+	// hide the early console since we've reached the point where we
+	// have a working graphics subsystems
+#ifndef LEGACY_DEBUG
+	if (!com_dedicated->integer && !com_viewlog->integer)
+	{
+		Sys_ShowConsoleWindow(0, qfalse);
+	}
+#endif
+
+#endif
+
 	Sys_GameLoop();
 
 	return 0;
