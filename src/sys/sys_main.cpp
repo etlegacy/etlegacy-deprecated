@@ -996,14 +996,14 @@ int main(int argc, char **argv)
 		if (!url)
 		{
 			Sys_Dialog(DT_ERROR, "A CFURL for the app bundle could not be found.", "Can't set Sys_SetBinaryPath");
-			Sys_Exit(1);
+			Sys_Exit(EXIT_FAILURE);
 		}
 
 		CFURLRef url2 = CFURLCreateCopyDeletingLastPathComponent(0, url);
 		if (!url2 || !CFURLGetFileSystemRepresentation(url2, 1, (UInt8 *)parentdir, 1024))
 		{
 			Sys_Dialog(DT_ERROR, "CFURLGetFileSystemRepresentation returned an error when finding the app bundle's parent directory.", "Can't set Sys_SetBinaryPath");
-			Sys_Exit(1);
+			Sys_Exit(EXIT_FAILURE);
 		}
 
 		Sys_SetBinaryPath(parentdir);
@@ -1017,7 +1017,7 @@ int main(int argc, char **argv)
 
 	Sys_SetDefaultInstallPath(DEFAULT_BASEDIR); // Sys_BinaryPath() by default
 
-	// Concatenate the command line for passing to Com_Init
+												// Concatenate the command line for passing to Com_Init
 	Sys_BuildCommandLine(argc, argv, commandLine, sizeof(commandLine));
 
 	Com_Init(commandLine);
@@ -1028,7 +1028,7 @@ int main(int argc, char **argv)
 #ifdef _WIN32
 
 #ifndef DEDICATED
-	if(com_viewlog->integer)
+	if (com_viewlog->integer)
 	{
 		Sys_ShowConsoleWindow(1, qfalse);
 	}
@@ -1055,5 +1055,5 @@ int main(int argc, char **argv)
 
 	Sys_GameLoop();
 
-	return 0;
+	return EXIT_SUCCESS;
 }
