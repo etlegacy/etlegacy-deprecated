@@ -144,7 +144,7 @@ typedef int intptr_t;
 #else
 
 #include <assert.h>
-#include <math.h>
+#include <cmath>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
