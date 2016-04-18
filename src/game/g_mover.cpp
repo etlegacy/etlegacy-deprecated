@@ -32,6 +32,8 @@
  * @file g_mover.c
  */
 
+#include <cmath>
+
 #include "g_local.h"
 
 #ifdef FEATURE_OMNIBOT

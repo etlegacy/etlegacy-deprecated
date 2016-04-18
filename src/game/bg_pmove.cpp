@@ -35,6 +35,8 @@
  * Takes a playerstate and a usercmd as input and returns a modifed playerstate.
  */
 
+#include <cmath>
+
 #ifdef CGAMEDLL
 #include "../cgame/cg_local.h"
 #else
