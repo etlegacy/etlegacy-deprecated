@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -90,7 +90,7 @@ void CG_PMItemBigSound(pmListItemBig_t *item);
 
 void CG_InitPMGraphics(void)
 {
-	cgs.media.pmImages[PM_DYNAMITE]     = trap_R_RegisterShaderNoMip("gfx/limbo/dynamite");
+	cgs.media.pmImages[PM_DYNAMITE]     = trap_R_RegisterShaderNoMip("gfx/limbo/pm_dynamite");
 	cgs.media.pmImages[PM_CONSTRUCTION] = trap_R_RegisterShaderNoMip("sprites/voiceChat");
 	cgs.media.pmImages[PM_MINES]        = trap_R_RegisterShaderNoMip("sprites/voiceChat");
 	cgs.media.pmImages[PM_DEATH]        = trap_R_RegisterShaderNoMip("gfx/hud/pm_death");
@@ -105,6 +105,9 @@ void CG_InitPMGraphics(void)
 	cgs.media.pmImageAxisConstruct   = trap_R_RegisterShaderNoMip("gfx/hud/pm_constaxis");
 	cgs.media.pmImageAlliesMine      = trap_R_RegisterShaderNoMip("gfx/hud/pm_mineallied");
 	cgs.media.pmImageAxisMine        = trap_R_RegisterShaderNoMip("gfx/hud/pm_mineaxis");
+	cgs.media.pmImageAlliesFlag      = trap_R_RegisterShaderNoMip("gfx/limbo/pm_flagallied");
+	cgs.media.pmImageAxisFlag        = trap_R_RegisterShaderNoMip("gfx/limbo/pm_flagaxis");
+	cgs.media.pmImageSpecFlag        = trap_R_RegisterShaderNoMip("sprites/voiceChat");
 	cgs.media.hintKey                = trap_R_RegisterShaderNoMip("gfx/hud/keyboardkey_old");
 
 	// extra obituaries
@@ -673,8 +676,6 @@ void CG_DrawPMItemsBig(void)
 	CG_Text_Paint_Ext(Ccg_WideX(SCREEN_WIDTH) - 4 - w, y + 56, fontScale, fontScale, colourText, cg_pmWaitingListBig->message, 0, 0, 0, &cgs.media.limboFont2);
 }
 
-#define TXTCOLOR_OBJ "^O"
-
 const char *CG_GetPMItemText(centity_t *cent)
 {
 	switch (cent->currentState.effect1Time)
@@ -723,13 +724,13 @@ const char *CG_GetPMItemText(centity_t *cent)
 
 			if (!locStr || !*locStr)
 			{
-				return va("%sSpotted by ^7%s", TXTCOLOR_OBJ, cgs.clientinfo[cent->currentState.effect3Time].name);
+				return va("Spotted by %s", cgs.clientinfo[cent->currentState.effect3Time].name);
 			}
-			return va(CG_TranslateString("%sSpotted by ^7%s%s at %s"), TXTCOLOR_OBJ, cgs.clientinfo[cent->currentState.effect3Time].name, TXTCOLOR_OBJ, locStr);
+			return va(CG_TranslateString("Spotted by %s^7 at %s"), cgs.clientinfo[cent->currentState.effect3Time].name, locStr);
 		}
 		else
 		{
-			return va(CG_TranslateString("%sSpotted by ^7%s"), TXTCOLOR_OBJ, cgs.clientinfo[cent->currentState.effect3Time].name);
+			return va(CG_TranslateString("Spotted by %s"), cgs.clientinfo[cent->currentState.effect3Time].name);
 		}
 		break;
 	case PM_OBJECTIVE:
@@ -772,6 +773,8 @@ const char *CG_GetPMItemText(centity_t *cent)
 	return NULL;
 }
 
+static int lastSoundTime = 0;
+
 void CG_PlayPMItemSound(centity_t *cent)
 {
 	switch (cent->currentState.effect1Time)
@@ -807,16 +810,22 @@ void CG_PlayPMItemSound(centity_t *cent)
 		{
 			break;
 		}
-		if (cgs.clientinfo[cg.clientNum].team != cent->currentState.effect2Time)
+
+		// don't spam landmine spotted sounds ... play once per 10 secs
+		if (!lastSoundTime || cg.time > lastSoundTime)
 		{
-			// inverted teams
-			if (cent->currentState.effect2Time == TEAM_AXIS)
+			if (cgs.clientinfo[cg.clientNum].team != cent->currentState.effect2Time)
 			{
-				CG_SoundPlaySoundScript("allies_hq_mines_spotted", NULL, -1, qtrue);
-			}
-			else
-			{
-				CG_SoundPlaySoundScript("axis_hq_mines_spotted", NULL, -1, qtrue);
+				// inverted teams
+				if (cent->currentState.effect2Time == TEAM_AXIS)
+				{
+					CG_SoundPlaySoundScript("allies_hq_mines_spotted", NULL, -1, qtrue);
+				}
+				else
+				{
+					CG_SoundPlaySoundScript("axis_hq_mines_spotted", NULL, -1, qtrue);
+				}
+				lastSoundTime = cg.time + 10000; // 10 secs
 			}
 		}
 		break;
@@ -860,12 +869,28 @@ qhandle_t CG_GetPMItemIcon(centity_t *cent)
 			return cgs.media.pmImageAxisConstruct;
 		}
 		return cgs.media.pmImageAlliesConstruct;
+	case PM_DESTRUCTION:
+		if (cent->currentState.density == TEAM_AXIS)
+		{
+			return cgs.media.pmImageAxisConstruct;
+		}
+		return cgs.media.pmImageAlliesConstruct;
 	case PM_MINES:
 		if (cent->currentState.effect2Time == TEAM_AXIS)
 		{
 			return cgs.media.pmImageAlliesMine;
 		}
 		return cgs.media.pmImageAxisMine;
+	case PM_TEAM:
+		if (cent->currentState.effect2Time == TEAM_AXIS)
+		{
+			return cgs.media.pmImageAxisFlag;
+		}
+		else if (cent->currentState.effect2Time == TEAM_ALLIES)
+		{
+			return cgs.media.pmImageAlliesFlag;
+		}
+		return cgs.media.pmImageSpecFlag;
 	default:
 		return cgs.media.pmImages[cent->currentState.effect1Time];
 	}

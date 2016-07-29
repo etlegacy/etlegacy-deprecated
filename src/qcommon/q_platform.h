@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -121,8 +121,6 @@
 
 #define DLL_EXT ".dll"
 
-#define DISABLE_DINGY
-
 #elif defined(_WIN32) || defined(__WIN32__)
 
 #undef QDECL
@@ -149,8 +147,6 @@
 #define Q3_LITTLE_ENDIAN
 
 #define DLL_EXT ".dll"
-
-#define DISABLE_DINGY
 
 #endif
 

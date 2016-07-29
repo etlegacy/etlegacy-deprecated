@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -366,10 +366,6 @@ typedef enum
 	GLDRV_ICD,                  // driver is integrated with window system
 	GLDRV_STANDALONE,           // deprecated
 	GLDRV_VOODOO,               // deprecated
-	// renderer2 BEGIN
-	GLDRV_OPENGL3,              // new driver system
-	GLDRV_MESA                  // crap
-	// renderer2 END
 } glDriverType_t;
 
 typedef enum
@@ -379,12 +375,14 @@ typedef enum
 	GLHW_RIVA128,           // deprecated
 	GLHW_RAGEPRO,           // deprecated
 	GLHW_PERMEDIA2,         // deprecated
+	/*
 	// renderer2 BEGIN
 	GLHW_ATI,               // where you don't have proper GLSL support
 	GLHW_ATI_DX10,          // ATI Radeon HD series DX10 hardware
 	GLHW_NV_DX10,           // Geforce 8/9 class DX10 hardware
 	GLHW_GENERIC_GL3        // other OpenGL 3.2 capable hardware (Intel Mesa)
 	// renderer2 END
+	 */
 } glHardwareType_t;
 
 typedef struct
@@ -434,6 +432,21 @@ typedef struct
 	qboolean stereoEnabled;
 	qboolean smpActive;                     // obsolete, kept for compatibility
 } glconfig_t;
+
+typedef enum
+{
+	GL_CONTEXT_DEFAULT,
+	GL_CONTEXT_COMP,
+	GL_CONTEXT_CORE,
+	GL_CONTEXT_EGL,
+} windowContextType_t;
+
+typedef struct windowContext_s
+{
+	int versionMajor;
+	int versionMinor;
+	int context;
+} windowContext_t;
 
 // =========================================
 // these MUST NOT exceed the values for SHADER_MAX_VERTEXES/SHADER_MAX_INDEXES

@@ -4,7 +4,7 @@
  * Copyright (C) 2010-2011 Robert Beckebans <trebor_7@users.sourceforge.net>
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -1331,7 +1331,7 @@ static qboolean ParseTexMod(char **text, shaderStage_t *stage)
 	// transform
 	else if (!Q_stricmp(token, "transform"))
 	{
-		MatrixIdentity(tmi->matrix);
+		mat4_ident(tmi->matrix);
 
 		token = COM_ParseExt2(text, qfalse);
 		if (token[0] == 0)
@@ -5655,6 +5655,45 @@ shader_t *R_FindShader(const char *name, shaderType_t type, qboolean mipRawImage
 		Ren_Developer("Couldn't find image file for shader %s\n", name);
 		shader.defaultShader = qtrue;
 		return FinishShader();
+	}
+
+	{
+		image_t *tmpImage   = R_FindImageFile(va("%s_norm", fileName), mipRawImage ? IF_NONE : IF_NOPICMIP, mipRawImage ? FT_DEFAULT : FT_LINEAR, mipRawImage ? WT_REPEAT : WT_CLAMP, shader.name);
+		int     stageOffset = 1;
+
+		if (tmpImage)
+		{
+			stages[stageOffset].active             = qtrue;
+			stages[stageOffset].bundle[0].image[0] = tmpImage;
+			stages[stageOffset].type               = ST_NORMALMAP;
+			stages[stageOffset].rgbGen             = CGEN_IDENTITY;
+			stages[stageOffset].stateBits          = GLS_DEFAULT;
+			stageOffset++;
+		}
+
+		tmpImage = R_FindImageFile(va("%s_spec", fileName), mipRawImage ? IF_NONE : IF_NOPICMIP, mipRawImage ? FT_DEFAULT : FT_LINEAR, mipRawImage ? WT_REPEAT : WT_CLAMP, shader.name);
+		if (tmpImage)
+		{
+			stages[stageOffset].active             = qtrue;
+			stages[stageOffset].bundle[0].image[0] = tmpImage;
+			stages[stageOffset].type               = ST_SPECULARMAP;
+			stages[stageOffset].rgbGen             = CGEN_IDENTITY;
+			stages[stageOffset].stateBits          = GLS_DEFAULT;
+			stageOffset++;
+		}
+
+		/*
+		tmpImage = R_FindImageFile(va("%s_disp", fileName), mipRawImage ? IF_NONE : IF_NOPICMIP, mipRawImage ? FT_DEFAULT : FT_LINEAR, mipRawImage ? WT_REPEAT : WT_CLAMP, shader.name);
+		if(tmpImage)
+		{
+		    stages[stageOffset].active = qtrue;
+		    stages[stageOffset].bundle[0].image[0] = tmpImage;
+		    stages[stageOffset].type = ST_;
+		    stages[stageOffset].rgbGen = CGEN_IDENTITY;
+		    stages[stageOffset].stateBits = GLS_DEFAULT;
+		    stageOffset++;
+		}
+		*/
 	}
 
 	// set implicit cull type

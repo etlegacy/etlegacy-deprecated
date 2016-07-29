@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -946,6 +946,8 @@ static void CG_DrawMineMarkerFlag(centity_t *cent, refEntity_t *ent, const weapo
 }
 
 extern void CG_RocketTrail(centity_t *ent, const weaponInfo_t *wi);
+extern void CG_ScanForCrosshairMine(centity_t *cent);
+extern void CG_ScanForCrosshairDyna(centity_t *cent);
 
 static void CG_Missile(centity_t *cent)
 {
@@ -1040,6 +1042,11 @@ static void CG_Missile(centity_t *cent)
 
 			BG_EvaluateTrajectoryDelta(&cent->currentState.pos, cg.time, velocity, qfalse, -1);
 			trap_S_AddLoopingSound(cent->lerpOrigin, velocity, weapon->spindownSound, 255, 0);
+
+			if (cgs.clientinfo[cg.snap->ps.clientNum].team == cent->currentState.teamNum)
+			{
+				CG_ScanForCrosshairDyna(cent);
+			}
 		}
 	}
 
@@ -1093,7 +1100,7 @@ static void CG_Missile(centity_t *cent)
 
 	if (cent->currentState.weapon == WP_LANDMINE)
 	{
-		if (cgs.clientinfo[cg.clientNum].team == TEAM_SPECTATOR)
+		if (cgs.clientinfo[cg.snap->ps.clientNum].team == TEAM_SPECTATOR)
 		{
 			return;
 		}
@@ -1141,12 +1148,8 @@ static void CG_Missile(centity_t *cent)
 			else
 			{
 				CG_DrawMineMarkerFlag(cent, &ent, weapon);
-				/*if ( !cent->highlighted ) {
-				    cent->highlighted = qtrue;
-				    cent->highlightTime = cg.time;
-				}
 
-				ent.hilightIntensity = 0.5f * sin((cg.time-cent->highlightTime)/1000.f) + 1.f;*/
+				CG_ScanForCrosshairMine(cent);
 			}
 		}
 
@@ -1156,6 +1159,60 @@ static void CG_Missile(centity_t *cent)
 			ent.oldorigin[2] -= 8;
 		}
 	}
+
+#if FEATURE_EDV
+	// edv renderingWeaponCam fix
+	if (cent->currentState.weapon == WP_PANZERFAUST
+		|| cent->currentState.weapon == WP_BAZOOKA
+	    || cent->currentState.weapon == WP_GRENADE_LAUNCHER
+	    || cent->currentState.weapon == WP_GRENADE_PINEAPPLE
+	    || cent->currentState.weapon == WP_GPG40
+	    || cent->currentState.weapon == WP_M7
+	    || cent->currentState.weapon == WP_DYNAMITE
+	    || cent->currentState.weapon == WP_SMOKE_MARKER
+	    || cent->currentState.weapon == WP_SMOKE_BOMB)
+	{
+
+		vec3_t delta;
+
+		if (VectorCompare(cent->rawOrigin, vec3_origin))
+		{
+			VectorSubtract(cent->lerpOrigin, s1->pos.trBase, delta);
+			VectorCopy(cent->lerpOrigin, cent->rawOrigin);
+		}
+		else
+		{
+			VectorSubtract(cent->lerpOrigin, cent->rawOrigin, delta);
+			if (!VectorCompare(cent->lerpOrigin, cent->rawOrigin))
+			{
+				VectorCopy(cent->lerpOrigin, cent->rawOrigin);
+			}
+		}
+
+		// save this so we can use it later (eg in edv)
+		{
+			vec3_t d2;
+			vec3_t temp;
+
+			VectorCopy(delta, d2);
+			VectorNormalize(d2);
+			vectoangles(d2, temp);
+			if (demo_nopitch.integer)
+			{
+				cent->rawAngles[1] = temp[1];
+			}
+			else
+			{
+				VectorCopy(temp, cent->rawAngles);
+			}
+		}
+
+		if (VectorNormalize2(delta, ent.axis[0]) == 0)
+		{
+			ent.axis[0][2] = 1;
+		}
+	}
+#endif
 
 	// convert direction of travel into axis
 	switch (cent->currentState.weapon)
@@ -1183,6 +1240,17 @@ static void CG_Missile(centity_t *cent)
 				VectorCopy(cent->lerpOrigin, cent->rawOrigin);
 			}
 		}
+#if FEATURE_EDV
+		// save this so we can use it later (eg in edv)
+		{
+			vec3_t d2;
+
+			VectorCopy(delta, d2);
+			VectorNormalize(d2);
+			vectoangles(d2, cent->rawAngles);
+		}
+#endif
+
 		if (VectorNormalize2(delta, ent.axis[0]) == 0)
 		{
 			ent.axis[0][2] = 1;
@@ -1215,6 +1283,10 @@ static void CG_Missile(centity_t *cent)
 		// add to refresh list, possibly with quad glow
 		CG_AddRefEntityWithPowerups(&ent, s1->powerups, TEAM_FREE, s1, vec3_origin);
 	}
+
+#if FEATURE_EDV
+	CG_EDV_WeaponCam(cent, &ent);
+#endif
 }
 
 // capture and hold flag
@@ -1753,7 +1825,6 @@ static void CG_Prop(centity_t *cent)
 {
 	refEntity_t   ent;
 	entityState_t *s1 = &cent->currentState;
-	vec3_t        angles;
 
 	// create the render entity
 	memset(&ent, 0, sizeof(ent));
@@ -1769,7 +1840,8 @@ static void CG_Prop(centity_t *cent)
 	}
 	else
 	{
-		float scale;
+		float  scale;
+		vec3_t angles;
 
 		VectorCopy(cg.refdef_current->vieworg, ent.origin);
 		VectorCopy(cg.refdefViewAngles, angles);

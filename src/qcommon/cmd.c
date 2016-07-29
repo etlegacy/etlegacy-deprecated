@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -402,6 +402,7 @@ typedef struct cmd_function_s
 {
 	struct cmd_function_s *next;
 	char *name;
+	char *description;
 	xcommand_t function;
 	completionFunc_t complete;
 } cmd_function_t;
@@ -761,12 +762,18 @@ cmd_function_t *Cmd_FindCommand(const char *cmd_name)
 
 /*
 ============
-Cmd_AddCommand
+Cmd_AddCommandExtended
 ============
 */
-void Cmd_AddCommand(const char *cmd_name, xcommand_t function)
+void Cmd_AddSystemCommand(const char *cmd_name, xcommand_t function, const char *description, completionFunc_t complete)
 {
 	cmd_function_t *cmd;
+
+	if (!cmd_name || !cmd_name[0])
+	{
+		Com_Printf(S_COLOR_RED "Cmd_AddSystemCommand can't add NULL or empty command name\n");
+		return;
+	}
 
 	// fail if the command already exists
 	if (Cmd_FindCommand(cmd_name))
@@ -774,7 +781,7 @@ void Cmd_AddCommand(const char *cmd_name, xcommand_t function)
 		// allow completion-only commands to be silently doubled
 		if (function != NULL)
 		{
-			Com_Printf("Cmd_AddCommand: %s already defined\n", cmd_name);
+			Com_Printf("Cmd_AddCommandExtended: %s already defined\n", cmd_name);
 		}
 		return;
 	}
@@ -783,9 +790,18 @@ void Cmd_AddCommand(const char *cmd_name, xcommand_t function)
 	cmd           = S_Malloc(sizeof(cmd_function_t));
 	cmd->name     = CopyString(cmd_name);
 	cmd->function = function;
-	cmd->complete = NULL;
+	cmd->complete = complete;
 	cmd->next     = cmd_functions;
 	cmd_functions = cmd;
+
+	if (description && description[0])
+	{
+		cmd->description = CopyString(description);
+	}
+	else
+	{
+		cmd->description = NULL;
+	}
 }
 
 /*
@@ -802,6 +818,25 @@ void Cmd_SetCommandCompletionFunc(const char *command, completionFunc_t complete
 		if (!Q_stricmp(command, cmd->name))
 		{
 			cmd->complete = complete;
+			return;
+		}
+	}
+}
+
+/*
+============
+Cmd_SetCommandDescription
+============
+*/
+void Cmd_SetCommandDescription(const char *command, const char *description)
+{
+	cmd_function_t *cmd;
+
+	for (cmd = cmd_functions; cmd; cmd = cmd->next)
+	{
+		if (!Q_stricmp(command, cmd->name))
+		{
+			cmd->description = CopyString(description);
 		}
 	}
 }
@@ -815,6 +850,12 @@ void Cmd_RemoveCommand(const char *cmd_name)
 {
 	cmd_function_t *cmd, **back = &cmd_functions;
 
+	if (!cmd_name || !cmd_name[0])
+	{
+		Com_Printf(S_COLOR_RED "Cmd_RemoveCommand called with an empty command name\n");
+		return;
+	}
+
 	while (1)
 	{
 		cmd = *back;
@@ -826,9 +867,12 @@ void Cmd_RemoveCommand(const char *cmd_name)
 		if (!strcmp(cmd_name, cmd->name))
 		{
 			*back = cmd->next;
-			if (cmd->name)
+
+			Z_Free(cmd->name);
+
+			if (cmd->description)
 			{
-				Z_Free(cmd->name);
+				Z_Free(cmd->description);
 			}
 			Z_Free(cmd);
 			return;
@@ -846,7 +890,7 @@ void Cmd_RemoveCommandSafe(const char *cmd_name)
 {
 	cmd_function_t *cmd;
 
-	if (!cmd_name[0])
+	if (!cmd_name || !cmd_name[0])
 	{
 		Com_Printf(S_COLOR_RED "Cmd_RemoveCommandSafe called with an empty command name\n");
 		return;
@@ -916,9 +960,13 @@ void Cmd_CompleteArgument(const char *command, char *args, int argNum)
 
 	for (cmd = cmd_functions; cmd; cmd = cmd->next)
 	{
-		if (!Q_stricmp(command, cmd->name) && cmd->complete)
+		if (!Q_stricmp(command, cmd->name))
 		{
-			cmd->complete(args, argNum);
+			if (cmd->complete)
+			{
+				cmd->complete(args, argNum);
+			}
+			return;
 		}
 	}
 }
@@ -1020,7 +1068,14 @@ void Cmd_List_f(void)
 			continue;
 		}
 
-		Com_Printf("%s\n", cmd->name);
+		if (cmd->description)
+		{
+			Com_Printf("%s : %s\n", cmd->name, cmd->description);
+		}
+		else
+		{
+			Com_Printf("%s\n", cmd->name);
+		}
 		i++;
 	}
 	Com_Printf("%i commands\n", i);

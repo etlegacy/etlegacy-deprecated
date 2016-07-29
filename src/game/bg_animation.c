@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -536,7 +536,7 @@ void BG_ParseConditionBits(char **text_pp, animStringItem_t *stringTable, int co
 	while (!endFlag)
 	{
 		token = COM_ParseExt(text_pp, qfalse);
-		if (!token || !token[0])
+		if (!token[0])
 		{
 			COM_RestoreParseSession(text_pp);   // go back to the previous token
 			endFlag = qtrue;    // done parsing indexes
@@ -656,7 +656,7 @@ qboolean BG_ParseConditions(char **text_pp, animScriptItem_t *scriptItem)
 {
 	int      conditionIndex, conditionValue[2];
 	char     *token;
-	qboolean minus = qfalse;
+	qboolean minus;
 
 	conditionValue[0] = 0;
 	conditionValue[1] = 0;
@@ -664,7 +664,7 @@ qboolean BG_ParseConditions(char **text_pp, animScriptItem_t *scriptItem)
 	while (1)
 	{
 		token = COM_ParseExt(text_pp, qfalse);
-		if (!token || !token[0])
+		if (!token[0])
 		{
 			break;
 		}
@@ -681,7 +681,7 @@ qboolean BG_ParseConditions(char **text_pp, animScriptItem_t *scriptItem)
 
 			token = COM_ParseExt(text_pp, qfalse);
 			//Com_Printf("NOT: %s \n", token );
-			if (!token || !token[0])
+			if (!token[0])
 			{
 				break;
 			}
@@ -703,7 +703,7 @@ qboolean BG_ParseConditions(char **text_pp, animScriptItem_t *scriptItem)
 			if (animConditionsTable[conditionIndex].values)
 			{
 				token = COM_ParseExt(text_pp, qfalse);
-				if (!token || !token[0])
+				if (!token[0])
 				{
 					BG_AnimParseError("BG_AnimParseAnimScript: expected condition value, found end of line");
 				}
@@ -749,7 +749,7 @@ static void BG_ParseCommands(char **input, animScriptItem_t *scriptItem, animMod
 	{
 		// parse the body part
 		token = COM_ParseExt(input, (partIndex < 1));
-		if (!token || !*token)
+		if (!token[0])
 		{
 			break;
 		}
@@ -777,7 +777,7 @@ static void BG_ParseCommands(char **input, animScriptItem_t *scriptItem, animMod
 		{
 			// parse the animation
 			token = COM_ParseExt(input, qfalse);
-			if (!token || !token[0])
+			if (!token[0])
 			{
 				BG_AnimParseError("BG_ParseCommands: expected animation");
 			}
@@ -802,7 +802,7 @@ static void BG_ParseCommands(char **input, animScriptItem_t *scriptItem, animMod
 				{
 					// read the duration
 					token = COM_ParseExt(input, qfalse);
-					if (!token || !token[0])
+					if (!token[0])
 					{
 						BG_AnimParseError("BG_ParseCommands: expected duration value");
 					}
@@ -833,7 +833,7 @@ static void BG_ParseCommands(char **input, animScriptItem_t *scriptItem, animMod
 		while (1)
 		{
 			token = COM_ParseExt(input, qfalse);
-			if (!token || !token[0])
+			if (!token[0])
 			{
 				break;
 			}
@@ -841,7 +841,7 @@ static void BG_ParseCommands(char **input, animScriptItem_t *scriptItem, animMod
 			if (!Q_stricmp(token, "sound"))
 			{
 				token = COM_ParseExt(input, qfalse);
-				if (!token || !token[0])
+				if (!token[0])
 				{
 					BG_AnimParseError("BG_ParseCommands: expected sound");
 				}
@@ -900,8 +900,7 @@ void BG_AnimParseAnimScript(animModelInfo_t *animModelInfo, animScriptData_t *sc
 	animScript_t          *currentScript = NULL;
 	animScriptItem_t      tempScriptItem;
 	animScriptItem_t      *currentScriptItem = NULL;
-	int                   indexes[MAX_INDENT_LEVELS], indentLevel = 0, /*oldState,*/ newParseMode;
-	int                   i, defineType;
+	int                   indexes[MAX_INDENT_LEVELS], indentLevel = 0, newParseMode, i, defineType;
 
 	// the scriptData passed into here must be the one this binary is using
 	globalScriptData = scriptData;
@@ -924,7 +923,7 @@ void BG_AnimParseAnimScript(animModelInfo_t *animModelInfo, animScriptData_t *sc
 	while (1)
 	{
 		token = COM_Parse(&text_p);
-		if (!token || !*token)
+		if (!token[0])
 		{
 			if (indentLevel)
 			{
@@ -955,7 +954,7 @@ void BG_AnimParseAnimScript(animModelInfo_t *animModelInfo, animScriptData_t *sc
 			{
 				// read in the define type
 				token = COM_ParseExt(&text_p, qfalse);
-				if (!token || !*token)
+				if (!token[0])
 				{
 					BG_AnimParseError("BG_AnimParseAnimScript: expected condition type string");
 				}
@@ -963,7 +962,7 @@ void BG_AnimParseAnimScript(animModelInfo_t *animModelInfo, animScriptData_t *sc
 
 				// read in the define
 				token = COM_ParseExt(&text_p, qfalse);
-				if (!token || !*token)
+				if (!token[0])
 				{
 					BG_AnimParseError("BG_AnimParseAnimScript: expected condition define string");
 				}
@@ -973,7 +972,7 @@ void BG_AnimParseAnimScript(animModelInfo_t *animModelInfo, animScriptData_t *sc
 				defineStr[defineType][numDefines[defineType]].hash   = BG_StringHashValue(defineStr[defineType][numDefines[defineType]].string);
 				// expecting an =
 				token = COM_ParseExt(&text_p, qfalse);
-				if (!token)
+				if (!token[0])
 				{
 					BG_AnimParseError("BG_AnimParseAnimScript: expected '=', found end of line");
 				}
@@ -1032,7 +1031,7 @@ void BG_AnimParseAnimScript(animModelInfo_t *animModelInfo, animScriptData_t *sc
 
 				// read in the state type
 				token = COM_ParseExt(&text_p, qfalse);
-				if (!token)
+				if (!token[0])
 				{
 					BG_AnimParseError("BG_AnimParseAnimScript: expected state type");
 				}
@@ -1040,7 +1039,7 @@ void BG_AnimParseAnimScript(animModelInfo_t *animModelInfo, animScriptData_t *sc
 
 				// check for the open bracket
 				token = COM_ParseExt(&text_p, qtrue);
-				if (!token || Q_stricmp(token, "{"))
+				if (!token[0] || Q_stricmp(token, "{"))
 				{
 					BG_AnimParseError("BG_AnimParseAnimScript: expected '{'");
 				}

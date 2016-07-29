@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -35,17 +35,20 @@
 
 #include "q_shared.h"
 
-float Com_Clamp(float min, float max, float value)
+qboolean Com_PowerOf2(int x)
 {
-	if (value < min)
+	int bitsSet = 0;
+	int i;
+
+	for (i = 0; i < sizeof(int) * 8; ++i)
 	{
-		return min;
+		if (x & (1 << i))
+		{
+			++bitsSet;
+		}
 	}
-	if (value > max)
-	{
-		return max;
-	}
-	return value;
+
+	return (qboolean)(bitsSet <= 1);
 }
 
 /**
@@ -1825,7 +1828,6 @@ float *tv(float x, float y, float z)
 /**
  * @brief Searches the string for the given key and returns
  * the associated value, or an empty string.
- * FIXME: overflow check?
  */
 char *Info_ValueForKey(const char *s, const char *key)
 {
@@ -1840,9 +1842,14 @@ char *Info_ValueForKey(const char *s, const char *key)
 		return "";
 	}
 
-	if (strlen(s) >= BIG_INFO_STRING)
+	if (strlen(s) >= BIG_INFO_STRING) // BIG_INFO_VALUE
 	{
 		Com_Error(ERR_DROP, "Info_ValueForKey: oversize infostring [%s] [%s]", s, key);
+	}
+
+	if (strlen(key) >= BIG_INFO_KEY)
+	{
+		Com_Error(ERR_DROP, "Info_ValueForKey: oversize key [%s] [%s]", s, key);
 	}
 
 	valueindex ^= 1;
@@ -2336,3 +2343,19 @@ float rint(float v)
 	}
 }
 #endif
+
+void *Q_LinearSearch(const void *key, const void *ptr, size_t count, size_t size, cmpFunc_t cmp)
+{
+	size_t i;
+
+	for (i = 0; i < count; i++)
+	{
+		if (cmp(key, ptr) == 0)
+		{
+			return (void *)ptr;
+		}
+
+		ptr = (const char *)ptr + size;
+	}
+	return NULL;
+}

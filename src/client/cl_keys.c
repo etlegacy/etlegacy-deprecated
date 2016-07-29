@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -694,24 +694,28 @@ void Console_Key(int key)
 		return;
 	}
 
-	if (key == K_MWHEELUP)       // added some mousewheel functionality to the console
+	if (key == K_MWHEELUP)           // added some mousewheel functionality to the console
 	{
-		Con_PageUp();
-		if (keys[K_CTRL].down)     // hold <ctrl> to accelerate scrolling
+		if (keys[K_CTRL].down)       // hold <ctrl> to accelerate scrolling
 		{
-			Con_PageUp();
-			Con_PageUp();
+			Con_ScrollUp(con.visibleLines);
+		}
+		else
+		{
+			Con_ScrollUp(con.visibleLines / 4);
 		}
 		return;
 	}
 
-	if (key == K_MWHEELDOWN)     // added some mousewheel functionality to the console
+	if (key == K_MWHEELDOWN)         // added some mousewheel functionality to the console
 	{
-		Con_PageDown();
-		if (keys[K_CTRL].down)     // hold <ctrl> to accelerate scrolling
+		if (keys[K_CTRL].down)       // hold <ctrl> to accelerate scrolling
 		{
-			Con_PageDown();
-			Con_PageDown();
+			Con_ScrollDown(con.visibleLines);
+		}
+		else
+		{
+			Con_ScrollDown(con.visibleLines / 4);
 		}
 		return;
 	}
@@ -719,14 +723,14 @@ void Console_Key(int key)
 	// ctrl-home = top of console
 	if ((key == K_HOME || key == K_KP_HOME) && keys[K_CTRL].down)
 	{
-		Con_Top();
+		Con_ScrollTop();
 		return;
 	}
 
 	// ctrl-end = bottom of console
 	if ((key == K_END || key == K_KP_END) && keys[K_CTRL].down)
 	{
-		Con_Bottom();
+		Con_ScrollBottom();
 		return;
 	}
 
@@ -1264,10 +1268,14 @@ void CL_KeyEvent(int key, qboolean down, unsigned time)
 					Cvar_Set("r_fullscreen", "1");
 				}
 				// some desktops might freeze without restarting the video subsystem
-				if (cls.glconfig.driverType == GLDRV_MESA)
+				if (Q_stristr(cls.glconfig.renderer_string, "mesa") ||
+				    Q_stristr(cls.glconfig.renderer_string, "gallium") ||
+				    Q_stristr(cls.glconfig.vendor_string, "nouveau") ||
+				    Q_stristr(cls.glconfig.vendor_string, "mesa"))
 				{
 					Cbuf_ExecuteText(EXEC_APPEND, "vid_restart\n");
 				}
+
 				return;
 			}
 		}
@@ -1290,7 +1298,7 @@ void CL_KeyEvent(int key, qboolean down, unsigned time)
 #endif
 
 	// console key is hardcoded, so the user can never unbind it
-	if (key == K_CONSOLE || (keys[K_SHIFT].down && key == K_ESCAPE))
+	if (key == CONSOLE_KEY || (keys[K_SHIFT].down && key == K_ESCAPE))
 	{
 		if (!down)
 		{

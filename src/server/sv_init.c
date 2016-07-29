@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -242,6 +242,12 @@ void SV_SetUserinfo(int index, const char *val)
 
 	Q_strncpyz(svs.clients[index].userinfo, val, sizeof(svs.clients[index].userinfo));
 	Q_strncpyz(svs.clients[index].name, Info_ValueForKey(val, "name"), sizeof(svs.clients[index].name));
+
+	// Save userinfo changes to demo (also in SV_UpdateUserinfo_f() in sv_client.c)
+	if (sv.demoState == DS_RECORDING)
+	{
+		SV_DemoWriteClientUserinfo(&svs.clients[index], val);
+	}
 }
 
 /*
@@ -261,12 +267,6 @@ void SV_GetUserinfo(int index, char *buffer, int bufferSize)
 	}
 
 	Q_strncpyz(buffer, svs.clients[index].userinfo, bufferSize);
-
-	// Save userinfo changes to demo (also in SV_UpdateUserinfo_f() in sv_client.c)
-	if (sv.demoState == DS_RECORDING)
-	{
-		SV_DemoWriteClientUserinfo(&svs.clients[index], buffer);
-	}
 }
 
 /*
@@ -758,7 +758,7 @@ void SV_SpawnServer(char *server)
 
 	// get a new checksum feed and restart the file system
 	srand(Sys_Milliseconds());
-	sv.checksumFeed = (((int) rand() << 16) ^ rand()) ^ Sys_Milliseconds();
+	sv.checksumFeed = ((rand() << 16) ^ rand()) ^ Sys_Milliseconds();
 
 	// only comment out when you need a new pure checksum string and it's associated random feed
 	// Com_DPrintf("SV_SpawnServer checksum feed: %p\n", sv.checksumFeed);
@@ -1080,6 +1080,11 @@ void SV_Init(void)
 	// master servers
 	Cvar_Get("sv_master1", "etmaster.idsoftware.com", CVAR_PROTECTED);
 	Cvar_Get("sv_master2", "master.etlegacy.com", CVAR_PROTECTED);
+
+#ifdef FEATURE_TRACKER
+	// tracker server
+	Cvar_Get("sv_tracker", "et-tracker.trackbase.net:4444", CVAR_PROTECTED);
+#endif
 
 	sv_reconnectlimit = Cvar_Get("sv_reconnectlimit", "3", 0);
 	sv_tempbanmessage = Cvar_Get("sv_tempbanmessage", "You have been kicked and are temporarily banned from joining this server.", 0);

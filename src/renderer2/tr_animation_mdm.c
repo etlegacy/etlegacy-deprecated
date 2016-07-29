@@ -4,7 +4,7 @@
  * Copyright (C) 2010-2011 Robert Beckebans <trebor_7@users.sourceforge.net>
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -2202,14 +2202,14 @@ void Tess_SurfaceVBOMDMMesh(srfVBOMDMMesh_t *surface)
 	int                i;
 	mdmModel_t         *mdmModel;
 	mdmSurfaceIntern_t *mdmSurface;
-	matrix_t           m, m2; //, m3
+	mat4_t           m, m2; //, m3
 	refEntity_t        *refent;
 	int                lodIndex;
 	IBO_t              *lodIBO;
 
 	Ren_LogComment("--- Tess_SurfaceVBOMDMMesh ---\n");
 
-	if (!surface->vbo || !surface->ibo)
+	if (!surface->vbo || !surface->ibo[0])
 	{
 		return;
 	}
@@ -2238,7 +2238,7 @@ void Tess_SurfaceVBOMDMMesh(srfVBOMDMMesh_t *surface)
 		                     bones[surface->boneRemapInverse[i]].matrix[1],
 		                     bones[surface->boneRemapInverse[i]].matrix[2]);
 
-		MatrixTranspose(m, m2);
+		mat4_transpose(m, m2);
 
 		MatrixSetupTransformFromRotation(tess.boneMatrices[i], m2, bones[surface->boneRemapInverse[i]].translation);
 #else

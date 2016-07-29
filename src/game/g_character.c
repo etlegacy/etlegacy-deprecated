@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -257,22 +257,7 @@ qboolean G_RegisterCharacter(const char *characterFile, bg_character_t *characte
 			return qfalse;
 		}
 
-#ifdef BONE_HITTESTS
-		{
-			char hitsfile[MAX_QPATH], *sep;
-			// zinx - mdx hits
-			Q_strncpyz(hitsfile, characterDef.animationGroup, sizeof(hitsfile) - 4);
-			if ((sep = strrchr(hitsfile, '.'))) // FIXME: should abort on /'s
-			{
-				strcpy(sep, ".hit");
-			}
-			else
-			{
-				strcat(sep, ".hit");
-			}
-			mdx_RegisterHits(character->animModelInfo, hitsfile);
-		}
-#endif
+		mdx_LoadHitsFile(characterDef.animationGroup, character->animModelInfo);
 	}
 
 	return qtrue;

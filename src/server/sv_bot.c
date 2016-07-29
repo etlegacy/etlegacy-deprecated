@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -455,7 +455,7 @@ void BotImport_DebugLineShow(int line, vec3_t start, vec3_t end, int color)
 	VectorCopy(end, points[3]);
 
 	VectorSubtract(end, start, dir);
-	VectorNormalize(dir);
+	vec3_norm(dir);
 	dot = DotProduct(dir, up);
 	if (dot > 0.99 || dot < -0.99)
 	{
@@ -463,10 +463,10 @@ void BotImport_DebugLineShow(int line, vec3_t start, vec3_t end, int color)
 	}
 	else
 	{
-		CrossProduct(dir, up, cross);
+		vec3_cross(dir, up, cross);
 	}
 
-	VectorNormalize(cross);
+	vec3_norm(cross);
 
 	VectorMA(points[0], 2, cross, points[0]);
 	VectorMA(points[1], -2, cross, points[1]);
@@ -544,7 +544,7 @@ void SV_BotInitBotLib(void)
 
 	botlib_import.BotDrawPolygon = BotImport_DrawPolygon;
 
-	botlib_export = (botlib_export_t *)GetBotLibAPI(BOTLIB_API_VERSION, &botlib_import);
+	botlib_export = GetBotLibAPI(BOTLIB_API_VERSION, &botlib_import);
 }
 
 //  * * * BOT AI CODE IS BELOW THIS POINT * * *

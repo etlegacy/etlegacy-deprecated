@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -145,20 +145,6 @@ typedef enum
 	STATE_INVISIBLE,        // ent is unlinked, can't be used, doesn't think and is not solid
 	STATE_UNDERCONSTRUCTION // ent is being constructed
 } entState_t;
-
-typedef enum
-{
-	SELECT_BUDDY_ALL = 0,
-	SELECT_BUDDY_1,
-	SELECT_BUDDY_2,
-	SELECT_BUDDY_3,
-	SELECT_BUDDY_4,
-	SELECT_BUDDY_5,
-	SELECT_BUDDY_6,
-
-	SELECT_BUDDY_LAST // must be the last one in the enum
-
-} SelectBuddyFlag;
 
 #define MAX_TAGCONNECTS     64
 
@@ -369,7 +355,7 @@ typedef enum
 	GT_WOLF_STOPWATCH,
 	GT_WOLF_CAMPAIGN,     // Exactly the same as GT_WOLF, but uses campaign roulation (multiple maps form one virtual map)
 	GT_WOLF_LMS,
-	GT_WOLF_MAPVOTE,      // ETPub gametype map voting - Credits go to their team. TU!
+	GT_WOLF_MAPVOTE,      // Credits go to ETPub team. TU!
 	GT_MAX_GAME_TYPE
 } gametype_t;
 
@@ -558,6 +544,8 @@ typedef enum
 	STAT_XP_OVERFLOW,               // count XP overflow(every 2^15)
 	STAT_PS_FLAGS,
 	STAT_AIRLEFT,                   // airtime for CG_DrawBreathBar()
+	STAT_SPRINTTIME,                // sprinttime for CG_DrawStaminaBar()
+	STAT_ANTIWARP_DELAY             // extra lag on the lagometer to reflect warp status
 } statIndex_t;
 
 // player_state->persistant[] indexes
@@ -844,6 +832,8 @@ typedef struct weapontable_s
 
 	qboolean isScoped;        // bg
 
+	qboolean isLightWeaponSupportingFastReload; // bg
+
 	int damage;               // g
 	qboolean canGib;          // g
 	qboolean isReload;        // g
@@ -896,11 +886,13 @@ extern int weapAlts[];  // defined in bg_misc.c
 
 // FIXME: weapon table - put following macros in
 #define IS_RIFLENADE_WEAPON(w) \
-	(w == WP_GPG40               || w == WP_M7)
+	(w == WP_CARBINE             || w == WP_KAR98)
 
 #define IS_RIFLE_AND_NADE_WEAPON(w) \
-	(w == WP_CARBINE             || w ==  WP_KAR98 || \
-	 IS_RIFLENADE_WEAPON(w))
+	(w == WP_GPG40               || w ==  WP_M7)
+
+#define IS_RIFLE_WEAPON(w) \
+	IS_RIFLENADE_WEAPON(w) || IS_RIFLE_AND_NADE_WEAPON(w)
 
 #define IS_PANZER_WEAPON(w) \
 	(w == WP_PANZERFAUST         || w == WP_BAZOOKA)
@@ -1100,7 +1092,7 @@ typedef enum
 
 extern const char *eventnames[EV_MAX_EVENTS];
 
-typedef enum
+typedef enum // unused
 {
 	BOTH_DEATH1 = 0,
 	BOTH_DEAD1,
@@ -1595,7 +1587,7 @@ qboolean BG_CanItemBeGrabbed(const entityState_t *ent, const playerState_t *ps, 
 #define MASK_ALL                (-1)
 #define MASK_SOLID              (CONTENTS_SOLID)
 #define MASK_PLAYERSOLID        (CONTENTS_SOLID | CONTENTS_PLAYERCLIP | CONTENTS_BODY)
-#define MASK_DEADSOLID          (CONTENTS_SOLID | CONTENTS_PLAYERCLIP)
+//#define MASK_DEADSOLID          (CONTENTS_SOLID | CONTENTS_PLAYERCLIP) // unused
 #define MASK_WATER              (CONTENTS_WATER | CONTENTS_LAVA | CONTENTS_SLIME)
 //#define	MASK_OPAQUE				(CONTENTS_SOLID|CONTENTS_SLIME|CONTENTS_LAVA)
 #define MASK_OPAQUE             (CONTENTS_SOLID | CONTENTS_LAVA)        // modified since slime is no longer deadly
@@ -1618,8 +1610,8 @@ typedef enum
 	HINT_DOOR_LOCKED,
 	HINT_DOOR_ROTATING_LOCKED,
 	HINT_MG42,
-	HINT_BREAKABLE,             // FIXME: remove - never set!
-	HINT_BREAKABLE_DYNAMITE,    // FIXME: remove - never set!
+	HINT_BREAKABLE,
+	HINT_BREAKABLE_DYNAMITE,
 	HINT_CHAIR,
 	HINT_ALARM,
 	HINT_HEALTH,
@@ -2243,8 +2235,6 @@ void BG_AdjustAAGunMuzzleForBarrel(vec_t *origin, vec_t *forward, vec_t *right, 
 int BG_ClassTextToClass(char *token);
 skillType_t BG_ClassSkillForClass(int classnum);
 
-qboolean BG_isLightWeaponSupportingFastReload(int weapon);
-
 int BG_FootstepForSurface(int surfaceFlags);
 
 #define MATCH_MINPLAYERS "4" //"1"	// Minimum # of players needed to start a match
@@ -2405,6 +2395,10 @@ typedef enum popupMessageBigType_e
 
 int PM_AltSwitchFromForWeapon(int weapon);
 int PM_AltSwitchToForWeapon(int weapon);
+
+#define HITBOXBIT_HEAD   1024
+#define HITBOXBIT_LEGS   2048
+#define HITBOXBIT_CLIENT 4096
 
 void PM_TraceLegs(trace_t * trace, float *legsOffset, vec3_t start, vec3_t end, trace_t * bodytrace, vec3_t viewangles, void (tracefunc)(trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask), int ignoreent, int tracemask);
 void PM_TraceHead(trace_t * trace, vec3_t start, vec3_t end, trace_t * bodytrace, vec3_t viewangles, void (tracefunc)(trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask), int ignoreent, int tracemask);

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -99,25 +99,26 @@ CL_GetParseEntityState
 
 @note Unused
 ====================
-*/
+
 qboolean CL_GetParseEntityState(int parseEntityNumber, entityState_t *state)
 {
-	// can't return anything that hasn't been parsed yet
-	if (parseEntityNumber >= cl.parseEntitiesNum)
-	{
-		Com_Error(ERR_DROP, "CL_GetParseEntityState: %i >= %i",
-		          parseEntityNumber, cl.parseEntitiesNum);
-	}
+    // can't return anything that hasn't been parsed yet
+    if (parseEntityNumber >= cl.parseEntitiesNum)
+    {
+        Com_Error(ERR_DROP, "CL_GetParseEntityState: %i >= %i",
+                  parseEntityNumber, cl.parseEntitiesNum);
+    }
 
-	// can't return anything that has been overwritten in the circular buffer
-	if (parseEntityNumber <= cl.parseEntitiesNum - MAX_PARSE_ENTITIES)
-	{
-		return qfalse;
-	}
+    // can't return anything that has been overwritten in the circular buffer
+    if (parseEntityNumber <= cl.parseEntitiesNum - MAX_PARSE_ENTITIES)
+    {
+        return qfalse;
+    }
 
-	*state = cl.parseEntities[parseEntityNumber & (MAX_PARSE_ENTITIES - 1)];
-	return qtrue;
+    *state = cl.parseEntities[parseEntityNumber & (MAX_PARSE_ENTITIES - 1)];
+    return qtrue;
 }
+*/
 
 /*
 ====================
@@ -215,16 +216,6 @@ void CL_SetClientLerpOrigin(float x, float y, float z)
 	cl.cgameClientLerpOrigin[2] = z;
 }
 
-/*
-==============
-CL_AddCgameCommand
-==============
-*/
-void CL_AddCgameCommand(const char *cmdName)
-{
-	Cmd_AddCommand(cmdName, NULL);
-}
-
 qboolean CL_CGameCheckKeyExec(int key)
 {
 	if (cgvm)
@@ -253,7 +244,7 @@ void CL_ConfigstringModified(void)
 	index = atoi(Cmd_Argv(1));
 	if (index < 0 || index >= MAX_CONFIGSTRINGS)
 	{
-		Com_Error(ERR_DROP, "configstring > MAX_CONFIGSTRINGS");
+		Com_Error(ERR_DROP, "configstring < 0 or configstring >= MAX_CONFIGSTRINGS");
 	}
 	// get everything after "cs <num>"
 	s = Cmd_ArgsFrom(2);
@@ -477,7 +468,7 @@ void CL_SetExpectedHunkUsage(const char *mapname)
 			{
 				// found a match
 				token = COM_Parse(&buftrav);    // read the size
-				if (token && *token)
+				if (token && token[0])
 				{
 					// this is the usage
 					com_expectedhunkusage = atoi(token);
@@ -663,7 +654,7 @@ intptr_t CL_CgameSystemCalls(intptr_t *args)
 		Cbuf_AddText(VMA(1));
 		return 0;
 	case CG_ADDCOMMAND:
-		CL_AddCgameCommand(VMA(1));
+		Cmd_AddCommand(VMA(1));
 		return 0;
 	case CG_REMOVECOMMAND:
 		Cmd_RemoveCommandSafe(VMA(1));
@@ -1478,14 +1469,17 @@ void CL_SetCGameTime(void)
 /*
 ====================
 CL_GetTag
+
+@note Unused
 ====================
-*/
+
 qboolean CL_GetTag(int clientNum, char *tagname, orientation_t *orientation)
 {
-	if (!cgvm)
-	{
-		return qfalse;
-	}
+    if (!cgvm)
+    {
+        return qfalse;
+    }
 
-	return VM_Call(cgvm, CG_GET_TAG, clientNum, tagname, orientation);
+    return VM_Call(cgvm, CG_GET_TAG, clientNum, tagname, orientation);
 }
+*/

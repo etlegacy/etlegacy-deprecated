@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -173,6 +173,8 @@ qboolean Sys_RandomBytes(byte *string, int len)
 		return qfalse;
 	}
 
+	setvbuf(fp, NULL, _IONBF, 0); // don't buffer reads from /dev/urandom
+
 	if (!fread(string, sizeof(byte), len, fp))
 	{
 		fclose(fp);
@@ -329,6 +331,7 @@ void Sys_ListFilteredFiles(const char *basedir, char *subdirs, char *filter, cha
 			break;
 		}
 		Com_sprintf(filename, sizeof(filename), "%s/%s", subdirs, d->d_name);
+
 		if (!Com_FilterPath(filter, filename, qfalse))
 		{
 			continue;
@@ -362,6 +365,9 @@ char **Sys_ListFiles(const char *directory, const char *extension, char *filter,
 	int           i;
 	struct stat   st;
 	int           extLen;
+#ifdef DEDICATED
+	qboolean invalid;
+#endif
 
 	if (filter)
 	{
@@ -416,22 +422,42 @@ char **Sys_ListFiles(const char *directory, const char *extension, char *filter,
 		{
 			continue;
 		}
-		if ((dironly && !(st.st_mode & S_IFDIR)) ||
-		    (!dironly && (st.st_mode & S_IFDIR)))
+		if ((dironly && !(st.st_mode & S_IFDIR)) || (!dironly && (st.st_mode & S_IFDIR)))
 		{
 			continue;
 		}
 
 		if (*extension)
 		{
-			if (strlen(d->d_name) < extLen ||
-			    Q_stricmp(
-			        d->d_name + strlen(d->d_name) - extLen,
-			        extension))
+			if (strlen(d->d_name) < extLen || Q_stricmp(d->d_name + strlen(d->d_name) - extLen, extension))
 			{
 				continue; // didn't match
 			}
 		}
+
+#ifdef DEDICATED
+		// check for bad file names
+		invalid = qfalse;
+		// note: this isn't done in Sys_ListFilteredFiles()
+
+		for (i = 0; i < strlen(d->d_name); i++)
+		{
+			if (d->d_name[i] <= 31 || d->d_name[i] == 127)
+			{
+				Com_Printf("ERROR: invalid char in name of file '%s'.\n", d->d_name);
+				invalid = qtrue;
+				break;
+			}
+		}
+
+		if (invalid)
+		{
+			remove(va("%s%c%s", directory, PATH_SEP, d->d_name));
+			Sys_Error("Invalid character in filename '%s'. The file has been removed. Start the server again.", d->d_name);
+
+			continue; // never add invalid files
+		}
+#endif
 
 		if (nfiles == MAX_FOUND_FILES - 1)
 		{

@@ -2,7 +2,7 @@
 
 images/blackmask
 {
-	nopicmip 
+	nopicmip
 	nocompress
 	nomipmaps
 	{
@@ -19,15 +19,14 @@ models/weapons2/shells/m_shell
 	{
 		map models/weapons2/shells/M_shell.jpg
 		blendFunc GL_ONE GL_ONE_MINUS_SRC_ALPHA
-		rgbGen lightingDiffuse 
+		rgbGen lightingDiffuse
 	}
 	{
 		map models/weapons2/shells/M_shell.jpg
 		blendFunc GL_ZERO GL_ONE
-		rgbGen lightingDiffuse 
+		rgbGen lightingDiffuse
 	}
 }
-
 
 icons/iconw_mortar
 {
@@ -68,6 +67,28 @@ icons/iconw_bazooka_1_select
 	nopicmip
 	{
 		map icons/iconw_bazooka_1_select.tga
+		blendFunc blend
+		rgbGen vertex
+	}
+}
+
+icons/iconw_browning
+{
+	nomipmaps
+	nopicmip
+	{
+		map icons/iconw_browning.tga
+		blendFunc blend
+		rgbGen vertex
+	}
+}
+
+icons/iconw_browning_1_select
+{
+	nomipmaps
+	nopicmip
+	{
+		map icons/iconw_browning_1_select.tga
 		blendFunc blend
 		rgbGen vertex
 	}
@@ -238,6 +259,71 @@ icons/iconw_silencer_1_select
 	}
 }
 
+gfx/hud/pm_constallied
+{
+	nopicmip
+	nocompress
+	nomipmaps
+	{
+		map gfx/hud/pm_constallied.tga
+		blendfunc blend
+		rgbGen vertex
+		alphaGen vertex
+	}
+}
+
+gfx/hud/pm_constaxis
+{
+	nopicmip
+	nocompress
+	nomipmaps
+	{
+		map gfx/hud/pm_constaxis.tga
+		blendfunc blend
+		rgbGen vertex
+		alphaGen vertex
+	}
+}
+
+gfx/limbo/pm_dynamite
+{
+	nopicmip
+	nocompress
+	nomipmaps
+	{
+		map gfx/limbo/cm_dynamite.tga
+		blendfunc blend
+		rgbGen vertex
+		alphaGen vertex
+	}
+}
+
+gfx/limbo/pm_flagallied
+{
+	nopicmip
+	nocompress
+	nomipmaps
+	{
+		map gfx/limbo/cm_flagallied.tga
+		blendfunc blend
+		rgbGen vertex
+		alphaGen vertex
+	}
+}
+
+gfx/limbo/pm_flagaxis
+{
+	nopicmip
+	nocompress
+	nomipmaps
+	{
+		map gfx/limbo/cm_flagaxis.tga
+		blendfunc blend
+		rgbGen vertex
+		alphaGen vertex
+	}
+}
+
 gfx/limbo/cm_alliedgren
 {
 	nopicmip
@@ -358,19 +444,6 @@ gfx/limbo/cm_dynamite
 	{
 		map gfx/limbo/cm_dynamite.tga
 		depthFunc equal
-		blendfunc blend
-		rgbGen vertex
-		alphaGen vertex
-	}
-}
-
-gfx/limbo/dynamite
-{
-	nopicmip
-	nocompress
-	nomipmaps
-	{
-		map gfx/limbo/cm_dynamite.tga
 		blendfunc blend
 		rgbGen vertex
 		alphaGen vertex
@@ -935,7 +1008,7 @@ models/weapons2/browning/barrel
 	cull none
 	{
 		map models/multiplayer/browning/barrel.tga
-		rgbGen const ( 0 0 0 ) 
+		rgbGen const ( 0 0 0 )
 		alphaFunc GE128
 		depthWrite
 	}
@@ -990,29 +1063,7 @@ models/multiplayer/mortar/mortar_sd
 	}
 }
 
-models/multiplayer/syringe/adrenaline
-{
-        cull disable
-        {
-                map models/multiplayer/syringe/fluid3.tga
-                blendfunc blend
-                rgbgen lightingdiffuse
-                tcmod scale 4 6
-                tcmod scroll 0 -.8
-        }
-        {
-                map models/multiplayer/syringe/syringe.tga
-                blendfunc gl_src_alpha gl_one_minus_src_alpha
-                rgbgen lightingdiffuse
-        }
-        {
-                map models/multiplayer/syringe/syringe_reflections.tga
-                blendfunc gl_src_alpha gl_one_minus_src_alpha
-                rgbgen lightingdiffuse
-        }
-}
-
-// Helmet Ranks 
+// Helmet Ranks
 models/players/temperate/common/rank1
 {
 	polygonoffset

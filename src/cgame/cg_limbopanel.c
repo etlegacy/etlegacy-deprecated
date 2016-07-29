@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -73,13 +73,14 @@ panel_button_text_t titleLimboFont =
 	&cgs.media.limboFont1,
 };
 
-panel_button_text_t titleLimboFontBig =
-{
-	0.3f,                  0.3f,
-	{ 1.f,                 1.f, 1.f,  0.6f },
-	0,                     0,
-	&cgs.media.limboFont1,
-};
+
+//panel_button_text_t titleLimboFontBig =
+//{
+//	0.3f,                  0.3f,
+//	{ 1.f,                 1.f, 1.f,  0.6f },
+//	0,                     0,
+//	&cgs.media.limboFont1,
+//};
 
 panel_button_text_t titleLimboFontBigCenter =
 {
@@ -240,7 +241,7 @@ TEAM_COUNTER(2);
 #define CLASS_COUNTER_WIDTH 20.f
 #define CLASS_COUNTER_X     435.f
 #define CLASS_COUNTER_SIZE  (645.f - CLASS_COUNTER_X)
-#define CLASS_COUNTER_LIGHT_DIFF 4.f
+//#define CLASS_COUNTER_LIGHT_DIFF 4.f
 #define CLASS_COUNTER_BUTTON_DIFF -18.f
 #define CLASS_COUNTER(number)            \
 	panel_button_t classCounter ## number = {     \
@@ -260,7 +261,7 @@ TEAM_COUNTER(2);
 		{ CLASS_COUNTER_X + CLASS_COUNTER_GAP + (number * (CLASS_COUNTER_GAP + CLASS_COUNTER_WIDTH)) + (CLASS_COUNTER_BUTTON_DIFF / 2.f),266,                                                                                                                             CLASS_COUNTER_WIDTH - CLASS_COUNTER_BUTTON_DIFF, 34 },   \
 		{ 0,                             number,                                                                                                                          0,                                               0, 0, 0, 0, 0},        \
 		NULL,                            /* font       */              \
-		CG_LimboPanel_ClassButton_KeyDown, /* keyDown   */  \
+		CG_LimboPanel_ClassButton_KeyDown,/* keyDown   */  \
 		NULL,                            /* keyUp  */                  \
 		CG_LimboPanel_RenderClassButton,        \
 		NULL,                                   \
@@ -305,7 +306,7 @@ CLASS_COUNTER(4);
 		{ 15,                      54 + (number * 31), 26, 26 },     \
 		{ number,                  0,                  0,  0, 0, 0, 0, 0},    \
 		NULL,                      /* font       */          \
-		CG_LimboPanel_Filter_KeyDown, /* keyDown    */              \
+		CG_LimboPanel_Filter_KeyDown,/* keyDown    */              \
 		NULL,                      /* keyUp  */              \
 		CG_LimboPanel_Filter_Draw,          \
 		NULL,                               \
@@ -493,6 +494,32 @@ panel_button_t playerSkillIcon2 =
 
 // =======================
 
+panel_button_t spawnPointText =
+{
+	NULL,
+	"AUTOSPAWN",
+	{ 150,                     392,0, 0 },
+	{ 0,                       0,  0, 0, 0, 0, 0, 0},
+	&spawnLimboFont,           /* font        */
+	NULL,                      /* keyDown  */
+	NULL,                      /* keyUp    */
+	BG_PanelButtonsRender_Text,
+	NULL,
+};
+
+panel_button_t spawnPointButton =
+{
+	NULL,
+	NULL,
+	{ 132,                              381,   15, 15 },
+	{ 0,                                0,     0,  0, 0, 0, 0, 0},
+	NULL,                               /* font     */
+	CG_LimboPanel_SpawnPointButton_KeyDown,/* keyDown  */
+	NULL,                               /* keyUp    */
+	CG_LimboPanel_SpawnPointButton_Draw,
+	NULL,
+};
+
 panel_button_t mapTimeCounter =
 {
 	NULL,
@@ -523,7 +550,7 @@ panel_button_t mapTimeCounterText =
 {
 	NULL,
 	"MISSION TIME",
-	{ 172,                     16, 0, 0 },
+	{ 176,                     16, 0, 0 },
 	{ 0,                       0,  0, 0, 0, 0, 0, 0},
 	&spawnLimboFont,           /* font        */
 	NULL,                      /* keyDown  */
@@ -610,8 +637,8 @@ panel_button_t weaponPanel =
 	{ 455,                    353,   140, 56 },
 	{ 0,                      0,     0,   0, 0, 0, 0, 0},
 	NULL,                     /* font     */
-	CG_LimboPanel_WeaponPanel_KeyDown, /* keyDown  */
-	CG_LimboPanel_WeaponPanel_KeyUp, /* keyUp    */
+	CG_LimboPanel_WeaponPanel_KeyDown,/* keyDown  */
+	CG_LimboPanel_WeaponPanel_KeyUp,/* keyUp    */
 	CG_LimboPanel_WeaponPanel,
 	NULL,
 };
@@ -623,7 +650,7 @@ panel_button_t weaponLight1 =
 	{ 605,                     362,   20, 20 },
 	{ 0,                       0,     0,  0, 0, 0, 0, 0},
 	NULL,                      /* font     */
-	CG_LimboPanel_WeaponLights_KeyDown, /* keyDown  */
+	CG_LimboPanel_WeaponLights_KeyDown,/* keyDown  */
 	NULL,                      /* keyUp    */
 	CG_LimboPanel_WeaponLights,
 	NULL,
@@ -649,7 +676,7 @@ panel_button_t weaponLight2 =
 	{ 605,                     386,   20, 20 },
 	{ 1,                       0,     0,  0, 0, 0, 0, 0},
 	NULL,                      /* font     */
-	CG_LimboPanel_WeaponLights_KeyDown, /* keyDown  */
+	CG_LimboPanel_WeaponLights_KeyDown,/* keyDown  */
 	NULL,                      /* keyUp    */
 	CG_LimboPanel_WeaponLights,
 	NULL,
@@ -823,7 +850,7 @@ panel_button_t objectivePanelButtonUp =
 	{ 252,                       416,24, 24 },
 	{ 0,                         0,  0,  0, 0, 0, 0, 1},
 	NULL,                        /* font     */
-	CG_LimboPanel_ObjectiveText_KeyDown, /* keyDown  */
+	CG_LimboPanel_ObjectiveText_KeyDown,/* keyDown  */
 	NULL,                        /* keyUp    */
 	BG_PanelButtonsRender_Img,
 	NULL,
@@ -836,7 +863,7 @@ panel_button_t briefingButton =
 	{ 252,                            388,   24, 24 },
 	{ 0,                              0,     0,  0, 0, 0, 0, 0},
 	NULL,                             /* font     */
-	CG_LimboPanel_BriefingButton_KeyDown, /* keyDown  */
+	CG_LimboPanel_BriefingButton_KeyDown,/* keyDown  */
 	NULL,                             /* keyUp    */
 	CG_LimboPanel_BriefingButton_Draw,
 	NULL,
@@ -849,7 +876,7 @@ panel_button_t objectivePanelButtonDown =
 	{ 252,                       444,24, 24 },
 	{ 0,                         0,  0,  0, 0, 0, 0, 0},
 	NULL,                        /* font     */
-	CG_LimboPanel_ObjectiveText_KeyDown, /* keyDown  */
+	CG_LimboPanel_ObjectiveText_KeyDown,/* keyDown  */
 	NULL,                        /* keyUp    */
 	BG_PanelButtonsRender_Img,
 	NULL,
@@ -877,7 +904,7 @@ panel_button_t okButton =
 	{ 454 + 2,                454 + 2,       82 - 4, 18 - 4 },
 	{ 0,                      0,             0,      0, 0, 0, 0, 0},
 	NULL,                     /* font     */
-	CG_LimboPanel_OkButton_KeyDown, /* keyDown  */
+	CG_LimboPanel_OkButton_KeyDown,/* keyDown  */
 	NULL,                     /* keyUp    */
 	CG_LimboPanel_Border_Draw,
 	NULL,
@@ -903,7 +930,7 @@ panel_button_t cancelButton =
 	{ 543 + 2,                454 + 2,       82 - 4, 18 - 4 },
 	{ 0,                      0,             0,      0, 0, 0, 0, 0},
 	NULL,                     /* font     */
-	CG_LimboPanel_CancelButton_KeyDown, /* keyDown  */
+	CG_LimboPanel_CancelButton_KeyDown,/* keyDown  */
 	NULL,                     /* keyUp    */
 	CG_LimboPanel_Border_Draw,
 	NULL,
@@ -931,7 +958,7 @@ panel_button_t plusButton =
 	{ 19,                     320,  18, 14 },
 	{ 12,                     0,    0,  0, 0, 0, 0, 0},
 	NULL,                     /* font     */
-	CG_LimboPanel_PlusButton_KeyDown, /* keyDown  */
+	CG_LimboPanel_PlusButton_KeyDown,/* keyDown  */
 	NULL,                     /* keyUp    */
 	CG_LimboPanel_Border_Draw,
 	NULL,
@@ -957,7 +984,7 @@ panel_button_t minusButton =
 	{ 19,                     346,  18, 14 },
 	{ 12,                     0,    0,  0, 0, 0, 0, 0},
 	NULL,                     /* font     */
-	CG_LimboPanel_MinusButton_KeyDown, /* keyDown  */
+	CG_LimboPanel_MinusButton_KeyDown,/* keyDown  */
 	NULL,                     /* keyUp    */
 	CG_LimboPanel_Border_Draw,
 	NULL,
@@ -1004,6 +1031,7 @@ panel_button_t *limboPanelButtons[] =
 
 	&respawnCounter,          &respawnCounterText,
 	&mapTimeCounter,          &mapTimeCounter2,           &mapTimeCounterText,
+	&spawnPointText,          &spawnPointButton,
 
 	&playerSkillCounter0,     &playerSkillCounter1,       &playerSkillCounter2,
 	&playerSkillIcon0,        &playerSkillIcon1,          &playerSkillIcon2,
@@ -1037,6 +1065,21 @@ panel_button_t *limboPanelButtons[] =
 	NULL,
 };
 
+qboolean CG_LimboPanel_SpawnPointButton_KeyDown(panel_button_t *button, int key)
+{
+	if (key == K_MOUSE1)
+	{
+		SOUND_SELECT;
+
+		trap_SendClientCommand("setspawnpt 0\n");
+		cgs.ccSelectedSpawnPoint = 0;
+
+		return qtrue;
+	}
+
+	return qfalse;
+}
+
 qboolean CG_LimboPanel_BriefingButton_KeyDown(panel_button_t *button, int key)
 {
 	if (cg_gameType.integer == GT_WOLF_LMS)
@@ -1062,6 +1105,18 @@ qboolean CG_LimboPanel_BriefingButton_KeyDown(panel_button_t *button, int key)
 	}
 
 	return qfalse;
+}
+
+void CG_LimboPanel_SpawnPointButton_Draw(panel_button_t *button)
+{
+	if (CG_LimboPanel_GetSpawnPoint() == 0)
+	{
+		CG_DrawPic(button->rect.x, button->rect.y, button->rect.w, button->rect.h, BG_CursorInRect(&button->rect) ? cgs.media.limboLight_on2 : cgs.media.limboLight_on);
+	}
+	else
+	{
+		CG_DrawPic(button->rect.x, button->rect.y, button->rect.w, button->rect.h, cgs.media.limboLight_off);
+	}
 }
 
 void CG_LimboPanel_BriefingButton_Draw(panel_button_t *button)
@@ -1299,7 +1354,7 @@ void CG_LimboPanel_RenderTeamButton(panel_button_t *button)
 {
 	rectDef_t lock;
 	qhandle_t shader;
-	qboolean  teamDisabled = qfalse;
+	qboolean  teamDisabled;
 
 	teamDisabled = CG_LimboPanel_TeamIsDisabled(teamOrder[button->data[0]]);
 
@@ -1349,7 +1404,7 @@ void CG_LimboPanel_RenderTeamButton(panel_button_t *button)
 	trap_R_SetColor(NULL);
 	CG_DrawPic(button->rect.x, button->rect.y, button->rect.w, button->rect.h, shader);
 
-	if (qfalse) //There is no lock status transfer yet.
+	if (qfalse) // FIXME: There is no lock status transfer yet.
 	{
 		lock.w = lock.h = button->rect.h * 0.6;
 
@@ -1748,6 +1803,8 @@ qboolean CG_LimboPanel_RenderLight_GetValue(panel_button_t *button)
 		return (CG_LimboPanel_GetClass() == button->data[1]) ? qtrue : qfalse;
 	case 1:
 		return (CG_LimboPanel_GetTeam() == teamOrder[button->data[1]]) ? qtrue : qfalse;
+	default:
+		break;
 	}
 
 	return qfalse;
@@ -2373,6 +2430,8 @@ int CG_LimboPanel_RenderCounter_ValueForButton(panel_button_t *button)
 		case 2:
 			count = cgs.clientinfo[cg.clientNum].skill[BG_ClassSkillForClass(CG_LimboPanel_GetClass())];
 			break;
+		default:
+			break;
 		}
 		return (1 << count) - 1;
 	case 5:     // clock
@@ -2380,13 +2439,15 @@ int CG_LimboPanel_RenderCounter_ValueForButton(panel_button_t *button)
 		{
 			return 0;
 		}
-		count = ((cgs.timelimit * 60 * 1000) - (cg.time - cgs.levelStartTime)) / 1000;
+		count = ((cgs.timelimit * 60000) - (cg.time - cgs.levelStartTime)) / 1000; // 60 * 1000
 		switch (button->data[1])
 		{
 		case 0:         // secs
 			return count % 60;
 		case 1:         // mins
 			return count / 60;
+		default:
+			break;
 		}
 		return 0;
 	case 6:     // stats
@@ -2398,6 +2459,8 @@ int CG_LimboPanel_RenderCounter_ValueForButton(panel_button_t *button)
 			return cgs.ccWeaponHits;
 		case 2:
 			return cgs.ccWeaponShots != 0 ? 100 * cgs.ccWeaponHits / cgs.ccWeaponShots : 0;
+		default:
+			break;
 		}
 		return 0;
 	default:
@@ -2436,6 +2499,8 @@ int CG_LimboPanel_RenderCounter_RollTimeForButton(panel_button_t *button)
 	case 3:     // respawn time
 	case 2:     // xp
 		return 50.f;
+	default:
+		break;
 	}
 
 	return 1000.f;
@@ -2448,6 +2513,8 @@ int CG_LimboPanel_RenderCounter_MaxChangeForButton(panel_button_t *button)
 	case 2:     // xp
 	case 6:     // stats
 		return 5;
+	default:
+		break;
 	}
 
 	return 1;
@@ -2476,6 +2543,8 @@ int CG_LimboPanel_RenderCounter_NumRollers(panel_button_t *button)
 			return 4;
 		case 2:
 			return 3;
+		default:
+			break;
 		}
 		break;
 	case 2:     // xp
@@ -2484,6 +2553,8 @@ int CG_LimboPanel_RenderCounter_NumRollers(panel_button_t *button)
 			return 0;
 		}
 		return 6;
+	default:
+		break;
 	}
 
 	return 0;
@@ -2691,7 +2762,7 @@ void CG_LimboPanel_RenderCounter(panel_button_t *button)
 
 		for (i = 0, j = 1; i < num; i++, j *= numimages)
 		{
-			count[i] = (int)(button->data[3] / j);
+			count[i] = (button->data[3] / j);
 		}
 	}
 
@@ -3025,6 +3096,11 @@ void CG_LimboPanel_GetWeaponCardIconData(weapon_t weap, qhandle_t *shader, float
 }
 
 // Utility funcs
+int CG_LimboPanel_GetSpawnPoint(void)
+{
+	return cgs.ccSelectedSpawnPoint;
+}
+
 team_t CG_LimboPanel_GetTeam(void)
 {
 	return teamOrder[cgs.ccSelectedTeam];
@@ -3204,7 +3280,7 @@ weapon_t CG_LimboPanel_GetWeaponForNumber(int number, int slot, qboolean ignoreD
 			}
 		}
 
-		return 0;
+		return WP_NONE;
 	}
 }
 
@@ -3414,7 +3490,7 @@ int CG_LimboPanel_MaxCount(int playerCount, char *variableString)
 
 /**
  * @brief Checks for heavy- and rifle weapons
- * @note  this function needs some rework: count picked up opposite team weapons too
+ * @note  FIXME: this function needs some rework: count picked up opposite team weapons too
  *        see G_IsWeaponDisabled
  *        check: CG_LimboPanel_RealWeaponIsDisabled probably doesn't have to check for alt weapons
  *        they can't be selected
@@ -3429,7 +3505,7 @@ qboolean CG_LimboPanel_RealWeaponIsDisabled(weapon_t weapon)
 	}
 
 	// never restrict normal weapons
-	if (!IS_HEAVY_WEAPON(weapon) && !IS_RIFLE_AND_NADE_WEAPON(weapon))
+	if (!(IS_HEAVY_WEAPON(weapon) || IS_RIFLE_WEAPON(weapon)))
 	{
 		return qfalse;
 	}
@@ -3474,6 +3550,14 @@ qboolean CG_LimboPanel_RealWeaponIsDisabled(weapon_t weapon)
 		break;
 	case WP_MOBILE_MG42:
 		// add alt weapons
+		wcount = wcount + CG_LimboPanel_TeamCount(WP_MOBILE_MG42_SET);
+		if (wcount >= CG_LimboPanel_MaxCount(count, cg.maxMg42s))
+		{
+			return qtrue;
+		}
+		break;
+	case WP_MOBILE_MG42_SET:
+		// add alt weapons
 		wcount = wcount + CG_LimboPanel_TeamCount(WP_MOBILE_MG42);
 		if (wcount >= CG_LimboPanel_MaxCount(count, cg.maxMg42s))
 		{
@@ -3483,6 +3567,14 @@ qboolean CG_LimboPanel_RealWeaponIsDisabled(weapon_t weapon)
 	case WP_MOBILE_BROWNING:
 		// add alt weapons
 		wcount = wcount + CG_LimboPanel_TeamCount(WP_MOBILE_BROWNING_SET);
+		if (wcount >= CG_LimboPanel_MaxCount(count, cg.maxMg42s))
+		{
+			return qtrue;
+		}
+		break;
+	case WP_MOBILE_BROWNING_SET:
+		// add alt weapons
+		wcount = wcount + CG_LimboPanel_TeamCount(WP_MOBILE_BROWNING);
 		if (wcount >= CG_LimboPanel_MaxCount(count, cg.maxMg42s))
 		{
 			return qtrue;
@@ -3510,24 +3602,22 @@ qboolean CG_LimboPanel_RealWeaponIsDisabled(weapon_t weapon)
 			return qtrue;
 		}
 		break;
-	/* FIXME: do we have to check these?
-	        case WP_GPG40:
-	            // add alt weapons
-	            wcount = wcount + CG_LimboPanel_TeamCount(WP_KAR98);
-	            if (wcount >= CG_LimboPanel_MaxCount(count, cg.maxRiflegrenades))
-	            {
-	                return qtrue;
-	            }
-	            break;
-	        case WP_M7:
-	            // add alt weapons
-	            wcount = wcount + CG_LimboPanel_TeamCount(WP_CARBINE);
-	            if (wcount >= CG_LimboPanel_MaxCount(count, cg.maxRiflegrenades))
-	            {
-	                return qtrue;
-	            }
-	            break;
-	*/
+	case WP_GPG40:
+		// add alt weapons
+		wcount = wcount + CG_LimboPanel_TeamCount(WP_KAR98);
+		if (wcount >= CG_LimboPanel_MaxCount(count, cg.maxRiflegrenades))
+		{
+			return qtrue;
+		}
+		break;
+	case WP_M7:
+		// add alt weapons
+		wcount = wcount + CG_LimboPanel_TeamCount(WP_CARBINE);
+		if (wcount >= CG_LimboPanel_MaxCount(count, cg.maxRiflegrenades))
+		{
+			return qtrue;
+		}
+		break;
 	default:
 		break;
 	}

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -332,7 +332,7 @@ int Item_ListBox_ThumbPosition(itemDef_t *item)
 		size = item->window.rect.w - (SCROLLBAR_SIZE * 2) - 2;
 		if (max > 0)
 		{
-			pos = (size - SCROLLBAR_SIZE) / (float)max;
+			pos = (size - SCROLLBAR_SIZE) / max;
 		}
 		else
 		{
@@ -347,7 +347,7 @@ int Item_ListBox_ThumbPosition(itemDef_t *item)
 		size = item->window.rect.h - (SCROLLBAR_SIZE * 2) - 2;
 		if (max > 0)
 		{
-			pos = (size - SCROLLBAR_SIZE) / (float)max;
+			pos = (size - SCROLLBAR_SIZE) / max;
 		}
 		else
 		{
@@ -2656,13 +2656,13 @@ void Item_Combo_Paint(itemDef_t *item)
 		}
 	}
 
-	selectorOffset = widestText + selectedTextOffset + 8 + borderOffset;
+	selectorOffset = widestText + selectedTextOffset - 4 + borderOffset;
 
 	selectorSize = DC->textWidth(COMBO_SELECTORCHAR, item->textscale, 0);
 
 	rect.x = selectedTextOffset;
 	rect.y = item->textRect.y - item->textRect.h - borderOffset;
-	rect.w = widestText + 16 + selectorSize + borderOffset;
+	rect.w = widestText + 4 + selectorSize + borderOffset;
 	rect.h = item->textRect.h + (borderOffset * 2);
 
 	selectorRect.x = rect.x + (rect.w - selectorSize - 8 - (borderOffset * 2));
@@ -3020,7 +3020,7 @@ void Item_Model_Paint(itemDef_t *item)
 		if (DC->realTime > item->window.nextTime)
 		{
 			item->window.nextTime = DC->realTime + modelPtr->rotationSpeed;
-			modelPtr->angle       = (int)(modelPtr->angle + 1) % 360;
+			modelPtr->angle       = (modelPtr->angle + 1) % 360;
 		}
 	}
 

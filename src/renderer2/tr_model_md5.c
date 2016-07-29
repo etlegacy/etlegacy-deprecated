@@ -4,7 +4,7 @@
  * Copyright (C) 2010-2011 Robert Beckebans <trebor_7@users.sourceforge.net>
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -52,7 +52,7 @@ qboolean R_LoadMD5(model_t *mod, void *buffer, int bufferSize, const char *modNa
 	char          *token;
 	vec3_t        boneOrigin;
 	quat_t        boneQuat;
-	matrix_t      boneMat;
+	mat4_t      boneMat;
 	int           numRemaining;
 	growList_t    sortedTriangles;
 	growList_t    vboTriangles;
@@ -199,13 +199,13 @@ qboolean R_LoadMD5(model_t *mod, void *buffer, int bufferSize, const char *modNa
 		}
 
 		QuatCalcW(boneQuat);
-		MatrixFromQuat(boneMat, boneQuat);
+		mat4_from_quat(boneMat, boneQuat);
 
 		VectorCopy(boneOrigin, bone->origin);
-		QuatCopy(boneQuat, bone->rotation);
+		quat_copy(boneQuat, bone->rotation);
 
 		MatrixSetupTransformFromQuat(bone->inverseTransform, boneQuat, boneOrigin);
-		MatrixInverse(bone->inverseTransform);
+		mat4_inverse_self(bone->inverseTransform);
 
 		// skip )
 		token = COM_ParseExt2(&buf_p, qfalse);

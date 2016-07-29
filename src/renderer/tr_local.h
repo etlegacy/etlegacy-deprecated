@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -1346,9 +1346,7 @@ model_t *R_AllocModel(void);
 void R_Init(void);
 image_t *R_FindImageFile(const char *name, qboolean mipmap, qboolean allowPicmip, int glWrapClampMode, qboolean lightmap);
 
-image_t *R_CreateImage(const char *name, const byte *pic, int width, int height, qboolean mipmap
-                       , qboolean allowPicmip, int wrapClampMode);
-qboolean R_GetModeInfo(int *width, int *height, float *windowAspect, int mode);
+image_t *R_CreateImage(const char *name, const byte *pic, int width, int height, qboolean mipmap, qboolean allowPicmip, int wrapClampMode);
 
 void R_SetColorMappings(void);
 void R_GammaCorrect(byte *buffer, int bufSize);
@@ -1871,6 +1869,11 @@ void R_BackupShaders(void);
 void R_PurgeShaders(int count);
 void R_PurgeLightmapShaders(void);
 void R_LoadCacheShaders(void);
+
+// tr_gamma.c
+void R_ScreenGamma(void);
+void R_InitGamma(void);
+void R_ShutdownGamma(void);
 
 //------------------------------------------------------------------------------
 // mesh compression

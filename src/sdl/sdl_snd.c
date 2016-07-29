@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -51,8 +51,8 @@ cvar_t *s_sdlDevSamps;
 cvar_t *s_sdlMixSamps;
 
 /* The audio callback. All the magic happens here. */
-static int dmapos  = 0;
-static int dmasize = 0;
+static int               dmapos    = 0;
+static int               dmasize   = 0;
 static SDL_AudioDeviceID device_id = 0;
 /*
 ===============
@@ -147,7 +147,7 @@ static void SNDDMA_PrintAudiospec(const char *str, const SDL_AudioSpec *spec)
 		Com_Printf("  Format:   " S_COLOR_RED "UNKNOWN\n");
 	}
 
-	Com_Printf("  Freq:     %d\n", (int) spec->freq);
+	Com_Printf("  Freq:     %d\n", spec->freq);
 	Com_Printf("  Samples:  %d\n", (int) spec->samples);
 	Com_Printf("  Channels: %d\n", (int) spec->channels);
 	Com_Printf("  Silence:  %d\n", (int) spec->silence);
@@ -176,7 +176,7 @@ qboolean SNDDMA_Init(void)
 	SDL_AudioSpec desired;
 	SDL_AudioSpec obtained;
 	const char    *driver_name;
-	const char	  *device_name;
+	const char    *device_name;
 	int           tmp;
 
 	if (snd_inited)
@@ -196,7 +196,7 @@ qboolean SNDDMA_Init(void)
 
 	s_sdlDevSamps = Cvar_Get("s_sdlDevSamps", "0", CVAR_LATCH | CVAR_ARCHIVE);
 	s_sdlMixSamps = Cvar_Get("s_sdlMixSamps", "0", CVAR_LATCH | CVAR_ARCHIVE);
-	s_device = Cvar_Get("s_device", "-1", CVAR_LATCH | CVAR_ARCHIVE);
+	s_device      = Cvar_Get("s_device", "-1", CVAR_LATCH | CVAR_ARCHIVE);
 
 	Com_Printf("SDL_Init( SDL_INIT_AUDIO )... ");
 
@@ -301,7 +301,7 @@ qboolean SNDDMA_Init(void)
 	}
 
 	device_id = SDL_OpenAudioDevice(device_name, qfalse, &desired, &obtained, SDL_AUDIO_ALLOW_FORMAT_CHANGE);
-	if(device_id == 0)
+	if (device_id == 0)
 	{
 		Com_Printf("SDL_OpenAudioDevice() failed: %s\n", SDL_GetError());
 		SDL_QuitSubSystem(SDL_INIT_AUDIO);

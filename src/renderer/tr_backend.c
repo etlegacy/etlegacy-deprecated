@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -850,16 +850,19 @@ void RE_StretchRaw(int x, int y, int w, int h, int cols, int rows, const byte *d
 		start = ri.Milliseconds();
 	}
 
-	// make sure rows and cols are powers of 2
-	for (i = 0 ; (1 << i) < cols ; i++)
+	if (!GL_ARB_texture_non_power_of_two)
 	{
-	}
-	for (j = 0 ; (1 << j) < rows ; j++)
-	{
-	}
-	if ((1 << i) != cols || (1 << j) != rows)
-	{
-		Ren_Drop("Draw_StretchRaw: size not a power of 2: %i by %i", cols, rows);
+		// make sure rows and cols are powers of 2
+		for (i = 0; (1 << i) < cols; i++)
+		{
+		}
+		for (j = 0; (1 << j) < rows; j++)
+		{
+		}
+		if ((1 << i) != cols || (1 << j) != rows)
+		{
+			Ren_Drop("Draw_StretchRaw: size not a power of 2: %i by %i", cols, rows);
+		}
 	}
 
 	GL_Bind(tr.scratchImage[client]);
@@ -1287,6 +1290,13 @@ const void *RB_DrawBuffer(const void *data)
 	return ( const void * ) (cmd + 1);
 }
 
+void RB_GammaScreen(void)
+{
+	// We force the 2D drawing
+	RB_SetGL2D();
+	R_ScreenGamma();
+}
+
 /*
 ===============
 RB_ShowImages
@@ -1418,6 +1428,8 @@ const void *RB_SwapBuffers(const void *data)
 		RB_ShowImages();
 	}
 
+	RB_GammaScreen();
+
 	cmd = ( const swapBuffersCommand_t * ) data;
 
 	// we measure overdraw by reading back the stencil buffer and
@@ -1440,7 +1452,6 @@ const void *RB_SwapBuffers(const void *data)
 		ri.Hunk_FreeTempMemory(stencilReadback);
 	}
 
-
 	if (!glState.finishCalled)
 	{
 		qglFinish();
@@ -1448,7 +1459,7 @@ const void *RB_SwapBuffers(const void *data)
 
 	Ren_LogComment("***************** RB_SwapBuffers *****************\n\n\n");
 
-	GLimp_EndFrame();
+	ri.GLimp_SwapFrame();
 
 	backEnd.projection2D = qfalse;
 

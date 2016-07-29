@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -221,6 +221,33 @@ void G_PlaySound_Cmd(void)
 	}
 }
 
+#ifdef FEATURE_RATING
+static void G_SendSkillRating(gentity_t *ent)
+{
+	int       i;
+	gclient_t *cl;
+	char      buff[1021] = { "sr " };
+
+	// win probability
+	Q_strcat(buff, sizeof(buff), va("%.1f ", (level.axisProb * 100.0f)));
+	Q_strcat(buff, sizeof(buff), va("%.1f ", (level.alliesProb * 100.0f)));
+
+	for (i = 0; i < level.numConnectedClients; i++)
+	{
+		cl = &level.clients[level.sortedClients[i]];
+		Q_strcat(buff, sizeof(buff), va("%.3f %.3f ",
+			cl->sess.mu - 3 * cl->sess.sigma,
+			cl->sess.mu - 3 * cl->sess.sigma - (cl->sess.oldmu - 3 * cl->sess.oldsigma)));
+	}
+
+	if (strlen(buff) > 3)
+	{
+		buff[strlen(buff) - 1] = '\0';
+	}
+	trap_SendServerCommand(ent - g_entities, va("%s\n", buff));
+}
+#endif
+
 /*
 ==================
 G_SendScore_Add
@@ -236,15 +263,13 @@ G_SendScore_Add
 qboolean G_SendScore_Add(gentity_t *ent, int i, char *buf, int bufsize)
 {
 	gclient_t *cl = &level.clients[level.sortedClients[i]];
-	int       ping, respawnsLeft = -1;
+	int       ping, respawnsLeft = cl->ps.persistant[PERS_RESPAWNS_LEFT]; // number of respawns left
 	char      entry[128];
 	int       totalXP   = 0;
 	int       miscFlags = 0; // 1 - ready 2 - is bot
 
 	entry[0] = '\0';
 
-	// number of respawns left
-	respawnsLeft = cl->ps.persistant[PERS_RESPAWNS_LEFT];
 	if (g_gametype.integer == GT_WOLF_LMS)
 	{
 		if (g_entities[level.sortedClients[i]].health <= 0)
@@ -296,7 +321,7 @@ qboolean G_SendScore_Add(gentity_t *ent, int i, char *buf, int bufsize)
 	            level.sortedClients[i],
 	            totalXP,
 	            ping,
-	            (level.time - cl->pers.enterTime - (level.time - level.intermissiontime)) / 60000,
+	            (level.intermissiontime - cl->pers.enterTime) / 60000,
 	            g_entities[level.sortedClients[i]].s.powerups,
 	            miscFlags,
 	            respawnsLeft
@@ -331,6 +356,13 @@ void G_SendScore(gentity_t *ent)
 
 	*buffer      = '\0';
 	*startbuffer = '\0';
+
+#ifdef FEATURE_RATING
+	if (g_skillRating.integer)
+	{
+		G_SendSkillRating(ent);
+	}
+#endif
 
 	Q_strncpyz(startbuffer, va(
 	               "sc0 %i %i",
@@ -1080,6 +1112,63 @@ void G_TeamDataForString(const char *teamstr, int clientNum, team_t *team, spect
 	}
 }
 
+/**
+ * @brief Drops items. Currently only red-/blueflag.
+ */
+void G_DropItems(gentity_t *self)
+{
+	gitem_t *item = NULL;
+
+	// drop flag regardless
+	if (self->client->ps.powerups[PW_REDFLAG])
+	{
+		item = BG_GetItem(ITEM_RED_FLAG);
+		self->client->ps.powerups[PW_REDFLAG] = 0;
+	}
+	if (self->client->ps.powerups[PW_BLUEFLAG])
+	{
+		item = BG_GetItem(ITEM_BLUE_FLAG);
+		self->client->ps.powerups[PW_BLUEFLAG] = 0;
+	}
+
+	if (item)
+	{
+		vec3_t    launchvel = { 0, 0, 0 };
+		vec3_t    forward;
+		vec3_t    origin;
+		vec3_t    angles;
+		gentity_t *flag;
+
+		VectorCopy(self->client->ps.origin, origin);
+		// if the player hasn't died, then assume he's
+		//      throwing objective per g_dropObj
+		if(self->health > 0)
+		{
+			VectorCopy(self->client->ps.viewangles, angles);
+			if(angles[PITCH] > 0)
+			{
+				angles[PITCH] = 0;
+			}
+			AngleVectors(angles, forward, NULL, NULL);
+			VectorMA(self->client->ps.velocity, 96, forward, launchvel);
+			VectorMA(origin, 36.0f, forward, origin);
+			origin[2] += self->client->ps.viewheight;
+		}
+
+		flag = LaunchItem(item, origin, launchvel, self->s.number);
+
+		flag->s.modelindex2 = self->s.otherEntityNum2;// FIXME set player->otherentitynum2 with old modelindex2 from flag and restore here
+		flag->message       = self->message;	// also restore item name
+
+#ifdef OMNIBOTS
+		Bot_Util_SendTrigger(flag, NULL, va("%s dropped.", flag->message), "dropped");
+#endif
+		// Clear out player's temp copies
+		self->s.otherEntityNum2 = 0;
+		self->message           = NULL;
+	}
+}
+
 /*
 =================
 SetTeam
@@ -1159,12 +1248,14 @@ qboolean SetTeam(gentity_t *ent, char *s, qboolean force, weapon_t w1, weapon_t 
 	{
 		if ((g_maxlives.integer > 0 ||
 		     (g_alliedmaxlives.integer > 0 && ent->client->sess.sessionTeam == TEAM_ALLIES) ||
-		     (g_axismaxlives.integer > 0 && ent->client->sess.sessionTeam == TEAM_AXIS))
-
-		    && ent->client->ps.persistant[PERS_RESPAWNS_LEFT] == 0 && oldTeam != TEAM_SPECTATOR)
+		     (g_axismaxlives.integer > 0 && ent->client->sess.sessionTeam == TEAM_AXIS)) &&
+		    ent->client->ps.persistant[PERS_RESPAWNS_LEFT] == 0 && oldTeam != TEAM_SPECTATOR)
 		{
-			CP("cp \"You can't switch teams because you are out of lives.\n\" 3");
-			return qfalse;  // ignore the request
+			if (g_gamestate.integer == GS_PLAYING) // but allow changing team in warmup
+			{
+				CP("cp \"You can't switch teams because you are out of lives.\n\" 3");
+				return qfalse;  // ignore the request
+			}
 		}
 	}
 
@@ -1350,6 +1441,13 @@ qboolean SetTeam(gentity_t *ent, char *s, qboolean force, weapon_t w1, weapon_t 
 		ent->client->inactivitySecondsLeft = (g_spectatorInactivity.integer) ? g_spectatorInactivity.integer : 60;
 	}
 
+#ifdef FEATURE_RATING
+	if (g_skillRating.integer)
+	{
+		level.axisProb   = G_CalculateWinProbability(TEAM_AXIS);
+		level.alliesProb = 1.0 - level.axisProb;
+	}
+#endif
 	return qtrue;
 }
 
@@ -1394,34 +1492,36 @@ void StopFollowing(gentity_t *ent)
 	}
 }
 
+/* unused
 int G_NumPlayersWithWeapon(weapon_t weap, team_t team)
 {
-	int i, j, cnt = 0;
+    int i, j, cnt = 0;
 
-	for (i = 0; i < level.numConnectedClients; i++)
-	{
-		j = level.sortedClients[i];
+    for (i = 0; i < level.numConnectedClients; i++)
+    {
+        j = level.sortedClients[i];
 
-		if (level.clients[j].sess.playerType != PC_SOLDIER)
-		{
-			continue;
-		}
+        if (level.clients[j].sess.playerType != PC_SOLDIER)
+        {
+            continue;
+        }
 
-		if (level.clients[j].sess.sessionTeam != team)
-		{
-			continue;
-		}
+        if (level.clients[j].sess.sessionTeam != team)
+        {
+            continue;
+        }
 
-		if (level.clients[j].sess.latchPlayerWeapon != weap && level.clients[j].sess.playerWeapon != weap)
-		{
-			continue;
-		}
+        if (level.clients[j].sess.latchPlayerWeapon != weap && level.clients[j].sess.playerWeapon != weap)
+        {
+            continue;
+        }
 
-		cnt++;
-	}
+        cnt++;
+    }
 
-	return cnt;
+    return cnt;
 }
+*/
 
 int G_NumPlayersOnTeam(team_t team)
 {
@@ -1502,7 +1602,7 @@ qboolean G_IsWeaponDisabled(gentity_t *ent, weapon_t weapon)
 		return qtrue;
 	}
 
-	if (!IS_HEAVY_WEAPON(weapon) && !IS_RIFLE_AND_NADE_WEAPON(weapon))
+	if (!(IS_HEAVY_WEAPON(weapon) || IS_RIFLE_WEAPON(weapon)))
 	{
 		return qfalse;
 	}
@@ -2068,6 +2168,8 @@ qboolean G_IsClassFull(gentity_t *ent, int playerType, team_t team)
 			CP("cp \"^1Covert Ops^7 is not available! Choose another class!\n\"");
 			return qtrue;
 		}
+		break;
+	default:
 		break;
 	}
 	return qfalse;
@@ -2690,7 +2792,7 @@ void G_VoiceTo(gentity_t *ent, gentity_t *other, int mode, const char *id, qbool
 {
 	int      color;
 	char     *cmd;
-	qboolean disguise = 0;
+	qboolean disguise = qfalse;
 
 	if (!other)
 	{
@@ -2712,7 +2814,7 @@ void G_VoiceTo(gentity_t *ent, gentity_t *other, int mode, const char *id, qbool
 		    (!Q_stricmp(id, "Medic") || !Q_stricmp(id, "NeedAmmo") || !Q_stricmp(id, "FTHealMe") || !Q_stricmp(id, "FTResupplyMe"))
 		    )
 		{
-			disguise = 1;
+			disguise = qtrue;
 		}
 		else
 		{
@@ -2830,7 +2932,7 @@ void G_Voice(gentity_t *ent, gentity_t *target, int mode, const char *id, qboole
 	if (mode == SAY_BUDDY)
 	{
 		char     buffer[32];
-		int      cls = -1, i, cnt, num;
+		int      cls, i, cnt, num;
 		qboolean allowclients[MAX_CLIENTS];
 
 		memset(allowclients, 0, sizeof(allowclients));
@@ -3023,16 +3125,10 @@ qboolean Cmd_CallVote_f(gentity_t *ent, unsigned int dwCommand, qboolean fRefCom
 
 	if (trap_Argc() > 1 && (i = G_voteCmdCheck(ent, arg1, arg2, fRefCommand)) != G_NOTFOUND)
 	{
-		if (i != G_OK)
+		if (i != G_OK) // only G_OK continues, G_INVALID & other are dropped here
 		{
-			if (i == G_NOTFOUND)
-			{
-				return qfalse;                  // Command error
-			}
-			else
-			{
-				return qtrue;
-			}
+			// no output here
+			return qfalse;                  // Command error
 		}
 	}
 	else
@@ -3351,6 +3447,7 @@ void Cmd_Vote_f(gentity_t *ent)
 			if (G_IsFireteamLeader(ent - g_entities, &ft))
 			{
 				ft->priv = qtrue;
+				G_UpdateFireteamConfigString(ft);
 			}
 		}
 		else
@@ -3573,7 +3670,7 @@ qboolean Do_Activate2_f(gentity_t *ent, gentity_t *traceEnt)
 	qboolean found = qfalse;
 
 	// Check the class and health state of the player trying to steal the uniform.
-	if (ent->client->sess.playerType == PC_COVERTOPS && !ent->client->ps.powerups[PW_OPS_DISGUISED] && ent->health > 0)
+	if (ent->client->sess.playerType == PC_COVERTOPS && ent->health > 0)
 	{
 		if (!ent->client->ps.powerups[PW_BLUEFLAG] && !ent->client->ps.powerups[PW_REDFLAG])
 		{
@@ -3608,8 +3705,9 @@ qboolean Do_Activate2_f(gentity_t *ent, gentity_t *traceEnt)
 						G_AddSkillPoints(ent, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 5.f);
 						G_DebugAddSkillPoints(ent, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 5.f, "stealing uniform");
 
-						Q_strncpyz(ent->client->disguiseNetname, g_entities[traceEnt->s.clientNum].client->pers.netname, sizeof(ent->client->disguiseNetname));
-						ent->client->disguiseRank = g_entities[traceEnt->s.clientNum].client ? g_entities[traceEnt->s.clientNum].client->sess.rank : 0;
+						ent->client->disguiseClientNum = traceEnt->s.clientNum;
+
+						CPx(ent->s.number, va("cp \"Uniform of %s^7 has been stolen\" 1", g_entities[traceEnt->s.clientNum].client->pers.netname));
 
 						ClientUserinfoChanged(ent->s.clientNum);
 					}
@@ -3857,7 +3955,7 @@ void Cmd_Activate_f(gentity_t *ent)
 	vec3_t    end;
 	gentity_t *traceEnt;
 	vec3_t    forward, right, up, offset;
-	qboolean  found = qfalse;
+	qboolean  found;
 	qboolean  pass2 = qfalse;
 
 	if (ent->health <= 0)
@@ -3986,6 +4084,12 @@ qboolean G_PushPlayer(gentity_t *ent, gentity_t *victim)
 	{
 		return qfalse;
 	}
+	
+	// Don't allow pushing when player is using mg 
+	if (victim->client->ps.persistant[PERS_HWEAPON_USE])
+	{
+		return qfalse;
+	}
 
 	ent->client->pmext.shoveTime = level.time;
 
@@ -4038,7 +4142,7 @@ void Cmd_Activate2_f(gentity_t *ent)
 	vec3_t    end;
 	gentity_t *traceEnt;
 	vec3_t    forward, right, up, offset;
-	qboolean  found = qfalse;
+	qboolean  found;
 	qboolean  pass2 = qfalse;
 
 	if (ent->health <= 0)  // uch
@@ -4311,11 +4415,11 @@ void Cmd_IntermissionPlayerKillsDeaths_f(gentity_t *ent)
 	{
 		if (g_entities[i].inuse)
 		{
-			Q_strcat(buffer, sizeof(buffer), va("%i %i %i %i ", level.clients[i].sess.kills, level.clients[i].sess.deaths, level.clients[i].sess.selfkills, level.clients[i].sess.team_kills));
+			Q_strcat(buffer, sizeof(buffer), va("%i %i %i %i %i %i ", level.clients[i].sess.kills, level.clients[i].sess.deaths, level.clients[i].sess.gibs, level.clients[i].sess.self_kills, level.clients[i].sess.team_kills, level.clients[i].sess.team_gibs));
 		}
 		else
 		{
-			Q_strcat(buffer, sizeof(buffer), "0 0 0 0 ");
+			Q_strcat(buffer, sizeof(buffer), "0 0 0 0 0 0 ");
 		}
 	}
 
@@ -4337,7 +4441,36 @@ void Cmd_IntermissionPlayerTime_f(gentity_t *ent)
 	{
 		if (g_entities[i].inuse)
 		{
-			Q_strcat(buffer, sizeof(buffer), va("%i %i ", level.clients[i].sess.time_axis / 60000, level.clients[i].sess.time_allies / 60000));
+			Q_strcat(buffer, sizeof(buffer), va("%i %i %i ", level.clients[i].sess.time_axis, level.clients[i].sess.time_allies, level.clients[i].sess.time_played));
+		}
+		else
+		{
+			Q_strcat(buffer, sizeof(buffer), "0 0 0 ");
+		}
+	}
+
+	trap_SendServerCommand(ent - g_entities, buffer);
+}
+
+#ifdef FEATURE_RATING
+void Cmd_IntermissionSkillRating_f(gentity_t *ent)
+{
+	char buffer[1024];
+	int  i;
+
+	if (!ent || !ent->client)
+	{
+		return;
+	}
+
+	Q_strncpyz(buffer, "imsr ", sizeof(buffer));
+	for (i = 0; i < g_maxclients.integer; i++)
+	{
+		if (g_entities[i].inuse)
+		{
+			Q_strcat(buffer, sizeof(buffer), va("%.3f %.3f ",
+			    level.clients[i].sess.mu - 3 * level.clients[i].sess.sigma,
+			    level.clients[i].sess.mu - 3 * level.clients[i].sess.sigma - (level.clients[i].sess.oldmu - 3 * level.clients[i].sess.oldsigma)));
 		}
 		else
 		{
@@ -4347,30 +4480,35 @@ void Cmd_IntermissionPlayerTime_f(gentity_t *ent)
 
 	trap_SendServerCommand(ent - g_entities, buffer);
 }
+#endif
 
 void G_CalcClientAccuracies(void)
 {
 	int i, j;
-	int shots, hits;
+	int shots, hits, headshots;
 
 	for (i = 0; i < g_maxclients.integer; i++)
 	{
-		shots = 0;
-		hits  = 0;
+		shots     = 0;
+		hits      = 0;
+		headshots = 0;
 
 		if (g_entities[i].inuse)
 		{
 			for (j = 0; j < WS_MAX; j++)
 			{
-				shots += level.clients[i].sess.aWeaponStats[j].atts;
-				hits  += level.clients[i].sess.aWeaponStats[j].hits;
+				shots     += level.clients[i].sess.aWeaponStats[j].atts;
+				hits      += level.clients[i].sess.aWeaponStats[j].hits;
+				headshots += level.clients[i].sess.aWeaponStats[j].headshots;
 			}
 
-			level.clients[i].acc = shots ? (100 * hits) / (float)shots : 0;
+			level.clients[i].acc   = shots ? 100 * hits / (float)shots : 0.f;
+			level.clients[i].hspct = hits ? 100 * headshots / (float)hits : 0.f;
 		}
 		else
 		{
-			level.clients[i].acc = 0;
+			level.clients[i].acc   = 0.f;
+			level.clients[i].hspct = 0.f;
 		}
 	}
 }
@@ -4390,7 +4528,14 @@ void Cmd_IntermissionWeaponAccuracies_f(gentity_t *ent)
 	Q_strncpyz(buffer, "imwa ", sizeof(buffer));
 	for (i = 0; i < g_maxclients.integer; i++)
 	{
-		Q_strcat(buffer, sizeof(buffer), va("%i ", (int)level.clients[i].acc));
+		if (g_entities[i].inuse)
+		{
+			Q_strcat(buffer, sizeof(buffer), va("%.1f %.1f ", level.clients[i].acc > 100.f ? 100.f : level.clients[i].acc, level.clients[i].hspct));
+		}
+		else
+		{
+			Q_strcat(buffer, sizeof(buffer), "0 0 ");
+		}
 	}
 
 	trap_SendServerCommand(ent - g_entities, buffer);
@@ -4731,6 +4876,13 @@ void ClientCommand(int clientNum)
 		Cmd_IntermissionPlayerTime_f(ent);
 		return;
 	}
+#ifdef FEATURE_RATING
+	else if (!Q_stricmp(cmd, "imsr"))
+	{
+		Cmd_IntermissionSkillRating_f(ent);
+		return;
+	}
+#endif
 	else if (!Q_stricmp(cmd, "imwa"))
 	{
 		Cmd_IntermissionWeaponAccuracies_f(ent);

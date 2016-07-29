@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -541,7 +541,7 @@ byte mipBlendColors[16][4] =
 // helper function for GLES format conversions
 byte *gles_convertRGB(byte *data, int width, int height)
 {
-	byte *temp = (byte *) Z_Malloc(width * height * 3);
+	byte *temp = (byte *) ri.Z_Malloc(width * height * 3);
 	byte *src  = data;
 	byte *dst  = temp;
 	int  i, j;
@@ -557,7 +557,7 @@ byte *gles_convertRGB(byte *data, int width, int height)
 }
 byte *gles_convertRGBA4(byte *data, int width, int height)
 {
-	byte *temp = (byte *) Z_Malloc(width * height * 2);
+	byte *temp = (byte *) ri.Z_Malloc(width * height * 2);
 	int  i;
 
 	unsigned int   *input  = ( unsigned int *)(data);
@@ -578,7 +578,7 @@ byte *gles_convertRGBA4(byte *data, int width, int height)
 }
 byte *gles_convertRGB5(byte *data, int width, int height)
 {
-	byte *temp = (byte *) Z_Malloc(width * height * 2);
+	byte *temp = (byte *) ri.Z_Malloc(width * height * 2);
 	byte *src  = data;
 	byte *dst  = temp;
 	byte r, g, b;
@@ -601,7 +601,7 @@ byte *gles_convertRGB5(byte *data, int width, int height)
 }
 byte *gles_convertLuminance(byte *data, int width, int height)
 {
-	byte *temp = (byte *) Z_Malloc(width * height);
+	byte *temp = (byte *) ri.Z_Malloc(width * height);
 	byte *src  = data;
 	byte *dst  = temp;
 	byte r, g, b;
@@ -620,7 +620,7 @@ byte *gles_convertLuminance(byte *data, int width, int height)
 }
 byte *gles_convertLuminanceAlpha(byte *data, int width, int height)
 {
-	byte *temp = (byte *) Z_Malloc(width * height * 2);
+	byte *temp = (byte *) ri.Z_Malloc(width * height * 2);
 	byte *src  = data;
 	byte *dst  = temp;
 	byte r, g, b;
@@ -1449,11 +1449,12 @@ void R_SetColorMappings(void)
 		}
 		s_intensitytable[i] = j;
 	}
-
+/*
 	if (glConfig.deviceSupportsGamma)
 	{
-		GLimp_SetGamma(s_gammatable, s_gammatable, s_gammatable);
+		re.GLimp_SetGamma(s_gammatable, s_gammatable, s_gammatable);
 	}
+*/
 }
 
 /*
@@ -1900,7 +1901,7 @@ void R_InitSkins(void)
 	skin = tr.skins[0] = ri.Hunk_Alloc(sizeof(skin_t), h_low);
 	Q_strncpyz(skin->name, "<default skin>", sizeof(skin->name));
 	skin->numSurfaces         = 1;
-	skin->surfaces[0]         = ri.Hunk_Alloc(sizeof(*skin->surfaces), h_low);
+	skin->surfaces[0]         = ri.Hunk_Alloc(sizeof(*skin->surfaces[0]), h_low);
 	skin->surfaces[0]->shader = tr.defaultShader;
 }
 

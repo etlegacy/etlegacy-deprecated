@@ -4,7 +4,7 @@
  * Copyright (C) 2010-2011 Robert Beckebans <trebor_7@users.sourceforge.net>
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -141,7 +141,7 @@ qboolean R_LoadPSK(model_t *mod, void *buffer, int bufferSize, const char *modNa
 
 	vec3_t boneOrigin;
 	quat_t boneQuat;
-	//matrix_t        boneMat;
+	//mat4_t        boneMat;
 
 	int materialIndex, oldMaterialIndex;
 
@@ -155,7 +155,7 @@ qboolean R_LoadPSK(model_t *mod, void *buffer, int bufferSize, const char *modNa
 	int numBoneReferences;
 	int boneReferences[MAX_BONES];
 
-	matrix_t unrealToQuake;
+	mat4_t unrealToQuake;
 
 #define DeallocAll() Com_Dealloc(materials); \
 	Com_Dealloc(points); \
@@ -166,7 +166,7 @@ qboolean R_LoadPSK(model_t *mod, void *buffer, int bufferSize, const char *modNa
 	FreeMemStream(stream);
 
 	//MatrixSetupScale(unrealToQuake, 1, -1, 1);
-	MatrixFromAngles(unrealToQuake, 0, 90, 0);
+	mat4_from_angles(unrealToQuake, 0, 90, 0);
 
 	stream = AllocMemStream(buffer, bufferSize);
 	GetChunkHeader(stream, &chunkHeader);
@@ -605,7 +605,7 @@ qboolean R_LoadPSK(model_t *mod, void *buffer, int bufferSize, const char *modNa
 		VectorCopy(boneOrigin, md5Bone->origin);
 		//MatrixTransformPoint(unrealToQuake, boneOrigin, md5Bone->origin);
 
-		QuatCopy(boneQuat, md5Bone->rotation);
+		quat_copy(boneQuat, md5Bone->rotation);
 
 		//QuatClear(md5Bone->rotation);
 
@@ -637,11 +637,11 @@ qboolean R_LoadPSK(model_t *mod, void *buffer, int bufferSize, const char *modNa
 			VectorAdd(parent->origin, rotated, md5Bone->origin);
 
 			QuatMultiply1(parent->rotation, md5Bone->rotation, quat);
-			QuatCopy(quat, md5Bone->rotation);
+			quat_copy(quat, md5Bone->rotation);
 		}
 
 		MatrixSetupTransformFromQuat(md5Bone->inverseTransform, md5Bone->rotation, md5Bone->origin);
-		MatrixInverse(md5Bone->inverseTransform);
+		mat4_inverse_self(md5Bone->inverseTransform);
 
 #if 0
 		Ren_Print("R_LoadPSK: md5Bone_t(%i):\n"
@@ -755,7 +755,7 @@ qboolean R_LoadPSK(model_t *mod, void *buffer, int bufferSize, const char *modNa
 		md5Vertex_t *v0, *v1, *v2;
 		const float *p0, *p1, *p2;
 		const float *t0, *t1, *t2;
-		vec3_t      tangent;
+		vec3_t      tangent = { 0, 0, 0 };
 		vec3_t      binormal;
 		vec3_t      normal;
 

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -623,7 +623,7 @@ static void *Sys_TryLibraryLoad(const char *base, const char *gamedir, const cha
 		}
 		else
 		{
-			Com_Printf("failed. (Not a zip).\n");
+			Com_Printf("failed. (Not a valid zip).\n");
 		}
 	}
 
@@ -767,24 +767,9 @@ void *Sys_LoadGameDll(const char *name, qboolean extract,
 	}
 #endif
 
-	// HACK: sometimes a library is loaded from the mod dir when it shouldn't. Why?
-	if (!libHandle && strcmp(gamedir, DEFAULT_MODGAME))
-	{
-		Com_Printf("Sys_LoadDll: failed to load the mod library. Trying to revert to the default one.\n");
-#ifndef DEDICATED
-		// Try to use the legacy mod
-		libHandle = Sys_TryLibraryLoad(homepath, DEFAULT_MODGAME, fname);
-
-		if (!libHandle)
-#endif
-		{
-			libHandle = Sys_TryLibraryLoad(basepath, DEFAULT_MODGAME, fname);
-		}
-	}
-
 	if (!libHandle)
 	{
-		Com_Printf("Sys_LoadDll(%s) failed to load library\n", name);
+		Com_Printf("Sys_LoadDll(%s/%s) failed to load library\n", gamedir, name);
 		return NULL;
 	}
 
@@ -793,13 +778,13 @@ void *Sys_LoadGameDll(const char *name, qboolean extract,
 
 	if (!*entryPoint || !dllEntry)
 	{
-		Com_Printf("Sys_LoadDll(%s) failed to find vmMain function:\n\"%s\" !\n", name, Sys_LibraryError());
+		Com_Printf("Sys_LoadDll(%s/%s) failed to find vmMain function:\n\"%s\" !\n", gamedir, name, Sys_LibraryError());
 		Sys_UnloadLibrary(libHandle);
 
 		return NULL;
 	}
 
-	Com_Printf("Sys_LoadDll(%s) found vmMain function at %p\n", name, *entryPoint);
+	Com_Printf("Sys_LoadDll(%s/%s) found vmMain function at %p\n", gamedir, name, *entryPoint);
 	dllEntry(systemcalls);
 
 	return libHandle;
@@ -1011,14 +996,14 @@ int main(int argc, char **argv)
 		if (!url)
 		{
 			Sys_Dialog(DT_ERROR, "A CFURL for the app bundle could not be found.", "Can't set Sys_SetBinaryPath");
-			Sys_Exit(1);
+			Sys_Exit(EXIT_FAILURE);
 		}
 
 		CFURLRef url2 = CFURLCreateCopyDeletingLastPathComponent(0, url);
 		if (!url2 || !CFURLGetFileSystemRepresentation(url2, 1, (UInt8 *)parentdir, 1024))
 		{
 			Sys_Dialog(DT_ERROR, "CFURLGetFileSystemRepresentation returned an error when finding the app bundle's parent directory.", "Can't set Sys_SetBinaryPath");
-			Sys_Exit(1);
+			Sys_Exit(EXIT_FAILURE);
 		}
 
 		Sys_SetBinaryPath(parentdir);
@@ -1032,7 +1017,7 @@ int main(int argc, char **argv)
 
 	Sys_SetDefaultInstallPath(DEFAULT_BASEDIR); // Sys_BinaryPath() by default
 
-	// Concatenate the command line for passing to Com_Init
+												// Concatenate the command line for passing to Com_Init
 	Sys_BuildCommandLine(argc, argv, commandLine, sizeof(commandLine));
 
 	Com_Init(commandLine);
@@ -1040,7 +1025,35 @@ int main(int argc, char **argv)
 
 	Sys_SetUpConsoleAndSignals();
 
+#ifdef _WIN32
+
+#ifndef DEDICATED
+	if (com_viewlog->integer)
+	{
+		Sys_ShowConsoleWindow(1, qfalse);
+	}
+#endif
+
+	Sys_Splash(qfalse);
+
+	{
+		char cwd[MAX_OSPATH];
+		_getcwd(cwd, sizeof(cwd));
+		Com_Printf("Working directory: %s\n", cwd);
+	}
+
+	// hide the early console since we've reached the point where we
+	// have a working graphics subsystems
+#ifndef LEGACY_DEBUG
+	if (!com_dedicated->integer && !com_viewlog->integer)
+	{
+		Sys_ShowConsoleWindow(0, qfalse);
+	}
+#endif
+
+#endif
+
 	Sys_GameLoop();
 
-	return 0;
+	return EXIT_SUCCESS;
 }

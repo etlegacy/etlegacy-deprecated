@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -41,11 +41,6 @@
 #define STEPSIZE        18
 
 #define JUMP_VELOCITY   270
-
-#define TIMER_LAND      130
-#define TIMER_GESTURE   (34 * 66 + 50)
-
-#define DOUBLE_TAP_DELAY    400
 
 #define MAX_MG42_HEAT   1500.f
 
@@ -102,9 +97,6 @@ void PM_AddEvent(int newEvent);
 
 qboolean PM_SlideMove(qboolean gravity);
 void PM_StepSlideMove(qboolean gravity);
-
-qboolean PM_SlideMoveProne(qboolean gravity);
-void PM_StepSlideMoveProne(qboolean gravity);
 
 void PM_BeginWeaponChange(int oldweapon, int newweapon, qboolean reload);
 

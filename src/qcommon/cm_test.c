@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -331,7 +331,7 @@ int CM_TransformedPointContents(const vec3_t p, clipHandle_t model, const vec3_t
 	{
 		vec3_t temp, forward, right, up;
 
-		AngleVectors(angles, forward, right, up);
+		angles_vectors(angles, forward, right, up);
 
 		VectorCopy(p_l, temp);
 		p_l[0] = DotProduct(temp, forward);

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -40,6 +40,7 @@
 
 #include "../sys/sys_local.h"
 #include "../sys/sys_loadlib.h"
+#include "../renderercommon/tr_public.h"
 
 #ifdef USE_RENDERER_DLOPEN
 cvar_t *cl_renderer;
@@ -92,7 +93,6 @@ cvar_t *cl_autorecord;
 cvar_t *cl_allowDownload;
 cvar_t *cl_wwwDownload;
 cvar_t *cl_conXOffset;
-cvar_t *cl_inGameVideo;
 
 cvar_t *cl_serverStatusResendTime;
 cvar_t *cl_missionStats;
@@ -108,7 +108,6 @@ cvar_t *cl_waverecording;
 cvar_t *cl_wavefilename;
 cvar_t *cl_waveoffset;
 
-cvar_t *cl_packetloss;
 cvar_t *cl_packetdelay;
 
 cvar_t *cl_consoleKeys;
@@ -145,7 +144,6 @@ void CL_ShowIP_f(void);
 void CL_ServerStatus_f(void);
 void CL_ServerStatusResponse(netadr_t from, msg_t *msg);
 
-void CL_WriteWaveClose(void);
 void CL_WavStopRecord_f(void);
 
 void CL_PurgeCache(void)
@@ -1054,7 +1052,7 @@ void CL_Rcon_f(void)
 {
 	char message[MAX_RCON_MESSAGE];
 
-	if (!rcon_client_password->string)
+	if (!rcon_client_password->string[0])
 	{
 		Com_Printf("You must set 'rconpassword' before\n"
 		           "issuing an rcon command.\n");
@@ -1230,14 +1228,15 @@ void CL_UI_Restart_f(void) // shutdown the UI
 
 /*
 =================
-CL_Snd_Reload_f
+CL_Snd_Restart
 
-Reloads sounddata from disk, retains soundhandles.
+Restart the sound subsystem
 =================
 */
-void CL_Snd_Reload_f(void)
+void CL_Snd_Shutdown(void)
 {
-	S_Reload();
+	S_Shutdown();
+	cls.soundStarted = qfalse;
 }
 
 /*
@@ -1251,8 +1250,8 @@ handles will be invalid
 */
 void CL_Snd_Restart_f(void)
 {
-	S_Shutdown();
-	S_Init();
+	CL_Snd_Shutdown();
+	// sound will be init in CL_StartHunkUsers of CL_Vid_Restart_f again
 
 	CL_Vid_Restart_f();
 }
@@ -1323,11 +1322,12 @@ void CL_Clientinfo_f(void)
 
 /**
  * @brief Eat misc console commands to prevent exploits
- */
+ * @note unused
 void CL_EatMe_f(void)
 {
-	// do nothing kthxbye
+    // do nothing kthxbye
 }
+*/
 
 /*
 ==============
@@ -2069,7 +2069,7 @@ void CL_StartVideoRecording(const char *aviname)
 			c     = last / 10;
 			last -= c * 10;
 			d     = last;
-			Com_Printf("videos/%s%d%d%d%d.avi", clc.demoName, a, b, c, d);
+			Com_Printf("videos/%s%d%d%d%d.avi\n", clc.demoName, a, b, c, d);
 			Com_sprintf(filename, MAX_OSPATH, "videos/%s%d%d%d%d.avi", clc.demoName, a, b, c, d);
 
 			if (!FS_FileExists(filename))
@@ -2109,10 +2109,10 @@ void CL_Video_f(void)
 		return;
 	}
 
-	cl_avidemotype->integer = 2;
-	if (cl_avidemo->integer == 0)
+	Cvar_Set("cl_avidemotype", "2");
+	if (cl_avidemo->integer <= 0)
 	{
-		cl_avidemo->integer = 30;
+		Cvar_Set("cl_avidemo", "30");
 	}
 
 	if (Cmd_Argc() > 1)
@@ -2138,17 +2138,42 @@ CL_StopVideo_f
 */
 void CL_StopVideo_f(void)
 {
+	Cvar_Set("cl_avidemo", "0");
+
+	// We need to call something like S_Base_StopAllSounds();
+	// here to stop the stuttering. Something it crashes the game.
+	Cmd_ExecuteString("s_stop");
+	S_StopAllSounds();
+
 	if (CL_VideoRecording())
 	{
-		//TODO: fix this, for some reason if we dont manually set avidemo to 0 it wont get set.
-		cl_avidemo->integer = 0;
-		Cvar_Set("cl_avidemo", "0");
-
-		// We need to call something like S_Base_StopAllSounds();
-		// here to stop the stuttering. Something it crashes the game.
-		Cmd_ExecuteString("s_stop");
-		S_StopAllSounds();
 		CL_CloseAVI();
+	}
+}
+
+void CL_CaptureFrameVideo(void)
+{
+	// save the current screen
+	switch (cl_avidemotype->integer)
+	{
+	case 1:
+		Cbuf_ExecuteText(EXEC_NOW, "screenshotJPEG silent\n");
+		break;
+	case 2:
+		if (CL_VideoRecording())
+		{
+			CL_TakeVideoFrame();
+		}
+		else
+		{
+			CL_StartVideoRecording(NULL);
+			CL_TakeVideoFrame();
+			//Com_Printf("Error while recording avi, the file is not open.\n");
+		}
+		break;
+	default:
+		Cbuf_ExecuteText(EXEC_NOW, "screenshot silent\n");
+		break;
 	}
 }
 
@@ -2173,41 +2198,18 @@ void CL_Frame(int msec)
 	}
 
 	// if recording an avi, lock to a fixed fps
-	if (cl_avidemo->integer && msec)
+	if (cl_avidemo->integer && msec && ((cls.state == CA_ACTIVE && clc.demoplaying) || cl_forceavidemo->integer))
 	{
 		float fps           = MIN(cl_avidemo->integer * com_timescale->value, 1000.0f);
-		float frameDuration = MAX(1000.0f / fps, 1.0f) + clc.aviVideoFrameRemainder;
+		float frameDuration = MAX(1000.0f / fps, 1.0f);// + clc.aviVideoFrameRemainder;
 
-		// save the current screen
-		if (cls.state == CA_ACTIVE || cl_forceavidemo->integer)
-		{
-			switch (cl_avidemotype->integer)
-			{
-			case 1:
-				Cbuf_ExecuteText(EXEC_NOW, "screenshotJPEG silent\n");
-				break;
-			case 2:
-				if (CL_VideoRecording())
-				{
-					CL_TakeVideoFrame();
-				}
-				else
-				{
-					CL_StartVideoRecording(NULL);
-					CL_TakeVideoFrame();
-					//Com_Printf("Error while recording avi, the file is not open.\n");
-				}
-				break;
-			default:
-				Cbuf_ExecuteText(EXEC_NOW, "screenshot silent\n");
-				break;
-			}
-		}
+		CL_CaptureFrameVideo();
 
 		msec                       = (int)frameDuration;
-		clc.aviVideoFrameRemainder = frameDuration + msec;
+		//clc.aviVideoFrameRemainder = frameDuration + msec;
 	}
-	else if ((cl_avidemo->integer == 0 || cls.state != CA_ACTIVE) && CL_VideoRecording())
+	else if ((!cl_avidemo->integer && CL_VideoRecording())
+		|| (cl_avidemo->integer && (cls.state != CA_ACTIVE || !cl_forceavidemo->integer)))
 	{
 		CL_StopVideo_f();
 	}
@@ -2607,7 +2609,7 @@ void CL_InitRef(void)
 #if defined(_WIN32)
 	Com_sprintf(dllName, sizeof(dllName), "renderer_%s_" ARCH_STRING DLL_EXT, cl_renderer->string);
 #elif defined(__APPLE__)
-	Com_sprintf(dllName, sizeof(dllName), "librenderer_%s_", cl_renderer->string);
+	Com_sprintf(dllName, sizeof(dllName), "librenderer_%s" DLL_EXT, cl_renderer->string);
 #else // *nix
 	Com_sprintf(dllName, sizeof(dllName), "librenderer_%s_" ARCH_STRING DLL_EXT, cl_renderer->string);
 #endif
@@ -2617,7 +2619,7 @@ void CL_InitRef(void)
 #if defined(_WIN32)
 		Com_sprintf(dllName, sizeof(dllName), "renderer_opengl1_" ARCH_STRING DLL_EXT);
 #elif defined(__APPLE__)
-		Com_sprintf(dllName, sizeof(dllName), "renderer_opengl1_");
+		Com_sprintf(dllName, sizeof(dllName), "librenderer_opengl1" DLL_EXT);
 #else // *nix
 		Com_sprintf(dllName, sizeof(dllName), "librenderer_opengl1_" ARCH_STRING DLL_EXT);
 #endif
@@ -2637,15 +2639,15 @@ void CL_InitRef(void)
 	}
 #endif
 
-	ri.Cmd_AddCommand    = Cmd_AddCommand;
-	ri.Cmd_RemoveCommand = Cmd_RemoveCommand;
-	ri.Cmd_Argc          = Cmd_Argc;
-	ri.Cmd_Argv          = Cmd_Argv;
-	ri.Cmd_ExecuteText   = Cbuf_ExecuteText;
-	ri.Printf            = CL_RefPrintf;
-	ri.Error             = Com_Error;
-	ri.Milliseconds      = CL_ScaledMilliseconds;
-	ri.RealTime          = Com_RealTime;
+	ri.Cmd_AddSystemCommand    = Cmd_AddSystemCommand;
+	ri.Cmd_RemoveSystemCommand = Cmd_RemoveCommand;
+	ri.Cmd_Argc                = Cmd_Argc;
+	ri.Cmd_Argv                = Cmd_Argv;
+	ri.Cmd_ExecuteText         = Cbuf_ExecuteText;
+	ri.Printf                  = CL_RefPrintf;
+	ri.Error                   = Com_Error;
+	ri.Milliseconds            = CL_ScaledMilliseconds;
+	ri.RealTime                = Com_RealTime;
 #ifdef ZONE_DEBUG
 	ri.Z_MallocDebug = CL_RefMallocDebug;
 #else
@@ -2700,6 +2702,12 @@ void CL_InitRef(void)
 	ri.IN_Init     = IN_Init;
 	ri.IN_Shutdown = IN_Shutdown;
 	ri.IN_Restart  = IN_Restart;
+
+	// Glimp bindings
+	ri.GLimp_Init      = GLimp_Init;
+	ri.GLimp_Shutdown  = GLimp_Shutdown;
+	ri.GLimp_SwapFrame = GLimp_EndFrame;
+	ri.GLimp_SetGamma  = GLimp_SetGamma;
 
 	//ri.ftol = Q_ftol;
 
@@ -2767,8 +2775,8 @@ void CL_Init(void)
 	cl_activatelean = Cvar_Get("cl_activatelean", "1", CVAR_ARCHIVE);
 
 	cl_timedemo      = Cvar_Get("timedemo", "0", 0);
-	cl_avidemo       = Cvar_Get("cl_avidemo", "0", 0);
-	cl_forceavidemo  = Cvar_Get("cl_forceavidemo", "0", 0);
+	cl_avidemo       = Cvar_Get("cl_avidemo", "0", CVAR_TEMP);
+	cl_forceavidemo  = Cvar_Get("cl_forceavidemo", "0", CVAR_TEMP);
 	cl_avidemotype   = Cvar_Get("cl_avidemotype", "0", CVAR_ARCHIVE);
 	cl_aviMotionJpeg = Cvar_Get("cl_avimotionjpeg", "0", CVAR_TEMP);
 
@@ -2803,7 +2811,6 @@ void CL_Init(void)
 	Cvar_Get("cg_wolfparticles", "1", CVAR_ARCHIVE);
 
 	cl_conXOffset  = Cvar_Get("cl_conXOffset", "0", 0);
-	cl_inGameVideo = Cvar_Get("r_inGameVideo", "1", CVAR_ARCHIVE);
 
 	cl_serverStatusResendTime = Cvar_Get("cl_serverStatusResendTime", "750", 0);
 
@@ -2827,7 +2834,6 @@ void CL_Init(void)
 	cl_wavefilename  = Cvar_Get("cl_wavefilename", "", CVAR_ROM);
 	cl_waveoffset    = Cvar_Get("cl_waveoffset", "0", CVAR_ROM);
 
-	cl_packetloss  = Cvar_Get("cl_packetloss", "0", CVAR_CHEAT);
 	cl_packetdelay = Cvar_Get("cl_packetdelay", "0", CVAR_CHEAT);
 
 	Cvar_Get("cl_maxPing", "800", CVAR_ARCHIVE);
@@ -2875,12 +2881,10 @@ void CL_Init(void)
 	Cmd_AddCommand("cmd", CL_ForwardToServer_f);
 	Cmd_AddCommand("configstrings", CL_Configstrings_f);
 	Cmd_AddCommand("clientinfo", CL_Clientinfo_f);
-	Cmd_AddCommand("snd_reload", CL_Snd_Reload_f);
 	Cmd_AddCommand("snd_restart", CL_Snd_Restart_f);
 	Cmd_AddCommand("vid_restart", CL_Vid_Restart_f);
 	Cmd_AddCommand("ui_restart", CL_UI_Restart_f);
 	Cmd_AddCommand("disconnect", CL_Disconnect_f);
-	Cmd_AddCommand("cinematic", CL_PlayCinematic_f);
 	Cmd_AddCommand("connect", CL_Connect_f);
 	Cmd_AddCommand("reconnect", CL_Reconnect_f);
 	Cmd_AddCommand("localservers", CL_LocalServers_f);
@@ -2921,6 +2925,8 @@ void CL_Init(void)
 	// Avi recording
 	Cmd_AddCommand("video", CL_Video_f);
 	Cmd_AddCommand("stopvideo", CL_StopVideo_f);
+
+	CIN_Init();
 
 	CL_DemoInit();
 
@@ -2971,7 +2977,9 @@ void CL_Shutdown(void)
 
 	CL_Disconnect(qtrue);
 
-	S_Shutdown();
+	CIN_Shutdown();
+
+	CL_Snd_Shutdown();
 	DL_Shutdown();
 	CL_ShutdownRef();
 
@@ -2984,7 +2992,6 @@ void CL_Shutdown(void)
 	Cmd_RemoveCommand("cmd");
 	Cmd_RemoveCommand("configstrings");
 	Cmd_RemoveCommand("userinfo");
-	Cmd_RemoveCommand("snd_reload");
 	Cmd_RemoveCommand("snd_restart");
 	Cmd_RemoveCommand("vid_restart");
 	Cmd_RemoveCommand("disconnect");
@@ -3442,7 +3449,7 @@ CL_LocalServers_f
 void CL_LocalServers_f(void)
 {
 	char     *message;
-	int      i, j;
+	int      i, j, messageLen;
 	netadr_t to;
 
 	Com_Printf("Scanning for servers on the local network...\n");
@@ -3454,6 +3461,7 @@ void CL_LocalServers_f(void)
 	for (i = 0; i < MAX_OTHER_SERVERS; i++)
 	{
 		qboolean b = cls.localServers[i].visible;
+
 		Com_Memset(&cls.localServers[i], 0, sizeof(cls.localServers[i]));
 		cls.localServers[i].visible = b;
 	}
@@ -3462,7 +3470,8 @@ void CL_LocalServers_f(void)
 	// The 'xxx' in the message is a challenge that will be echoed back
 	// by the server.  We don't care about that here, but master servers
 	// can use that to prevent spoofed server responses from invalid ip
-	message = "\377\377\377\377getinfo xxx";
+	message    = "\377\377\377\377getinfo xxx";
+	messageLen = strlen(message);
 
 	// send each message twice in case one is dropped
 	for (i = 0 ; i < 2 ; i++)
@@ -3475,13 +3484,13 @@ void CL_LocalServers_f(void)
 			to.port = BigShort(( short ) (PORT_SERVER + j));
 
 			to.type = NA_BROADCAST;
-			NET_SendPacket(NS_CLIENT, strlen(message), message, to);
+			NET_SendPacket(NS_CLIENT, messageLen, message, to);
 
 #ifdef FEATURE_IPV6
 			if (Cvar_VariableIntegerValue("net_enabled") & NET_ENABLEV6)
 			{
 				to.type = NA_MULTICAST6;
-				NET_SendPacket(NS_CLIENT, strlen(message), message, to);
+				NET_SendPacket(NS_CLIENT, messageLen, message, to);
 			}
 #endif
 		}

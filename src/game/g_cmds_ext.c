@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -97,6 +97,8 @@ static const cmd_reference_t aCommandInfo[] =
 	{ "unpause",        qfalse, qfalse, G_pause_cmd,           ":^7 Unpauses a match (if initiated by the issuing team)"                                    },
 	{ "unready",        qtrue,  qfalse, G_ready_cmd,           ":^7 Sets your status to ^5not ready^7 to start a match"                                     },
 	{ "weaponstats",    qtrue,  qfalse, G_weaponStats_cmd,     " [player_ID]:^7 Shows weapon accuracy stats for a player"                                   },
+#ifdef FEATURE_MULTIVIEW
+	// FIXME: add multiview commands? (following list is obsolete)
 //  { "viewcam",        qfalse, qtrue,  NULL, ":^7 Switches to cinematic camera mode" },
 //  { "vc_follow",      qfalse, qtrue,  NULL, " [player_ID]:^7 Puts viewcam in follow mode.  Can optionally to follow a specific player" },
 //  { "vc_free",        qfalse, qtrue,  NULL, ":^7 Toggle viewcam between manual/automatic change" },
@@ -110,6 +112,7 @@ static const cmd_reference_t aCommandInfo[] =
 //  { "viewnext",       qfalse, qtrue,  NULL, ":^7 Moves through active screen in a multi-screen display" },
 //  { "viewnone",       qfalse, qtrue,  NULL, ":^7 Disables multiview mode and goes back to spectator mode" },
 //  { "viewremove",     qfalse, qtrue,  NULL, " [player_ID]:^7 Removes current selected or specific player from multi-screen view" },
+#endif
 	{ 0,                qfalse, qtrue,  NULL,                  0                                                                                            }
 };
 
@@ -468,6 +471,10 @@ void G_players_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
 			if (tteam == TEAM_ALLIES)
 			{
 				tc = (ent) ? "^4L^7" : "L";
+			}
+			if (tteam == TEAM_SPECTATOR)
+			{
+				tc = (ent) ? "^2S^7" : "S";
 			}
 		}
 

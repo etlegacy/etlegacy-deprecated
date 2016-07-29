@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -187,6 +187,8 @@ int DL_BeginDownload(char *localName, const char *remoteName)
 	curl_easy_setopt(dl_request, CURLOPT_PROGRESSFUNCTION, DL_cb_Progress);
 	curl_easy_setopt(dl_request, CURLOPT_NOPROGRESS, 0);
 	curl_easy_setopt(dl_request, CURLOPT_FAILONERROR, 1);
+	curl_easy_setopt(dl_request, CURLOPT_FOLLOWLOCATION, 1);
+	curl_easy_setopt(dl_request, CURLOPT_MAXREDIRS, 5);
 
 	curl_multi_add_handle(dl_multi, dl_request);
 

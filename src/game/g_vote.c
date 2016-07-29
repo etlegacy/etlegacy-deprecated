@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -1059,15 +1059,20 @@ int G_Config_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, 
 	// Vote request (vote is being initiated)
 	if (arg)
 	{
-		if (trap_Argc() > 3)
+		if (vote_allow_config.integer <= 0 && ent && !ent->client->sess.referee)
+		{
+			G_voteDisableMessage(ent, arg);
+			return G_INVALID;
+		}
+		else if (trap_Argc() > 3)
 		{
 			G_refPrintf(ent, "Usage: ^3%s %s%s\n", ((fRefereeCmd) ? "\\ref" : "\\callvote"), arg, aVoteInfo[dwVoteIndex].pszVoteHelp);
 			G_PrintConfigs(ent);
 			return G_INVALID;
 		}
-		else if (vote_allow_config.integer <= 0 && ent && !ent->client->sess.referee)
+		else if (G_voteDescription(ent, fRefereeCmd, dwVoteIndex))
 		{
-			G_voteDisableMessage(ent, arg);
+			G_PrintConfigs(ent);
 			return G_INVALID;
 		}
 		else if (arg2 == NULL || strlen(arg2) < 1)
@@ -1075,6 +1080,12 @@ int G_Config_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, 
 			G_PrintConfigs(ent);
 			return G_INVALID;
 		}
+
+		if (!G_isValidConfig(ent, arg2))
+		{
+			return G_INVALID;
+		}
+
 		Com_sprintf(level.voteInfo.vote_value, VOTE_MAXSTRING, "%s", arg2);
 	}
 	else // Vote action (vote has passed)
@@ -1461,7 +1472,7 @@ int G_Surrender_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg
 		char cs[MAX_STRING_CHARS];
 
 		trap_GetConfigstring(CS_MULTI_MAPWINNER, cs, sizeof(cs));
-		Info_SetValueForKey(cs, "winner",
+		Info_SetValueForKey(cs, "w",
 		                    (level.voteInfo.voteTeam == TEAM_AXIS) ? "1" : "0");
 		trap_SetConfigstring(CS_MULTI_MAPWINNER, cs);
 		G_LogExit(va("%s Surrender\n",

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -100,7 +100,9 @@ void G_printFull(char *str, gentity_t *ent)
 // Plays specified sound globally.
 void G_globalSound(char *sound)
 {
-	gentity_t *te = G_TempEntityNotLinked(EV_GLOBAL_SOUND);
+	gentity_t *te;
+
+	te = G_TempEntityNotLinked(EV_GLOBAL_SOUND);
 
 	te->s.eventParm = G_SoundIndex(sound);
 	te->r.svFlags  |= SVF_BROADCAST;
@@ -108,7 +110,9 @@ void G_globalSound(char *sound)
 
 void G_globalSoundEnum(int sound)
 {
-	gentity_t *te = G_TempEntityNotLinked(EV_GLOBAL_SOUND);
+	gentity_t *te;
+
+	te = G_TempEntityNotLinked(EV_GLOBAL_SOUND);
 
 	te->s.eventParm = sound;
 	te->r.svFlags  |= SVF_BROADCAST;
@@ -122,7 +126,6 @@ void G_delayPrint(gentity_t *dpent)
 	switch (dpent->spawnflags)
 	{
 	case DP_PAUSEINFO:
-	{
 		if (level.match_pause > PAUSE_UNPAUSING)
 		{
 			int cSeconds = match_timeoutlength.integer * 1000 - (level.time - dpent->timestamp);
@@ -142,10 +145,7 @@ void G_delayPrint(gentity_t *dpent)
 			}
 		}
 		break;
-	}
-
 	case DP_UNPAUSING:
-	{
 		if (level.match_pause == PAUSE_UNPAUSING)
 		{
 			int cSeconds = 11 * 1000 - (level.time - dpent->timestamp);
@@ -167,33 +167,29 @@ void G_delayPrint(gentity_t *dpent)
 			}
 		}
 		break;
-	}
-
 #ifdef FEATURE_MULTIVIEW
 	case DP_MVSPAWN:
-	{
-		int       i;
-		gentity_t *ent;
-
-		for (i = 0; i < level.numConnectedClients; i++)
 		{
-			ent = g_entities + level.sortedClients[i];
+			int       i;
+			gentity_t *ent;
 
-			if (ent->client->pers.mvReferenceList == 0)
+			for (i = 0; i < level.numConnectedClients; i++)
 			{
-				continue;
+				ent = g_entities + level.sortedClients[i];
+
+				if (ent->client->pers.mvReferenceList == 0)
+				{
+					continue;
+				}
+				if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+				{
+					continue;
+				}
+				G_smvRegenerateClients(ent, ent->client->pers.mvReferenceList);
 			}
-			if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
-			{
-				continue;
-			}
-			G_smvRegenerateClients(ent, ent->client->pers.mvReferenceList);
 		}
-
 		break;
-	}
 #endif
-
 	default:
 		break;
 	}
@@ -221,7 +217,9 @@ static char *pszDPInfo[] =
 
 void G_spawnPrintf(int print_type, int print_time, gentity_t *owner)
 {
-	gentity_t *ent = G_Spawn();
+	gentity_t *ent;
+
+	ent = G_Spawn();
 
 	ent->classname  = pszDPInfo[print_type];
 	ent->clipmask   = 0;
@@ -252,9 +250,7 @@ void G_addStats(gentity_t *targ, gentity_t *attacker, int dmg_ref, int mod)
 #ifndef DEBUG_STATS
 	    g_gamestate.integer != GS_PLAYING ||
 #endif
-	    mod == MOD_SWITCHTEAM ||
-	    (g_gametype.integer >= GT_WOLF && (targ->client->ps.pm_flags & PMF_LIMBO)) || // FIXME: inspect - this is a bit odd by gametype
-	    (g_gametype.integer < GT_WOLF && (targ->s.eFlags == EF_DEAD || targ->client->ps.pm_type == PM_DEAD)))
+	    mod == MOD_SWITCHTEAM || (targ->client->ps.pm_flags & PMF_LIMBO))
 	{
 		return;
 	}
@@ -273,7 +269,20 @@ void G_addStats(gentity_t *targ, gentity_t *attacker, int dmg_ref, int mod)
 			{
 				attacker->client->sess.aWeaponStats[ref].atts = 1;
 			}
+
+			if (targ->health <= FORCE_LIMBO_HEALTH)
+			{
+				if (targ->client->sess.sessionTeam != attacker->client->sess.sessionTeam)
+				{
+					attacker->client->sess.gibs++;
+				}
+				else
+				{
+					attacker->client->sess.team_gibs++;
+				}
+			}
 		}
+
 		return;
 	}
 
@@ -284,7 +293,7 @@ void G_addStats(gentity_t *targ, gentity_t *attacker, int dmg_ref, int mod)
 	{
 		if (targ->health <= 0)
 		{
-			targ->client->sess.selfkills++;
+			targ->client->sess.self_kills++;
 		}
 #ifdef DEBUG_STATS
 		if (!attacker || !attacker->client)
@@ -303,11 +312,11 @@ void G_addStats(gentity_t *targ, gentity_t *attacker, int dmg_ref, int mod)
 	}
 
 	// Player team stats
-	if (g_gametype.integer >= GT_WOLF &&
-	    targ->client->sess.sessionTeam == attacker->client->sess.sessionTeam)
+	if (targ->client->sess.sessionTeam == attacker->client->sess.sessionTeam)
 	{
 		attacker->client->sess.team_damage_given += dmg;
 		targ->client->sess.team_damage_received  += dmg;
+
 		if (targ->health <= 0)
 		{
 			attacker->client->sess.team_kills++;
@@ -322,6 +331,7 @@ void G_addStats(gentity_t *targ, gentity_t *attacker, int dmg_ref, int mod)
 	{
 		attacker->client->sess.damage_given += dmg;
 		targ->client->sess.damage_received  += dmg;
+
 		if (targ->health <= 0)
 		{
 			attacker->client->sess.kills++;
@@ -466,6 +476,9 @@ char *G_createStats(gentity_t *refEnt)
 	unsigned int i, dwWeaponMask = 0, dwSkillPointMask = 0;
 	char         strWeapInfo[MAX_STRING_CHARS]  = { 0 };
 	char         strSkillInfo[MAX_STRING_CHARS] = { 0 };
+#ifdef FEATURE_RATING
+	char         strSkillRatingInfo[MAX_STRING_CHARS] = { 0 };
+#endif
 
 	if (!refEnt)
 	{
@@ -491,13 +504,15 @@ char *G_createStats(gentity_t *refEnt)
 	// Only send these when there are some weaponstats. This is what the client expects.
 	if (dwWeaponMask != 0)
 	{
-		Q_strcat(strWeapInfo, sizeof(strWeapInfo), va(" %d %d %d %d %d %d",
+		Q_strcat(strWeapInfo, sizeof(strWeapInfo), va(" %d %d %d %d %d %d %d %d",
 		                                              refEnt->client->sess.damage_given,
 		                                              refEnt->client->sess.damage_received,
 		                                              refEnt->client->sess.team_damage_given,
 		                                              refEnt->client->sess.team_damage_received,
-		                                              refEnt->client->sess.selfkills,
-		                                              refEnt->client->sess.team_kills));
+		                                              refEnt->client->sess.gibs,
+		                                              refEnt->client->sess.self_kills,
+		                                              refEnt->client->sess.team_kills,
+		                                              refEnt->client->sess.team_gibs));
 	}
 
 	// Add skillpoints as necessary
@@ -510,12 +525,27 @@ char *G_createStats(gentity_t *refEnt)
 		}
 	}
 
+#ifdef FEATURE_RATING
+	// Add skill rating info
+	Q_strcat(strSkillRatingInfo, sizeof(strSkillRatingInfo), va(" %.2f %.2f",
+	                                                            refEnt->client->sess.mu - 3 * refEnt->client->sess.sigma,
+	                                                            refEnt->client->sess.mu - 3 * refEnt->client->sess.sigma - (refEnt->client->sess.oldmu - 3 * refEnt->client->sess.oldsigma)));
+#endif
+
+#ifdef FEATURE_RATING
+	return(va("%d %d %d%s %d%s %s", (int)(refEnt - g_entities),
+#else
 	return(va("%d %d %d%s %d%s", (int)(refEnt - g_entities),
+#endif
 	          refEnt->client->sess.rounds,
 	          dwWeaponMask,
 	          strWeapInfo,
 	          dwSkillPointMask,
 	          strSkillInfo
+#ifdef FEATURE_RATING
+	          ,
+	          strSkillRatingInfo
+#endif
 	          ));
 }
 
@@ -527,16 +557,25 @@ void G_deleteStats(int nClient)
 	cl->sess.damage_given         = 0;
 	cl->sess.damage_received      = 0;
 	cl->sess.deaths               = 0;
-	cl->sess.game_points          = 0;
 	cl->sess.rounds               = 0;
 	cl->sess.kills                = 0;
-	cl->sess.selfkills            = 0;
+	cl->sess.gibs                 = 0;
+	cl->sess.self_kills           = 0;
+	cl->sess.team_kills           = 0;
+	cl->sess.team_gibs            = 0;
 	cl->sess.team_damage_given    = 0;
 	cl->sess.team_damage_received = 0;
-	cl->sess.team_kills           = 0;
 	cl->sess.time_axis            = 0;
 	cl->sess.time_allies          = 0;
+	cl->sess.time_played          = 0;
 
+#ifdef FEATURE_RATING
+	// skill rating
+	cl->sess.mu       = MU;
+	cl->sess.sigma    = SIGMA;
+	cl->sess.oldmu    = cl->sess.mu;
+	cl->sess.oldsigma = cl->sess.sigma;
+#endif
 	cl->sess.startskillpoints[SK_BATTLE_SENSE]                             = 0;
 	cl->sess.startskillpoints[SK_EXPLOSIVES_AND_CONSTRUCTION]              = 0;
 	cl->sess.startskillpoints[SK_FIRST_AID]                                = 0;
@@ -595,13 +634,16 @@ void G_parseStats(char *pszStatsInfo)
 //  --> FIXME: put the pretty print on the client
 void G_printMatchInfo(gentity_t *ent)
 {
-	int       i, j, cnt = 0, eff;
-	int       tot_timex, tot_timel, tot_kills, tot_deaths, tot_gp, tot_sk, tot_tk, tot_dg, tot_dr, tot_tdg, tot_tdr, tot_xp;
+	int       i, j, cnt = 0, eff, time_eff;
+	int       tot_timex, tot_timel, tot_timep, tot_kills, tot_deaths, tot_gibs, tot_sk, tot_tk, tot_tg, tot_dg, tot_dr, tot_tdg, tot_tdr, tot_xp;
+#ifdef FEATURE_RATING
+	float     tot_rating, tot_delta;
+#endif
 	gclient_t *cl;
 	char      *ref;
 	char      n2[MAX_STRING_CHARS];
 
-	for (i = TEAM_AXIS; i <= TEAM_ALLIES; i++)
+	for (i = TEAM_AXIS; i <= TEAM_SPECTATOR; i++)
 	{
 		if (!TeamCount(-1, i))
 		{
@@ -610,22 +652,34 @@ void G_printMatchInfo(gentity_t *ent)
 
 		tot_timex  = 0;
 		tot_timel  = 0;
+		tot_timep  = 0;
 		tot_kills  = 0;
 		tot_deaths = 0;
+		tot_gibs   = 0;
 		tot_sk     = 0;
 		tot_tk     = 0;
+		tot_tg     = 0;
 		tot_dg     = 0;
 		tot_dr     = 0;
 		tot_tdg    = 0;
 		tot_tdr    = 0;
-		tot_gp     = 0;
 		tot_xp     = 0;
+#ifdef FEATURE_RATING
+		tot_rating = 0.f;
+		tot_delta  = 0.f;
+#endif
 
 		CP("sc \"\n\"");
-		CP("sc \"^7TEAM   Player          ^1TmX ^4TmL ^7Kll Dth  SK  TK Eff  ^3GP^7    ^2DG    ^1DR  ^6TDG  ^4TDR  ^3Score\n\"");
-		CP("sc \"^7-----------------------------------------------------------------------------------\n\"");
+#ifdef FEATURE_RATING
+		CP("sc \"^7TEAM       Player         ^1 TmX^4 TmL^7 TmP^7 Kll Dth Gib  SK  TK  TG^7 Eff^2    DG^1    DR^6  TDG^4  TDR^3  Score^8  Rating^5  Delta\n\"");
+		CP("sc \"^7--------------------------------------------------------------------------------------------------------------\n\"");
+#else
+		CP("sc \"^7TEAM       Player         ^1 TmX^4 TmL^7 TmP^7 Kll Dth Gib  SK  TK  TG^7 Eff^2    DG^1    DR^6  TDG^4  TDR^3  Score\n\"");
+		CP("sc \"^7-----------------------------------------------------------------------------------------------\n\"");
 
-		for (j = 0; j < level.numPlayingClients; j++)
+#endif
+
+		for (j = 0; j < level.numConnectedClients; j++)
 		{
 			cl = level.clients + level.sortedClients[j];
 
@@ -640,22 +694,30 @@ void G_printMatchInfo(gentity_t *ent)
 			ref         = "^7";
 			tot_timex  += cl->sess.time_axis;
 			tot_timel  += cl->sess.time_allies;
+			tot_timep  += cl->sess.time_played;
 			tot_kills  += cl->sess.kills;
 			tot_deaths += cl->sess.deaths;
-			tot_sk     += cl->sess.selfkills;
+			tot_gibs   += cl->sess.gibs;
+			tot_sk     += cl->sess.self_kills;
 			tot_tk     += cl->sess.team_kills;
+			tot_tg     += cl->sess.team_gibs;
 			tot_dg     += cl->sess.damage_given;
 			tot_dr     += cl->sess.damage_received;
 			tot_tdg    += cl->sess.team_damage_given;
 			tot_tdr    += cl->sess.team_damage_received;
-			tot_gp     += cl->sess.game_points;
 			tot_xp     += cl->ps.persistant[PERS_SCORE];
+#ifdef FEATURE_RATING
+			tot_rating += cl->sess.mu - 3 * cl->sess.sigma;
+			tot_delta  += (cl->sess.mu - 3 * cl->sess.sigma) - (cl->sess.oldmu - 3 * cl->sess.oldsigma);
+#endif
 
 			eff = (cl->sess.deaths + cl->sess.kills == 0) ? 0 : 100 * cl->sess.kills / (cl->sess.deaths + cl->sess.kills);
 			if (eff < 0)
 			{
 				eff = 0;
 			}
+
+			time_eff = (cl->sess.time_axis + cl->sess.time_allies == 0) ? 0 : 100 * cl->sess.time_played / (cl->sess.time_axis + cl->sess.time_allies);
 
 			if (ent->client == cl ||
 			    (ent->client->sess.sessionTeam == TEAM_SPECTATOR &&
@@ -666,24 +728,37 @@ void G_printMatchInfo(gentity_t *ent)
 			}
 
 			cnt++;
-			CP(va("sc \"%-10s %s%-15s^1%4d^4%4d^3%4d%4d%4d%4d%s%4d^3%4d^2%6d^1%6d^6%5d^4%5d^3%7d\n\"",
+#ifdef FEATURE_RATING
+			trap_SendServerCommand(ent - g_entities, va("sc \"%-14s %s%-15s^1%4d^4%4d^7%s%4d^3%4d%4d%4d%4d%4d%4d%s%4d^2%6d^1%6d^6%5d^4%5d^3%7d^8%8.2f^5%+7.2f\n\"",
+#else
+			trap_SendServerCommand(ent - g_entities, va("sc \"%-14s %s%-15s^1%4d^4%4d^7%s%4d^3%4d%4d%4d%4d%4d%4d%s%4d^2%6d^1%6d^6%5d^4%5d^3%7d\n\"",
+#endif
 			      aTeams[i],
 			      ref,
 			      n2,
 			      cl->sess.time_axis / 60000,
 			      cl->sess.time_allies / 60000,
+			      ref,
+			      time_eff,
 			      cl->sess.kills,
 			      cl->sess.deaths,
-			      cl->sess.selfkills,
+			      cl->sess.gibs,
+			      cl->sess.self_kills,
 			      cl->sess.team_kills,
+			      cl->sess.team_gibs,
 			      ref,
 			      eff,
-			      cl->sess.game_points - (cl->sess.kills * WOLF_FRAG_BONUS),
 			      cl->sess.damage_given,
 			      cl->sess.damage_received,
 			      cl->sess.team_damage_given,
 			      cl->sess.team_damage_received,
-			      cl->ps.persistant[PERS_SCORE]));
+			      cl->ps.persistant[PERS_SCORE]
+#ifdef FEATURE_RATING
+			      ,
+			      (cl->sess.mu - 3 * cl->sess.sigma < 0.f) ? 0.f : cl->sess.mu - 3 * cl->sess.sigma,
+			      (cl->sess.mu - 3 * cl->sess.sigma) - (cl->sess.oldmu - 3 * cl->sess.oldsigma)
+#endif
+			      ));
 		}
 
 		eff = (tot_kills + tot_deaths == 0) ? 0 : 100 * tot_kills / (tot_kills + tot_deaths);
@@ -692,23 +767,38 @@ void G_printMatchInfo(gentity_t *ent)
 			eff = 0;
 		}
 
-		CP("sc \"^7------------------------------------------- ---------------------------------------\n\"");
-		CP(va("sc \"%-10s ^5%-15s^1%4d^4%4d^5%4d%4d%4d%4d^5%4d^3%4d^2%6d^1%6d^6%5d^4%5d^3%7d\n\"",
+		time_eff = (tot_timex + tot_timel == 0) ? 0 : 100 * tot_timep / (tot_timex + tot_timel);
+
+#ifdef FEATURE_RATING
+		CP("sc \"^7--------------------------------------------------------------------------------------------------------------\n\"");
+		trap_SendServerCommand(ent - g_entities, va("sc \"%-14s ^5%-15s^1%4d^4%4d^5%4d%4d%4d%4d%4d%4d%4d^5%4d^2%6d^1%6d^6%5d^4%5d^3%7d^8%8.2f^5%+7.2f\n\"",
+#else
+		CP("sc \"^7-----------------------------------------------------------------------------------------------\n\"");
+		trap_SendServerCommand(ent - g_entities, va("sc \"%-14s ^5%-15s^1%4d^4%4d^5%4d%4d%4d%4d%4d%4d%4d^5%4d^2%6d^1%6d^6%5d^4%5d^3%7d\n\"",
+#endif
 		      aTeams[i],
 		      "Totals",
 		      tot_timex / 60000,
 		      tot_timel / 60000,
+		      time_eff,
 		      tot_kills,
 		      tot_deaths,
+		      tot_gibs,
 		      tot_sk,
 		      tot_tk,
+		      tot_tg,
 		      eff,
-		      tot_gp - (tot_kills * WOLF_FRAG_BONUS),
 		      tot_dg,
 		      tot_dr,
 		      tot_tdg,
 		      tot_tdr,
-		      tot_xp));
+		      tot_xp
+#ifdef FEATURE_RATING
+		      ,
+		      (tot_rating < 0.f) ? 0.f : tot_rating / TeamCount(-1, i),
+		      tot_delta / TeamCount(-1, i)
+#endif
+		      ));
 	}
 
 	CP(va("sc \"%s\n\n\" 0", ((!cnt) ? "^3\nNo scores to report." : "")));
@@ -755,7 +845,6 @@ void G_matchInfoDump(unsigned int dwDumpType)
 					{
 						CP(va("ws %s\n", G_createStats(ent)));
 					}
-
 				}
 				else if (cl->sess.spectatorState != SPECTATOR_FREE)
 				{
@@ -791,7 +880,7 @@ void G_matchInfoDump(unsigned int dwDumpType)
 				{
 					CP(va("print \">>> ^3Clock set to: %d:%02d\n\n\n\"",
 					      g_nextTimeLimit.integer,
-					      (int)(60.0 * (float)(g_nextTimeLimit.value - g_nextTimeLimit.integer))));
+					      (int)(60.0 * (g_nextTimeLimit.value - g_nextTimeLimit.integer))));
 				}
 				else
 				{
@@ -803,13 +892,13 @@ void G_matchInfoDump(unsigned int dwDumpType)
 						      (int)val,
 						      (int)(60.0 * (val - (int)val)),
 						      g_timelimit.integer,
-						      (int)(60.0 * (float)(g_timelimit.value - g_timelimit.integer))));
+						      (int)(60.0 * (g_timelimit.value - g_timelimit.integer))));
 					}
 					else
 					{
 						CP(va("print \">>> ^3Objective NOT reached in time (%d:%02d)\n\n\n\"",
 						      g_timelimit.integer,
-						      (int)(60.0 * (float)(g_timelimit.value - g_timelimit.integer))));
+						      (int)(60.0 * (g_timelimit.value - g_timelimit.integer))));
 					}
 				}
 			}

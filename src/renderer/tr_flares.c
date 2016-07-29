@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -238,8 +238,8 @@ void RB_AddDlightFlares(void)
 		return;
 	}
 
-	l   = backEnd.refdef.dlights;
-	fog = tr.world->fogs;
+	l = backEnd.refdef.dlights;
+
 	for (i = 0 ; i < backEnd.refdef.num_dlights ; i++, l++)
 	{
 		// find which fog volume the light is in
@@ -289,7 +289,7 @@ void RB_AddCoronaFlares(void)
 	}
 
 	cor = backEnd.refdef.coronas;
-	fog = tr.world->fogs;
+
 	for (i = 0 ; i < backEnd.refdef.num_coronas ; i++, cor++)
 	{
 		// find which fog volume the corona is in

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -51,11 +51,27 @@ typedef int socklen_t;
 typedef unsigned short sa_family_t;
 #   endif
 
-#   define EAGAIN                   WSAEWOULDBLOCK
-#   define EADDRNOTAVAIL    WSAEADDRNOTAVAIL
-#   define EAFNOSUPPORT     WSAEAFNOSUPPORT
-#   define ECONNRESET           WSAECONNRESET
-#   define socketError      WSAGetLastError()
+#ifdef EAGAIN
+#	undef EAGAIN
+#endif
+#define EAGAIN WSAEWOULDBLOCK
+
+#ifdef EADDRNOTAVAIL
+#	undef EADDRNOTAVAIL
+#endif
+#define EADDRNOTAVAIL WSAEADDRNOTAVAIL
+
+#ifdef EAFNOSUPPORT
+#	undef EAFNOSUPPORT
+#endif
+#define EAFNOSUPPORT WSAEAFNOSUPPORT
+
+#ifdef ECONNRESET
+#	undef ECONNRESET
+#endif
+#define ECONNRESET WSAECONNRESET
+
+#define socketError      WSAGetLastError()
 
 static WSADATA  winsockdata;
 static qboolean winsockInitialized = qfalse;

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -101,6 +101,8 @@ static void CG_Obituary(entityState_t *ent)
 			message = "slagged";
 			break;
 		case MOD_TRIGGER_HURT:
+			message = "was mortally wounded";
+			break;
 		case MOD_TELEFRAG: // added TELEFRAG and TARGET_LASER, just in case
 		case MOD_TARGET_LASER:
 			message = "was killed";
@@ -215,13 +217,14 @@ static void CG_Obituary(entityState_t *ent)
 				if (cg_drawSmallPopupIcons.integer && cg_weapons[WP_BINOCULARS].weaponIcon[0])
 				{
 					weaponShader = cg_weapons[WP_BINOCULARS].weaponIcon[0];
-					scaleShader  = CG_WeaponIconScale(WP_BINOCULARS);
+					scaleShader  = cg_weapons[WP_BINOCULARS].weaponIconScale;
 				}
 				else if (cg_weapons[WP_BINOCULARS].weaponIcon[1])
 				{
 					weaponShader = cg_weapons[WP_BINOCULARS].weaponIcon[1];
-					scaleShader  = CG_WeaponIconScale(WP_BINOCULARS);
+					scaleShader  = cg_weapons[WP_BINOCULARS].weaponIconScale;
 				}
+
 				break;
 			case MOD_CRUSH_CONSTRUCTION:
 			case MOD_CRUSH_CONSTRUCTIONDEATH:
@@ -229,12 +232,12 @@ static void CG_Obituary(entityState_t *ent)
 				if (cg_drawSmallPopupIcons.integer && cg_weapons[WP_PLIERS].weaponIcon[0])
 				{
 					weaponShader = cg_weapons[WP_PLIERS].weaponIcon[0];
-					scaleShader  = CG_WeaponIconScale(WP_PLIERS);
+					scaleShader  = cg_weapons[WP_PLIERS].weaponIconScale;
 				}
 				else if (cg_weapons[WP_PLIERS].weaponIcon[1])
 				{
 					weaponShader = cg_weapons[WP_PLIERS].weaponIcon[1];
-					scaleShader  = CG_WeaponIconScale(WP_PLIERS);
+					scaleShader  = cg_weapons[WP_PLIERS].weaponIconScale;
 				}
 				break;
 			case MOD_WATER:
@@ -254,15 +257,15 @@ static void CG_Obituary(entityState_t *ent)
 				scaleShader  = 1;
 				break;
 			default:
-				if (weapon != WP_NONE && cg_drawSmallPopupIcons.integer && cg_weapons[weapon].weaponIcon[0])
+				if (IS_VALID_WEAPON(weapon) && cg_drawSmallPopupIcons.integer && cg_weapons[weapon].weaponIcon[0])
 				{
 					weaponShader = cg_weapons[weapon].weaponIcon[0];
-					scaleShader  = CG_WeaponIconScale(weapon);
+					scaleShader  = cg_weapons[weapon].weaponIconScale;
 				}
-				else if (weapon != WP_NONE && cg_weapons[weapon].weaponIcon[1])
+				else if (IS_VALID_WEAPON(weapon) && cg_weapons[weapon].weaponIcon[1])
 				{
 					weaponShader = cg_weapons[weapon].weaponIcon[1];
-					scaleShader  = CG_WeaponIconScale(weapon);
+					scaleShader  = cg_weapons[weapon].weaponIconScale;
 				}
 				break;
 			}
@@ -289,7 +292,11 @@ static void CG_Obituary(entityState_t *ent)
 	}
 
 	// check for kill messages from the current clientNum
+#if FEATURE_EDV
+	if (attacker == cg.clientNum && !cgs.demoCamera.renderingFreeCam && !cgs.demoCamera.renderingWeaponCam)
+#else
 	if (attacker == cg.clientNum)
+#endif
 	{
 		char *s;
 
@@ -538,37 +545,38 @@ static void CG_Obituary(entityState_t *ent)
 					if (cg_drawSmallPopupIcons.integer && cg_weapons[WP_BINOCULARS].weaponIcon[0])
 					{
 						weaponShader = cg_weapons[WP_BINOCULARS].weaponIcon[0];
-						scaleShader  = CG_WeaponIconScale(WP_BINOCULARS);
+						scaleShader  = cg_weapons[WP_BINOCULARS].weaponIconScale;
 					}
 					else if (cg_weapons[WP_BINOCULARS].weaponIcon[1])
 					{
 						weaponShader = cg_weapons[WP_BINOCULARS].weaponIcon[1];
-						scaleShader  = CG_WeaponIconScale(WP_BINOCULARS);
+						scaleShader  = cg_weapons[WP_BINOCULARS].weaponIconScale;
 					}
+
 					break;
 				case MOD_MACHINEGUN:
 				case MOD_MG42:
 					if (cg_drawSmallPopupIcons.integer && cg_weapons[WP_MOBILE_MG42].weaponIcon[0])
 					{
 						weaponShader = cg_weapons[WP_MOBILE_MG42].weaponIcon[0];
-						scaleShader  = CG_WeaponIconScale(WP_MOBILE_MG42);
+						scaleShader  = cg_weapons[WP_MOBILE_MG42].weaponIconScale;
 					}
 					else if (cg_weapons[WP_MOBILE_MG42].weaponIcon[1])
 					{
 						weaponShader = cg_weapons[WP_MOBILE_MG42].weaponIcon[1];
-						scaleShader  = CG_WeaponIconScale(WP_MOBILE_MG42);
+						scaleShader  = cg_weapons[WP_MOBILE_MG42].weaponIconScale;
 					}
 					break;
 				case MOD_BROWNING:
 					if (cg_drawSmallPopupIcons.integer && cg_weapons[WP_MOBILE_BROWNING].weaponIcon[0])
 					{
 						weaponShader = cg_weapons[WP_MOBILE_BROWNING].weaponIcon[0];
-						scaleShader  = CG_WeaponIconScale(WP_MOBILE_MG42);
+						scaleShader  = cg_weapons[WP_MOBILE_BROWNING].weaponIconScale;
 					}
 					else if (cg_weapons[WP_MOBILE_BROWNING].weaponIcon[1])
 					{
 						weaponShader = cg_weapons[WP_MOBILE_BROWNING].weaponIcon[1];
-						scaleShader  = CG_WeaponIconScale(WP_MOBILE_BROWNING);
+						scaleShader  = cg_weapons[WP_MOBILE_BROWNING].weaponIconScale;
 					}
 					break;
 				case MOD_CRUSH_CONSTRUCTION:
@@ -576,12 +584,12 @@ static void CG_Obituary(entityState_t *ent)
 					if (cg_drawSmallPopupIcons.integer && cg_weapons[WP_PLIERS].weaponIcon[0])
 					{
 						weaponShader = cg_weapons[WP_PLIERS].weaponIcon[0];
-						scaleShader  = CG_WeaponIconScale(WP_PLIERS);
+						scaleShader  = cg_weapons[WP_PLIERS].weaponIconScale;
 					}
 					else if (cg_weapons[WP_PLIERS].weaponIcon[1])
 					{
 						weaponShader = cg_weapons[WP_PLIERS].weaponIcon[1];
-						scaleShader  = CG_WeaponIconScale(WP_PLIERS);
+						scaleShader  = cg_weapons[WP_PLIERS].weaponIconScale;
 					}
 					break;
 				case MOD_SHOVE:
@@ -589,15 +597,15 @@ static void CG_Obituary(entityState_t *ent)
 					scaleShader  = 1;
 					break;
 				default:
-					if (weapon != WP_NONE && cg_drawSmallPopupIcons.integer && cg_weapons[weapon].weaponIcon[0])
+					if (IS_VALID_WEAPON(weapon) && cg_drawSmallPopupIcons.integer && cg_weapons[weapon].weaponIcon[0])
 					{
 						weaponShader = cg_weapons[weapon].weaponIcon[0];
-						scaleShader  = CG_WeaponIconScale(weapon);
+						scaleShader  = cg_weapons[weapon].weaponIconScale;
 					}
-					else if (weapon != WP_NONE && cg_weapons[weapon].weaponIcon[1])
+					else if (IS_VALID_WEAPON(weapon) && cg_weapons[weapon].weaponIcon[1])
 					{
 						weaponShader = cg_weapons[weapon].weaponIcon[1];
-						scaleShader  = CG_WeaponIconScale(weapon);
+						scaleShader  = cg_weapons[weapon].weaponIconScale;
 					}
 					break;
 				}
@@ -676,7 +684,14 @@ static void CG_ItemPickup(int itemNum)
 		break;
 	}
 
+#if FEATURE_EDV
+	if (!cgs.demoCamera.renderingFreeCam && !cgs.demoCamera.renderingWeaponCam)
+	{
+		CG_AddPMItem(giType, va(CG_TranslateString("Picked up %s"), CG_TranslateString(CG_PickupItemText(itemNum))), " ", cgs.media.pmImages[giType], 0, 0, NULL);
+	}
+#else
 	CG_AddPMItem(giType, va(CG_TranslateString("Picked up %s"), CG_TranslateString(CG_PickupItemText(itemNum))), " ", cgs.media.pmImages[giType], 0, 0, NULL);
+#endif
 
 	// see if it should be the grabbed weapon
 	if (bg_itemlist[itemNum].giType == IT_WEAPON)
@@ -1113,7 +1128,7 @@ void CG_RubbleFx(vec3_t origin, vec3_t dir, int mass, int type, sfxHandle_t soun
 				}
 				break;
 
-			case FXTYPE_METAL:     // "metal"
+			case FXTYPE_METAL:     // metal
 				snd = LEBS_METAL;
 				if (i == 5)
 				{
@@ -1138,7 +1153,7 @@ void CG_RubbleFx(vec3_t origin, vec3_t dir, int mass, int type, sfxHandle_t soun
 				}
 				break;
 
-			case FXTYPE_GIBS:     // "gibs"
+			case FXTYPE_GIBS:     // gibs
 				snd = LEBS_BLOOD;
 				if (i == 5)
 				{
@@ -1158,16 +1173,16 @@ void CG_RubbleFx(vec3_t origin, vec3_t dir, int mass, int type, sfxHandle_t soun
 				}
 				break;
 
-			case FXTYPE_BRICK:     // "brick"
+			case FXTYPE_BRICK:     // brick
 				snd    = LEBS_ROCK;
 				hmodel = cgs.media.debBlock[i];
 				break;
 
-			case FXTYPE_STONE:     // "rock"
+			case FXTYPE_STONE:     // rock
 				snd = LEBS_ROCK;
 				if (i == 5)
 				{
-					hmodel = cgs.media.debRock[2];                  // temporarily use the next smallest rock piece
+					hmodel = cgs.media.debRock[2];            // temporarily use the next smallest rock piece
 				}
 				else if (i == 4)
 				{
@@ -1181,9 +1196,9 @@ void CG_RubbleFx(vec3_t origin, vec3_t dir, int mass, int type, sfxHandle_t soun
 				{
 					hmodel = cgs.media.debRock[0];
 				}
-				else if (i == 1)
+				else if (i == 1) // note: there is debBlock 0-5
 				{
-					hmodel = cgs.media.debBlock[1];                 // temporarily use the small block pieces
+					hmodel = cgs.media.debBlock[1];            // temporarily use the small block pieces
 				}
 				else
 				{
@@ -1195,7 +1210,7 @@ void CG_RubbleFx(vec3_t origin, vec3_t dir, int mass, int type, sfxHandle_t soun
 				}
 				break;
 
-			case FXTYPE_FABRIC:     // "fabric"
+			case FXTYPE_FABRIC:     // fabric
 				if (i == 5)
 				{
 					hmodel = cgs.media.debFabric[0];
@@ -1217,6 +1232,8 @@ void CG_RubbleFx(vec3_t origin, vec3_t dir, int mass, int type, sfxHandle_t soun
 				{
 					goto pass;     // (only do 5, 4, 2 and 1)
 				}
+				break;
+			default:
 				break;
 			}
 
@@ -1282,9 +1299,11 @@ void CG_RubbleFx(vec3_t origin, vec3_t dir, int mass, int type, sfxHandle_t soun
 			re->radius = 1000;
 
 			// trying to make this a little more interesting
-			if (type == FXTYPE_FABRIC)     // "fabric"
+			if (type == FXTYPE_FABRIC)     // fabric
 			{
-				le->pos.trType = TR_GRAVITY_FLOAT;     // the fabric stuff will change to use something that looks better
+				le->pos.trType   = TR_GRAVITY_FLOAT;   // the fabric stuff will change to use something that looks better
+				le->bounceFactor = 0.0;
+				materialmul      = 0.3;     // rotation speed
 			}
 			else
 			{
@@ -1296,17 +1315,8 @@ void CG_RubbleFx(vec3_t origin, vec3_t dir, int mass, int type, sfxHandle_t soun
 				{
 					le->pos.trType = TR_GRAVITY_LOW;
 				}
-			}
 
-			switch (type)
-			{
-			case FXTYPE_FABRIC:     // fabric
-				le->bounceFactor = 0.0;
-				materialmul      = 0.3;     // rotation speed
-				break;
-			default:
 				le->bounceFactor = 0.4;
-				break;
 			}
 
 			// rotation
@@ -1318,9 +1328,6 @@ void CG_RubbleFx(vec3_t origin, vec3_t dir, int mass, int type, sfxHandle_t soun
 			le->angles.trDelta[0] = ((100 + (rand() & 500)) - 300) * materialmul;
 			le->angles.trDelta[1] = ((100 + (rand() & 500)) - 300) * materialmul;
 			le->angles.trDelta[2] = ((100 + (rand() & 500)) - 300) * materialmul;
-
-			//if(type == 6)   // fabric
-			// materialmul = 1;        // translation speed
 
 			VectorCopy(origin, le->pos.trBase);
 			VectorNormalize(dir);
@@ -1440,7 +1447,7 @@ void CG_Explodef(vec3_t origin, vec3_t dir, int mass, int type, qhandle_t sound,
 
 			switch (type)
 			{
-			case FXTYPE_WOOD:     // "wood"
+			case FXTYPE_WOOD:     // wood
 				snd    = LEBS_WOOD;
 				hmodel = cgs.media.debWood[i];
 
@@ -1468,7 +1475,7 @@ void CG_Explodef(vec3_t origin, vec3_t dir, int mass, int type, qhandle_t sound,
 				}
 				break;
 
-			case FXTYPE_GLASS:     // "glass"
+			case FXTYPE_GLASS:     // glass
 				snd = LEBS_NONE;
 				if (i == 5)
 				{
@@ -1493,7 +1500,7 @@ void CG_Explodef(vec3_t origin, vec3_t dir, int mass, int type, qhandle_t sound,
 				}
 				break;
 
-			case FXTYPE_METAL:     // "metal"
+			case FXTYPE_METAL:     // metal
 				snd = LEBS_BRASS;
 				if (i == 5)
 				{
@@ -1518,7 +1525,7 @@ void CG_Explodef(vec3_t origin, vec3_t dir, int mass, int type, qhandle_t sound,
 				}
 				break;
 
-			case FXTYPE_GIBS:     // "gibs"
+			case FXTYPE_GIBS:     // gibs
 				snd = LEBS_BLOOD;
 				if (i == 5)
 				{
@@ -1538,12 +1545,12 @@ void CG_Explodef(vec3_t origin, vec3_t dir, int mass, int type, qhandle_t sound,
 				}
 				break;
 
-			case FXTYPE_BRICK:     // "brick"
+			case FXTYPE_BRICK:     // brick
 				snd    = LEBS_ROCK;
 				hmodel = cgs.media.debBlock[i];
 				break;
 
-			case FXTYPE_STONE:     // "rock"
+			case FXTYPE_STONE:     // rock
 				snd = LEBS_ROCK;
 				if (i == 5)
 				{
@@ -1561,7 +1568,7 @@ void CG_Explodef(vec3_t origin, vec3_t dir, int mass, int type, qhandle_t sound,
 				{
 					hmodel = cgs.media.debRock[0];
 				}
-				else if (i == 1)
+				else if (i == 1) // note: there is debBlock 0-5
 				{
 					hmodel = cgs.media.debBlock[1];            // temporarily use the small block pieces
 				}
@@ -1575,7 +1582,7 @@ void CG_Explodef(vec3_t origin, vec3_t dir, int mass, int type, qhandle_t sound,
 				}
 				break;
 
-			case FXTYPE_FABRIC:     // "fabric"
+			case FXTYPE_FABRIC:     // fabric
 				if (i == 5)
 				{
 					hmodel = cgs.media.debFabric[0];
@@ -1597,6 +1604,8 @@ void CG_Explodef(vec3_t origin, vec3_t dir, int mass, int type, qhandle_t sound,
 				{
 					goto pass;     // (only do 5, 4, 2 and 1)
 				}
+				break;
+			default:
 				break;
 			}
 
@@ -1664,7 +1673,9 @@ void CG_Explodef(vec3_t origin, vec3_t dir, int mass, int type, qhandle_t sound,
 			// trying to make this a little more interesting
 			if (type == FXTYPE_FABRIC)     // "fabric"
 			{
-				le->pos.trType = TR_GRAVITY_FLOAT;     // the fabric stuff will change to use something that looks better
+				le->pos.trType   = TR_GRAVITY_FLOAT;   // the fabric stuff will change to use something that looks better
+				le->bounceFactor = 0.0;
+				materialmul      = 0.3;     // rotation speed
 			}
 			else
 			{
@@ -1676,17 +1687,8 @@ void CG_Explodef(vec3_t origin, vec3_t dir, int mass, int type, qhandle_t sound,
 				{
 					le->pos.trType = TR_GRAVITY_LOW;
 				}
-			}
 
-			switch (type)
-			{
-			case FXTYPE_FABRIC:     // fabric
-				le->bounceFactor = 0.0;
-				materialmul      = 0.3;     // rotation speed
-				break;
-			default:
 				le->bounceFactor = 0.4;
-				break;
 			}
 
 			// rotation
@@ -1699,8 +1701,6 @@ void CG_Explodef(vec3_t origin, vec3_t dir, int mass, int type, qhandle_t sound,
 			le->angles.trDelta[1] = ((100 + (rand() & 500)) - 300) * materialmul;
 			le->angles.trDelta[2] = ((100 + (rand() & 500)) - 300) * materialmul;
 
-			//if(type == FXTYPE_FABRIC)   // fabric
-			//  materialmul = 1;        // translation speed
 
 			VectorCopy(origin, le->pos.trBase);
 			VectorNormalize(dir);
@@ -1917,21 +1917,10 @@ void CG_Shard(centity_t *cent, vec3_t origin, vec3_t dir)
 		VectorCopy(origin, re->origin);
 		AxisCopy(axisDefault, re->axis);
 
-		if (type == FXTYPE_GLASS)     // glass
-		{
-			rval = rand() % 2;
 
-			if (rval)
-			{
-				re->hModel = cgs.media.shardGlass1;
-			}
-			else
-			{
-				re->hModel = cgs.media.shardGlass2;
-			}
-		}
-		else if (type == FXTYPE_WOOD)           // wood
+		switch (type)
 		{
+		case FXTYPE_WOOD:
 			rval = rand() % 2;
 
 			if (rval)
@@ -1942,9 +1931,20 @@ void CG_Shard(centity_t *cent, vec3_t origin, vec3_t dir)
 			{
 				re->hModel = cgs.media.shardWood2;
 			}
-		}
-		else if (type == FXTYPE_METAL)           // metal
-		{
+			break;
+		case FXTYPE_GLASS:
+			rval = rand() % 2;
+
+			if (rval)
+			{
+				re->hModel = cgs.media.shardGlass1;
+			}
+			else
+			{
+				re->hModel = cgs.media.shardGlass2;
+			}
+			break;
+		case FXTYPE_METAL:
 			rval = rand() % 2;
 
 			if (rval)
@@ -1955,19 +1955,10 @@ void CG_Shard(centity_t *cent, vec3_t origin, vec3_t dir)
 			{
 				re->hModel = cgs.media.shardMetal2;
 			}
-		}
-		/*else if (type == 3) // ceramic
-		{
-		    rval = rand()%2;
-
-		    if (rval)
-		        re->hModel = cgs.media.shardCeramic1;
-		    else
-		        re->hModel = cgs.media.shardCeramic2;
-		}*/
-		else if (type == FXTYPE_BRICK || type == FXTYPE_STONE)     // rubble
-		{
-			rval = rand() % 3;
+			break;
+		case FXTYPE_BRICK:      // rubble
+		case FXTYPE_STONE:
+			rval = rand() % 3;     // note: there is debBlock 0-5
 
 			if (rval == 1)
 			{
@@ -1984,10 +1975,16 @@ void CG_Shard(centity_t *cent, vec3_t origin, vec3_t dir)
 				//re->hModel = cgs.media.shardRubble3;
 				re->hModel = cgs.media.debBlock[2];
 			}
-		}
-		else
-		{
+			break;
+		//case ceramic:
+		//rval = rand()%2;
+		//if (rval)
+		//  re->hModel = cgs.media.shardCeramic1;
+		//else
+		//  re->hModel = cgs.media.shardCeramic2;
+		default:     // FXTYPE_GIBS, FXTYPE_FABRIC
 			CG_Printf("CG_Debris has an unknown type\n");
+			break;
 		}
 
 		// location
@@ -2027,7 +2024,7 @@ void CG_Shard(centity_t *cent, vec3_t origin, vec3_t dir)
 	}
 }
 
-void CG_ShardJunk(centity_t *cent, vec3_t origin, vec3_t dir)
+void CG_ShardJunk(vec3_t origin, vec3_t dir)
 {
 	localEntity_t *le = CG_AllocLocalEntity();
 	refEntity_t   *re = &le->refEntity;
@@ -2531,7 +2528,8 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 		break;
 	case EV_FILL_CLIP:
 		DEBUGNAME("EV_FILL_CLIP");
-		if (cgs.clientinfo[cg.clientNum].skill[SK_LIGHT_WEAPONS] >= 2 && BG_isLightWeaponSupportingFastReload(es->weapon) && cg_weapons[es->weapon].reloadFastSound)
+		// IS_VALID_WEAPON(es->weapon) ?
+		if (cgs.clientinfo[cg.clientNum].skill[SK_LIGHT_WEAPONS] >= 2 && weaponTable[es->weapon].isLightWeaponSupportingFastReload && cg_weapons[es->weapon].reloadFastSound)
 		{
 			trap_S_StartSound(NULL, es->number, CHAN_WEAPON, cg_weapons[es->weapon].reloadFastSound);
 		}
@@ -2720,7 +2718,7 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 				color[2] = 0;
 			}
 
-			CG_RailTrail(color, &cgs.clientinfo[es->otherEntityNum2], es->origin2, es->pos.trBase, es->dmgFlags);     // added 'type' field
+			CG_RailTrail(color, es->origin2, es->pos.trBase, es->dmgFlags, es->effect1Time);     // added 'type' field
 		}
 		break;
 
@@ -2919,7 +2917,21 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 			if (sound)
 			{
 				// no origin!
+#if FEATURE_EDV
+				if (cgs.demoCamera.renderingFreeCam || cgs.demoCamera.renderingWeaponCam)
+				{
+					trap_S_StartLocalSound(sound, CHAN_AUTO);
+				}
+				else
+				{
+					// no origin!
+					trap_S_StartSound(NULL, cg.snap->ps.clientNum, CHAN_AUTO, sound);
+
+				}
+#else
+				// no origin!
 				trap_S_StartSound(NULL, cg.snap->ps.clientNum, CHAN_AUTO, sound);
+#endif
 			}
 			else
 			{
@@ -2941,8 +2953,21 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 					sound = CG_CustomSound(es->number, s);
 					if (sound)
 					{
+#if FEATURE_EDV
+						if (cgs.demoCamera.renderingFreeCam || cgs.demoCamera.renderingWeaponCam)
+						{
+							trap_S_StartLocalSound(sound, CHAN_AUTO);
+						}
+						else
+						{
+							// origin is NULL!
+							trap_S_StartSound(NULL, cg.snap->ps.clientNum, CHAN_AUTO, sound);
+						}
+#else
 						// origin is NULL!
 						trap_S_StartSound(NULL, cg.snap->ps.clientNum, CHAN_AUTO, sound);
+#endif
+
 					}
 					else
 					{
@@ -3199,7 +3224,7 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 
 			for (i = 0; i < rval; i++)
 			{
-				CG_ShardJunk(cent, position, dir);
+				CG_ShardJunk(position, dir);
 			}
 		}
 		break;
@@ -3224,6 +3249,14 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 		float  len;
 
 		DEBUGNAME("EV_SHAKE");
+
+#if FEATURE_EDV
+		if (cgs.demoCamera.renderingFreeCam || cgs.demoCamera.renderingWeaponCam)
+		{
+			break;
+		}
+#endif
+
 		VectorSubtract(cg.snap->ps.origin, cent->lerpOrigin, v);
 		len = VectorLength(v);
 
@@ -3274,6 +3307,12 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 		const char *wav = NULL;
 
 		DEBUGNAME("EV_AIRSTRIKEMESSAGE");
+#if FEATURE_EDV
+		if (cgs.demoCamera.renderingFreeCam || cgs.demoCamera.renderingWeaponCam)
+		{
+			break;
+		}
+#endif
 		switch (cent->currentState.density)
 		{
 		case 0:         // too many called
@@ -3306,6 +3345,8 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 				wav = "allies_hq_airstrike";
 			}
 			break;
+		default:
+			break;
 		}
 
 		if (wav)
@@ -3319,6 +3360,12 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 		const char *wav = NULL;
 
 		DEBUGNAME("EV_ARTYMESSAGE");
+#if FEATURE_EDV
+		if (cgs.demoCamera.renderingFreeCam || cgs.demoCamera.renderingWeaponCam)
+		{
+			break;
+		}
+#endif
 		switch (cent->currentState.density)
 		{
 		case 0:         // too many called
@@ -3350,6 +3397,8 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 			{
 				wav = "allies_hq_ffe";
 			}
+			break;
+		default:
 			break;
 		}
 

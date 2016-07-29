@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -249,7 +249,7 @@ void *S_WAV_CodecLoad(const char *filename, snd_info_t *info)
 	}
 
 	// Allocate some memory
-	buffer = Z_Malloc(info->size);
+	buffer = Hunk_AllocateTempMemory(info->size);
 	if (!buffer)
 	{
 		FS_FCloseFile(file);

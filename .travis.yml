@@ -1,6 +1,5 @@
 os:
   - linux
-  - osx
 
 language: cpp
 
@@ -11,21 +10,16 @@ compiler:
 env:
   native:
     - CROSS_COMPILE32=0
-    - FEATURE_RENDERER2=1
-    - RENDERER_DYNAMIC=1
     - BUNDLED_LIBS=1
     - BUNDLED_SDL=1
+    - BUNDLED_ZLIB=1
+    - BUNDLED_MINIZIP=1
     - BUNDLED_JPEG=1
     - BUNDLED_LUA=1
     - BUNDLED_OGG=1
-    - BUNDLED_CURL=1
 
-before_install:
-  - echo 'deb http://archive.ubuntu.com/ubuntu trusty main' | sudo tee /etc/apt/sources.list.d/ubuntu-trusty.list
-  - sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 40976EAF437D05B5
-  - sudo apt-get update -qq
-  - sudo apt-get install -q -t precise pkg-config nasm libgl1-mesa-dev libasound2-dev pulseaudio m4
-  - sudo apt-get install -q -t trusty automake
+before_script:
+  - ./misc/travis-setup.sh
 
 script:
   - ./easybuild.sh
@@ -38,3 +32,9 @@ notifications:
       - "irc.freenode.org#etlegacy"
     use_notice: true
     skip_join: true
+  webhooks:
+    urls:
+      - https://webhooks.gitter.im/e/5a93d4b59447e6129a58
+    on_success: change
+    on_failure: always
+    on_start: never

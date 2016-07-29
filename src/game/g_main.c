@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -272,20 +272,20 @@ vmCvar_t team_airstrikeTime;
 vmCvar_t team_artyTime;
 
 // team class/weapon limiting
-//classes
+// classes
 vmCvar_t team_maxSoldiers;
 vmCvar_t team_maxMedics;
 vmCvar_t team_maxEngineers;
 vmCvar_t team_maxFieldops;
 vmCvar_t team_maxCovertops;
-//weapons
+// weapons
 vmCvar_t team_maxMortars;
 vmCvar_t team_maxFlamers;
 vmCvar_t team_maxMg42s;
 vmCvar_t team_maxPanzers;
 vmCvar_t team_maxRiflegrenades;
 vmCvar_t team_maxLandmines;
-//skills
+// skills
 vmCvar_t skill_soldier;
 vmCvar_t skill_medic;
 vmCvar_t skill_engineer;
@@ -311,6 +311,7 @@ vmCvar_t g_fixedphysicsfps;
 vmCvar_t g_pronedelay;
 
 vmCvar_t g_debugHitboxes;
+vmCvar_t g_debugPlayerHitboxes;
 
 vmCvar_t g_voting;        // see VOTEF_ defines
 
@@ -333,6 +334,14 @@ vmCvar_t sv_fps;
 vmCvar_t g_skipCorrection;
 
 vmCvar_t g_extendedNames;
+
+#ifdef FEATURE_RATING
+vmCvar_t g_skillRating;
+#endif
+
+#ifdef FEATURE_MULTIVIEW
+vmCvar_t g_multiview; // 0 - off, other - enabled
+#endif
 
 cvarTable_t gameCvarTable[] =
 {
@@ -599,12 +608,19 @@ cvarTable_t gameCvarTable[] =
 	{ &g_pronedelay,                        "g_pronedelay",                        "0",                          CVAR_ARCHIVE | CVAR_SERVERINFO },
 	// Debug
 	{ &g_debugHitboxes,                     "g_debugHitboxes",                     "0",                          CVAR_CHEAT },
+	{ &g_debugPlayerHitboxes,               "g_debugPlayerHitboxes",               "0",                          0 }, // no need to make this CVAR_CHEAT
 
 	{ &g_corpses,                           "g_dynBQ",                             "0",                          CVAR_LATCH | CVAR_ARCHIVE },
 	{ &g_realHead,                          "g_realHead",                          "1",                          0 },
 	{ &sv_fps,                              "sv_fps",                              "20",                         CVAR_SYSTEMINFO,                                 0, qfalse},
 	{ &g_skipCorrection,                    "g_skipCorrection",                    "1",                          0 },
 	{ &g_extendedNames,                     "g_extendedNames",                     "1",                          0 },
+#ifdef FEATURE_RATING
+	{ &g_skillRating,                       "g_skillRating",                       "1",                          CVAR_LATCH | CVAR_ARCHIVE },
+#endif
+#ifdef FEATURE_MULTIVIEW
+	{ &g_multiview,                         "g_multiview",                         "0",                          CVAR_LATCH | CVAR_ARCHIVE },
+#endif
 };
 
 // made static to avoid aliasing
@@ -1079,7 +1095,7 @@ void G_CheckForCursorHints(gentity_t *ent)
 			switch (checkEnt->s.eType)
 			{
 			case ET_CORPSE:
-				if (!ent->client->ps.powerups[PW_BLUEFLAG] && !ent->client->ps.powerups[PW_REDFLAG] && !ent->client->ps.powerups[PW_OPS_DISGUISED])
+				if (!ent->client->ps.powerups[PW_BLUEFLAG] && !ent->client->ps.powerups[PW_REDFLAG])
 				{
 					if (BODY_TEAM(traceEnt) < 4 && BODY_TEAM(traceEnt) != ent->client->sess.sessionTeam && traceEnt->nextthink == traceEnt->timestamp + BODY_TIME(BODY_TEAM(traceEnt)))
 					{
@@ -1099,7 +1115,7 @@ void G_CheckForCursorHints(gentity_t *ent)
 			case ET_GENERAL:
 			case ET_MG42_BARREL:
 			case ET_AAGUN:
-				hintType = HINT_FORCENONE;
+				//hintType = HINT_FORCENONE;
 
 				if (G_EmplacedGunIsMountable(traceEnt, ent))
 				{
@@ -1237,9 +1253,9 @@ void G_CheckForCursorHints(gentity_t *ent)
 					}
 					else
 					{
-						hintDist = CH_NONE_DIST;
-						hintType = ps->serverCursorHint = HINT_FORCENONE;
-						hintVal  = ps->serverCursorHintVal = 0;
+						//hintDist = CH_NONE_DIST;
+						//hintType = ps->serverCursorHint = HINT_FORCENONE;
+						//hintVal  = ps->serverCursorHintVal = 0;
 						return;
 					}
 				}
@@ -1859,16 +1875,31 @@ void G_UpdateCvars(void)
 				}
 #endif
 
-				// MAPVOTE
-				// FIXME: mapvote & xp
-				if (g_gametype.integer == GT_WOLF_MAPVOTE)
 				{
+					// CS_LEGACYINFO
 					char cs[MAX_INFO_STRING];
 
 					cs[0] = '\0';
 
-					Info_SetValueForKey(cs, "X", va("%i", (level.mapsSinceLastXPReset >= g_resetXPMapCount.integer) ? 0 : level.mapsSinceLastXPReset));
-					Info_SetValueForKey(cs, "Y", (va("%i", g_resetXPMapCount.integer)));
+					// MAPVOTE
+					// FIXME: mapvote & xp
+					if (g_gametype.integer == GT_WOLF_MAPVOTE)
+					{
+						Info_SetValueForKey(cs, "X", va("%i", (level.mapsSinceLastXPReset >= g_resetXPMapCount.integer) ? 0 : level.mapsSinceLastXPReset));
+						Info_SetValueForKey(cs, "Y", (va("%i", g_resetXPMapCount.integer)));
+					}
+
+#ifdef FEATURE_RATING
+					if (g_skillRating.integer)
+					{
+						Info_SetValueForKey(cs, "R", (va("%i", g_skillRating.integer)));
+					}
+#endif
+
+#ifdef FEATURE_MULTIVIEW
+					Info_SetValueForKey(cs, "MV", va("%i", g_multiview.integer));
+#endif
+
 					trap_SetConfigstring(CS_LEGACYINFO, cs);
 				}
 
@@ -2417,6 +2448,9 @@ void G_InitGame(int levelTime, int randomSeed, int restart, int legacyServer, in
 	// MAPVOTE
 	level.mapsSinceLastXPReset = 0;
 
+#ifdef FEATURE_LUA
+	G_LuaInit();
+#endif
 	// parse the key/value pairs and spawn gentities
 	G_SpawnEntitiesFromString();
 
@@ -2469,7 +2503,6 @@ void G_InitGame(int levelTime, int randomSeed, int restart, int legacyServer, in
 	GeoIP_open(); // GeoIP open/update
 
 #ifdef FEATURE_LUA
-	G_LuaInit();
 	G_LuaHook_InitGame(levelTime, randomSeed, restart);
 #endif
 
@@ -2595,10 +2628,8 @@ SortRanks
 */
 int QDECL SortRanks(const void *a, const void *b)
 {
-	gclient_t *ca, *cb;
-
-	ca = &level.clients[*(int *)a];
-	cb = &level.clients[*(int *)b];
+	gclient_t *ca = &level.clients[*(int *)a];
+	gclient_t *cb = &level.clients[*(int *)b];
 
 	// sort special clients last
 	if (ca->sess.spectatorClient < 0)
@@ -3270,7 +3301,6 @@ or moved to a new level based on the "nextmap" cvar
 void ExitLevel(void)
 {
 	int       i;
-	gclient_t *cl;
 
 	// FIXME: do a switch
 	if (g_gametype.integer == GT_WOLF_CAMPAIGN)
@@ -3318,8 +3348,7 @@ void ExitLevel(void)
 	// MAPVOTE
 	else if (g_gametype.integer == GT_WOLF_MAPVOTE)
 	{
-		int nextMap    = 0, highMapVote = 0, curMapVotes = 0, maxMaps;
-		int highMapAge = 0, curMapAge = 0;
+		int nextMap = 0, highMapVote = 0, curMapVotes = 0, maxMaps, highMapAge = 0, curMapAge = 0;
 
 		if (g_resetXPMapCount.integer)
 		{
@@ -3367,7 +3396,6 @@ void ExitLevel(void)
 		trap_SendConsoleCommand(EXEC_APPEND, "vstr nextmap\n");
 	}
 
-	level.changemap        = NULL;
 	level.intermissiontime = 0;
 
 	// reset all the scores so we don't enter the intermission again
@@ -3375,6 +3403,8 @@ void ExitLevel(void)
 	level.teamScores[TEAM_ALLIES] = 0;
 	if (g_gametype.integer != GT_WOLF_CAMPAIGN)
 	{
+		gclient_t *cl;
+
 		for (i = 0 ; i < g_maxclients.integer ; i++)
 		{
 			cl = level.clients + i;
@@ -3478,8 +3508,6 @@ void G_LogExit(const char *string)
 
 	for (i = 0; i < level.numConnectedClients; i++)
 	{
-		int ping;
-
 		cl = &level.clients[level.sortedClients[i]];
 
 		G_MakeUnready(&g_entities[level.sortedClients[i]]);
@@ -3496,21 +3524,25 @@ void G_LogExit(const char *string)
 		// Make sure all the stats are recalculated and accurate
 		G_CalcRank(cl);
 
-		ping = cl->ps.ping < 999 ? cl->ps.ping : 999;
-
-		G_LogPrintf("score: %i  ping: %i  client: %i %s\n", cl->ps.persistant[PERS_SCORE], ping, level.sortedClients[i], cl->pers.netname);
+		G_LogPrintf("score: %i  ping: %i  client: %i %s\n", cl->ps.persistant[PERS_SCORE], (cl->ps.ping < 999 ? cl->ps.ping : 999), level.sortedClients[i], cl->pers.netname);
 	}
+
+#ifdef FEATURE_RATING
+	// calculate skill ratings
+	if (g_skillRating.integer && (g_gametype.integer != GT_WOLF_STOPWATCH && g_gametype.integer != GT_WOLF_LMS))
+	{
+		G_CalculateSkillRatings();
+	}
+#endif
 
 	G_LogPrintf("red:%i  blue:%i\n", level.teamScores[TEAM_AXIS], level.teamScores[TEAM_ALLIES]);
 
 	// Send gameCompleteStatus message to master servers
 	trap_SendConsoleCommand(EXEC_APPEND, "gameCompleteStatus\n");
 
-	// FIXME: do a switch
 	if (g_gametype.integer == GT_WOLF_STOPWATCH)
 	{
-		char cs[MAX_STRING_CHARS];
-		int  winner, defender;
+		int winner, defender;
 
 		trap_GetConfigstring(CS_MULTI_INFO, cs, sizeof(cs));
 		defender = atoi(Info_ValueForKey(cs, "d")); // defender
@@ -3543,10 +3575,7 @@ void G_LogExit(const char *string)
 	}
 	else if (g_gametype.integer == GT_WOLF_CAMPAIGN)
 	{
-		char cs[MAX_STRING_CHARS];
-		int  winner;
-		int  highestskillpoints, highestskillpointsclient, j, teamNum;
-		int  highestskillpointsincrease;
+		int winner;
 
 		trap_GetConfigstring(CS_MULTI_MAPWINNER, cs, sizeof(cs));
 		winner = atoi(Info_ValueForKey(cs, "w"));
@@ -3568,8 +3597,73 @@ void G_LogExit(const char *string)
 		trap_SetConfigstring(CS_ROUNDSCORES2, va("%i", g_alliedwins.integer));
 
 		G_StoreMapXP();
+	}
+	else if (g_gametype.integer == GT_WOLF_LMS)
+	{
+		int winner;
+		int roundLimit       = g_lms_roundlimit.integer < 3 ? 3 : g_lms_roundlimit.integer;
+		int numWinningRounds = (roundLimit / 2) + 1;
 
-		// award medals
+		roundLimit -= 1;    // -1 as it starts at 0
+
+		trap_GetConfigstring(CS_MULTI_MAPWINNER, cs, sizeof(cs));
+		winner = atoi(Info_ValueForKey(cs, "w"));
+
+		if (winner == -1)
+		{
+			// who drew first blood?
+			if (level.firstbloodTeam == TEAM_AXIS)
+			{
+				winner = 0;
+			}
+			else
+			{
+				winner = 1;
+			}
+		}
+
+		if (winner == 0)
+		{
+			trap_Cvar_Set("g_axiswins", va("%i", g_axiswins.integer + 1));
+			trap_Cvar_Update(&g_axiswins);
+		}
+		else
+		{
+			trap_Cvar_Set("g_alliedwins", va("%i", g_alliedwins.integer + 1));
+			trap_Cvar_Update(&g_alliedwins);
+		}
+
+		if (g_currentRound.integer >= roundLimit || g_axiswins.integer == numWinningRounds || g_alliedwins.integer == numWinningRounds)
+		{
+			trap_Cvar_Set("g_currentRound", "0");
+			if (g_lms_currentMatch.integer + 1 >= g_lms_matchlimit.integer)
+			{
+				trap_Cvar_Set("g_lms_currentMatch", "0");
+				level.lmsDoNextMap = qtrue;
+			}
+			else
+			{
+				trap_Cvar_Set("g_lms_currentMatch", va("%i", g_lms_currentMatch.integer + 1));
+				level.lmsDoNextMap = qfalse;
+			}
+		}
+		else
+		{
+			trap_Cvar_Set("g_currentRound", va("%i", g_currentRound.integer + 1));
+			trap_Cvar_Update(&g_currentRound);
+		}
+	}
+	else if (g_gametype.integer == GT_WOLF || g_gametype.integer == GT_WOLF_MAPVOTE)
+	{
+		G_StoreMapXP();
+	}
+
+	// award medals
+	if (g_gametype.integer == GT_WOLF || g_gametype.integer == GT_WOLF_CAMPAIGN || g_gametype.integer == GT_WOLF_MAPVOTE)
+	{
+		int highestskillpoints, highestskillpointsclient, j, teamNum;
+		int highestskillpointsincrease;
+
 		for (teamNum = TEAM_AXIS; teamNum <= TEAM_ALLIES; teamNum++)
 		{
 			for (i = 0; i < SK_NUM_SKILLS; i++)
@@ -3654,65 +3748,6 @@ void G_LogExit(const char *string)
 				}
 			}
 		}
-	}
-	else if (g_gametype.integer == GT_WOLF_LMS)
-	{
-		int winner;
-		int roundLimit       = g_lms_roundlimit.integer < 3 ? 3 : g_lms_roundlimit.integer;
-		int numWinningRounds = (roundLimit / 2) + 1;
-
-		roundLimit -= 1;    // -1 as it starts at 0
-
-		trap_GetConfigstring(CS_MULTI_MAPWINNER, cs, sizeof(cs));
-		winner = atoi(Info_ValueForKey(cs, "w"));
-
-		if (winner == -1)
-		{
-			// who drew first blood?
-			if (level.firstbloodTeam == TEAM_AXIS)
-			{
-				winner = 0;
-			}
-			else
-			{
-				winner = 1;
-			}
-		}
-
-		if (winner == 0)
-		{
-			trap_Cvar_Set("g_axiswins", va("%i", g_axiswins.integer + 1));
-			trap_Cvar_Update(&g_axiswins);
-		}
-		else
-		{
-			trap_Cvar_Set("g_alliedwins", va("%i", g_alliedwins.integer + 1));
-			trap_Cvar_Update(&g_alliedwins);
-		}
-
-		if (g_currentRound.integer >= roundLimit || g_axiswins.integer == numWinningRounds || g_alliedwins.integer == numWinningRounds)
-		{
-			trap_Cvar_Set("g_currentRound", "0");
-			if (g_lms_currentMatch.integer + 1 >= g_lms_matchlimit.integer)
-			{
-				trap_Cvar_Set("g_lms_currentMatch", "0");
-				level.lmsDoNextMap = qtrue;
-			}
-			else
-			{
-				trap_Cvar_Set("g_lms_currentMatch", va("%i", g_lms_currentMatch.integer + 1));
-				level.lmsDoNextMap = qfalse;
-			}
-		}
-		else
-		{
-			trap_Cvar_Set("g_currentRound", va("%i", g_currentRound.integer + 1));
-			trap_Cvar_Update(&g_currentRound);
-		}
-	}
-	else if (g_gametype.integer == GT_WOLF)
-	{
-		G_StoreMapXP();
 	}
 
 #ifdef FEATURE_OMNIBOT
@@ -4221,8 +4256,6 @@ void CheckCvars(void)
  */
 void G_RunThink(gentity_t *ent)
 {
-	int thinktime;
-
 	// If paused, push nextthink
 	if (level.match_pause != PAUSE_NONE && (ent - g_entities) >= g_maxclients.integer &&
 	    ent->nextthink > level.time && strstr(ent->classname, "DPRINTF_") == NULL)
@@ -4236,12 +4269,11 @@ void G_RunThink(gentity_t *ent)
 		G_Script_ScriptRun(ent);
 	}
 
-	thinktime = ent->nextthink;
-	if (thinktime <= 0)
+	if (ent->nextthink <= 0)
 	{
 		return;
 	}
-	if (thinktime > level.time)
+	if (ent->nextthink > level.time)
 	{
 		return;
 	}
@@ -4313,8 +4345,6 @@ qboolean G_PositionEntityOnTag(gentity_t *entity, gentity_t *parent, char *tagNa
 void G_TagLinkEntity(gentity_t *ent, int msec)
 {
 	gentity_t *parent = &g_entities[ent->s.torsoAnim];
-	vec3_t    move;
-	gentity_t *obstacle;
 	vec3_t    origin, angles = { 0, 0, 0 };
 	vec3_t    v;
 
@@ -4446,7 +4476,8 @@ void G_TagLinkEntity(gentity_t *ent, int msec)
 
 	if (ent->moving)
 	{
-		vec3_t amove;
+		vec3_t    amove, move;
+		gentity_t *obstacle;
 
 		VectorSubtract(origin, ent->r.currentOrigin, move);
 		VectorSubtract(angles, ent->r.currentAngles, amove);
@@ -4471,6 +4502,149 @@ void G_TagLinkEntity(gentity_t *ent, int msec)
 	ent->linkTagTime = level.time;
 }
 
+// make this client side one day -> a loooooot of saved entities, and less brandwith
+void G_DrawEntBBox(gentity_t* ent)
+{
+	vec3_t maxs,mins;
+
+	if (G_EntitiesFree() < 64) 
+	{
+		return;
+	}
+
+	if (g_debugHitboxes.string[0] && Q_isalpha(g_debugHitboxes.string[0]))
+	{
+		if (ent->classname && !Q_stricmp(ent->classname, g_debugHitboxes.string))
+		{
+			G_RailBox(ent->r.currentOrigin, ent->r.mins, ent->r.maxs, tv(0.5f,0.f,0.5f), ent->s.number);
+		}
+		return;
+	}
+
+	switch (ent->s.eType)
+	{
+		case ET_CORPSE:
+		case ET_PLAYER:
+			if (g_debugHitboxes.integer != 3)
+			{
+				return;
+			}
+			VectorCopy(ent->r.maxs, maxs);
+			VectorCopy(ent->r.mins, mins);
+			maxs[2] = ClientHitboxMaxZ(ent);
+			break;
+		case ET_MISSILE:
+			if (g_debugHitboxes.integer != 4)
+			{
+				return;
+			}
+			VectorCopy(ent->r.maxs, maxs);
+			VectorCopy(ent->r.mins, mins);
+			break;
+		case ET_EXPLOSIVE:
+			if (g_debugHitboxes.integer != 5)
+			{
+				return;
+			}
+			VectorCopy(ent->r.maxs, maxs);
+			VectorCopy(ent->r.mins, mins);
+			break;
+		case ET_ITEM:
+			if (g_debugHitboxes.integer != 6)
+			{
+				return;
+			}
+			VectorCopy(ent->r.maxs, maxs);
+			VectorCopy(ent->r.mins, mins);
+			break;
+		case ET_MOVERSCALED:
+		case ET_MOVER:
+			if (g_debugHitboxes.integer != 7)
+			{
+				return;
+			}
+			VectorCopy(ent->r.maxs, maxs);
+			VectorCopy(ent->r.mins, mins);
+			break;
+		case ET_MG42_BARREL:
+			if (g_debugHitboxes.integer != 8)
+			{
+				return;
+			}
+			VectorCopy(ent->r.maxs, maxs);
+			VectorCopy(ent->r.mins, mins);
+			break;
+		case ET_CONSTRUCTIBLE_INDICATOR:
+		case ET_CONSTRUCTIBLE:
+		case ET_CONSTRUCTIBLE_MARKER:
+			if (g_debugHitboxes.integer != 9)
+			{
+				return;
+			}
+			VectorCopy(ent->r.maxs, maxs);
+			VectorCopy(ent->r.mins, mins);
+			break;
+		case ET_PUSH_TRIGGER:
+		case ET_TELEPORT_TRIGGER:
+		case ET_CONCUSSIVE_TRIGGER:
+		case ET_OID_TRIGGER:
+		case ET_TRIGGER_MULTIPLE:
+		case ET_TRIGGER_FLAGONLY:
+		case ET_TRIGGER_FLAGONLY_MULTIPLE:
+			if (g_debugHitboxes.integer != 10)
+			{
+				return;
+			}
+			VectorCopy(ent->r.maxs, maxs);
+			VectorCopy(ent->r.mins, mins);
+			break;
+		case ET_CABINET_H:
+		case ET_CABINET_A:
+		case ET_HEALER:
+		case ET_SUPPLIER:
+			if (g_debugHitboxes.integer != 11)
+			{
+				return;
+			}
+			VectorCopy(ent->r.maxs, maxs);
+			VectorCopy(ent->r.mins, mins);
+			break;
+		case ET_ALARMBOX:
+		case ET_FOOTLOCKER:
+		case ET_PROP:
+		case ET_TRAP:
+			if (g_debugHitboxes.integer != 12)
+			{
+				return;
+			}
+			VectorCopy(ent->r.maxs, maxs);
+			VectorCopy(ent->r.mins, mins);
+			break;
+		case ET_GAMEMODEL:
+			if (g_debugHitboxes.integer != 13)
+			{
+				return;
+			}
+			VectorCopy(ent->r.maxs, maxs);
+			VectorCopy(ent->r.mins, mins);
+			break;
+		case ET_GENERAL:
+			if (g_debugHitboxes.integer != 14)
+			{
+				return;
+			}
+			// this is a bit hacky, but well..
+			VectorCopy(ent->r.maxs, maxs);
+			VectorCopy(ent->r.mins, mins);
+			break;
+		default:
+			return;
+	}
+
+	G_RailBox(ent->r.currentOrigin, mins, maxs, tv(0.f,1.f,0.f), ent->s.number);
+}
+
+
 void G_RunEntity(gentity_t *ent, int msec)
 {
 	if (ent->runthisframe)
@@ -4483,6 +4657,11 @@ void G_RunEntity(gentity_t *ent, int msec)
 	if (!ent->inuse)
 	{
 		return;
+	}
+
+	if (g_debugHitboxes.integer || g_debugHitboxes.string[0])
+	{
+		G_DrawEntBBox(ent);
 	}
 
 	if (ent->tagParent)
@@ -4839,7 +5018,6 @@ void G_readconfigfile_string(char **cnf, char *s, int size)
 {
 	char *t;
 
-	//COM_MatchToken(cnf, "=");
 	t = COM_ParseExt(cnf, qfalse);
 	if (!strcmp(t, "="))
 	{
@@ -4875,7 +5053,6 @@ void G_readconfigfile_int(char **cnf, int *v)
 {
 	char *t;
 
-	//COM_MatchToken(cnf, "=");
 	t = COM_ParseExt(cnf, qfalse);
 	if (!strcmp(t, "="))
 	{
@@ -4927,11 +5104,10 @@ void G_mapvoteinfo_read()
 	COM_BeginParseSession("MapvoteinfoRead");
 
 	t = COM_Parse(&cnf);
-	while (*t)
+	while (t[0])
 	{
 		if (!Q_stricmp(t, "name"))
 		{
-			//G_shrubbot_readconfig_string(&cnf, bspName, sizeof(bspName));
 			G_readconfigfile_string(&cnf, bspName, sizeof(bspName));
 			curMap = -1;
 			for (i = 0; i < level.mapVoteNumMaps; i++)

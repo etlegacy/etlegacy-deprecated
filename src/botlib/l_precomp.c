@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -56,8 +56,6 @@ typedef struct directive_s
 } directive_t;
 
 #define DEFINEHASHSIZE      1024
-
-#define TOKEN_HEAP_SIZE     4096
 
 int numtokens;
 
@@ -1483,6 +1481,9 @@ int PC_OperatorPriority(int op)
 		return 5;
 	case P_QUESTIONMARK:
 		return 5;
+
+	default:
+		break;
 	}
 	return qfalse;
 }
@@ -2963,7 +2964,8 @@ source_t *LoadSourceFile(const char *filename)
 	source = (source_t *) GetMemory(sizeof(source_t));
 	memset(source, 0, sizeof(source_t));
 
-	strncpy(source->filename, filename, _MAX_PATH);
+	Q_strncpyz(source->filename, filename, MAX_QPATH);
+
 	source->scriptstack = script;
 	source->tokens      = NULL;
 	source->defines     = NULL;
@@ -2992,7 +2994,8 @@ source_t *LoadSourceMemory(char *ptr, int length, char *name)
 	source = (source_t *) GetMemory(sizeof(source_t));
 	memset(source, 0, sizeof(source_t));
 
-	strncpy(source->filename, name, _MAX_PATH);
+	Q_strncpyz(source->filename, name, _MAX_PATH);
+
 	source->scriptstack = script;
 	source->tokens      = NULL;
 	source->defines     = NULL;

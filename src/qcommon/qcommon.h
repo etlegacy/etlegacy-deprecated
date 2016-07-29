@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -192,11 +192,11 @@ typedef enum
 #define NET_ADDRSTRMAXLEN 48
 typedef struct
 {
-	netadrtype_t type;
+	uint16_t type;
 	byte ip[4];
 	byte ip6[16];
-	unsigned short port;
-	unsigned long scope_id; // Needed for IPv6 link-local addresses
+	uint16_t port;
+	uint64_t scope_id; // Needed for IPv6 link-local addresses
 } netadr_t;
 
 void NET_Init(void);
@@ -499,10 +499,22 @@ then searches for a command or variable that matches the first token.
 */
 
 typedef void (*xcommand_t)(void);
+typedef void (*completionFunc_t)(char *args, int argNum);
 
 void Cmd_Init(void);
 
-void Cmd_AddCommand(const char *cmd_name, xcommand_t function);
+// We need to use EXPAND because the Microsoft MSVC preprocessor does not expand the va_args the same way as other preprocessors
+// http://stackoverflow.com/questions/5134523/msvc-doesnt-expand-va-args-correctly
+#define EXPAND(x) x
+#define GET_MACRO(_1, _2, _3, _4, NAME, ...) NAME
+#define Cmd_AddCommand1(x) Cmd_AddSystemCommand(x, NULL, NULL, NULL)
+#define Cmd_AddCommand2(x, y) Cmd_AddSystemCommand(x, y, NULL, NULL)
+#define Cmd_AddCommand3(x, y, z) Cmd_AddSystemCommand(x, y, z, NULL)
+#define Cmd_AddCommand4(x, y, z, i) Cmd_AddSystemCommand(x, y, z, i)
+#define Cmd_AddCommand(...) EXPAND(GET_MACRO(__VA_ARGS__, Cmd_AddCommand4, Cmd_AddCommand3, Cmd_AddCommand2, Cmd_AddCommand1) (__VA_ARGS__))
+
+void Cmd_AddSystemCommand(const char *cmd_name, xcommand_t function, const char *description, completionFunc_t complete);
+
 // called by the init functions of other parts of the program to
 // register commands and functions to call for them.
 // The cmd_name is referenced later, so it should not be in temp memory
@@ -512,12 +524,10 @@ void Cmd_AddCommand(const char *cmd_name, xcommand_t function);
 void Cmd_RemoveCommand(const char *cmd_name);
 void Cmd_RemoveCommandSafe(const char *cmd_name);
 
-typedef void (*completionFunc_t)(char *args, int argNum);
-
 void Cmd_CommandCompletion(void (*callback)(const char *s));
 // callback with each valid string
-void Cmd_SetCommandCompletionFunc(const char *command,
-                                  completionFunc_t complete);
+void Cmd_SetCommandCompletionFunc(const char *command, completionFunc_t complete);
+void Cmd_SetCommandDescription(const char *command, const char *description);
 void Cmd_CompleteArgument(const char *command, char *args, int argNum);
 
 void Cmd_SaveCmdContext(void);
@@ -659,7 +669,15 @@ issues.
 #define BASEGAME "etmain"
 #define DEFAULT_MODGAME "legacy" // see files.c
 
-#define IS_LEGACY_MOD (Q_stricmp(Cvar_VariableString("fs_game"), DEFAULT_MODGAME) == 0)
+typedef struct
+{
+	unsigned int defaultMod;
+	unsigned int currentMod;
+} modHash;
+extern modHash modHashes;
+
+//#define IS_LEGACY_MOD (Q_stricmp(Cvar_VariableString("fs_game"), DEFAULT_MODGAME) == 0)
+#define IS_LEGACY_MOD (modHashes.defaultMod == modHashes.currentMod)
 
 // referenced flags
 // these are in loop specific order so don't change the order
@@ -703,6 +721,7 @@ char **FS_ListFiles(const char *directory, const char *extension, int *numfiles)
 void FS_FreeFileList(char **list);
 
 qboolean FS_FileExists(const char *file);
+qboolean FS_SV_FileExists(const char *file);
 
 qboolean FS_IsSamePath(const char *s1, const char *s2);
 qboolean FS_CreatePath(char *OSPath);
@@ -821,7 +840,7 @@ qboolean FS_ComparePaks(char *neededpaks, int len, qboolean dlstring);
 
 void FS_Rename(const char *from, const char *to);
 
-void FS_FilenameCompletion(const char *dir, const char *ext,
+void FS_FilenameCompletion(const char *dir, int numext, const char **ext,
                            qboolean stripExt, void (*callback)(const char *s), qboolean allowNonPureFilesOnDisk);
 
 #if !defined(DEDICATED)
@@ -875,10 +894,9 @@ void Console_AutoComplete(field_t *field, int *completionOffset);
 void Field_Clear(field_t *edit);
 void Field_AutoComplete(field_t *edit);
 void Field_CompleteKeyname(void);
-void Field_CompleteFilename(const char *dir,
-                            const char *ext, qboolean stripExt, qboolean allowNonPureFilesOnDisk);
-void Field_CompleteCommand(char *cmd,
-                           qboolean doCommands, qboolean doCvars);
+void Field_CompleteFilenameMultiple(const char *dir, int numext, const char **ext, qboolean allowNonPureFilesOnDisk);
+void Field_CompleteFilename(const char *dir, const char *ext, qboolean stripExt, qboolean allowNonPureFilesOnDisk);
+void Field_CompleteCommand(char *cmd, qboolean doCommands, qboolean doCvars);
 
 /*
 ==============================================================
@@ -1092,6 +1110,9 @@ qboolean CL_ConnectedToServer(void);
 
 void CL_StartHunkUsers(void);
 // start all the client stuff using the hunk
+
+void CL_Snd_Shutdown(void);
+// Restart sound subsystem
 
 // udpate.c
 enum UPDATE_FLAGS

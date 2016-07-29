@@ -4,7 +4,7 @@
  * Copyright (C) 2010-2011 Robert Beckebans <trebor_7@users.sourceforge.net>
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -765,8 +765,8 @@ void RB_DrawSun(void)
 	float    size;
 	float    dist;
 	vec3_t   origin, vec1, vec2;
-	matrix_t transformMatrix;
-	matrix_t modelViewMatrix;
+	mat4_t transformMatrix;
+	mat4_t modelViewMatrix;
 
 	if (!backEnd.skyRenderedThisView)
 	{
@@ -779,8 +779,8 @@ void RB_DrawSun(void)
 
 	GL_PushMatrix();
 
-	MatrixSetupTranslationByVec(transformMatrix, backEnd.viewParms.orientation.origin);
-	MatrixMultiplyMOD(backEnd.viewParms.world.viewMatrix, transformMatrix, modelViewMatrix);
+	mat4_reset_translate_vec3(transformMatrix, backEnd.viewParms.orientation.origin);
+	mat4_mult(backEnd.viewParms.world.viewMatrix, transformMatrix, modelViewMatrix);
 
 	GL_LoadProjectionMatrix(backEnd.viewParms.projectionMatrix);
 	GL_LoadModelViewMatrix(modelViewMatrix);
@@ -845,11 +845,6 @@ void Tess_StageIteratorSky(void)
 	}
 	else
 	{
-		if (tess.stageIteratorFunc2 == &Tess_StageIteratorGBuffer)
-		{
-			R_BindFBO(tr.geometricRenderFBO);
-		}
-
 		// go through all the polygons and project them onto
 		// the sky box to see which blocks on each side need
 		// to be drawn
@@ -875,7 +870,7 @@ void Tess_StageIteratorSky(void)
 			R_BindVBO(tess.vbo);
 			R_BindIBO(tess.ibo);
 
-			SetMacrosAndSelectProgram(gl_skyboxShader, USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal);
+			SetMacrosAndSelectProgram(trProg.gl_skyboxShader, USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal);
 
 			SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.origin);   // in world space
 			SetUniformMatrix16(UNIFORM_MODELMATRIX, backEnd.orientation.transformMatrix);
@@ -895,7 +890,7 @@ void Tess_StageIteratorSky(void)
 				SetUniformVec4(UNIFORM_PORTALPLANE, plane);
 			}
 
-			GLSL_SetRequiredVertexPointers(gl_skyboxShader);
+			GLSL_SetRequiredVertexPointers(trProg.gl_skyboxShader);
 
 			// bind u_ColorMap
 			SelectTexture(TEX_COLOR);
@@ -915,11 +910,6 @@ void Tess_StageIteratorSky(void)
 		}
 
 		// TODO draw the inner skybox?
-
-		if (tess.stageIteratorFunc2 == Tess_StageIteratorGBuffer)
-		{
-			R_BindNullFBO();
-		}
 
 		if (tess.stageIteratorFunc2 != Tess_StageIteratorDepthFill)
 		{

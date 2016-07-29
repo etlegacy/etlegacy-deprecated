@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -64,9 +64,17 @@ void G_WriteClientSessionData(gclient_t *client, qboolean restart)
 	//}
 
 #ifdef FEATURE_MULTIVIEW
-	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+#ifdef FEATURE_RATING
+	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i %i %i",
 #else
-	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+#endif
+#else
+#ifdef FEATURE_RATING
+	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i",
+#else
+	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+#endif
 #endif
 	       client->sess.sessionTeam,
 	       client->sess.spectatorTime,
@@ -80,16 +88,25 @@ void G_WriteClientSessionData(gclient_t *client, qboolean restart)
 	       client->sess.latchPlayerWeapon2,
 
 	       client->sess.coach_team,
-	       client->sess.deaths,
-	       client->sess.game_points,
-	       client->sess.kills,
 	       client->sess.referee,
 	       client->sess.spec_invite,
 	       client->sess.spec_team,
-	       client->sess.selfkills,
+	       client->sess.kills,
+	       client->sess.deaths,
+	       client->sess.gibs,
+	       client->sess.self_kills,
 	       client->sess.team_kills,
+	       client->sess.team_gibs,
+
 	       client->sess.time_axis,
 	       client->sess.time_allies,
+	       client->sess.time_played,
+#ifdef FEATURE_RATING
+	       client->sess.mu,
+	       client->sess.sigma,
+	       client->sess.oldmu,
+	       client->sess.oldsigma,
+#endif
 #ifdef FEATURE_MULTIVIEW
 	       (mvc & 0xFFFF),
 	       ((mvc >> 16) & 0xFFFF),
@@ -239,9 +256,17 @@ void G_ReadSessionData(gclient_t *client)
 	trap_Cvar_VariableStringBuffer(va("session%i", (int)(client - level.clients)), s, sizeof(s));
 
 #ifdef FEATURE_MULTIVIEW
-	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+#ifdef FEATURE_RATING
+	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i %i %i",
 #else
-	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+#endif
+#else
+#ifdef FEATURE_RATING
+	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i",
+#else
+	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+#endif
 #endif
 	       (int *)&client->sess.sessionTeam,
 	       &client->sess.spectatorTime,
@@ -255,16 +280,24 @@ void G_ReadSessionData(gclient_t *client)
 	       &client->sess.latchPlayerWeapon2,
 
 	       &client->sess.coach_team,
-	       &client->sess.deaths,
-	       &client->sess.game_points,
-	       &client->sess.kills,
 	       &client->sess.referee,
 	       &client->sess.spec_invite,
 	       &client->sess.spec_team,
-	       &client->sess.selfkills,
+	       &client->sess.kills,
+	       &client->sess.deaths,
+	       &client->sess.gibs,
+	       &client->sess.self_kills,
 	       &client->sess.team_kills,
+	       &client->sess.team_gibs,
 	       &client->sess.time_axis,
 	       &client->sess.time_allies,
+	       &client->sess.time_played,
+#ifdef FEATURE_RATING
+	       &client->sess.mu,
+	       &client->sess.sigma,
+	       &client->sess.oldmu,
+	       &client->sess.oldsigma,
+#endif
 #ifdef FEATURE_MULTIVIEW
 	       &mvc_l,
 	       &mvc_h,
@@ -330,22 +363,22 @@ void G_ReadSessionData(gclient_t *client)
 	test = (g_altStopwatchMode.integer != 0 || g_currentRound.integer == 1);
 
 	        if (g_gametype.integer == GT_WOLF_STOPWATCH && g_gamestate.integer != GS_PLAYING && test)
-	        {
-	            G_ClientSwap(client);
-			}
+	{
+		G_ClientSwap(client);
+	}
 
 	        if (g_swapteams.integer)
-	        {
-	            trap_Cvar_Set("g_swapteams", "0");
-	            G_ClientSwap(client);
-			}
+	{
+		trap_Cvar_Set("g_swapteams", "0");
+		G_ClientSwap(client);
+	}
 
 	        client->sess.startxptotal = 0;
 	        for (j = 0; j < SK_NUM_SKILLS; j++)
-	        {
-	            client->sess.startskillpoints[j] = client->sess.skillpoints[j];
-	            client->sess.startxptotal += client->sess.skillpoints[j];
-			}
+	{
+		client->sess.startskillpoints[j] = client->sess.skillpoints[j];
+		client->sess.startxptotal += client->sess.skillpoints[j];
+	}
 }
 
 /*
@@ -412,7 +445,6 @@ void G_InitWorldSession(void)
     // client sessions
     if (g_gametype.integer != gt)
     {
-        level.newSession = qtrue;
         level.fResetStats = qtrue;
         G_Printf("Gametype changed, clearing session data.\n");
 

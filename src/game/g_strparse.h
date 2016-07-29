@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -33,6 +33,8 @@
  */
 /**
  * @file g_strparse.h
+ *
+ * @brief changes have to be in sync with input_token.gperf and fresh generated g_match_tokens.c
  */
 
 #ifndef INCLUDE_G_STRPARSE_H
@@ -55,7 +57,7 @@ typedef enum
 	TOK_pmove_fixed,                    // 12
 	TOK_pmove_msec,                     // 13
 	TOK_ch,                             // 14
-	TOK_skill,                          // 15
+	TOK_skill,                          // 15 obsolete/unused (botskill)
 	TOK_rate,                           // 16
 	TOK_n,                              // 17
 	TOK_t,                              // 18
@@ -65,9 +67,9 @@ typedef enum
 	TOK_m,                              // 22
 	TOK_s,                              // 23
 	TOK_xp,                             // 24
-	TOK_dn,                             // 25
-	TOK_dc,                             // 26
-	TOK_dr,                             // 27
+	TOK_dn,                             // 25 now disguised client num (change to 'd' to safe a char per client)
+	TOK_dc,                             // 26 obsolete/unused (disguised class)
+	TOK_dr,                             // 27 unused
 	TOK_w,                              // 28
 	TOK_lw,                             // 29
 	TOK_lc,                             // 30
@@ -87,10 +89,14 @@ typedef enum
 	TOK_hs,                             // 44
 	TOK_g,                              // 45
 	TOK_gs,                             // 46
-	TOK_mu,
+	TOK_mu,                             // 47
+
+	// FIXME: general rework - see also obsolete tokens
+	// TOK_tv                           // 48
+	// TOK_sc                           // 49
 
 	// Don't add anything below here
-	TOK_UNKNOWN
+	TOK_UNKNOWN                         // 50
 } g_StringToken_t;
 
 extern g_StringToken_t G_GetTokenForString(char const *str);

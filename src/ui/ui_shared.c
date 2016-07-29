@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -73,7 +73,7 @@ static int  allocPoint, outOfMemory;
 /**
  * @brief Convert rectangle-coordinates for use with the current aspectratio.
  */
-void Cui_WideRect(Rectangle *rect)
+void Cui_WideRect(rectDef_t *rect)
 {
 	rect->x *= DC->xscale;
 	rect->y *= DC->yscale;
@@ -659,6 +659,7 @@ static bind_t g_bindings[] =
 	{ "openlimbomenu",    'l',             -1,  'l',             -1,  -1, -1 },
 #ifdef FEATURE_MULTIVIEW
 	{ "mvactivate",       'm',             -1,  'm',             -1,  -1, -1 },
+	{ "spechelp",         K_BACKSPACE,     -1,  K_BACKSPACE,     -1,  -1, -1 },
 #endif
 	{ "mapzoomout",       ',',             -1,  '[',             -1,  -1, -1 },
 	{ "mapzoomin",        '.',             -1,  ']',             -1,  -1, -1 },

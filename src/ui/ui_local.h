@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -68,9 +68,6 @@ extern vmCvar_t ui_serverFilterType;
 extern vmCvar_t ui_currentNetMap;
 extern vmCvar_t ui_currentMap;
 extern vmCvar_t ui_mapIndex;
-extern vmCvar_t ui_browserMaster;
-extern vmCvar_t ui_browserGameType;
-extern vmCvar_t ui_browserSortKey;
 extern vmCvar_t ui_browserShowEmptyOrFull;
 extern vmCvar_t ui_browserShowPasswordProtected;
 extern vmCvar_t ui_browserShowFriendlyFire;
@@ -417,12 +414,6 @@ typedef struct serverFilter_s
 	const char *description;
 	const char *basedir;
 } serverFilter_t;
-
-typedef struct
-{
-	char adrstr[MAX_ADDRESSLENGTH];
-	int start;
-} pinglist_t;
 
 typedef struct serverStatus_s
 {

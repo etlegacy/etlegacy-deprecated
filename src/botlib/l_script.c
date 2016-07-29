@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -183,7 +183,7 @@ char *PunctuationFromNum(script_t *script, int num)
 			return script->punctuations[i].p;
 		}
 	}
-	return "unkown punctuation";
+	return "unknown punctuation";
 }
 
 void QDECL ScriptError(script_t *script, char *str, ...)
@@ -822,7 +822,7 @@ int PS_ReadPunctuation(script_t *script, token_t *token)
 			// if the script contains the punctuation
 			if (!strncmp(script->script_p, p, len))
 			{
-				strncpy(token->string, p, MAX_TOKEN);
+				Q_strncpyz(token->string, p, MAX_TOKEN);
 				script->script_p += len;
 				token->type       = TT_PUNCTUATION;
 				// sub type is the number of the punctuation

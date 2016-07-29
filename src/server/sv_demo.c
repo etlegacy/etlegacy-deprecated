@@ -4,7 +4,7 @@
  * Copyright (C) 2012 Stephen Larroque <lrq3000@gmail.com>
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -193,7 +193,7 @@ qboolean SV_CheckLastCmd(const char *cmd, qboolean onlyStore)
 	char        *cleanedprevcmd = (char *)malloc(MAX_STRING_CHARS * sizeof(char));
 	char        *cleanedcmd     = (char *)malloc(MAX_STRING_CHARS * sizeof(char));
 
-	Q_strncpyz(cleanedprevcmd, SV_CleanStrCmd(va("%s", (char *)prevcmd)), MAX_STRING_CHARS);
+	Q_strncpyz(cleanedprevcmd, SV_CleanStrCmd(va("%s", prevcmd)), MAX_STRING_CHARS);
 	Q_strncpyz(cleanedcmd, SV_CleanStrCmd(va("%s", (char *)cmd)), MAX_STRING_CHARS);
 
 	// if we only want to store, we skip any checking
@@ -959,8 +959,8 @@ static void SV_DemoStartPlayback(void)
 	char *metadata; // = malloc( 1024 * sizeof * metadata ); // used to store the current metadata index
 
 	// Init vars with empty values (to avoid compilation warnings)
-	r    = i = clients = fps = gametype = timelimit = fraglimit = capturelimit = 0;
-	time = 400;
+	clients = fps = gametype = timelimit = fraglimit = capturelimit = 0;
+	time    = 400;
 
 	// Initialize the demo message buffer
 	MSG_Init(&msg, buf, sizeof(buf));
@@ -1600,7 +1600,7 @@ static void SV_DemoReadClientUserinfo(msg_t *msg)
 	// DEMOCLIENT INITIAL TEAM MANAGEMENT
 	// Note: it is more interoperable to do team management here than in configstrings because here we have the team name as a string, so we can directly issue it in a "team" clientCommand
 	// Note2: this function is only necessary to set the initial team for democlients (the team they were at first when the demo started), for all the latter team changes, the clientCommands are recorded and will be replayed
-	if (userinfo && strlen(userinfo) && strlen(svdnewteam) &&
+	if (strlen(userinfo) && strlen(svdnewteam) &&
 	    (!strlen(svdoldteam) || (Q_stricmp(svdoldteam, svdnewteam) && strlen(svdnewteam)))   // if there was no team for this player before OR if the new team is different
 	    )
 	{

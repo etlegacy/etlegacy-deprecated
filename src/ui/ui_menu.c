@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -257,7 +257,7 @@ void Menu_UpdatePosition(menuDef_t *menu)
 	int        i;
 	float      x, y;
 	float      xoffset = Cui_WideXoffset();
-	Rectangle  *r;
+	rectDef_t  *r;
 	qboolean   fullscreenItem = qfalse;
 	qboolean   fullscreenMenu = qfalse;
 	qboolean   centered       = qfalse;

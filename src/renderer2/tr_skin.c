@@ -4,7 +4,7 @@
  * Copyright (C) 2010-2011 Robert Beckebans <trebor_7@users.sourceforge.net>
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -408,7 +408,7 @@ void R_InitSkins(void)
 	skin = tr.skins[0] = (skin_t *)ri.Hunk_Alloc(sizeof(skin_t), h_low);
 	Q_strncpyz(skin->name, "<default skin>", sizeof(skin->name));
 	skin->numSurfaces         = 1;
-	skin->surfaces[0]         = (skinSurface_t *)ri.Hunk_Alloc(sizeof(*skin->surfaces), h_low);
+	skin->surfaces[0]         = (skinSurface_t *)ri.Hunk_Alloc(sizeof(*skin->surfaces[0]), h_low);
 	skin->surfaces[0]->shader = tr.defaultShader;
 }
 

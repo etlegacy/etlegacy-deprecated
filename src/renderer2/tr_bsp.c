@@ -5,7 +5,7 @@
  * Copyright (C) 2009 Peter McNeill <n27@bigpond.net.au>
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -772,13 +772,13 @@ static void R_LoadLightmapsExternal(lump_t *l, const char *bspName)
 		// load HDR lightmaps
 		lightmapFiles = ri.FS_ListFiles(mapName, ".hdr", &numLightmaps);
 
-		qsort(lightmapFiles, numLightmaps, sizeof(char *), LightmapNameCompare);
-
 		if (!lightmapFiles || !numLightmaps)
 		{
 			Ren_Warning("WARNING: no lightmap files found for map %s\n", mapName);
 			return;
 		}
+
+		qsort(lightmapFiles, numLightmaps, sizeof(char *), LightmapNameCompare);
 
 		Ren_Developer("...loading %i HDR lightmaps\n", numLightmaps);
 
@@ -3534,7 +3534,7 @@ static void R_CreateSubModelVBOs()
 		Com_InitGrowList(&vboSurfaces, 100);
 
 		// sort surfaces by shader
-		qsort(surfacesSorted, numSurfaces, sizeof(surfacesSorted), BSPSurfaceCompare);
+		qsort(surfacesSorted, numSurfaces, sizeof(*surfacesSorted), BSPSurfaceCompare);
 
 		// create a VBO for each shader
 		shader      = oldShader = NULL;
@@ -4916,12 +4916,12 @@ void R_LoadLights(char *lightDefs)
 			// check for rotation
 			else if (!Q_stricmp(keyname, "rotation") || !Q_stricmp(keyname, "light_rotation"))
 			{
-				matrix_t rotation;
+				mat4_t rotation;
 
 				sscanf(value, "%f %f %f %f %f %f %f %f %f", &rotation[0], &rotation[1], &rotation[2],
 				       &rotation[4], &rotation[5], &rotation[6], &rotation[8], &rotation[9], &rotation[10]);
 
-				QuatFromMatrix(light->l.rotation, rotation);
+				quat_from_mat4(light->l.rotation, rotation);
 			}
 			// check if this light does not cast any shadows
 			else if (!Q_stricmp(keyname, "noshadows") && !Q_stricmp(value, "1"))
@@ -5991,11 +5991,6 @@ static void R_CreateVBOLightMeshes(trRefLight_t *light)
 		return;
 	}
 
-	if (r_deferredShading->integer && r_shadows->integer < SHADOWING_ESM16)
-	{
-		return;
-	}
-
 	if (!light->firstInteractionCache)
 	{
 		// this light has no interactions precached
@@ -6064,7 +6059,7 @@ static void R_CreateVBOLightMeshes(trRefLight_t *light)
 	}
 
 	// sort interaction caches by shader
-	qsort(iaCachesSorted, numCaches, sizeof(iaCachesSorted), InteractionCacheCompare);
+	qsort(iaCachesSorted, numCaches, sizeof(*iaCachesSorted), InteractionCacheCompare);
 
 	// create a VBO for each shader
 	shader = oldShader = NULL;
@@ -6431,7 +6426,7 @@ static void R_CreateVBOShadowMeshes(trRefLight_t *light)
 	}
 
 	// sort interaction caches by shader
-	qsort(iaCachesSorted, numCaches, sizeof(iaCachesSorted), InteractionCacheCompare);
+	qsort(iaCachesSorted, numCaches, sizeof(*iaCachesSorted), InteractionCacheCompare);
 
 	// create a VBO for each shader
 	shader       = oldShader = NULL;
@@ -6830,7 +6825,7 @@ static void R_CreateVBOShadowCubeMeshes(trRefLight_t *light)
 	}
 
 	// sort interaction caches by shader
-	qsort(iaCachesSorted, numCaches, sizeof(iaCachesSorted), InteractionCacheCompare);
+	qsort(iaCachesSorted, numCaches, sizeof(*iaCachesSorted), InteractionCacheCompare);
 
 	// create a VBO for each shader
 	for (cubeSide = 0; cubeSide < 6; cubeSide++)

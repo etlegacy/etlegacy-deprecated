@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -225,9 +225,23 @@ void SP_misc_gamemodel(gentity_t *ent)
 
 		// added start offset, fps, and direction
 		ent->s.legsAnim = start_frame + 1;
-		ent->s.weapon   = 1000.f / fps;
+		
+		// #1 avoid div/0 and negative values for fps
+		if (fps > 0)
+		{
+			ent->s.weapon   = 1000.f / fps;
+		}
+		
 		// continue loop animation as long as s.teamNum == 0
 		ent->s.teamNum = 0;
+	}
+
+	// #2 fix all invalid fps
+	if (ent->s.weapon <= 0)
+	{
+		// FIXME: make this print available to mappers
+		//G_Printf("SP_misc_gamemodel: fps rate of entity %s %s must have a value > 0 - <fps> is set to 20\n", ent->classname, ent->targetname);
+		ent->s.weapon = 50; // 1000.f / 20 fps
 	}
 
 	if (ent->model)
@@ -286,6 +300,7 @@ void SP_misc_gamemodel(gentity_t *ent)
 		ent->s.apos.trType = 1; // misc_gamemodels (since they have no movement) will use type = 0 for static models, type = 1 for auto-aligning models
 
 	}
+
 	trap_LinkEntity(ent);
 }
 
@@ -425,7 +440,7 @@ void SP_misc_portal_surface(gentity_t *ent)
 	else
 	{
 		ent->think     = locateCamera;
-		ent->nextthink = level.time + 100;
+		ent->nextthink = level.time + FRAMETIME;
 	}
 }
 
@@ -452,6 +467,9 @@ void SP_misc_portal_camera(gentity_t *ent)
 ======================================================================
 */
 
+/**
+ * @brief SHOOTERS weapons WP_MAPMORTAR, WP_GRENADE_LAUNCHER and WP_PANZERFAUST
+ */
 void Use_Shooter(gentity_t *ent, gentity_t *other, gentity_t *activator)
 {
 	vec3_t dir;
@@ -490,12 +508,13 @@ void Use_Shooter(gentity_t *ent, gentity_t *other, gentity_t *activator)
 	switch (ent->s.weapon)
 	{
 	case WP_GRENADE_LAUNCHER:
+	//case WP_GRENADE_PINEAPPLE:
 		VectorScale(dir, 700, dir);                   // had to add this as fire_grenade now expects a non-normalized direction vector
 		                                              // FIXME: why we do normalize the vector before this switch?
 		fire_grenade(ent, ent->s.origin, dir, WP_GRENADE_LAUNCHER);
 		break;
 	case WP_PANZERFAUST:
-	case WP_BAZOOKA:
+	//case WP_BAZOOKA:
 		fire_rocket(ent, ent->s.origin, dir, ent->s.weapon);
 		VectorScale(ent->s.pos.trDelta, 2, ent->s.pos.trDelta);
 		SnapVector(ent->s.pos.trDelta);             // save net bandwidth
@@ -507,6 +526,8 @@ void Use_Shooter(gentity_t *ent, gentity_t *other, gentity_t *activator)
 		fire_mortar(ent, ent->s.origin, dir);
 		break;
 
+	default:
+		break;
 	}
 
 	G_AddEvent(ent, EV_FIRE_WEAPON, 0);
@@ -817,7 +838,7 @@ void SP_dlight(gentity_t *ent)
 	ent->think = dlight_finish_spawning;
 	if (!dlightstarttime)                          // sync up all the dlights
 	{
-		dlightstarttime = level.time + 100;
+		dlightstarttime = level.time + FRAMETIME;
 	}
 	ent->nextthink = dlightstarttime;
 
@@ -862,11 +883,10 @@ void flakPuff(vec3_t origin)
 	tent->s.angles2[2] = 10;
 }
 
-/*
-==============
-Fire_Lead
-==============
-*/
+/**
+ * @brief Fire_Lead_Ext - machine/flag gun fire
+ * @note  Before calling this ensure    ent->s.eFlags  and activator->s.eFlags are set (EF_MG42_ACTIVE or EF_AAGUN_ACTIVE)
+ */
 void Fire_Lead_Ext(gentity_t *ent, gentity_t *activator, float spread, int damage, vec3_t muzzle, vec3_t forward, vec3_t right, vec3_t up, int mod)
 {
 	trace_t   tr;
@@ -879,9 +899,6 @@ void Fire_Lead_Ext(gentity_t *ent, gentity_t *activator, float spread, int damag
 
 	r = Q_crandom(&seed) * spread;
 	u = Q_crandom(&seed) * spread;
-
-	ent->s.eFlags       |= EF_MG42_ACTIVE;
-	activator->s.eFlags |= EF_MG42_ACTIVE;
 
 	VectorMA(muzzle, 8192, forward, end);
 	VectorMA(end, r, right, end);
@@ -940,7 +957,6 @@ void Fire_Lead_Ext(gentity_t *ent, gentity_t *activator, float spread, int damag
 		tent->s.otherEntityNum2 = activator->s.number;  // store the user id, so the client can position the tracer
 		tent->s.effect1Time     = seed;
 	}
-
 	if (traceEnt->takedamage)
 	{
 		G_Damage(traceEnt, ent, activator, forward, tr.endpos, damage, 0, mod);
@@ -1028,12 +1044,15 @@ void aagun_use(gentity_t *ent, gentity_t *other, gentity_t *activator)
 
 	if (owner && owner->client)
 	{
-		ent->r.ownerNum       = ent->s.number;
-		ent->s.otherEntityNum = ent->s.number;
-
 		owner->client->ps.persistant[PERS_HWEAPON_USE] = 0;
+		ent->r.ownerNum                                = ent->s.number;
+		ent->s.otherEntityNum                          = ent->s.number;
 		owner->client->ps.viewlocked                   = VIEWLOCK_NONE;
 		owner->active                                  = qfalse;
+
+		other->client->ps.weapHeat[WP_DUMMY_MG42] = ent->mg42weapHeat;
+		ent->backupWeaponTime                     = owner->client->ps.weaponTime;
+		owner->backupWeaponTime                   = owner->client->ps.weaponTime;
 	}
 
 	trap_LinkEntity(ent);
@@ -1183,29 +1202,32 @@ void aagun_fire(gentity_t *other)
 
 	// snap to integer coordinates for more efficient network bandwidth usage
 	SnapVector(muzzle);
-	Fire_Lead(self, other, AAGUN_SPREAD, AAGUN_DAMAGE, muzzle, forward, right, up);
+	Fire_Lead_Ext(self, other, AAGUN_SPREAD, AAGUN_DAMAGE, muzzle, forward, right, up, MOD_MACHINEGUN);
 }
 
 void aagun_touch(gentity_t *self, gentity_t *other, trace_t *trace)
 {
-	/*  if (!self->active) {
-	        return;
-	    }
+	if (!self->active)
+	{
+		return;
+	}
 
-	    if (other->active) {
-	        vec3_t  dang;
-	        int     i;
+	if (other->active)
+	{
+		vec3_t dang;
+		int    i;
 
-	        for (i = 0; i < 3; i++) {
-	            dang[i] = SHORT2ANGLE(other->client->pers.cmd.angles[i]);
-	        }
+		for (i = 0; i < 3; i++)
+		{
+			dang[i] = SHORT2ANGLE(other->client->pers.cmd.angles[i]);
+		}
+		// now tell the client to lock the view in the direction of the gun
+		other->client->ps.viewlocked        = VIEWLOCK_MG42;
+		other->client->ps.viewlocked_entNum = self->s.number;
 
-	        // now tell the client to lock the view in the direction of the gun
-	        other->client->ps.viewlocked = VIEWLOCK_MG42;
-	        other->client->ps.viewlocked_entNum = self->s.number;
-
-	        clamp_playerbehindgun (self, other, dang);
-	    }*/
+		// clamp player behind the gun
+		clamp_playerbehindgun(self, other, dang);
+	}
 }
 
 void aagun_spawn(gentity_t *gun)
@@ -1308,7 +1330,7 @@ void mg42_fire(gentity_t *other)
 	// snap to integer coordinates for more efficient network bandwidth usage
 	SnapVector(muzzle);
 
-	Fire_Lead(self, other, MG42_SPREAD_MP, MG42_DAMAGE_MP, muzzle, forward, right, up); // FIXME: browning
+	Fire_Lead_Ext(self, other, MG42_SPREAD_MP, MG42_DAMAGE_MP, muzzle, forward, right, up, MOD_MACHINEGUN); // FIXME: browning?
 }
 
 void mg42_track(gentity_t *self, gentity_t *other)
@@ -2041,7 +2063,7 @@ void misc_firetrails_think(gentity_t *ent)
 void SP_misc_firetrails(gentity_t *ent)
 {
 	ent->think     = misc_firetrails_think;
-	ent->nextthink = level.time + 100;
+	ent->nextthink = level.time + FRAMETIME;
 }
 
 /*QUAKED misc_constructiblemarker (1 0.85 0) ?
@@ -2171,6 +2193,9 @@ void landmine_setup(gentity_t *ent)
 	ent->think     = G_LandmineThink;
 
 	ent->damage = 0;
+
+	// map mines crosshair id
+	ent->s.otherEntityNum = MAX_CLIENTS + 1;
 
 	if (ent->s.teamNum == TEAM_AXIS)     // store team so we can generate red or blue smoke
 	{
@@ -2461,4 +2486,46 @@ int FindClientByName(char *name)
 	}
 
 	return -1;
+}
+
+qboolean G_FlingClient(gentity_t *vic, int flingType)
+{
+	vec3_t dir, flingvec;
+
+	if (!vic || !vic->client)
+	{
+		return qfalse;
+	}
+
+	if (!(vic->client->sess.sessionTeam == TEAM_AXIS || vic->client->sess.sessionTeam == TEAM_ALLIES))
+	{
+		return qfalse;
+	}
+
+	if (vic->health <= 0)
+	{
+		return qfalse;
+	}
+
+	// plenty of room for improvement on setting the dir vector
+	if (flingType == 0) //fling
+	{
+		VectorSet(dir, crandom() * 50, crandom() * 50, 10);
+	}
+	else if (flingType == 1)
+	{   //throw
+		AngleVectors(vic->client->ps.viewangles, dir, NULL, NULL);
+		dir[2] = .25f;
+	}
+	else // launch
+	{
+		VectorSet(dir, 0, 0, 10);
+	}
+
+	VectorNormalize(dir);
+	VectorScale(dir, 1500, flingvec);
+	VectorAdd(vic->s.pos.trDelta, flingvec, vic->s.pos.trDelta);
+	VectorAdd(vic->client->ps.velocity, flingvec, vic->client->ps.velocity);
+
+	return qtrue;
 }

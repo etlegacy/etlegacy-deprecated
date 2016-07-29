@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -62,7 +62,7 @@ LAN_LoadCachedServers
 */
 void LAN_LoadCachedServers(void)
 {
-	int          size;
+	int32_t      size;
 	fileHandle_t fileIn;
 	char         filename[MAX_QPATH];
 
@@ -81,8 +81,8 @@ void LAN_LoadCachedServers(void)
 	// moved to mod/profiles dir
 	if (FS_FOpenFileRead(filename, &fileIn, qtrue))
 	{
-		FS_Read(&cls.numfavoriteservers, sizeof(int), fileIn);
-		FS_Read(&size, sizeof(int), fileIn);
+		FS_Read(&cls.numfavoriteservers, sizeof(int32_t), fileIn);
+		FS_Read(&size, sizeof(int32_t), fileIn);
 		if (size == sizeof(cls.favoriteServers))
 		{
 			FS_Read(&cls.favoriteServers, sizeof(cls.favoriteServers), fileIn);
@@ -104,7 +104,7 @@ LAN_SaveServersToFile
 */
 void LAN_SaveServersToFile(void)
 {
-	int          size;
+	int32_t      size;
 	fileHandle_t fileOut;
 	char         filename[MAX_QPATH];
 
@@ -119,11 +119,11 @@ void LAN_SaveServersToFile(void)
 
 	// moved to mod/profiles dir
 	fileOut = FS_FOpenFileWrite(filename); // FIXME: catch error
-	FS_Write(&cls.numfavoriteservers, sizeof(int), fileOut);
+	FS_Write(&cls.numfavoriteservers, sizeof(int32_t), fileOut);
 
 	size = sizeof(cls.favoriteServers);
 
-	FS_Write(&size, sizeof(int), fileOut);
+	FS_Write(&size, sizeof(int32_t), fileOut);
 	FS_Write(&cls.favoriteServers, sizeof(cls.favoriteServers), fileOut);
 	FS_FCloseFile(fileOut);
 
@@ -327,12 +327,11 @@ static int LAN_GetServerCount(int source)
 	{
 	case AS_LOCAL:
 		return cls.numlocalservers;
-		break;
 	case AS_GLOBAL:
 		return cls.numglobalservers;
-		break;
 	case AS_FAVORITES:
 		return cls.numfavoriteservers;
+	default:
 		break;
 	}
 	return 0;
@@ -999,7 +998,7 @@ intptr_t CL_UISystemCalls(intptr_t *args)
 		Cbuf_ExecuteText(args[1], VMA(2));
 		return 0;
 	case UI_ADDCOMMAND:
-		Cmd_AddCommand(VMA(1), NULL);
+		Cmd_AddCommand(VMA(1));
 		return 0;
 	case UI_FS_FOPENFILE:
 		return FS_FOpenFileByMode(VMA(1), VMA(2), args[3]);

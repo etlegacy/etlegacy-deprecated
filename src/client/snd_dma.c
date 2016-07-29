@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -446,7 +446,6 @@ void S_Base_BeginRegistration(void)
 	{
 		SND_setup();
 
-		numSfx = 0;
 		Com_Memset(knownSfx, 0, sizeof(knownSfx));
 		Com_Memset(sfxHash, 0, sizeof(sfx_t *) * LOOP_HASH);
 
@@ -488,7 +487,7 @@ void S_SpatializeOrigin(vec3_t origin, int master_vol, int *left_vol, int *right
 		// calculate stereo seperation and distance attenuation
 		VectorSubtract(origin, listener_origin, source_vec);
 
-		dist  = VectorNormalize(source_vec);
+		dist  = vec3_norm(source_vec);
 		dist -= dist_fullvol;
 		if (dist < 0.0f || no_attenuation)
 		{
@@ -499,7 +498,7 @@ void S_SpatializeOrigin(vec3_t origin, int master_vol, int *left_vol, int *right
 			dist /= range;
 		}
 
-		VectorRotate(source_vec, listener_axis, vec);
+		vec3_rotate(source_vec, listener_axis, vec);
 
 		rscale = sqrt(1.0 - vec[1]);
 		lscale = sqrt(1.0 + vec[1]);
@@ -588,11 +587,15 @@ void S_Base_StartSoundEx(vec3_t origin, int entnum, int entchannel, sfxHandle_t 
 
 	for (i = 0; i < MAX_CHANNELS ; i++, ch++)
 	{
-		if (ch->entnum == entnum && ch->thesfx == sfx)
+		if (ch->entnum == entnum && ch->thesfx)
 		{
-			if (time - ch->allocTime < 50) // double played in one frame
+			if (ch->thesfx == sfx && time - ch->allocTime < 50) // double played in one frame
 			{
 				return;
+			}
+			else if (ch->entchannel == entchannel && (flags & SND_CUTOFF_ALL)) // cut the sounds that are flagged to be cut
+			{
+				S_ChannelFree(ch);
 			}
 		}
 	}
@@ -869,7 +872,7 @@ void S_Base_AddLoopingSound(const vec3_t origin, const vec3_t velocity, int rang
 	}
 	loopSounds[numLoopSounds].volume = (int)((float)volume * s_volCurrent);
 
-	if (s_doppler->integer && VectorLengthSquared(velocity) > 0)
+	if (s_doppler->integer && vec3_length_squared(velocity) > 0)
 	{
 		vec3_t out;
 		float  lena, lenb;
@@ -884,11 +887,11 @@ void S_Base_AddLoopingSound(const vec3_t origin, const vec3_t velocity, int rang
 			loopSounds[numLoopSounds].doppler = qfalse;
 		}
 
-		lena = DistanceSquared(entityPositions[listener_number], entityPositions[numLoopSounds]);
+		lena = vec3_distance_squared(entityPositions[listener_number], entityPositions[numLoopSounds]);
 
 		VectorAdd(entityPositions[numLoopSounds], loopSounds[numLoopSounds].velocity, out);
 
-		lenb = DistanceSquared(entityPositions[listener_number], out);
+		lenb = vec3_distance_squared(entityPositions[listener_number], out);
 
 		if ((loopSounds[numLoopSounds].framenum + 1) != cls.framecount)
 		{
@@ -1394,11 +1397,11 @@ void S_GetSoundtime(void)
 	if (CL_VideoRecording())
 	{
 		float fps           = MIN(cl_avidemo->integer, 1000.0f);
-		float frameDuration = MAX(dma.speed / fps, 1.0f) + clc.aviSoundFrameRemainder;
+		float frameDuration = MAX(dma.speed / fps, 1.0f);// +clc.aviSoundFrameRemainder;
 
 		int msec = (int)frameDuration;
 		s_soundtime               += msec;
-		clc.aviSoundFrameRemainder = frameDuration - msec;
+		//clc.aviSoundFrameRemainder = frameDuration - msec;
 
 		return;
 	}
@@ -1853,7 +1856,7 @@ void S_UpdateStreamingSounds(void)
 	int              rs;
 	int              i, j;
 	float            lvol, rvol;
-	float            streamingVol = 1.0f;
+	float            streamingVol;
 	streamingSound_t *ss;
 
 	for (i = 0; i < MAX_STREAMING_SOUNDS; i++)

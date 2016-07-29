@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -245,8 +245,8 @@ typedef struct
 	int timeDemoStart;              // cls.realtime before first frame
 	int timeDemoBaseTime;           // each frame will be at this time + frameNum * 50
 
-	float aviVideoFrameRemainder;
-	float aviSoundFrameRemainder;
+	//float aviVideoFrameRemainder;
+	//float aviSoundFrameRemainder;
 
 	// big stuff at end of structure so most offsets are 15 bits or less
 	netchan_t netchan;
@@ -274,25 +274,25 @@ typedef struct
 	netadr_t adr;
 	char version[MAX_NAME_LENGTH];
 	char hostName[MAX_NAME_LENGTH];
-	int load;
+	int32_t load;
 	char mapName[MAX_NAME_LENGTH];
 	char game[MAX_NAME_LENGTH];
-	int netType;
-	int gameType;
-	int clients;
-	int humans;
-	int maxClients;
-	int minPing;
-	int maxPing;
-	int ping;
-	qboolean visible;
-	int friendlyFire;
-	int maxlives;
-	int needpass;
-	int punkbuster;
-	int antilag;
-	int weaprestrict;
-	int balancedteams;
+	int32_t netType;
+	int32_t gameType;
+	int32_t clients;
+	int32_t humans;
+	int32_t maxClients;
+	int32_t minPing;
+	int32_t maxPing;
+	int32_t ping;
+	int32_t visible;
+	int32_t friendlyFire;
+	int32_t maxlives;
+	int32_t needpass;
+	int32_t punkbuster;
+	int32_t antilag;
+	int32_t weaprestrict;
+	int32_t balancedteams;
 	char gameName[MAX_NAME_LENGTH];
 } serverInfo_t;
 
@@ -327,7 +327,7 @@ typedef struct
 	int numGlobalServerAddresses;
 	netadr_t globalServerAddresses[MAX_GLOBAL_SERVERS];
 
-	int numfavoriteservers;
+	int32_t numfavoriteservers;
 	serverInfo_t favoriteServers[MAX_OTHER_SERVERS];
 
 	int pingUpdateSource;       // source currently pinging or updating
@@ -344,6 +344,8 @@ typedef struct
 	//qhandle_t consoleShader2;
 
 	download_t download;
+
+	int cinematicHandle;
 } clientStatic_t;
 
 extern clientStatic_t cls;
@@ -405,12 +407,8 @@ extern cvar_t *cl_activatelean;
 
 extern cvar_t *cl_allowDownload;
 extern cvar_t *cl_conXOffset;
-extern cvar_t *cl_inGameVideo;
 
 extern cvar_t *cl_missionStats;
-
-// localization
-extern cvar_t *cl_language;
 
 extern cvar_t *cl_profile;
 extern cvar_t *cl_defaultProfile;
@@ -590,7 +588,7 @@ typedef struct
 
 	float xadjust;           // for wide aspect screens
 
-	float displayFrac;       // aproaches finalFrac at scr_conspeed
+	float displayFrac;       // aproaches finalFrac at con_openspeed
 	float finalFrac;         // 0.0 to 1.0 lines of console to display
 	float desiredFrac;       // for variable console heights
 
@@ -625,8 +623,10 @@ void Con_RunConsole(void);
 
 void Con_PageUp(void);
 void Con_PageDown(void);
-void Con_Top(void);
-void Con_Bottom(void);
+void Con_ScrollUp(int lines);
+void Con_ScrollDown(int lines);
+void Con_ScrollTop(void);
+void Con_ScrollBottom(void);
 void Con_Close(void);
 
 // cl_scrn.c
@@ -650,7 +650,48 @@ void SCR_DrawStringExt(int x, int y, float w, float h, const char *string, float
 
 // cl_cin.c
 
-void CL_PlayCinematic_f(void);
+#define MAX_CINEMATICS 16
+
+typedef int cinHandle_t;
+
+typedef struct
+{
+	const byte *image;
+	qboolean dirty;
+
+	int width;
+	int height;
+} cinData_t;
+
+typedef struct
+{
+	qboolean playing;
+
+	int videoType;
+
+	char name[MAX_OSPATH];
+	int flags;
+
+	fileHandle_t file;
+	int size;
+	int offset;
+
+	int startTime;
+
+	int frameRate;
+	int frameWidth;
+	int frameHeight;
+	int frameCount;
+	int frameBufferSize;
+	byte *frameBuffer[2];
+
+	rectDef_t rectangle;
+
+	cinData_t currentData;
+
+	void *data;
+} cinematic_t;
+
 void SCR_DrawCinematic(void);
 void SCR_RunCinematic(void);
 void SCR_StopCinematic(void);
@@ -659,9 +700,27 @@ e_status CIN_StopCinematic(int handle);
 e_status CIN_RunCinematic(int handle);
 void CIN_DrawCinematic(int handle);
 void CIN_SetExtents(int handle, int x, int y, int w, int h);
-void CIN_SetLooping(int handle, qboolean loop);
 void CIN_UploadCinematic(int handle);
 void CIN_CloseAllVideos(void);
+
+void CIN_Init(void);
+void CIN_Shutdown(void);
+
+cinematic_t *CIN_GetCinematicByHandle(cinHandle_t handle);
+
+// cl_roq.c
+void ROQ_UpdateCinematic(cinematic_t *cin, int time);
+qboolean ROQ_StartRead(cinematic_t *cin);
+void ROQ_StopVideo(cinematic_t *cin);
+void ROQ_Reset(cinematic_t *cin);
+void ROQ_Init(void);
+
+// cl_ogv.c
+#ifdef FEATURE_THEORA
+void OGV_UpdateCinematic(cinematic_t *cin, int time);
+qboolean OGV_StartRead(cinematic_t *cin);
+void OGV_StopVideo(cinematic_t *cin);
+#endif
 
 // cl_cgame.c
 

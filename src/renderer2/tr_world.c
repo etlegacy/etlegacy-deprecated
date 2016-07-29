@@ -4,7 +4,7 @@
  * Copyright (C) 2010-2011 Robert Beckebans <trebor_7@users.sourceforge.net>
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -748,7 +748,12 @@ static bspNode_t *R_PointInLeaf(const vec3_t p)
 
 static const byte *R_ClusterPVS(int cluster)
 {
-	if (!tr.world || !tr.world->vis || cluster < 0 || cluster >= tr.world->numClusters)
+	if (!tr.world)
+	{
+		Ren_Drop("R_ClusterPVS: bad model");
+	}
+
+	if (!tr.world->vis || cluster < 0 || cluster >= tr.world->numClusters)
 	{
 		return tr.world->novis;
 	}
@@ -1414,7 +1419,7 @@ static void DrawNode_r(bspNode_t *node, int planeBits)
             }
         }
 
-       GLimp_LogComment("--- DrawNode_r( node = %li, isLeaf = %i ) ---\n", (long)(node - tr.world->nodes), node->contents == -1);
+       Ren_LogComment("--- DrawNode_r( node = %li, isLeaf = %i ) ---\n", (long)(node - tr.world->nodes), node->contents == -1);
 
         if (node->contents != -1) // && !(node->contents & CONTENTS_TRANSLUCENT))
         {
@@ -1750,8 +1755,8 @@ static void PushNode(link_t * traversalStack, bspNode_t * node)
 
             traversalStack->numElements += 2;
 #endif
-            GLimp_LogComment("traversal-stack <-- node %i\n", node->children[0] - tr.world->nodes);
-            GLimp_LogComment("traversal-stack <-- node %i\n", node->children[1] - tr.world->nodes);
+            Ren_LogComment("traversal-stack <-- node %i\n", node->children[0] - tr.world->nodes);
+            Ren_LogComment("traversal-stack <-- node %i\n", node->children[1] - tr.world->nodes);
         }
     }
 }
@@ -1887,17 +1892,12 @@ static void R_CoherentHierachicalCulling()
 
 	Ren_LogComment("tr.viewCount = %i, tr.viewCountNoReset = %i\n", tr.viewCount, tr.viewCountNoReset);
 
-	if (r_speeds->integer)
+	R2_TIMING_SIMPLE();
 	{
-		glFinish();
 		startTime = ri.Milliseconds();
 	}
 
-	if (DS_STANDARD_ENABLED())
-	{
-		R_BindFBO(tr.geometricRenderFBO);
-	}
-	else if (HDR_ENABLED())
+	if (HDR_ENABLED())
 	{
 		R_BindFBO(tr.deferredRenderFBO);
 	}
@@ -1906,7 +1906,7 @@ static void R_CoherentHierachicalCulling()
 		R_BindNullFBO();
 	}
 
-	SetMacrosAndSelectProgram(gl_genericShader);
+	SetMacrosAndSelectProgram(trProg.gl_genericShader);
 
 	GL_Cull(CT_TWO_SIDED);
 
@@ -1919,7 +1919,7 @@ static void R_CoherentHierachicalCulling()
 	           tr.viewParms.viewportWidth, tr.viewParms.viewportHeight);
 
 	// set uniforms
-	GLSL_SetUniform_ColorModulate(gl_genericShader, CGEN_CONST, AGEN_CONST);
+	GLSL_SetUniform_ColorModulate(trProg.gl_genericShader, CGEN_CONST, AGEN_CONST);
 	SetUniformVec4(UNIFORM_COLOR, colorWhite);
 
 	// set up the transformation matrix
@@ -2260,9 +2260,8 @@ static void R_CoherentHierachicalCulling()
 
 	//Ren_Print("--- R_CHC++ end ---\n");
 
-	if (r_speeds->integer)
+	R2_TIMING_SIMPLE();
 	{
-		glFinish();
 		tr.pc.c_CHCTime = ri.Milliseconds() - startTime;
 	}
 }
@@ -2301,7 +2300,7 @@ void R_AddWorldSurfaces(void)
 		R_MarkLeaves();
 
 		// update the bsp nodes with the dynamic occlusion query results
-		if (glConfig2.occlusionQueryBits && glConfig.driverType != GLDRV_MESA && r_dynamicBspOcclusionCulling->integer)
+		if (glConfig2.occlusionQueryBits && r_dynamicBspOcclusionCulling->integer)
 		{
 			R_CoherentHierachicalCulling();
 		}

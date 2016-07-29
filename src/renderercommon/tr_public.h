@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -46,8 +46,6 @@ typedef struct
 	// if the system is just reconfiguring, pass destroyWindow = qfalse,
 	// which will keep the screen from flashing to the desktop.
 	void (*Shutdown)(qboolean destroyWindow);
-
-	void *(*MainWindow)(void);
 
 	// All data that will be used in a level should be
 	// registered before rendering any frames to prevent disk hits,
@@ -141,6 +139,9 @@ typedef struct
 	// avi output stuff
 	void (*TakeVideoFrame)(int h, int w, byte *captureBuffer, byte *encodeBuffer, qboolean motionJpeg);
 
+	void (*InitOpenGL)(void);
+	int (*InitOpenGLSubSystem)(void);
+
 #if defined(USE_REFLIGHT)
 	void (*AddRefLightToScene)(const refLight_t *light);
 #endif
@@ -198,8 +199,8 @@ typedef struct
 	void (*Cvar_AssertCvarRange)(cvar_t *cv, float minVal, float maxVal, qboolean shouldBeIntegral);
 	int (*Cvar_VariableIntegerValue)(const char *var_name);
 
-	void (*Cmd_AddCommand)(const char *name, void (*cmd)(void));
-	void (*Cmd_RemoveCommand)(const char *name);
+	void (*Cmd_AddSystemCommand)(const char *name, void (*cmd)(void), const char *description, void (*complete)(char *args, int argNum));
+	void (*Cmd_RemoveSystemCommand)(const char *name);
 
 	int (*Cmd_Argc)(void);
 	char * (*Cmd_Argv)(int i);
@@ -240,6 +241,11 @@ typedef struct
 	void (*IN_Init)(void);
 	void (*IN_Shutdown)(void);
 	void (*IN_Restart)(void);
+
+	void (*GLimp_Init)(glconfig_t *glConfig, windowContext_t *context);
+	void (*GLimp_Shutdown)(void);
+	void (*GLimp_SwapFrame)(void);
+	void (*GLimp_SetGamma)(unsigned char red[256], unsigned char green[256], unsigned char blue[256]);
 } refimport_t;
 
 // this is the only function actually exported at the linker level

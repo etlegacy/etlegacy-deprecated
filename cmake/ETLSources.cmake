@@ -7,16 +7,6 @@ FILE(GLOB COMMON_SRC
 	"src/qcommon/*.h"
 )
 
-FILE(GLOB MINIZIP_SRC
-	"src/minizip/*.c"
-	"src/minizip/*.h"
-)
-
-FILE(GLOB ZLIB_SRC
-	"src/zlib/*.c"
-	"src/zlib/*.h"
-)
-
 FILE(GLOB COMMON_SRC_REMOVE
 	"src/qcommon/dl_main_curl.c"
 	"src/qcommon/dl_main_stubs.c"
@@ -74,14 +64,6 @@ FILE(GLOB CLIENT_SRC
 	"src/qcommon/update.c"
 	"src/qcommon/download.c"
 )
-
-FILE(GLOB CLIENT_SRC_REMOVE
-	"src/sdl/sdl_glimp.c"
-	"src/sdl/sdl_gamma.c"
-	"src/sdl/sdl_icon.h"
-)
-
-LIST(REMOVE_ITEM CLIENT_SRC ${CLIENT_SRC_REMOVE})
 
 # These files are shared with the CGAME from the UI library
 FILE(GLOB UI_SHARED
@@ -147,9 +129,6 @@ FILE(GLOB RENDERER_COMMON
 	"src/renderercommon/*.c"
 	"src/renderercommon/*.h"
 	#Library build requires the following
-	"src/sdl/sdl_glimp.c"
-	"src/sdl/sdl_gamma.c"
-	"src/sdl/sdl_icon.h"
 	"src/sys/sys_local.h"
 	"src/qcommon/q_shared.h"
 	"src/qcommon/puff.h"

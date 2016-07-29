@@ -4,7 +4,7 @@
  * Copyright (C) 2010-2011 Robert Beckebans <trebor_7@users.sourceforge.net>
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -100,9 +100,7 @@ typedef enum
 
 } renderSpeeds_t;
 
-#define DS_STANDARD_ENABLED() ((r_deferredShading->integer == DS_STANDARD && glConfig2.maxColorAttachments >= 4 && glConfig2.drawBuffersAvailable && glConfig2.maxDrawBuffers >= 4 && /*glConfig2.framebufferPackedDepthStencilAvailable &&*/ glConfig.driverType != GLDRV_MESA))
-
-#define HDR_ENABLED() ((r_hdrRendering->integer && glConfig2.textureFloatAvailable && glConfig2.framebufferObjectAvailable && glConfig2.framebufferBlitAvailable && glConfig.driverType != GLDRV_MESA))
+#define HDR_ENABLED() ((r_hdrRendering->integer && glConfig2.textureFloatAvailable && glConfig2.framebufferObjectAvailable && glConfig2.framebufferBlitAvailable))
 
 #define REF_CUBEMAP_SIZE    32
 #define REF_CUBEMAP_STORE_SIZE  1024
@@ -327,16 +325,16 @@ typedef struct trRefLight_s
 	vec3_t transformed;         // origin in local coordinate system
 	vec3_t direction;           // for directional lights (sun)
 
-	matrix_t transformMatrix;           // light to world
-	matrix_t viewMatrix;                // object to light
-	matrix_t projectionMatrix;          // light frustum
+	mat4_t transformMatrix;           // light to world
+	mat4_t viewMatrix;                // object to light
+	mat4_t projectionMatrix;          // light frustum
 
 	float falloffLength;
 
-	matrix_t shadowMatrices[MAX_SHADOWMAPS];
-	matrix_t shadowMatricesBiased[MAX_SHADOWMAPS];
-	matrix_t attenuationMatrix;         // attenuation * (light view * entity transform)
-	matrix_t attenuationMatrix2;        // attenuation * tcMod matrices
+	mat4_t shadowMatrices[MAX_SHADOWMAPS];
+	mat4_t shadowMatricesBiased[MAX_SHADOWMAPS];
+	mat4_t attenuationMatrix;         // attenuation * (light view * entity transform)
+	mat4_t attenuationMatrix2;        // attenuation * tcMod matrices
 
 	cullResult_t cull;
 	vec3_t localBounds[2];
@@ -420,10 +418,10 @@ typedef struct
 	vec3_t origin;              // in world coordinates
 	vec3_t axis[3];             // orientation in world
 	vec3_t viewOrigin;          // viewParms->or.origin in local coordinates
-	matrix_t transformMatrix;   // transforms object to world: either used by camera, model or light
-	matrix_t viewMatrix;        // affine inverse of transform matrix to transform other objects into this space
-	matrix_t viewMatrix2;       // without quake2opengl conversion
-	matrix_t modelViewMatrix;   // only used by models, camera viewMatrix * transformMatrix
+	mat4_t transformMatrix;   // transforms object to world: either used by camera, model or light
+	mat4_t viewMatrix;        // affine inverse of transform matrix to transform other objects into this space
+	mat4_t viewMatrix2;       // without quake2opengl conversion
+	mat4_t modelViewMatrix;   // only used by models, camera viewMatrix * transformMatrix
 } orientationr_t;
 
 // useful helper struct
@@ -880,7 +878,7 @@ typedef struct
 	waveForm_t wave;
 
 	// used for TMOD_TRANSFORM
-	matrix_t matrix;            // s' = s * m[0][0] + t * m[1][0] + trans[0]
+	mat4_t matrix;            // s' = s * m[0][0] + t * m[1][0] + trans[0]
 	// t' = s * m[0][1] + t * m[0][1] + trans[1]
 
 	// used for TMOD_SCALE
@@ -1475,6 +1473,8 @@ typedef struct programInfo_s
 	unsigned int attributes;
 	char *vertexLibraries;
 	char *fragmentLibraries;
+	char *vertexShaderText;
+	char *fragmentShaderText;
 	uniformValue_t uniformValues[64];
 	int numUniformValues;
 	qboolean compiled;
@@ -1633,8 +1633,8 @@ typedef struct
 	vec4_t viewportVerts[4];            // for immediate 2D quad rendering
 
 	float fovX, fovY;
-	matrix_t projectionMatrix;
-	matrix_t unprojectionMatrix;        // transform pixel window space -> world space
+	mat4_t projectionMatrix;
+	mat4_t unprojectionMatrix;        // transform pixel window space -> world space
 
 	float parallelSplitDistances[MAX_SHADOWMAPS + 1];           // distances in camera space
 
@@ -2432,7 +2432,7 @@ typedef struct
 	int8_t parentIndex;             // parent index (-1 if root)
 	vec3_t origin;
 	quat_t rotation;
-	matrix_t inverseTransform;          // full inverse for tangent space transformation
+	mat4_t inverseTransform;          // full inverse for tangent space transformation
 } md5Bone_t;
 
 typedef struct md5Model_s
@@ -2522,12 +2522,12 @@ typedef enum
 
 enum
 {
-	COMPONENT_BIT_TX = 1 << 0,
-	COMPONENT_BIT_TY = 1 << 1,
-	COMPONENT_BIT_TZ = 1 << 2,
-	COMPONENT_BIT_QX = 1 << 3,
-	COMPONENT_BIT_QY = 1 << 4,
-	COMPONENT_BIT_QZ = 1 << 5
+	COMPONENT_BIT_TX     = 1 << 0,
+	    COMPONENT_BIT_TY = 1 << 1,
+	    COMPONENT_BIT_TZ = 1 << 2,
+	    COMPONENT_BIT_QX = 1 << 3,
+	    COMPONENT_BIT_QY = 1 << 4,
+	    COMPONENT_BIT_QZ = 1 << 5
 };
 
 typedef struct
@@ -2633,7 +2633,7 @@ void R_Modellist_f(void);
 //====================================================
 extern refimport_t ri;
 
-#define MAX_MOD_KNOWN           1024
+#define MAX_MOD_KNOWN           2048
 #define MAX_ANIMATIONFILES      4096
 
 #define MAX_LIGHTMAPS           256
@@ -2718,14 +2718,14 @@ typedef struct
 
 	int currenttextures[32];
 	int currenttmu;
-	//matrix_t        textureMatrix[32];
+	//mat4_t        textureMatrix[32];
 
 	int stackIndex;
-	//matrix_t        modelMatrix[MAX_GLSTACK];
-	//matrix_t        viewMatrix[MAX_GLSTACK];
-	matrix_t modelViewMatrix[MAX_GLSTACK];
-	matrix_t projectionMatrix[MAX_GLSTACK];
-	matrix_t modelViewProjectionMatrix[MAX_GLSTACK];
+	//mat4_t        modelMatrix[MAX_GLSTACK];
+	//mat4_t        viewMatrix[MAX_GLSTACK];
+	mat4_t modelViewMatrix[MAX_GLSTACK];
+	mat4_t projectionMatrix[MAX_GLSTACK];
+	mat4_t modelViewProjectionMatrix[MAX_GLSTACK];
 
 	qboolean finishCalled;
 	int faceCulling;                // FIXME redundant cullFace
@@ -2777,9 +2777,6 @@ typedef struct
 	int c_forwardAmbientTime;
 	int c_forwardLightingTime;
 	int c_forwardTranslucentTime;
-
-	int c_deferredGBufferTime;
-	int c_deferredLightingTime;
 
 	int c_multiDrawElements;
 	int c_multiDrawPrimitives;
@@ -3023,53 +3020,54 @@ typedef struct
 	int numUsedOcclusionQueryObjects;
 } trGlobals_t;
 
-extern programInfo_t *gl_genericShader;
-extern programInfo_t *gl_lightMappingShader;
-extern programInfo_t *gl_vertexLightingShader_DBS_entity;
-extern programInfo_t *gl_vertexLightingShader_DBS_world;
-extern programInfo_t *gl_forwardLightingShader_omniXYZ;
-extern programInfo_t *gl_forwardLightingShader_projXYZ;
-extern programInfo_t *gl_forwardLightingShader_directionalSun;
-extern programInfo_t *gl_deferredLightingShader_omniXYZ;
-extern programInfo_t *gl_deferredLightingShader_projXYZ;
-extern programInfo_t *gl_deferredLightingShader_directionalSun;
-extern programInfo_t *gl_geometricFillShader;
-extern programInfo_t *gl_shadowFillShader;
-extern programInfo_t *gl_reflectionShader;
-extern programInfo_t *gl_skyboxShader;
-extern programInfo_t *gl_fogQuake3Shader;
-extern programInfo_t *gl_fogGlobalShader;
-extern programInfo_t *gl_heatHazeShader;
-extern programInfo_t *gl_screenShader;
-extern programInfo_t *gl_portalShader;
-extern programInfo_t *gl_toneMappingShader;
-extern programInfo_t *gl_contrastShader;
-extern programInfo_t *gl_cameraEffectsShader;
-extern programInfo_t *gl_blurXShader;
-extern programInfo_t *gl_blurYShader;
-extern programInfo_t *gl_debugShadowMapShader;
+typedef struct trPrograms_s
+{
+	programInfo_t *gl_genericShader;
+	programInfo_t *gl_lightMappingShader;
+	programInfo_t *gl_vertexLightingShader_DBS_entity;
+	programInfo_t *gl_vertexLightingShader_DBS_world;
+	programInfo_t *gl_forwardLightingShader_omniXYZ;
+	programInfo_t *gl_forwardLightingShader_projXYZ;
+	programInfo_t *gl_forwardLightingShader_directionalSun;
+	programInfo_t *gl_shadowFillShader;
+	programInfo_t *gl_reflectionShader;
+	programInfo_t *gl_skyboxShader;
+	programInfo_t *gl_fogQuake3Shader;
+	programInfo_t *gl_fogGlobalShader;
+	programInfo_t *gl_heatHazeShader;
+	programInfo_t *gl_screenShader;
+	programInfo_t *gl_portalShader;
+	programInfo_t *gl_toneMappingShader;
+	programInfo_t *gl_contrastShader;
+	programInfo_t *gl_cameraEffectsShader;
+	programInfo_t *gl_blurXShader;
+	programInfo_t *gl_blurYShader;
+	programInfo_t *gl_debugShadowMapShader;
 
-extern programInfo_t *gl_liquidShader;
-extern programInfo_t *gl_rotoscopeShader;
-extern programInfo_t *gl_bloomShader;
-extern programInfo_t *gl_refractionShader;
-extern programInfo_t *gl_depthToColorShader;
-extern programInfo_t *gl_volumetricFogShader;
-extern programInfo_t *gl_volumetricLightingShader;
-extern programInfo_t *gl_dispersionShader;
+	programInfo_t *gl_liquidShader;
+	programInfo_t *gl_rotoscopeShader;
+	programInfo_t *gl_bloomShader;
+	programInfo_t *gl_refractionShader;
+	programInfo_t *gl_depthToColorShader;
+	programInfo_t *gl_volumetricFogShader;
+	programInfo_t *gl_volumetricLightingShader;
+	programInfo_t *gl_dispersionShader;
 
-extern programInfo_t *gl_depthOfField;
-extern programInfo_t *gl_ssao;
+	programInfo_t *gl_depthOfField;
+	programInfo_t *gl_ssao;
 
-extern programInfo_t *gl_colorCorrection;
+	programInfo_t *gl_colorCorrection;
 
-//This is set with the GLSL_SelectPermutation
-extern shaderProgram_t *selectedProgram;
+	//This is set with the GLSL_SelectPermutation
+	shaderProgram_t *selectedProgram;
+} trPrograms_t;
 
-extern const matrix_t quakeToOpenGLMatrix;
-extern const matrix_t openGLToQuakeMatrix;
-extern const matrix_t quakeToD3DMatrix;
-extern const matrix_t flipZMatrix;
+extern trPrograms_t trProg;
+
+extern const mat4_t quakeToOpenGLMatrix;
+extern const mat4_t openGLToQuakeMatrix;
+extern const mat4_t quakeToD3DMatrix;
+extern const mat4_t flipZMatrix;
 extern const GLenum   geometricRenderTargets[];
 extern int            shadowMapResolutions[5];
 extern int            sunShadowMapResolutions[5];
@@ -3086,16 +3084,10 @@ extern glstate_t glState;       // outside of TR since it shouldn't be cleared d
 // the glconfig_t struct.
 extern qboolean textureFilterAnisotropic;
 extern int      maxAnisotropy;
-extern float    displayAspect;      //FIXME
 
 // cvars
 
 extern cvar_t *r_railCoreWidth;
-
-extern cvar_t *r_stencilbits;   // number of desired stencil bits
-extern cvar_t *r_depthbits;     // number of desired depth bits
-extern cvar_t *r_colorbits;     // number of desired color bits, only relevant for fullscreen
-extern cvar_t *r_stereo;        // desired pixelformat stereo flag
 
 extern cvar_t *r_measureOverdraw;   // enables stencil buffer overdraw measurement
 
@@ -3135,8 +3127,6 @@ extern cvar_t *r_noLightScissors;
 extern cvar_t *r_noLightVisCull;
 extern cvar_t *r_noInteractionSort;
 
-extern cvar_t *r_mode;          // video mode
-extern cvar_t *r_fullscreen;
 extern cvar_t *r_gamma;
 
 extern cvar_t *r_ext_compressed_textures;   // these control use of specific extensions
@@ -3163,7 +3153,6 @@ extern cvar_t *r_colorMipLevels;    // development aid to see texture mip usage
 extern cvar_t *r_picmip;        // controls picmip values
 extern cvar_t *r_finish;
 extern cvar_t *r_drawBuffer;
-extern cvar_t *r_swapInterval;
 extern cvar_t *r_textureMode;
 extern cvar_t *r_offsetFactor;
 extern cvar_t *r_offsetUnits;
@@ -3267,13 +3256,6 @@ extern cvar_t *r_showBspNodes;
 extern cvar_t *r_showParallelShadowSplits;
 extern cvar_t *r_showDecalProjectors;
 
-extern cvar_t *r_showDeferredDiffuse;
-extern cvar_t *r_showDeferredNormal;
-extern cvar_t *r_showDeferredSpecular;
-extern cvar_t *r_showDeferredPosition;
-extern cvar_t *r_showDeferredRender;
-extern cvar_t *r_showDeferredLight;
-
 extern cvar_t *r_vboFaces;
 extern cvar_t *r_vboCurves;
 extern cvar_t *r_vboTriangles;
@@ -3291,7 +3273,6 @@ extern cvar_t *r_mergeClusterCurves;
 extern cvar_t *r_mergeClusterTriangles;
 #endif
 
-extern cvar_t *r_deferredShading;
 extern cvar_t *r_parallaxMapping;
 extern cvar_t *r_parallaxDepthScale;
 
@@ -3375,7 +3356,7 @@ void R_RotateEntityForViewParms(const trRefEntity_t *ent, const viewParms_t *vie
 void R_RotateEntityForLight(const trRefEntity_t *ent, const trRefLight_t *light, orientationr_t *orien);
 void R_RotateLightForViewParms(const trRefLight_t *ent, const viewParms_t *viewParms, orientationr_t *orien);
 
-void R_SetupFrustum2(frustum_t frustum, const matrix_t modelViewProjectionMatrix);
+void R_SetupFrustum2(frustum_t frustum, const mat4_t modelViewProjectionMatrix);
 
 qboolean R_CompareVert(srfVert_t *v1, srfVert_t *v2, qboolean checkst);
 void R_CalcNormalForTriangle(vec3_t normal, const vec3_t v0, const vec3_t v1, const vec3_t v2);
@@ -3407,7 +3388,7 @@ void R_CalcSurfaceTrianglePlanes(int numTriangles, srfTriangle_t *triangles, srf
 float R_CalcFov(float fovX, float width, float height);
 
 // visualisation tools to help debugging the renderer frontend
-void R_DebugAxis(const vec3_t origin, const matrix_t transformMatrix);
+void R_DebugAxis(const vec3_t origin, const mat4_t transformMatrix);
 void R_DebugBoundingBox(const vec3_t origin, const vec3_t mins, const vec3_t maxs, vec4_t color);
 void R_DebugPolygon(int color, int numPoints, float *points);
 void R_DebugText(const vec3_t org, float r, float g, float b, const char *text, qboolean neverOcclude);
@@ -3444,8 +3425,8 @@ void GL_DepthFunc(GLenum func);
 void GL_DepthMask(GLboolean flag);
 void GL_DrawBuffer(GLenum mode);
 void GL_FrontFace(GLenum mode);
-void GL_LoadModelViewMatrix(const matrix_t m);
-void GL_LoadProjectionMatrix(const matrix_t m);
+void GL_LoadModelViewMatrix(const mat4_t m);
+void GL_LoadProjectionMatrix(const mat4_t m);
 void GL_PushMatrix();
 void GL_PopMatrix();
 void GL_PolygonMode(GLenum face, GLenum mode);
@@ -3499,8 +3480,6 @@ float R_ProcessLightmap(byte *pic, int in_padding, int width, int height, byte *
 model_t *R_AllocModel(void);
 
 void R_Init(void);
-
-qboolean R_GetModeInfo(int *width, int *height, float *windowAspect, int mode);
 
 void R_SetColorMappings(void);
 void R_GammaCorrect(byte *buffer, int bufSize);
@@ -3580,7 +3559,7 @@ typedef struct stageVars
 {
 	vec4_t color;
 	qboolean texMatricesChanged[MAX_TEXTURE_BUNDLES];
-	matrix_t texMatrices[MAX_TEXTURE_BUNDLES];
+	mat4_t texMatrices[MAX_TEXTURE_BUNDLES];
 } stageVars_t;
 
 #define MAX_MULTIDRAW_PRIMITIVES    1000
@@ -3621,7 +3600,7 @@ typedef struct shaderCommands_s
 	int multiDrawCounts[MAX_MULTIDRAW_PRIMITIVES];
 
 	qboolean vboVertexSkinning;
-	matrix_t boneMatrices[MAX_BONES];
+	mat4_t boneMatrices[MAX_BONES];
 
 	// info extracted from current shader or backend mode
 	void (*stageIteratorFunc)();
@@ -3968,7 +3947,7 @@ float RB_EvalWaveForm(const waveForm_t *wf);
 float RB_EvalWaveFormClamped(const waveForm_t *wf);
 float RB_EvalExpression(const expression_t *exp, float defaultValue);
 
-void RB_CalcTexMatrix(const textureBundle_t *bundle, matrix_t matrix);
+void RB_CalcTexMatrix(const textureBundle_t *bundle, mat4_t matrix);
 
 /*
 =============================================================
@@ -4225,10 +4204,10 @@ void GLSL_SetUniformFloat5(shaderProgram_t *program, int uniformNum, const vec5_
 void GLSL_SetUniformVec2(shaderProgram_t *program, int uniformNum, const vec2_t v);
 void GLSL_SetUniformVec3(shaderProgram_t *program, int uniformNum, const vec3_t v);
 void GLSL_SetUniformVec4(shaderProgram_t *program, int uniformNum, const vec4_t v);
-void GLSL_SetUniformMatrix16(shaderProgram_t *program, int uniformNum, const matrix_t matrix);
+void GLSL_SetUniformMatrix16(shaderProgram_t *program, int uniformNum, const mat4_t matrix);
 void GLSL_SetUniformFloatARR(shaderProgram_t *program, int uniformNum, float *floatarray, int arraysize);
 void GLSL_SetUniformVec4ARR(shaderProgram_t *program, int uniformNum, vec4_t *vectorarray, int arraysize);
-void GLSL_SetUniformMatrix16ARR(shaderProgram_t *program, int uniformNum, matrix_t *matrixarray, int arraysize);
+void GLSL_SetUniformMatrix16ARR(shaderProgram_t *program, int uniformNum, mat4_t *matrixarray, int arraysize);
 void GLSL_SetMacroState(programInfo_t *programlist, int macro, int enabled);
 void GLSL_SetMacroStates(programInfo_t *programlist, int numMacros, ...);
 void GLSL_SelectPermutation(programInfo_t *programlist);
@@ -4237,20 +4216,30 @@ void GLSL_SetUniform_DeformParms(deformStage_t deforms[], int numDeforms);
 void GLSL_SetUniform_ColorModulate(programInfo_t *prog, int colorGen, int alphaGen);
 void GLSL_SetUniform_AlphaTest(uint32_t stateBits);
 
-#define SelectTexture(tex) GLSL_SelectTexture(selectedProgram, tex)
-#define SetUniformBoolean(uniformNum, value) GLSL_SetUniformBoolean(selectedProgram, uniformNum, value)
-#define SetUniformInt(uniformNum, value) GLSL_SetUniformInt(selectedProgram, uniformNum, value)
-#define SetUniformFloat(uniformNum, value) GLSL_SetUniformFloat(selectedProgram, uniformNum, value)
-#define SetUniformFloat5(uniformNum, value) GLSL_SetUniformFloat5(selectedProgram, uniformNum, value)
-#define SetUniformVec2(uniformNum, value) GLSL_SetUniformVec2(selectedProgram, uniformNum, value)
-#define SetUniformVec3(uniformNum, value) GLSL_SetUniformVec3(selectedProgram, uniformNum, value)
-#define SetUniformVec4(uniformNum, value) GLSL_SetUniformVec4(selectedProgram, uniformNum, value)
-#define SetUniformMatrix16(uniformNum, value) GLSL_SetUniformMatrix16(selectedProgram, uniformNum, value)
-#define SetUniformFloatARR(uniformNum, value, size) GLSL_SetUniformFloatARR(selectedProgram, uniformNum, value, size)
-#define SetUniformVec4ARR(uniformNum, value, size) GLSL_SetUniformVec4ARR(selectedProgram, uniformNum, value, size)
-#define SetUniformMatrix16ARR(uniformNum, value, size) GLSL_SetUniformMatrix16ARR(selectedProgram, uniformNum, value, size)
+#define SelectTexture(tex) GLSL_SelectTexture(trProg.selectedProgram, tex)
+#define SetUniformBoolean(uniformNum, value) GLSL_SetUniformBoolean(trProg.selectedProgram, uniformNum, value)
+#define SetUniformInt(uniformNum, value) GLSL_SetUniformInt(trProg.selectedProgram, uniformNum, value)
+#define SetUniformFloat(uniformNum, value) GLSL_SetUniformFloat(trProg.selectedProgram, uniformNum, value)
+#define SetUniformFloat5(uniformNum, value) GLSL_SetUniformFloat5(trProg.selectedProgram, uniformNum, value)
+#define SetUniformVec2(uniformNum, value) GLSL_SetUniformVec2(trProg.selectedProgram, uniformNum, value)
+#define SetUniformVec3(uniformNum, value) GLSL_SetUniformVec3(trProg.selectedProgram, uniformNum, value)
+#define SetUniformVec4(uniformNum, value) GLSL_SetUniformVec4(trProg.selectedProgram, uniformNum, value)
+#define SetUniformMatrix16(uniformNum, value) GLSL_SetUniformMatrix16(trProg.selectedProgram, uniformNum, value)
+#define SetUniformFloatARR(uniformNum, value, size) GLSL_SetUniformFloatARR(trProg.selectedProgram, uniformNum, value, size)
+#define SetUniformVec4ARR(uniformNum, value, size) GLSL_SetUniformVec4ARR(trProg.selectedProgram, uniformNum, value, size)
+#define SetUniformMatrix16ARR(uniformNum, value, size) GLSL_SetUniformMatrix16ARR(trProg.selectedProgram, uniformNum, value, size)
 
 #define SelectProgram(program) Ren_LogComment("SelectProgram called: (%s:%d)\n", __FILE__, __LINE__); GLSL_SelectPermutation(program)
 #define SetMacrosAndSelectProgram(program, ...) GLSL_SetMacroStates(program, NUMARGS(__VA_ARGS__), ## __VA_ARGS__); SelectProgram(program)
+
+#if 0
+#define GL_JOIN() glFinish()
+#define R2_TIMING(rule) if (r_speeds->integer == rule) { GL_JOIN(); } if (r_speeds->integer == rule)
+#define R2_TIMING_SIMPLE() if (r_speeds->integer) { GL_JOIN(); } if (r_speeds->integer)
+#else
+#define GL_JOIN()
+#define R2_TIMING(rule) if (r_speeds->integer == rule)
+#define R2_TIMING_SIMPLE() if (r_speeds->integer)
+#endif
 
 #endif // TR_LOCAL_H

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -1184,6 +1184,30 @@ static void CG_DrawCrosshair(void)
 	}
 }
 
+/*
+=================
+CG_ScanForCrosshairMine
+=================
+*/
+void CG_ScanForCrosshairMine(centity_t *cent)
+{
+	trace_t trace;
+	vec3_t  start, end;
+
+	VectorCopy(cg.refdef.vieworg, start);
+	VectorMA(start, 512.0f, cg.refdef.viewaxis[0], end);
+
+	CG_Trace(&trace, start, NULL, NULL, end, -1, MASK_SOLID);
+
+	if (Square(trace.endpos[0] - cent->currentState.pos.trBase[0]) < 256 &&
+	    Square(trace.endpos[1] - cent->currentState.pos.trBase[1]) < 256 &&
+	    Square(trace.endpos[2] - cent->currentState.pos.trBase[2]) < 256)
+	{
+		cg.crosshairMine     = cent->currentState.otherEntityNum;
+		cg.crosshairMineTime = cg.time;
+	}
+}
+
 static void CG_DrawNoShootIcon(void)
 {
 	float x, y, w, h;
@@ -1222,6 +1246,41 @@ static void CG_DrawNoShootIcon(void)
 
 	trap_R_DrawStretchPic(x + 0.5 * (cg.refdef_current->width - w), y + 0.5 * (cg.refdef_current->height - h), w, h, 0, 0, 1, 1, cgs.media.friendShader);
 	trap_R_SetColor(NULL);
+}
+
+/*
+=================
+CG_ScanForCrosshairDyna
+=================
+mainly just a copy paste of CG_ScanForCrosshairMine
+*/
+void CG_ScanForCrosshairDyna(centity_t *cent)
+{
+	trace_t trace;
+	vec3_t  start, end;
+
+	VectorCopy(cg.refdef.vieworg, start);
+	VectorMA(start, 512, cg.refdef.viewaxis[0], end);
+
+	CG_Trace(&trace, start, NULL, NULL, end, -1, MASK_SOLID);
+
+	// pos.trBase is not the middle of the dyna, but due to different
+	// orientations relative to the map axis, this cannot be corrected in a
+	// simple way unfortunately
+	if (Square(trace.endpos[0] - cent->currentState.pos.trBase[0]) < 256 &&
+	    Square(trace.endpos[1] - cent->currentState.pos.trBase[1]) < 256 &&
+	    Square(trace.endpos[2] - cent->currentState.pos.trBase[2]) < 256)
+	{
+		if (cent->currentState.otherEntityNum >= MAX_CLIENTS)
+		{
+			cg.crosshairDyna = -1;
+		}
+		else
+		{
+			cg.crosshairDyna     = cent->currentState.otherEntityNum;
+			cg.crosshairDynaTime = cg.time;
+		}
+	}
 }
 
 /*
@@ -1416,13 +1475,10 @@ static void CG_DrawCrosshairNames(void)
 	float      *color;
 	float      w;
 	const char *s;
-	size_t     colorizedBufferLength = 32;
-	char       colorized[32]         = { 0 };
-	int        playerHealth          = 0;
-	vec4_t     c;
-	qboolean   drawStuff = qfalse;
-	qboolean   isTank    = qfalse;
-	int        maxHealth = 1;
+	int        playerHealth = 0;
+	qboolean   drawStuff    = qfalse;
+	qboolean   isTank       = qfalse;
+	int        maxHealth    = 1;
 	float      dist; // Distance to the entity under the crosshair
 	float      zChange;
 	qboolean   hitClient = qfalse;
@@ -1434,8 +1490,38 @@ static void CG_DrawCrosshairNames(void)
 		return;
 	}
 
+	// dyna > mine
+	if (cg.crosshairDyna > -1)
+	{
+		color = CG_FadeColor(cg.crosshairDynaTime, 1000);
+		s     = va("%s^7\'s dynamite", cgs.clientinfo[cg.crosshairDyna].name);
+		w     = CG_Text_Width_Ext(s, fontScale, 0, &cgs.media.limboFont2);
+		CG_Text_Paint_Ext(middle - w / 2, 182, fontScale, fontScale, color, s, 0, 0, 0, &cgs.media.limboFont2);
+
+		cg.crosshairDyna = -1;
+		return;
+	}
+
+	// mine id's
+	if (cg.crosshairMine > -1)
+	{
+		color = CG_FadeColor(cg.crosshairMineTime, 1000);
+		s     = va("%s^7\'s mine", cgs.clientinfo[cg.crosshairMine].name);
+		w     = CG_Text_Width_Ext(s, fontScale, 0, &cgs.media.limboFont2);
+		CG_Text_Paint_Ext(middle - w / 2, 182, fontScale, fontScale, color, s, 0, 0, 0, &cgs.media.limboFont2);
+
+		cg.crosshairMine = -1;
+		return;
+	}
+
 	// scan the known entities to see if the crosshair is sighted on one
 	dist = CG_ScanForCrosshairEntity(&zChange, &hitClient);
+
+	// world-entity or no-entity..
+	if (cg.crosshairClientNum < 0)
+	{
+		return;
+	}
 
 	if (cg.renderingThirdPerson)
 	{
@@ -1488,7 +1574,6 @@ static void CG_DrawCrosshairNames(void)
 					{
 						w = CG_Text_Width_Ext(s, fontScale, 0, &cgs.media.limboFont2);
 						CG_Text_Paint_Ext(middle - w / 2, 182, fontScale, fontScale, color, s, 0, 0, 0, &cgs.media.limboFont2);
-
 					}
 				}
 				return;
@@ -1511,7 +1596,7 @@ static void CG_DrawCrosshairNames(void)
 				CG_Text_Paint_Ext(middle - w / 2, 182, fontScale, fontScale, color, s, 0, 0, 0, &cgs.media.limboFont2);
 				return;
 			}
-			else if (dist > 512)
+			else if (dist > 0) // changed from 512 to grant covert ops more power
 			{
 				if (!cg_drawCrosshairNames.integer && !cg_drawCrosshairInfo.integer)
 				{
@@ -1526,27 +1611,40 @@ static void CG_DrawCrosshairNames(void)
 					if (cg_drawCrosshairNames.integer == 2)
 					{
 						// Draw with full coloring
-						s = va("%s", cgs.clientinfo[cg.crosshairClientNum].disguiseName);
+						// fail safe - this should always be the case here - cg.crosshairClientNum is in game and disguised ...
+						if (cgs.clientinfo[cg.crosshairClientNum].disguiseClientNum > -1)
+						{
+							s = va("%s", cgs.clientinfo[cgs.clientinfo[cg.crosshairClientNum].disguiseClientNum].name);
+							w = CG_Text_Width_Ext(s, fontScale, 0, &cgs.media.limboFont2);
+							CG_Text_Paint_Ext(middle - w / 2, 182, fontScale, fontScale, color, s, 0, 0, 0, &cgs.media.limboFont2);
+						}
 					}
 					else
 					{
-						// Draw them with a single color (white)
-						Q_ColorizeString('7', cgs.clientinfo[cg.crosshairClientNum].cleandisguiseName, colorized, colorizedBufferLength);
-						s = colorized;
-					}
-					w = CG_Text_Width_Ext(s, fontScale, 0, &cgs.media.limboFont2);
+						// Draw them with a single color (white) // FIXME: name already clean
+						// fail safe - this should always be the case here - cg.crosshairClientNum is in game and disguised ...
+						if (cgs.clientinfo[cg.crosshairClientNum].disguiseClientNum > -1)
+						{
+							size_t colorizedBufferLength = 32;
+							char   colorized[32]         = { 0 };
 
-					CG_Text_Paint_Ext(middle - w / 2, 182, fontScale, fontScale, color, s, 0, 0, 0, &cgs.media.limboFont2);
+							Q_ColorizeString('7', cgs.clientinfo[cgs.clientinfo[cg.crosshairClientNum].disguiseClientNum].cleanname, colorized, colorizedBufferLength);
+
+							s = colorized;
+							w = CG_Text_Width_Ext(s, fontScale, 0, &cgs.media.limboFont2);
+							CG_Text_Paint_Ext(middle - w / 2, 182, fontScale, fontScale, color, s, 0, 0, 0, &cgs.media.limboFont2);
+						}
+					}
 				}
 				if (cg_drawCrosshairInfo.integer & CROSSHAIR_CLASS)
 				{
 					// - 16 - 110/2
 					CG_DrawPic(middle - 71, 187, 16, 16, cgs.media.skillPics[SkillNumForClass((cg_entities[cg.crosshairClientNum].currentState.powerups >> PW_OPS_CLASS_1) & 7)]);
 				}
-				if (cgs.clientinfo[cg.crosshairClientNum].disguiseRank > 0 && (cg_drawCrosshairInfo.integer & CROSSHAIR_RANK))
+				if (cgs.clientinfo[cgs.clientinfo[cg.crosshairClientNum].disguiseClientNum].rank > 0 && (cg_drawCrosshairInfo.integer & CROSSHAIR_RANK))
 				{
 					// + 110/2
-					CG_DrawPic(middle + 55, 187, 16, 16, rankicons[cgs.clientinfo[cg.crosshairClientNum].disguiseRank][cgs.clientinfo[cg.crosshairClientNum].team != TEAM_AXIS ? 1 : 0][0].shader);
+					CG_DrawPic(middle + 55, 187, 16, 16, rankicons[cgs.clientinfo[cgs.clientinfo[cg.crosshairClientNum].disguiseClientNum].rank][cgs.clientinfo[cg.crosshairClientNum].team != TEAM_AXIS ? 1 : 0][0].shader);
 				}
 
 				// set the health
@@ -1563,12 +1661,13 @@ static void CG_DrawCrosshairNames(void)
 
 				maxHealth = 100;
 			}
-			else
-			{
-				// don't show the name after you look away, should this be a disguised covert
-				cg.crosshairClientTime = 0;
-				return;
-			}
+			// removed to grant covert ops more power
+			// else
+			// {
+			//  // don't show the name after you look away, should this be a disguised covert
+			//  cg.crosshairClientTime = 0;
+			//  return;
+			// }
 		}
 		else
 		{
@@ -1594,6 +1693,9 @@ static void CG_DrawCrosshairNames(void)
 		// draw the name and class
 		if (cg_drawCrosshairNames.integer > 0)
 		{
+			char   colorized[32]         = { 0 };
+			size_t colorizedBufferLength = 32;
+
 			if (cg_drawCrosshairNames.integer == 2)
 			{
 				// Draw them with full colors
@@ -1624,6 +1726,14 @@ static void CG_DrawCrosshairNames(void)
 		if (cg.crosshairClientNum == cg.snap->ps.identifyClient)
 		{
 			playerHealth = cg.snap->ps.identifyClientHealth;
+
+			// identifyClientHealth is sent as unsigned char and negative numbers are not transmitted - see SpectatorThink()
+			// this results in player health values behind max health
+			// adjust dead player health bogus values for the health bar
+			if (playerHealth > 156)
+			{
+				playerHealth = 0;
+			}
 		}
 		else
 		{
@@ -1671,7 +1781,7 @@ static void CG_DrawCrosshairNames(void)
 	// draw the health bar
 	//  if ( isTank || (cg.crosshairClientNum == cg.snap->ps.identifyClient && drawStuff && cgs.clientinfo[cg.snap->ps.clientNum].team != TEAM_SPECTATOR ) )
 	{
-		vec4_t bgcolor;
+		vec4_t bgcolor, c;
 		float  barFrac = (float)playerHealth / maxHealth;
 
 		if (barFrac > 1.0)
@@ -1716,8 +1826,24 @@ CG_DrawSpectator
 */
 static void CG_DrawSpectator(void)
 {
-	char *s = CG_TranslateString("SPECTATOR");
-	int  w  = CG_Text_Width_Ext(va("%s", s), cg_fontScaleTP.value, 0, &cgs.media.limboFont2);
+	char *s;
+#if FEATURE_EDV
+	if (cgs.demoCamera.renderingWeaponCam)
+	{
+		s = CG_TranslateString("WEAPONCAM");
+	}
+	else if (cgs.demoCamera.renderingFreeCam)
+	{
+		s = CG_TranslateString("FREECAM");
+	}
+	else
+	{
+#endif
+	s = CG_TranslateString("SPECTATOR");
+#if FEATURE_EDV
+}
+#endif
+	int w = CG_Text_Width_Ext(va("%s", s), cg_fontScaleTP.value, 0, &cgs.media.limboFont2);
 
 	CG_Text_Paint_Ext(Ccg_WideX(320) - w / 2, 440, cg_fontScaleTP.value, cg_fontScaleTP.value, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
 }
@@ -1827,7 +1953,7 @@ static void CG_DrawVote(void)
 		Q_strncpyz(str1, Binding_FromName("vote yes"), 32);
 		Q_strncpyz(str2, Binding_FromName("vote no"), 32);
 
-		str = "Join a Fireteam?";
+		str = CG_TranslateString("Join a Fireteam?");
 		CG_Text_Paint_Ext(INFOTEXT_STARTX, y, fontScale, fontScale, colorYellow, str, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
 		y += charHeight * 2.0f;
 
@@ -1852,7 +1978,6 @@ static void CG_DrawVote(void)
 		sec = (VOTE_TIME - (cg.time - cgs.voteTime)) / 1000;
 		if (sec < 0)
 		{
-			sec = 0;
 			// expired votetime
 			cgs.voteTime                  = 0;
 			cgs.complaintEndTime          = 0;
@@ -1862,6 +1987,7 @@ static void CG_DrawVote(void)
 			cgs.autoFireteamEndTime       = 0;
 			cgs.autoFireteamCreateEndTime = 0;
 			cgs.autoFireteamJoinEndTime   = 0;
+			//sec = 0;
 			return;
 		}
 
@@ -1901,7 +2027,12 @@ static void CG_DrawVote(void)
 
 			if (cgs.clientinfo[cg.clientNum].team != TEAM_AXIS && cgs.clientinfo[cg.clientNum].team != TEAM_ALLIES)
 			{
-				str = CG_TranslateString("Cannot vote as Spectator");
+
+				str = va(CG_TranslateString("YES:%i, NO:%i"), cgs.voteYes, cgs.voteNo);
+				CG_Text_Paint_Ext(INFOTEXT_STARTX, y, fontScale, fontScale, colorYellow, str, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
+				y += charHeight * 2.0f;
+
+				str = CG_TranslateString("Can't vote as Spectator");
 			}
 			else
 			{
@@ -2129,6 +2260,13 @@ static void CG_DrawSpectatorMessage(void)
 	charHeight = CG_Text_Height_Ext("A", fontScale, 0, &cgs.media.limboFont2);
 	y          = INFOTEXT_STARTY + (charHeight * 2.0f) * 2;
 
+#if FEATURE_EDV
+	if (cgs.demoCamera.renderingFreeCam || cgs.demoCamera.renderingWeaponCam)
+	{
+		return;
+	}
+#endif
+
 	if (!cg_descriptiveText.integer)
 	{
 		return;
@@ -2163,13 +2301,17 @@ static void CG_DrawSpectatorMessage(void)
 	str2 = Binding_FromName("weapalt");
 	str  = va(CG_TranslateString("Press %s to follow previous player"), str2);
 	CG_Text_Paint_Ext(INFOTEXT_STARTX, y, fontScale, fontScale, colorWhite, str, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
-	y += charHeight * 2.0f;
 
 #ifdef FEATURE_MULTIVIEW
-	str2 = Binding_FromName("mvactivate");
-	str  = va(CG_TranslateString("Press %s to %s multiview mode"), str2, ((cg.mvTotalClients > 0) ? CG_TranslateString("disable") : CG_TranslateString("activate")));
-	CG_Text_Paint_Ext(INFOTEXT_STARTX, y, fontScale, fontScale, colorWhite, str, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
-	y += charHeight * 2.0f;
+	if (cgs.clientinfo[cg.clientNum].team == TEAM_SPECTATOR && cgs.mvAllowed)
+	{
+		y += charHeight * 2.0f;
+
+		str2 = Binding_FromName("mvactivate");
+		str  = va(CG_TranslateString("Press %s to %s multiview mode"), str2, ((cg.mvTotalClients > 0) ? CG_TranslateString("disable") : CG_TranslateString("activate")));
+		CG_Text_Paint_Ext(INFOTEXT_STARTX, y, fontScale, fontScale, colorWhite, str, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
+		//y += charHeight * 2.0f;
+	}
 #endif
 }
 
@@ -2215,6 +2357,13 @@ static void CG_DrawLimboMessage(void)
 	int           y   = INFOTEXT_STARTY;
 	int           charHeight;
 	float         fontScale = cg_fontScaleSP.value;
+
+#if FEATURE_EDV
+	if (cgs.demoCamera.renderingFreeCam || cgs.demoCamera.renderingWeaponCam)
+	{
+		return;
+	}
+#endif
 
 	charHeight = CG_Text_Height_Ext("A", fontScale, 0, &cgs.media.limboFont2);
 
@@ -2434,9 +2583,17 @@ static void CG_DrawWarmup(void)
 				CG_Text_Paint_Ext(x, 290, cg_fontScaleCP.value, cg_fontScaleCP.value, colorWhite, s1, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
 			}
 
-			s1 = va(CG_TranslateString("^3WARMUP:^7 Waiting on ^2%i^7 %s"), cgs.minclients, cgs.minclients == 1 ? CG_TranslateString("player") : CG_TranslateString("players"));
-			w  = CG_Text_Width_Ext(s1, fontScale, 0, &cgs.media.limboFont2);
-			x  = Ccg_WideX(320) - w / 2;
+			if (cgs.minclients > 0)
+			{
+				s1 = va(CG_TranslateString("^3WARMUP:^7 Waiting on ^2%i^7 %s"), cgs.minclients, cgs.minclients == 1 ? CG_TranslateString("player") : CG_TranslateString("players"));
+			}
+			else
+			{
+				s1 = va("%s", CG_TranslateString("^3WARMUP:^7 All players ready!"));
+			}
+
+			w = CG_Text_Width_Ext(s1, fontScale, 0, &cgs.media.limboFont2);
+			x = Ccg_WideX(320) - w / 2;
 			CG_Text_Paint_Ext(x, 208, fontScale, fontScale, colorWhite, s1, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
 
 			if (!cg.demoPlayback && cg.snap->ps.persistant[PERS_TEAM] != TEAM_SPECTATOR &&
@@ -2469,7 +2626,14 @@ static void CG_DrawWarmup(void)
 		sec = 0;
 	}
 
-	s = va("%s %s%i^7", CG_TranslateString("^3WARMUP:^7 Match begins in:"), sec  < 3 ? "^1" : "^2", sec + 1);
+	if (sec > 0)
+	{
+		s = va("%s %s%i", CG_TranslateString("^3WARMUP:^7 Match begins in"), sec  < 4 ? "^1" : "^2", sec);
+	}
+	else
+	{
+		s = CG_TranslateString("^3WARMUP:^7 Match begins now!");
+	}
 
 	w = CG_Text_Width_Ext(s, fontScale, 0, &cgs.media.limboFont2);
 	x = Ccg_WideX(320) - w / 2;
@@ -2722,7 +2886,7 @@ static void CG_DrawFlashZoomTransition(void)
 	{
 		vec4_t color;
 
-		frac = frac / (float)fadeTime;
+		frac = frac / fadeTime;
 		Vector4Set(color, 0, 0, 0, 1.0f - frac);
 		CG_FillRect(0, 0, Ccg_WideX(SCREEN_WIDTH), SCREEN_HEIGHT, color);
 	}
@@ -2858,7 +3022,7 @@ static void CG_DrawFlashBlend(void)
 CG_DrawObjectiveInfo
 =================
 */
-#define OID_LEFT    10
+//#define OID_LEFT    10
 #define OID_TOP     360
 
 void CG_ObjectivePrint(const char *str, float fontScale)
@@ -2965,7 +3129,7 @@ static void CG_DrawObjectiveInfo(void)
 			x2 = 320 + w / 2;
 		}
 
-		x  = 320 - w / 2;
+		//x  = 320 - w / 2; // no need to calculate x - it's not used and overwritten in next loop
 		y += cg.oidPrintCharHeight * 1.5;
 
 		while (*start && (*start != '\n'))
@@ -3140,6 +3304,8 @@ static void CG_ScreenFade(void)
 	}
 }
 
+static int lastDemoScoreTime = 0;
+
 void CG_DrawDemoRecording(void)
 {
 	char status[1024];
@@ -3149,6 +3315,13 @@ void CG_DrawDemoRecording(void)
 	if (!cl_demorecording.integer && !cl_waverecording.integer)
 	{
 		return;
+	}
+
+	// poll for score
+	if (!lastDemoScoreTime || cg.time > lastDemoScoreTime)
+	{
+		trap_SendClientCommand("score");
+		lastDemoScoreTime = cg.time + 5000; // 5 secs
 	}
 
 	if (!cg_recording_statusline.integer)
@@ -3176,7 +3349,7 @@ void CG_DrawDemoRecording(void)
 
 	Com_sprintf(status, sizeof(status), "RECORDING%s%s", demostatus, wavestatus);
 
-	CG_Text_Paint_Ext(5, cg_recording_statusline.integer, 0.2f, 0.2f, colorWhite, status, 0, 0, 0, &cgs.media.limboFont2);
+	CG_Text_Paint_Ext(10, cg_recording_statusline.integer, 0.2f, 0.2f, colorRed, status, 0, 0, 0, &cgs.media.limboFont2);
 }
 
 void CG_DrawOnScreenNames(void)
@@ -3241,7 +3414,7 @@ void CG_DrawOnScreenNames(void)
 			continue;                           // no alpha = nothing to draw..
 
 		}
-		CG_Text_Paint_Ext(spcNm->x, spcNm->y, spcNm->scale, spcNm->scale, white, spcNm->text, 0, 0, 0, &cgs.media.limboFont1);
+		CG_Text_Paint_Ext(spcNm->x, spcNm->y, spcNm->scale, spcNm->scale, white, spcNm->text, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont1);
 		// expect update next frame again
 		spcNm->visible = qfalse;
 	}
@@ -3255,12 +3428,6 @@ CG_Draw2D
 static void CG_Draw2D(void)
 {
 	CG_ScreenFade();
-	// no 2d when in esc menu
-	// FIXME: do allow for quickchat (bleh)
-	// - Removing for now
-	//if( trap_Key_GetCatcher() & KEYCATCH_UI ) {
-	//  return;
-	//}
 
 	if (cg.snap->ps.pm_type == PM_INTERMISSION)
 	{
@@ -3297,10 +3464,20 @@ static void CG_Draw2D(void)
 		CG_DrawFlashFade();
 		return;
 	}
-
+#if FEATURE_EDV
+	if (!cgs.demoCamera.renderingFreeCam && !cgs.demoCamera.renderingWeaponCam)
+	{
+		CG_DrawFlashBlendBehindHUD();
+	}
+#else
 	CG_DrawFlashBlendBehindHUD();
+#endif
 
+#if FEATURE_EDV
+	if (cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR || cgs.demoCamera.renderingFreeCam || cgs.demoCamera.renderingWeaponCam)
+#else
 	if (cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR)
+#endif
 	{
 		if (!CG_DrawScoreboard())
 		{
@@ -3336,7 +3513,11 @@ static void CG_Draw2D(void)
 	{
 		CG_SetHud();
 
+#if FEATURE_EDV
+		if (cg.snap->ps.persistant[PERS_TEAM] != TEAM_SPECTATOR && !cgs.demoCamera.renderingFreeCam && !cgs.demoCamera.renderingWeaponCam)
+#else
 		if (cg.snap->ps.persistant[PERS_TEAM] != TEAM_SPECTATOR)
+#endif
 		{
 			CG_DrawActiveHud();
 		}
@@ -3347,7 +3528,15 @@ static void CG_Draw2D(void)
 		}
 
 		CG_DrawCenterString();
+#if FEATURE_EDV
+		if (!cgs.demoCamera.renderingFreeCam && !cgs.demoCamera.renderingWeaponCam)
+		{
+			CG_DrawFollow();
+		}
+#else
 		CG_DrawFollow();
+#endif
+
 		CG_DrawWarmup();
 		CG_DrawGlobalHud();
 		CG_DrawObjectiveInfo();
@@ -3373,11 +3562,22 @@ static void CG_Draw2D(void)
 	// Info overlays
 	CG_DrawOverlays();
 
+#if FEATURE_EDV
+	if (!cgs.demoCamera.renderingFreeCam && !cgs.demoCamera.renderingWeaponCam)
+	{
+		// window updates
+		CG_windowDraw();
+
+		// draw flash blends now
+		CG_DrawFlashBlend();
+	}
+#else
 	// window updates
 	CG_windowDraw();
 
 	// draw flash blends now
 	CG_DrawFlashBlend();
+#endif
 
 	CG_DrawDemoRecording();
 }
@@ -3546,7 +3746,7 @@ void CG_DrawActive(stereoFrame_t stereoView)
 		separation = cg_stereoSeparation.value / 2;
 		break;
 	default:
-		separation = 0;
+		//separation = 0;
 		CG_Error("CG_DrawActive: Undefined stereoView\n");
 		break;
 	}
@@ -3561,7 +3761,7 @@ void CG_DrawActive(stereoFrame_t stereoView)
 		VectorMA(cg.refdef_current->vieworg, -separation, cg.refdef_current->viewaxis[1], cg.refdef_current->vieworg);
 	}
 
-	cg.refdef_current->glfog.registered = 0;    // make sure it doesn't use fog from another scene
+	cg.refdef_current->glfog.registered = qfalse;    // make sure it doesn't use fog from another scene
 
 	CG_ShakeCamera();
 	CG_PB_RenderPolyBuffers();

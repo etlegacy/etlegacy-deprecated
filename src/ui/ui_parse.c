@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -38,8 +38,8 @@
 
 void Tooltip_ComputePosition(itemDef_t *item)
 {
-	Rectangle *itemRect = &item->window.rectClient;
-	Rectangle *tipRect  = &item->toolTipData->window.rectClient;
+	rectDef_t *itemRect = &item->window.rectClient;
+	rectDef_t *tipRect  = &item->toolTipData->window.rectClient;
 
 	DC->textFont(item->toolTipData->font);
 

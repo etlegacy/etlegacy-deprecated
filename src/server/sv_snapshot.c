@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -528,9 +528,8 @@ static void SV_AddEntitiesVisibleFromPoint(vec3_t origin, clientSnapshot_t *fram
 		}
 		else if (ent->r.svFlags & SVF_VISDUMMY_MULTIPLE)
 		{
-			int            h;
-			sharedEntity_t *ment   = 0;
-			svEntity_t     *master = 0;
+			int        h;
+			svEntity_t *master = 0;
 
 			for (h = 0; h < sv.num_entities; h++)
 			{
@@ -699,7 +698,7 @@ static void SV_BuildClientSnapshot(client_t *client)
 		vec3_t right, v3ViewAngles;
 		VectorCopy(ps->viewangles, v3ViewAngles);
 		v3ViewAngles[2] += frame->ps.leanf / 2.0f;
-		AngleVectors(v3ViewAngles, NULL, right, NULL);
+		angles_vectors(v3ViewAngles, NULL, right, NULL);
 		VectorMA(org, frame->ps.leanf, right, org);
 	}
 

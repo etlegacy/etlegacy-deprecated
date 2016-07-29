@@ -1,17 +1,16 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR Jan Simek
-# This file is distributed under the same license as the PACKAGE package.
-# 
+# Translation pot file for the ET: Legacy mod
+# Copyright (C) 2012-2015 ET: Legacy Team
+# This file is distributed under the same license as the ET:Legacy package.
 # Translators:
-# Jere Sjöroos <shogaiam@gmail.com>, 2015
+# Jacker <shogaiam@gmail.com>, 2015
 # Sauli Vepsä <zAulivee@outlook.com>, 2015
 msgid ""
 msgstr ""
 "Project-Id-Version: ET:Legacy\n"
 "Report-Msgid-Bugs-To: mail@etlegacy.com\n"
 "POT-Creation-Date: 2015-01-10 20:22+0100\n"
-"PO-Revision-Date: 2015-08-04 21:11+0000\n"
-"Last-Translator: Rafał Pawlak <rafal1137@yahoo.pl>\n"
+"PO-Revision-Date: 2016-03-28 23:37+0000\n"
+"Last-Translator: rafal1137 <rafal1137@yahoo.pl>\n"
 "Language-Team: Finnish (http://www.transifex.com/etlegacy/etlegacy/language/fi/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1074,9 +1073,12 @@ msgid "Enable Country Flags on the server"
 msgstr "Ota maiden liput käyttöön palvelimella"
 
 #: etmain/ui/hostgame_extended.menu:36 etmain/ui/hostgame.menu:195
-#: etmain/ui/options_graphics.menu:52
 msgid "ADVANCED"
 msgstr "KEHITTYNYT"
+
+#: etmain/ui/options_system.menu:54
+msgid "ADVANCED GRAPHICS"
+msgstr ""
 
 #: etmain/ui/hostgame.menu:31 etmain/ui/main.menu:106
 msgid "HOST GAME"
@@ -1722,14 +1724,14 @@ msgid "This will delete all unnecessary files from you fs_homepath."
 msgstr "Tämä poistaa kaikki turhat tiedostot sinun fs_hompath:sta"
 
 #: etmain/ui/options_clean.menu:36
-msgid "A simple clean will remove tmp- and custom pk3 files."
-msgstr "Yksinkertainen puhdistus poistaa tmp- ja mukautetut pk3 tiedostot."
+msgid "A simple clean will remove tmp and custom pk3 files."
+msgstr ""
 
 #: etmain/ui/options_clean.menu:37
 msgid ""
-"A full clean will remove all downloaded files like map-,\n"
-" campaign- and custom pk3 files."
-msgstr "Kokonainen puhdistus poistaa kaikki tiedostot,\nkuten kartta-, kampanja- ja mukautetut pk3 tiedostot."
+"A full clean will remove all downloaded files like maps,\n"
+" campaigns and custom pk3 files."
+msgstr ""
 
 #: etmain/ui/options_clean.menu:38
 msgid "^1WARNING: Use at your own risk!"
@@ -1743,17 +1745,29 @@ msgstr "Käänny wikin asiakirjojen puoleen."
 msgid "Press '^7ABORT^9' if you don't know what you are doing here."
 msgstr "Paina '^7KESKEYTÄ^9', jos et tiedä mitä teet täällä."
 
-#: etmain/ui/options_clean.menu:43
+#: etmain/ui/options_clean.menu:42
 msgid "ABORT"
 msgstr "KESKEYTÄ"
 
-#: etmain/ui/options_clean.menu:44
+#: etmain/ui/options_clean.menu:42
+msgid "Abort operation"
+msgstr ""
+
+#: etmain/ui/options_clean.menu:43
 msgid "SIMPLE CLEAN"
 msgstr "YKSINKERTAINEN PUHDISTUS"
 
-#: etmain/ui/options_clean.menu:45
+#: etmain/ui/options_clean.menu:43
+msgid "Remove tmp and custom pk3 files"
+msgstr ""
+
+#: etmain/ui/options_clean.menu:44
 msgid "FULL CLEAN"
 msgstr "KOKONAINEN PUHDISTUS"
+
+#: etmain/ui/options_clean.menu:44
+msgid "Remove all maps and campaigns files"
+msgstr ""
 
 #: etmain/ui/options_controls_default.menu:52
 msgid "DEFAULT CONTROLS"
@@ -3329,6 +3343,7 @@ msgid "Anisotropic Filter:"
 msgstr "Anisotrooppinen suodatus:"
 
 #: etmain/ui/options_graphics.menu:64 etmain/ui/options_graphics.menu:71
+#: etmain/ui/options_system.menu:48
 msgid "Disabled"
 msgstr "Pois käytöstä"
 
@@ -3412,7 +3427,7 @@ msgstr "ASETA SUOSITELLUT"
 msgid "APPLY"
 msgstr "KÄYTÄ"
 
-#: etmain/ui/options.menu:35 etmain/ui/options_system.menu:35
+#: etmain/ui/options.menu:35 etmain/ui/options_system.menu:36
 msgid "SYSTEM"
 msgstr "JÄRJESTELMÄ"
 
@@ -3456,7 +3471,7 @@ msgstr "44 kHz (erittäin korkea)"
 msgid "Set the sound quality"
 msgstr "Aseta äänenlaatu"
 
-#: etmain/ui/options_system.menu:45
+#: etmain/ui/options_system.menu:85
 msgid "Doppler FX:"
 msgstr "Doppler-efekti:"
 
@@ -3480,9 +3495,9 @@ msgstr "Mykistä keskitettömänä:"
 msgid "Enables or disables sound when window is unfocused"
 msgstr "Ota käyttöön tai poista käytöstä äänet, kun ikkuna on keskitettömänä"
 
-#: etmain/ui/options_system.menu:51
-msgid "NETWORKING"
-msgstr "VERKKO"
+#: etmain/ui/options_system.menu:92
+msgid "NETWORK"
+msgstr ""
 
 #: etmain/ui/options_system.menu:52
 msgid "Max Packets:"
@@ -3518,17 +3533,29 @@ msgstr "Tarkista päivitykset käynnistyksessä:"
 msgid "Automatically check for updates?"
 msgstr "Tarkista päivitykset automaattisesti?"
 
-#: etmain/ui/options_system.menu:61
-msgid "Get Missing Files from Server:"
-msgstr "Hanki puuttuvat tiedostot palvelimelta:"
+#: etmain/ui/options_system.menu:99
+msgid "Get Missing Files:"
+msgstr ""
 
-#: etmain/ui/options_system.menu:61
-msgid "Download missing files when available?"
-msgstr "Lataa puuttuvat tiedostot, kun saatavilla?"
+#: etmain/ui/options_system.menu:99
+msgid "Download missing files when available"
+msgstr ""
 
 #: etmain/ui/options_system.menu:62
 msgid "Use HTTP/FTP Downloads:"
 msgstr "Käytä HTTP/FTP latauksia:"
+
+#: etmain/ui/options_system.menu:106
+msgid "UPDATES"
+msgstr ""
+
+#: etmain/ui/options_system.menu:107
+msgid "Start-Up Updates Check:"
+msgstr ""
+
+#: etmain/ui/options_system.menu:107
+msgid "Automatically check for updates"
+msgstr ""
 
 #: etmain/ui/options_system.menu:62
 msgid "Enables or disables http/ftp downloads"
@@ -4626,26 +4653,31 @@ msgstr "Tee tulijoukkueesta yksityinen?"
 msgid "Create a Fireteam?"
 msgstr "Luo tulijoukkue?"
 
-#: src/cgame/cg_draw.c:1896
+#: src/cgame/cg_draw.c:1898
 #, c-format
 msgid "VOTE(%i): %s"
 msgstr "ÄÄNESTÄ(%i): %s"
 
-#: src/cgame/cg_draw.c:1902
-msgid "Cannot vote as Spectator"
-msgstr "Et voi äänestää katsojana"
+#: src/cgame/cg_draw.c:1905
+#, c-format
+msgid "YES:%i, NO:%i"
+msgstr ""
 
-#: src/cgame/cg_draw.c:1906
+#: src/cgame/cg_draw.c:1909
+msgid "Can't vote as Spectator"
+msgstr ""
+
+#: src/cgame/cg_draw.c:1913
 #, c-format
 msgid "YES(%s):%i, NO(%s):%i"
 msgstr "KYLLÄ(%s):%i, EI(%s):%i"
 
-#: src/cgame/cg_draw.c:1913
+#: src/cgame/cg_draw.c:1920
 #, c-format
 msgid "YOU VOTED ON: %s"
 msgstr "ÄÄNESTIT: %s"
 
-#: src/cgame/cg_draw.c:1918
+#: src/cgame/cg_draw.c:1925
 #, c-format
 msgid "Y:%i, N:%i"
 msgstr "K: %i, E: %i"
@@ -4819,8 +4851,8 @@ msgid "Press ^3%s^7 to start"
 msgstr "Paina ^3%s^7 aloittaaksesi"
 
 #: src/cgame/cg_draw.c:2470
-msgid "^3WARMUP:^7 Match begins in:"
-msgstr "^3LÄMMITTELY:^7 Peli alkaa: "
+msgid "^3WARMUP:^7 Match begins in"
+msgstr ""
 
 #: src/cgame/cg_draw.c:2481
 msgid "^3PREPARE TO FIGHT!\n"
@@ -5065,13 +5097,13 @@ msgstr "%s on tuhottu."
 
 #: src/cgame/cg_popupmessages.c:722
 #, c-format
-msgid "%sSpotted by ^7%s%s at %s"
-msgstr "%s spotattiin ^7%s%s %s"
+msgid "Spotted by %s^7 at %s"
+msgstr ""
 
 #: src/cgame/cg_popupmessages.c:726
 #, c-format
-msgid "%sSpotted by ^7%s"
-msgstr "%s spotattiin ^7%s toimesta"
+msgid "Spotted by %s"
+msgstr ""
 
 #: src/cgame/cg_popupmessages.c:733
 #, c-format
@@ -6271,7 +6303,7 @@ msgstr ""
 msgid "voting has been disabled"
 msgstr ""
 
-msgid "Not allowed to call a vote as a spectator.\n"
+msgid "Not allowed to call a vote as a spectator."
 msgstr ""
 
 msgid "called a vote."
@@ -6691,66 +6723,6 @@ msgid ""
 "it has been updated to the latest version."
 msgstr ""
 
-msgid "Private"
-msgstr ""
-
-msgid "Private 1st Class"
-msgstr ""
-
-msgid "Corporal"
-msgstr ""
-
-msgid "Sergeant"
-msgstr ""
-
-msgid "Lieutenant"
-msgstr ""
-
-msgid "Captain"
-msgstr ""
-
-msgid "Major"
-msgstr ""
-
-msgid "Colonel"
-msgstr ""
-
-msgid "Brigadier General"
-msgstr ""
-
-msgid "Lieutenant General"
-msgstr ""
-
-msgid "General"
-msgstr ""
-
-msgid "Schutze"
-msgstr ""
-
-msgid "Oberschutze"
-msgstr ""
-
-msgid "Gefreiter"
-msgstr ""
-
-msgid "Feldwebel"
-msgstr ""
-
-msgid "Leutnant"
-msgstr ""
-
-msgid "Hauptmann"
-msgstr ""
-
-msgid "Oberst"
-msgstr ""
-
-msgid "Generalmajor"
-msgstr ""
-
-msgid "Generalleutnant"
-msgstr ""
-
 msgid "Battle Sense"
 msgstr ""
 
@@ -6775,14 +6747,323 @@ msgstr ""
 msgid "Fire Mission: ^3Firing for effect!"
 msgstr ""
 
-msgid "Fire Mission: Insufficient fire support."
+msgid "Fire Mission: ^3Insufficient fire support."
 msgstr ""
 
-msgid "Fire Mission: Aborting, can't see target."
+msgid "Fire Mission: ^3Aborting, can't see target."
 msgstr ""
 
 msgid "I need a Medic!"
 msgstr ""
 
 msgid "New version available. Do you want to update now?"
+msgstr ""
+
+msgid "20 Med Health"
+msgstr ""
+
+msgid "Pilot: ^3Aborting, can't see target."
+msgstr ""
+
+msgid "Pilot: ^3Affirmative, on my way!"
+msgstr ""
+
+msgid "HQ: ^3All available planes are already en-route."
+msgstr ""
+
+#: src/cgame/cg_draw.c:1830
+msgid "Join a Fireteam?"
+msgstr ""
+
+msgid "Apply"
+msgstr ""
+
+msgid "Create"
+msgstr ""
+
+msgid "Attack"
+msgstr ""
+
+msgid "Fall Back"
+msgstr ""
+
+msgid "Disband"
+msgstr ""
+
+msgid "Leave"
+msgstr ""
+
+msgid "Invite"
+msgstr ""
+
+msgid "Change privacy"
+msgstr ""
+
+msgid "Kick"
+msgstr ""
+
+msgid "Warn"
+msgstr ""
+
+msgid "Change admin"
+msgstr ""
+
+msgid "Highest Fragger"
+msgstr ""
+
+msgid "Highest Experience Points"
+msgstr ""
+
+msgid "Highest Ranking Officer"
+msgstr ""
+
+msgid "Most Highly Decorated"
+msgstr ""
+
+msgid "Highest Battle Sense"
+msgstr ""
+
+msgid "Best Engineer"
+msgstr ""
+
+msgid "Best Medic"
+msgstr ""
+
+msgid "Best Field Ops"
+msgstr ""
+
+msgid "Highest Light Weapons"
+msgstr ""
+
+msgid "Best Soldier"
+msgstr ""
+
+msgid "Best Covert Ops"
+msgstr ""
+
+msgid "Highest Accuracy"
+msgstr ""
+
+msgid "I Ain't Got No Friends Award"
+msgstr ""
+
+msgid "Welcome Newbie! Award"
+msgstr ""
+
+msgid ""
+"\n"
+"ET: Legacy with OpenGL 3.x renderer can not run on this machine since it is missing one or more required OpenGL extensions. Please update your video card drivers and try again.\n"
+msgstr ""
+
+msgid "Gib command not allowed during intermission.\n"
+msgstr ""
+
+msgid "^9%d players gibbed."
+msgstr ""
+
+msgid "There is no player to gib."
+msgstr ""
+
+msgid "Error - can't gib - %s."
+msgstr ""
+
+msgid "Player must be on a team to be gibbed.\n"
+msgstr ""
+
+msgid "^7%s^7 was gibbed."
+msgstr ""
+
+msgid "Die command not allowed during intermission.\n"
+msgstr ""
+
+msgid "^9%d players died."
+msgstr ""
+
+msgid "There is no player to die.\n"
+msgstr ""
+
+msgid "Error - can't execute die command - %s.\n"
+msgstr ""
+
+msgid "Player must be on a team to die.\n"
+msgstr ""
+
+msgid "^7%s^7 died."
+msgstr ""
+
+msgid "Freeze command not allowed during intermission.\n"
+msgstr ""
+
+msgid "^9%d players are frozen."
+msgstr ""
+
+msgid "No players in team or they are already frozen.\n"
+msgstr ""
+
+msgid "Error - can't freeze - %s.\n"
+msgstr ""
+
+msgid "Player must be on a team to be frozen.\n"
+msgstr ""
+
+msgid "^7%s^7 is frozen."
+msgstr ""
+
+msgid "^9%d players are unfrozen."
+msgstr ""
+
+msgid "No players in team or they are already unfrozen.\n"
+msgstr ""
+
+msgid "Error - can't unfreeze - %s.\n"
+msgstr ""
+
+msgid "Player must be on a team to be unfrozen.\n"
+msgstr ""
+
+msgid "^7%s^7 is unfrozen."
+msgstr ""
+
+msgid "Burn command not allowed during intermission.\n"
+msgstr ""
+
+msgid "^9%d players burned."
+msgstr ""
+
+msgid "No players in team or they are already burned.\n"
+msgstr ""
+
+msgid "Error - can't burn - %s.\n"
+msgstr ""
+
+msgid "Player must be on a team to be burned.\n"
+msgstr ""
+
+msgid "^7%s^7 is burned."
+msgstr ""
+
+msgid "Pip command not allowed during intermission.\n"
+msgstr ""
+
+msgid "^9%d players pipped."
+msgstr ""
+
+msgid "No players in team or they are already pipped.\n"
+msgstr ""
+
+msgid "Error - can't pip - %s.\n"
+msgstr ""
+
+msgid "Player must be on a team to be pipped.\n"
+msgstr ""
+
+msgid "^7%s^7 is pipped."
+msgstr ""
+
+msgid "%s command not allowed during intermission.\n"
+msgstr ""
+
+msgid "^9%d players %s."
+msgstr ""
+
+msgid "No players in team or they are already %s.\n"
+msgstr ""
+
+msgid "Player must be on a team to be %s.\n"
+msgstr ""
+
+msgid "^7%s^7 was %s."
+msgstr ""
+
+#: etmain/ui/options_system.menu:48
+msgid "System Sound Control:"
+msgstr ""
+
+#: etmain/ui/options_system.menu:48
+msgid "Base"
+msgstr ""
+
+#: etmain/ui/options_system.menu:48
+msgid "OpenAL"
+msgstr ""
+
+#: etmain/ui/options_system.menu:48
+msgid "Set the system sound control"
+msgstr ""
+
+msgid "No can do!"
+msgstr ""
+
+msgid "Right away!"
+msgstr ""
+
+#: src/cgame/cg_draw.c:2505
+msgid "^3WARMUP:^7 Match begins now!"
+msgstr ""
+
+#: src/cgame/cg_scoreboard.c:211
+msgid "MATCH BEGINS NOW!"
+msgstr ""
+
+msgid "Mute Players:"
+msgstr ""
+
+msgid "Allow players to vote for muting players"
+msgstr ""
+
+msgid "Surrender:"
+msgstr ""
+
+msgid "Allow players to vote for surrender"
+msgstr ""
+
+msgid "XP Shuffle No Rstrt:"
+msgstr ""
+
+msgid "Allow players to vote for teams to be shuffled without a restart"
+msgstr ""
+
+msgid "Restart Campaign:"
+msgstr ""
+
+msgid "Allow players to vote for restarting campaign"
+msgstr ""
+
+msgid "Next Campaign:"
+msgstr ""
+
+msgid "Allow players to vote for next campaign"
+msgstr ""
+
+msgid "CHANGE SYSTEM SETTINGS"
+msgstr ""
+
+msgid "RESTART CAMPAIGN"
+msgstr ""
+
+msgid "SURRENDER"
+msgstr ""
+
+msgid "NO XP SHUFFLE"
+msgstr ""
+
+msgid "Multiview:"
+msgstr ""
+
+msgid "Poll:"
+msgstr ""
+
+msgid "Allow players to vote for custom votes"
+msgstr ""
+
+msgid "Log File:"
+msgstr ""
+
+msgid "Sets the name of the log file or if empty logging is disabled"
+msgstr ""
+
+msgid "^7BACKSPACE ^3help on/off"
+msgstr ""
+
+msgid "^7BACKSPACE ^mgo  back"
 msgstr ""

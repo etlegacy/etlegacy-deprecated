@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -47,6 +47,10 @@
 #   define Win_ShowConsole(x, y)
 #endif
 
+#ifdef FEATURE_DBMS
+#include "../db/db_sql.h"
+#endif
+
 // NOTE: if protocol gets bumped please add 84 to the list before 0
 // 2.55 82, 2.56 83, 2.6 84
 int demo_protocols[] =
@@ -79,7 +83,6 @@ jmp_buf abortframe;     // an ERR_DROP occured, exit the entire frame
 
 void CL_ShutdownCGame(void);
 
-FILE                *debuglogfile;
 static fileHandle_t logfile;
 fileHandle_t        com_journalFile;        // events are written here
 fileHandle_t        com_journalDataFile;    // config files are written here
@@ -2608,7 +2611,6 @@ void Com_SetRecommended()
  * @brief Checks if profile.pid is valid
  * @retval qtrue if valid
  * @retval qfalse if invalid(!)
- * @todo If pid is found, make sure it is not in use
  */
 qboolean Com_CheckProfile(void)
 {
@@ -2630,9 +2632,9 @@ qboolean Com_CheckProfile(void)
 
 	if (FS_Read(&f_data, sizeof(f_data) - 1, f) < 0)
 	{
-		//b0rk3d!
+		// b0rk3d!
 		FS_FCloseFile(f);
-		//try to delete corrupted pid file
+		// try to delete corrupted pid file
 		FS_Delete(com_pidfile->string);
 		return qfalse;
 	}
@@ -2640,12 +2642,12 @@ qboolean Com_CheckProfile(void)
 	f_pid = atoi(f_data);
 	if (f_pid != com_pid->integer)
 	{
-		//pid doesn't match
+		// pid doesn't match
 		FS_FCloseFile(f);
 		return qfalse;
 	}
 
-	//we're all ok
+	// we're all ok
 	FS_FCloseFile(f);
 	return qtrue;
 }
@@ -2668,19 +2670,19 @@ void Com_TrackProfile(char *profile_path)
 	{
 		if (strlen(last_fs_gamedir) && strlen(last_profile_path))
 		{
-			//save current fs_gamedir
+			// save current fs_gamedir
 			Q_strncpyz(temp_fs_gamedir, fs_gamedir, sizeof(temp_fs_gamedir));
-			//set fs_gamedir temporarily to make FS_* stuff work "right"
+			// set fs_gamedir temporarily to make FS_* stuff work "right"
 			Q_strncpyz(fs_gamedir, last_fs_gamedir, sizeof(fs_gamedir));
 			if (FS_FileExists(last_profile_path))
 			{
 				Com_Printf("Com_TrackProfile: Deleting old pid file [%s] [%s]\n", fs_gamedir, last_profile_path);
 				FS_Delete(last_profile_path);
 			}
-			//restore current fs_gamedir
+			// restore current fs_gamedir
 			Q_strncpyz(fs_gamedir, temp_fs_gamedir, sizeof(fs_gamedir));
 		}
-		//and save current vars for future reference
+		// and save current vars for future reference
 		Q_strncpyz(last_fs_gamedir, fs_gamedir, sizeof(last_fs_gamedir));
 		Q_strncpyz(last_profile_path, profile_path, sizeof(last_profile_path));
 	}
@@ -2720,6 +2722,7 @@ void Com_Init(char *commandLine)
 	// gcc warning: variable `safeMode' might be clobbered by `longjmp' or `vfork'
 	volatile qboolean safeMode = qtrue;
 	int               qport;
+	qboolean test;
 
 	Com_Printf(ET_VERSION "\n");
 
@@ -2787,7 +2790,7 @@ void Com_Init(char *commandLine)
 				char *text_p = defaultProfile;
 				char *token  = COM_Parse(&text_p);
 
-				if (token && *token)
+				if (token && token[0])
 				{
 					Cvar_Set("cl_defaultProfile", token);
 					Cvar_Set("cl_profile", token);
@@ -2810,9 +2813,12 @@ void Com_Init(char *commandLine)
 			// check existing pid file and make sure it's ok
 			if (!Com_CheckProfile())
 			{
-#ifndef DEDICATED
-				if (Sys_Dialog(DT_YES_NO, "ET:L crashed last time it was running. Do you want to reset settings to default values?", "Reset settings") == DR_YES)
+#if !defined(DEDICATED) && !defined(LEGACY_DEBUG)
+				test = Sys_Dialog(DT_YES_NO, "ET:L crashed last time it was running. Do you want to reset settings to default values?\n\nNote & Warning:\nIf you are running several client instances ensure a different value\nof CVAR fs_homepath is set for each client.\nOtherwise the same profile path is used which may cause other side effects.", "Reset settings") == DR_YES;
+#else
+				test = qfalse;
 #endif
+				if (test)
 				{
 					Com_Printf("WARNING: profile.pid found for profile '%s' - system settings will revert to defaults\n", cl_profileStr);
 					// set crashed state
@@ -2980,10 +2986,17 @@ void Com_Init(char *commandLine)
 		// Don't play intro movie if already played
 		if (!com_introPlayed->integer)
 		{
-			Cbuf_AddText("cinematic etintro.roq\n");
+			Cbuf_AddText("cinematic etintro.ogv\n");
 			Cvar_Set("com_introPlayed", "1");
 		}
 	}
+
+#ifdef FEATURE_DBMS
+	if (DB_Init() != 0)
+	{
+		Com_Printf("WARNING: ETL DBMS not init as intended!\n");
+	}
+#endif
 
 	com_fullyInitialized = qtrue;
 	Com_Printf("--- Common Initialization Complete ---\n");
@@ -3083,7 +3096,7 @@ int Com_ModifyMsec(int msec)
 	}
 
 	// don't let it scale below 1 msec
-	if (msec < 1 && com_timescale->value)
+	if (msec < 1) // && com_timescale->value
 	{
 		msec = 1;
 	}
@@ -3235,7 +3248,7 @@ void Com_Frame(void)
 		{
 			if (com_minimized->integer)
 			{
-				minMsec = 1000 / 10;
+				minMsec = 100; // = 1000/10;
 			}
 			else if (com_unfocused->integer && com_maxfps->integer > 1)
 			{
@@ -3448,6 +3461,10 @@ void Com_Shutdown(qboolean badProfile)
 		}
 	}
 
+#ifdef FEATURE_DBMS
+	DB_Close();
+#endif
+
 	if (logfile)
 	{
 		FS_FCloseFile(logfile);
@@ -3646,20 +3663,38 @@ void Field_CompleteKeyname(void)
 
 /*
 ===============
-Field_CompleteFilename
+Field_CompleteFilenameMultiple
 ===============
 */
-void Field_CompleteFilename(const char *dir,
-                            const char *ext, qboolean stripExt, qboolean allowNonPureFilesOnDisk)
+void Field_CompleteFilenameMultiple(const char *dir, int numext, const char **ext, qboolean allowNonPureFilesOnDisk)
 {
 	matchCount       = 0;
 	shortestMatch[0] = 0;
 
-	FS_FilenameCompletion(dir, ext, stripExt, FindMatches, allowNonPureFilesOnDisk);
+	FS_FilenameCompletion(dir, numext, ext, qfalse, FindMatches, allowNonPureFilesOnDisk);
 
 	if (!Field_Complete())
 	{
-		FS_FilenameCompletion(dir, ext, stripExt, PrintMatches, allowNonPureFilesOnDisk);
+		FS_FilenameCompletion(dir, numext, ext, qfalse, PrintMatches, allowNonPureFilesOnDisk);
+	}
+}
+
+/*
+===============
+Field_CompleteFilename
+===============
+*/
+void Field_CompleteFilename(const char *dir, const char *ext, qboolean stripExt, qboolean allowNonPureFilesOnDisk)
+{
+	const char *tmp[] = { ext };
+	matchCount       = 0;
+	shortestMatch[0] = 0;
+
+	FS_FilenameCompletion(dir, 1, tmp, stripExt, FindMatches, allowNonPureFilesOnDisk);
+
+	if (!Field_Complete())
+	{
+		FS_FilenameCompletion(dir, 1, tmp, stripExt, PrintMatches, allowNonPureFilesOnDisk);
 	}
 }
 
@@ -3840,12 +3875,13 @@ void Console_AutoComplete(field_t *field, int *completionOffset)
 	if (!*completionOffset)
 	{
 		int completionArgument = 0;
+
 		matchCount       = 0;
 		matchIndex       = 0;
 		shortestMatch[0] = 0;
 
-		//Multiple matches
-		//Use this to skip this function if there are more than one command (or the command is ready and waiting a new list
+		// Multiple matches
+		// Use this to skip this function if there are more than one command (or the command is ready and waiting a new list
 		completionArgument = Cmd_Argc();
 
 		// If there is trailing whitespace on the cmd
@@ -3861,7 +3897,7 @@ void Console_AutoComplete(field_t *field, int *completionOffset)
 			return;
 		}
 
-		//We will skip this hightlight method if theres more than one command given
+		// We will skip this hightlight method if theres more than one command given
 		if (completionArgument > 1)
 		{
 			return;

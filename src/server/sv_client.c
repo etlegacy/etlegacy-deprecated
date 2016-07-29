@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -463,8 +463,6 @@ void SV_DropClient(client_t *drop, const char *reason)
 			}
 		}
 
-		// Kill any download
-		SV_CloseDownload(drop);
 		SV_Netchan_ClearQueue(drop);
 	}
 
@@ -478,11 +476,8 @@ void SV_DropClient(client_t *drop, const char *reason)
 	Com_DPrintf("Going to CS_ZOMBIE for %s\n", drop->name);
 	drop->state = CS_ZOMBIE;        // become free in a few seconds
 
-	if (drop->download)
-	{
-		FS_FCloseFile(drop->download);
-		drop->download = 0;
-	}
+	// Kill any download
+	SV_CloseDownload(drop);
 
 	// call the prog function for removing a client
 	// this will remove the body, among other things
@@ -786,15 +781,14 @@ void SV_WWWDownload_f(client_t *cl)
 
 	if (!Q_stricmp(subcmd, "done"))
 	{
-		cl->download      = 0;
-		*cl->downloadName = 0;
+		SV_CloseDownload(cl);
+
 		cl->bWWWing       = qfalse;
 		return;
 	}
 	else if (!Q_stricmp(subcmd, "fail"))
 	{
-		cl->download      = 0;
-		*cl->downloadName = 0;
+		SV_CloseDownload(cl);
 		cl->bWWWing       = qfalse;
 		cl->bFallback     = qtrue;
 		// send a reconnect
@@ -805,8 +799,7 @@ void SV_WWWDownload_f(client_t *cl)
 	{
 		Com_Printf("WARNING: client '%s' reports that the redirect download for '%s' had wrong checksum.\n", rc(cl->name), cl->downloadName);
 		Com_Printf("         you should check your download redirect configuration.\n");
-		cl->download      = 0;
-		*cl->downloadName = 0;
+		SV_CloseDownload(cl);
 		cl->bWWWing       = qfalse;
 		cl->bFallback     = qtrue;
 		// send a reconnect
@@ -964,6 +957,7 @@ static qboolean SV_SetupDownloadFile(client_t *cl, msg_t *msg)
 				cl->bFallback = qfalse;
 				if (SV_CheckFallbackURL(cl, msg))
 				{
+					FS_FCloseFile(downloadFileHandle);
 					return qtrue;
 				}
 
@@ -974,6 +968,7 @@ static qboolean SV_SetupDownloadFile(client_t *cl, msg_t *msg)
 		{
 			if (SV_CheckFallbackURL(cl, msg))
 			{
+				FS_FCloseFile(downloadFileHandle);
 				return qtrue;
 			}
 
@@ -1218,7 +1213,7 @@ static void SV_VerifyPaks_f(client_t *cl)
 	if (sv_pure->integer != 0)
 	{
 		int      nClientPaks, nServerPaks, i, j, nCurArg;
-		qboolean bGood = qtrue;
+		qboolean bGood;
 
 		nChkSum1 = nChkSum2 = 0;
 
@@ -1634,6 +1629,14 @@ static qboolean SV_ClientCommand(client_t *cl, msg_t *msg, qboolean premaprestar
 
 	Com_DPrintf("clientCommand: %s : %i : %s\n", rc(cl->name), seq, s);
 
+	// drop the connection if there are issues with reading messages
+	if (seq < 0 || s[0] == 0) // invalid MSG_Read
+	{
+		Com_Printf("Client %s dropped for invalid client command message\n", rc(cl->name));
+		SV_DropClient(cl, "Invalid client command message");
+		return qfalse;
+	}
+
 	// drop the connection if we have somehow lost commands
 	if (seq > cl->lastClientCommand + 1)
 	{
@@ -1866,12 +1869,12 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
 	serverId               = MSG_ReadLong(msg);
 	cl->messageAcknowledge = MSG_ReadLong(msg);
 
-	if (cl->messageAcknowledge < 0)
+	if (cl->messageAcknowledge < 0 || serverId < 0)
 	{
 		// usually only hackers create messages like this
 		// it is more annoying for them to let them hanging
 #ifdef LEGACY_DEBUG
-		SV_DropClient(cl, "DEBUG: illegible client message");
+		SV_DropClient(cl, "DEBUG: illegible client message or invalid server id");
 #endif
 		return;
 	}
@@ -1921,6 +1924,10 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
 		do
 		{
 			c = MSG_ReadByte(msg);
+			if (c < 0) // invalid MSG_Read
+			{
+				return;
+			}
 			if (c == clc_EOF)
 			{
 				break;
@@ -1947,6 +1954,10 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
 	do
 	{
 		c = MSG_ReadByte(msg);
+		if (c < 0) // invalid MSG_Read
+		{
+			return;
+		}
 		if (c == clc_EOF)
 		{
 			break;
@@ -1977,7 +1988,7 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
 		SV_UserMove(cl, msg, qfalse);
 		c = MSG_ReadByte(msg);
 	}
-
+	
 	if (c != clc_EOF)
 	{
 		Com_Printf("WARNING: bad command byte for client %i\n", (int) (cl - svs.clients));

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -1408,9 +1408,9 @@ void R_SetColorMappings(void)
 		s_intensitytable[i] = j;
 	}
 
-	if (glConfig.deviceSupportsGamma)
+	if (glConfig.deviceSupportsGamma && !GLEW_ARB_fragment_program)
 	{
-		GLimp_SetGamma(s_gammatable, s_gammatable, s_gammatable);
+		ri.GLimp_SetGamma(s_gammatable, s_gammatable, s_gammatable);
 	}
 }
 
@@ -1856,7 +1856,7 @@ void R_InitSkins(void)
 	skin = tr.skins[0] = ri.Hunk_Alloc(sizeof(skin_t), h_low);
 	Q_strncpyz(skin->name, "<default skin>", sizeof(skin->name));
 	skin->numSurfaces         = 1;
-	skin->surfaces[0]         = ri.Hunk_Alloc(sizeof(*skin->surfaces), h_low);
+	skin->surfaces[0]         = ri.Hunk_Alloc(sizeof(*skin->surfaces[0]), h_low);
 	skin->surfaces[0]->shader = tr.defaultShader;
 }
 

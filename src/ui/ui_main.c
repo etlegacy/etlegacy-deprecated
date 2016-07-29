@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -102,7 +102,7 @@ Q_EXPORT intptr_t vmMain(intptr_t command, intptr_t arg0, intptr_t arg1, intptr_
 	switch (command)
 	{
 	case UI_KEY_EVENT:
-		_UI_KeyEvent(arg0, arg1);
+		_UI_KeyEvent(arg0, (qboolean) arg1);
 		return 0;
 	case UI_MOUSE_EVENT:
 		_UI_MouseEvent(arg0, arg1);
@@ -120,7 +120,7 @@ Q_EXPORT intptr_t vmMain(intptr_t command, intptr_t arg0, intptr_t arg1, intptr_
 	case UI_CONSOLE_COMMAND:
 		return UI_ConsoleCommand(arg0);
 	case UI_DRAW_CONNECT_SCREEN:
-		UI_DrawConnectScreen(arg0);
+		UI_DrawConnectScreen((qboolean) arg0);
 		return 0;
 	case UI_CHECKEXECKEY:
 		return UI_CheckExecKey(arg0);
@@ -451,7 +451,7 @@ void Text_PaintChar(float x, float y, float w, float h, float scale, float s, fl
 
 void Text_Paint_Ext(float x, float y, float scalex, float scaley, vec4_t color, const char *text, float adjust, int limit, int style, fontHelper_t *font)
 {
-	vec4_t      newColor;
+	vec4_t      newColor = { 0, 0, 0, 0 };
 	glyphInfo_t *glyph;
 
 	scalex *= Q_UTF8_GlyphScale(font);
@@ -534,7 +534,7 @@ void Text_Paint(float x, float y, float scale, vec4_t color, const char *text, f
 
 void Text_PaintWithCursor(float x, float y, float scale, vec4_t color, const char *text, int cursorPos, const char *cursor, int limit, int style)
 {
-	vec4_t       newColor;
+	vec4_t       newColor = { 0, 0, 0, 0 };
 	glyphInfo_t  *glyph, *glyph2;
 	fontHelper_t *font    = &uiInfo.uiDC.Assets.fonts[uiInfo.activeFont];
 	float        useScale = scale * Q_UTF8_GlyphScale(font);
@@ -629,7 +629,7 @@ void Text_PaintWithCursor(float x, float y, float scale, vec4_t color, const cha
 
 static void Text_Paint_Limit(float *maxX, float x, float y, float scale, vec4_t color, const char *text, float adjust, int limit)
 {
-	vec4_t      newColor;
+	vec4_t      newColor = { 0, 0, 0, 0 };
 	glyphInfo_t *glyph;
 	if (text)
 	{
@@ -1517,7 +1517,7 @@ static void UI_DrawMapCinematic(rectDef_t *rect, float scale, vec4_t color, qboo
 				ui_currentMap.integer = 0;
 				trap_Cvar_Set("ui_currentMap", "0");
 			}
-			map = 0;
+			//map = 0; // not used for real
 		}
 
 		UI_DrawMapPreview(rect, scale, color, net);
@@ -2466,7 +2466,7 @@ static void UI_BuildPlayerList(void)
 	trap_GetClientState(&cs);
 	trap_GetConfigString(CS_PLAYERS + cs.clientNum, info, MAX_INFO_STRING);
 	uiInfo.playerNumber = cs.clientNum;
-	uiInfo.teamLeader   = atoi(Info_ValueForKey(info, "tl"));
+	uiInfo.teamLeader   = (qboolean) atoi(Info_ValueForKey(info, "tl"));
 	team                = atoi(Info_ValueForKey(info, "t"));
 	trap_GetConfigString(CS_SERVERINFO, info, sizeof(info));
 	count              = atoi(Info_ValueForKey(info, "sv_maxclients"));
@@ -2541,13 +2541,9 @@ static void UI_DrawServerRefreshDate(rectDef_t *rect, float scale, vec4_t color,
 {
 	if (uiInfo.serverStatus.refreshActive)
 	{
-		vec4_t lowLight, newColor;
+		vec4_t lowLight = { (0.8 * color[0]), (0.8 * color[1]), (0.8 * color[2]), (0.8 * color[3]) }, newColor;
 		int    serverCount;
 
-		lowLight[0] = 0.8 * color[0];
-		lowLight[1] = 0.8 * color[1];
-		lowLight[2] = 0.8 * color[2];
-		lowLight[3] = 0.8 * color[3];
 		LerpColor(color, lowLight, newColor, 0.5 + 0.5 * sin((float)(uiInfo.uiDC.realTime / PULSE_DIVISOR)));
 
 		serverCount = trap_LAN_GetServerCount(ui_netSource.integer);
@@ -4996,7 +4992,7 @@ void UI_RunMenuScript(char **args)
 			int r_mode       = trap_Cvar_VariableValue("r_mode");
 			int r_fullscreen = trap_Cvar_VariableValue("r_fullscreen");
 
-			// save the last usable video settings
+			// save the last usable settings
 			trap_Cvar_SetValue("r_oldMode", r_mode);
 			trap_Cvar_SetValue("r_oldFullscreen", r_fullscreen);
 		}
@@ -5046,6 +5042,7 @@ void UI_RunMenuScript(char **args)
 			int   ui_r_dynamiclight                   = trap_Cvar_VariableValue("r_dynamiclight");
 			int   ui_r_allowextensions                = trap_Cvar_VariableValue("r_allowextensions");
 			int   ui_m_filter                         = trap_Cvar_VariableValue("m_filter");
+			int   ui_s_initsound                      = trap_Cvar_VariableValue("s_initsound");
 			int   ui_s_khz                            = trap_Cvar_VariableValue("s_khz");
 			int   ui_r_detailtextures                 = trap_Cvar_VariableValue("r_detailtextures");
 			int   ui_r_ext_texture_filter_anisotropic = trap_Cvar_VariableValue("r_ext_texture_filter_anisotropic");
@@ -5083,6 +5080,7 @@ void UI_RunMenuScript(char **args)
 			trap_Cvar_Set("ui_r_dynamiclight", va("%i", ui_r_dynamiclight));
 			trap_Cvar_Set("ui_r_allowextensions", va("%i", ui_r_allowextensions));
 			trap_Cvar_Set("ui_m_filter", va("%i", ui_m_filter));
+			trap_Cvar_Set("ui_s_initsound", va("%i", ui_s_initsound));
 			trap_Cvar_Set("ui_s_khz", va("%i", ui_s_khz));
 			trap_Cvar_Set("ui_r_detailtextures", va("%i", ui_r_detailtextures));
 			trap_Cvar_Set("ui_r_ext_texture_filter_anisotropic", va("%i", ui_r_ext_texture_filter_anisotropic));
@@ -5109,6 +5107,7 @@ void UI_RunMenuScript(char **args)
 			trap_Cvar_Set("ui_r_dynamiclight", "");
 			trap_Cvar_Set("ui_r_allowextensions", "");
 			trap_Cvar_Set("ui_m_filter", "");
+			trap_Cvar_Set("ui_s_initsound", "");
 			trap_Cvar_Set("ui_s_khz", "");
 			trap_Cvar_Set("ui_r_detailtextures", "");
 			trap_Cvar_Set("ui_r_ext_texture_filter_anisotropic", "");
@@ -5136,6 +5135,7 @@ void UI_RunMenuScript(char **args)
 			int   ui_r_dynamiclight                   = trap_Cvar_VariableValue("ui_r_dynamiclight");
 			int   ui_r_allowextensions                = trap_Cvar_VariableValue("ui_r_allowextensions");
 			int   ui_m_filter                         = trap_Cvar_VariableValue("ui_m_filter");
+			int   ui_s_initsound                      = trap_Cvar_VariableValue("ui_s_initsound");
 			int   ui_s_khz                            = trap_Cvar_VariableValue("ui_s_khz");
 			int   ui_r_detailtextures                 = trap_Cvar_VariableValue("ui_r_detailtextures");
 			int   ui_r_ext_texture_filter_anisotropic = trap_Cvar_VariableValue("ui_r_ext_texture_filter_anisotropic");
@@ -5179,6 +5179,7 @@ void UI_RunMenuScript(char **args)
 			trap_Cvar_Set("r_dynamiclight", va("%i", ui_r_dynamiclight));
 			trap_Cvar_Set("r_allowextensions", va("%i", ui_r_allowextensions));
 			trap_Cvar_Set("m_filter", va("%i", ui_m_filter));
+			trap_Cvar_Set("s_initsound", va("%i", ui_s_initsound));
 			trap_Cvar_Set("s_khz", va("%i", ui_s_khz));
 			trap_Cvar_Set("r_detailtextures", va("%i", ui_r_detailtextures));
 			trap_Cvar_Set("r_ext_texture_filter_anisotropic", va("%i", ui_r_ext_texture_filter_anisotropic));
@@ -5204,6 +5205,7 @@ void UI_RunMenuScript(char **args)
 			trap_Cvar_Set("ui_r_dynamiclight", "");
 			trap_Cvar_Set("ui_r_allowextensions", "");
 			trap_Cvar_Set("ui_m_filter", "");
+			trap_Cvar_Set("ui_s_initsound", "");
 			trap_Cvar_Set("ui_s_khz", "");
 			trap_Cvar_Set("ui_r_detailtextures", "");
 			trap_Cvar_Set("ui_r_ext_texture_filter_anisotropic", "");
@@ -7089,10 +7091,13 @@ static void UI_FeederSelection(float feederID, int index)
 
 		if (mapName && *mapName)
 		{
+			fileHandle_t f;
+
 			// First check if the corresponding map is downloaded to prevent warning about missing levelshot
-			if (trap_FS_FOpenFile(va("maps/%s.bsp", Info_ValueForKey(info, "mapname")), NULL, FS_READ))
+			if (trap_FS_FOpenFile(va("maps/%s.bsp", Info_ValueForKey(info, "mapname")), &f, FS_READ))
 			{
 				uiInfo.serverStatus.currentServerPreview = trap_R_RegisterShaderNoMip(va("levelshots/%s", Info_ValueForKey(info, "mapname")));
+				trap_FS_FCloseFile(f);
 			}
 			else
 			{
@@ -7246,7 +7251,7 @@ static qboolean GameType_Parse(char **p, qboolean join)
 			return qtrue;
 		}
 
-		if (!token || token[0] == 0)
+		if (!token[0])
 		{
 			return qfalse;
 		}
@@ -7333,7 +7338,7 @@ static void UI_ParseGameInfo(const char *teamFile)
 	while (1)
 	{
 		token = COM_ParseExt(&p, qtrue);
-		if (!token || token[0] == 0 || token[0] == '}')
+		if (!token[0] || token[0] == '}')
 		{
 			break;
 		}
@@ -7594,7 +7599,7 @@ void _UI_Init(int legacyClient, int clientVersion)
 	uiInfo.serverStatus.currentServerCinematic = -1;
 	uiInfo.previewMovie                        = -1;
 
-	// init Yes/No once for cl_language -> server browser (punkbuster)
+	// init Yes/No once for cl_lang -> server browser (punkbuster)
 	Q_strncpyz(translated_yes, DC->translateString("Yes"), sizeof(translated_yes));
 	Q_strncpyz(translated_no, DC->translateString("NO"), sizeof(translated_no));
 
@@ -7694,9 +7699,6 @@ void _UI_SetActiveMenu(uiMenuCommand_t menu)
 	// enusure minumum menu data is cached
 	if (Menu_Count() > 0)
 	{
-		vec3_t v;
-		v[0] = v[1] = v[2] = 0;
-
 		menutype = menu;
 
 		switch (menu)
@@ -7958,9 +7960,6 @@ vmCvar_t ui_currentNetMap;
 vmCvar_t ui_currentMap;
 vmCvar_t ui_mapIndex;
 
-vmCvar_t ui_browserMaster;
-vmCvar_t ui_browserGameType;
-vmCvar_t ui_browserSortKey;
 vmCvar_t ui_browserShowEmptyOrFull;
 vmCvar_t ui_browserShowPasswordProtected;
 vmCvar_t ui_browserShowFriendlyFire;
@@ -7978,12 +7977,6 @@ vmCvar_t ui_browserMapFilterCheckBox;
 vmCvar_t ui_browserOssFilter;
 
 vmCvar_t ui_serverStatusTimeOut;
-
-vmCvar_t ui_cmd;
-
-vmCvar_t ui_prevTeam;
-vmCvar_t ui_prevClass;
-vmCvar_t ui_prevWeapon;
 
 vmCvar_t ui_friendlyFire;
 
@@ -8043,9 +8036,6 @@ cvarTable_t cvarTable[] =
 	{ &ui_currentMap,                   "ui_currentMap",                       "0",                          CVAR_ARCHIVE                   },
 	{ &ui_currentNetMap,                "ui_currentNetMap",                    "0",                          CVAR_ARCHIVE                   },
 
-	{ &ui_browserMaster,                "ui_browserMaster",                    "0",                          CVAR_ARCHIVE                   },
-	{ &ui_browserGameType,              "ui_browserGameType",                  "0",                          CVAR_ARCHIVE                   },
-	{ &ui_browserSortKey,               "ui_browserSortKey",                   "4",                          CVAR_ARCHIVE                   },
 	{ &ui_browserShowEmptyOrFull,       "ui_browserShowEmptyOrFull",           "0",                          CVAR_ARCHIVE                   },
 	{ &ui_browserShowPasswordProtected, "ui_browserShowPasswordProtected",     "0",                          CVAR_ARCHIVE                   },
 	{ &ui_browserShowFriendlyFire,      "ui_browserShowFriendlyFire",          "0",                          CVAR_ARCHIVE                   },
@@ -8062,12 +8052,6 @@ cvarTable_t cvarTable[] =
 	{ &ui_browserOssFilter,             "ui_browserOssFilter",                 "0",                          CVAR_ARCHIVE                   },
 
 	{ &ui_serverStatusTimeOut,          "ui_serverStatusTimeOut",              "7000",                       CVAR_ARCHIVE                   },
-
-	{ &ui_cmd,                          "ui_cmd",                              "",                           0                              },
-
-	{ &ui_prevTeam,                     "ui_prevTeam",                         "-1",                         0                              },
-	{ &ui_prevClass,                    "ui_prevClass",                        "-1",                         0                              },
-	{ &ui_prevWeapon,                   "ui_prevWeapon",                       "-1",                         0                              },
 
 	{ &g_gameType,                      "g_gameType",                          "4",                          CVAR_SERVERINFO | CVAR_LATCH   },
 	{ NULL,                             "cg_drawBuddies",                      "1",                          CVAR_ARCHIVE                   },

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  * Copyright (C) 2012 Konrad Mosoń <mosonkonrad@gmail.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
@@ -37,8 +37,6 @@
 
 #ifndef INCLUDE_TRACKER_H
 #define INCLUDE_TRACKER_H
-
-#define TRACKER_ADDR "et-tracker.trackbase.net:4444"
 
 #include "server.h"
 

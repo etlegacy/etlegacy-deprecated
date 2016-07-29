@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -76,11 +76,13 @@ static qboolean CG_ParseGibModels(char *modelPath, bg_character_t *character)
 	// parse the text
 	text_p = bigTextBuffer;
 
+	COM_BeginParseSession("CG_ParseGibModels");
+
 	for (i = 0; i < MAX_GIB_MODELS; i++)
 	{
 		token = COM_Parse(&text_p);
 
-		if (!token || !token[0])
+		if (!token[0])
 		{
 			break;
 		}
@@ -131,11 +133,13 @@ static qboolean CG_ParseHudHeadConfig(const char *filename, animation_t *hha)
 	// parse the text
 	text_p = bigTextBuffer;
 
+	COM_BeginParseSession("CG_ParseHudHeadConfig");
+
 	for (i = 0 ; i < MAX_HD_ANIMATIONS ; i++)
 	{
 		token = COM_Parse(&text_p);     // first frame
 
-		if (!token)
+		if (!token[0])
 		{
 			break;
 		}
@@ -144,7 +148,7 @@ static qboolean CG_ParseHudHeadConfig(const char *filename, animation_t *hha)
 
 		token = COM_Parse(&text_p);     // length
 
-		if (!token)
+		if (!token[0])
 		{
 			break;
 		}
@@ -153,7 +157,7 @@ static qboolean CG_ParseHudHeadConfig(const char *filename, animation_t *hha)
 
 		token = COM_Parse(&text_p);     // fps
 
-		if (!token)
+		if (!token[0])
 		{
 			break;
 		}
@@ -170,7 +174,7 @@ static qboolean CG_ParseHudHeadConfig(const char *filename, animation_t *hha)
 
 		token = COM_Parse(&text_p);     // looping frames
 
-		if (!token)
+		if (!token[0])
 		{
 			break;
 		}
@@ -473,7 +477,7 @@ qboolean CG_RegisterCharacter(const char *characterFile, bg_character_t *charact
 			{
 				if (!CG_RegisterAcc(accessoryname, &character->accModels[cg_headAccessories[i].index], characterDef.skin, &character->accSkins[cg_headAccessories[i].index]))
 				{
-					CG_Printf(S_COLOR_YELLOW "WARNING: failed to register accessory '%s' referenced from '%s'->'%s'\n", accessoryname, characterFile, filename);
+					CG_Printf(S_COLOR_YELLOW "WARNING: failed to register hud accessory '%s' referenced from '%s'->'%s'\n", accessoryname, characterFile, filename);
 				}
 			}
 		}

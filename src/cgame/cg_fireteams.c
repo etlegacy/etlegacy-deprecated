@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -723,7 +723,7 @@ void CG_DrawPlayerSF(panel_button_t *button, int *pageofs)
 		CG_Text_Paint_Ext(button->rect.x, y, button->font->scalex, button->font->scaley, button->font->colour, str, 0, 0, button->font->style, button->font->font);
 
 
-		y += button->rect.h;
+		//y += button->rect.h;
 	}
 }
 
@@ -784,7 +784,7 @@ void CG_DrawPlayerNF(panel_button_t *button, int *pageofs)
 		CG_Text_Paint_Ext(button->rect.x, y, button->font->scalex, button->font->scaley, button->font->colour, str, 0, 0, button->font->style, button->font->font);
 
 
-		y += button->rect.h;
+		//y += button->rect.h;
 	}
 }
 
@@ -812,11 +812,11 @@ void CG_Fireteams_MenuText_Draw(panel_button_t *button)
 
 				if (cg_quickMessageAlt.integer)
 				{
-					str = va("%i. %s", (i + 1) % 10, ftMenuRootStrings[i]);
+					str = va("%i. %s", (i + 1) % 10, CG_TranslateString(ftMenuRootStrings[i]));
 				}
 				else
 				{
-					str = va("%s. %s", ftMenuRootStringsAlphachars[i], ftMenuRootStrings[i]);
+					str = va("%s. %s", ftMenuRootStringsAlphachars[i], CG_TranslateString(ftMenuRootStrings[i]));
 				}
 
 				CG_Text_Paint_Ext(button->rect.x, y, button->font->scalex, button->font->scaley, button->font->colour, str, 0, 0, button->font->style, button->font->font);
@@ -868,11 +868,11 @@ void CG_Fireteams_MenuText_Draw(panel_button_t *button)
 
 				if (cg_quickMessageAlt.integer)
 				{
-					str = va("%i. %s", (i + 1) % 10, ftOffMenuList[i]);
+					str = va("%i. %s", (i + 1) % 10, CG_TranslateString(ftOffMenuList[i]));
 				}
 				else
 				{
-					str = va("%s. %s", ftOffMenuListAlphachars[i], ftOffMenuList[i]);
+					str = va("%s. %s", ftOffMenuListAlphachars[i], CG_TranslateString(ftOffMenuList[i]));
 				}
 
 				CG_Text_Paint_Ext(button->rect.x, y, button->font->scalex, button->font->scaley, button->font->colour, str, 0, 0, button->font->style, button->font->font);
@@ -895,11 +895,11 @@ void CG_Fireteams_MenuText_Draw(panel_button_t *button)
 
 					if (cg_quickMessageAlt.integer)
 					{
-						str = va("%i. %s", (i + 1) % 10, ftOnMenuList[i]);
+						str = va("%i. %s", (i + 1) % 10, CG_TranslateString(ftOnMenuList[i]));
 					}
 					else
 					{
-						str = va("%s. %s", ftOnMenuListAlphachars[i], ftOnMenuList[i]);
+						str = va("%s. %s", ftOnMenuListAlphachars[i], CG_TranslateString(ftOnMenuList[i]));
 					}
 
 					CG_Text_Paint_Ext(button->rect.x, y, button->font->scalex, button->font->scaley, button->font->colour, str, 0, 0, button->font->style, button->font->font);
@@ -925,11 +925,11 @@ void CG_Fireteams_MenuText_Draw(panel_button_t *button)
 
 					if (cg_quickMessageAlt.integer)
 					{
-						str = va("%i. %s", (i + 1) % 10, ftLeaderMenuList[i]);
+						str = va("%i. %s", (i + 1) % 10, CG_TranslateString(ftLeaderMenuList[i]));
 					}
 					else
 					{
-						str = va("%s. %s", ftLeaderMenuListAlphachars[i], ftLeaderMenuList[i]);
+						str = va("%s. %s", ftLeaderMenuListAlphachars[i], CG_TranslateString(ftLeaderMenuList[i]));
 					}
 
 					CG_Text_Paint_Ext(button->rect.x, y, button->font->scalex, button->font->scaley, button->font->colour, str, 0, 0, button->font->style, button->font->font);

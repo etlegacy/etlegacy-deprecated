@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -38,6 +38,10 @@
 #include "server.h"
 
 #include <time.h>
+
+#ifdef FEATURE_DBMS
+#include "../db/db_sql.h"
+#endif
 
 static time_t uptimeSince;
 
@@ -485,7 +489,7 @@ static void SV_Status_f(void)
 	           Sys_Milliseconds(),
 	           sv_mapname->string);
 
-	// FIXME: extend player name lenght (>16 chars) ? - they are printed!
+	// FIXME: extend player name length (>16 chars) ? - they are printed!
 	// FIXME: do a Com_Printf per line! ... create the row at first
 	for (i = 0, cl = svs.clients ; i < sv_maxclients->integer ; i++, cl++)
 	{
@@ -756,6 +760,10 @@ void SV_AddOperatorCommands(void)
 	{
 		Cmd_AddCommand("say", SV_ConSay_f);
 	}
+
+#ifdef FEATURE_DBMS
+	Cmd_AddCommand("sql", DB_ExecSQLCommand_f);
+#endif
 
 	Cmd_AddCommand("uptime", SV_Uptime_f);
 

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -36,6 +36,10 @@
  */
 
 #include "g_local.h"
+
+#ifdef FEATURE_LUA
+#include "g_lua.h"
+#endif
 
 qboolean G_SpawnStringExt(const char *key, const char *defaultString, char **out, const char *file, int line)
 {
@@ -1019,6 +1023,10 @@ void G_SpawnEntitiesFromString(void)
 	{
 		G_SpawnGEntityFromSpawnVars();
 	}
+
+#ifdef FEATURE_LUA
+	G_LuaHook_SpawnEntitiesFromString();
+#endif
 
 	G_Printf("Disable spawning!\n");
 	level.spawning = qfalse;            // any future calls to G_Spawn*() will be errors

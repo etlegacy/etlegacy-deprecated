@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -718,7 +718,7 @@ qboolean ClientInactivityTimer(gclient_t *client)
 	if (client->pers.cmd.forwardmove || client->pers.cmd.rightmove || client->pers.cmd.upmove ||
 	    (client->pers.cmd.wbuttons & (WBUTTON_ATTACK2 | WBUTTON_LEANLEFT | WBUTTON_LEANRIGHT))  ||
 	    (client->pers.cmd.buttons & BUTTON_ATTACK) ||
-	    (client->ps.eFlags & (EF_MOUNTEDTANK | EF_MG42_ACTIVE)) ||
+	    (client->ps.eFlags & (EF_MOUNTEDTANK | EF_MG42_ACTIVE | EF_AAGUN_ACTIVE)) ||
 	    (client->ps.pm_type == PM_DEAD /*&& !(client->ps.eFlags & EF_PLAYDEAD)*/))     // playdead sets PM_DEAD, so check if playing dead ...
 	{
 		client->inactivityWarning = qfalse;
@@ -1022,6 +1022,7 @@ void ClientEvents(gentity_t *ent, int oldEventSequence)
 		case EV_FIRE_WEAPON_MG42:
 			// reset player disguise on firing mounted mg
 			ent->client->ps.powerups[PW_OPS_DISGUISED] = 0;
+			ent->client->disguiseClientNum             = -1;
 			mg42_fire(ent);
 
 			// Only 1 stats bin for mg42
@@ -1038,6 +1039,7 @@ void ClientEvents(gentity_t *ent, int oldEventSequence)
 
 			// reset player disguise on firing tank mg
 			ent->client->ps.powerups[PW_OPS_DISGUISED] = 0;
+			ent->client->disguiseClientNum             = -1;
 
 			mountedmg42_fire(ent);
 			// Only 1 stats bin for mg42
@@ -1058,6 +1060,7 @@ void ClientEvents(gentity_t *ent, int oldEventSequence)
 		case EV_FIRE_WEAPON_AAGUN:
 			// reset player disguise on firing aagun
 			ent->client->ps.powerups[PW_OPS_DISGUISED] = 0;
+			ent->client->disguiseClientNum             = -1;
 
 			aagun_fire(ent);
 			break;
@@ -1180,12 +1183,6 @@ void ClientThink_real(gentity_t *ent)
 		client->pmext.centerangles[PITCH] = ent->tagParent->r.currentAngles[PITCH];
 	}
 
-	/*if (client->cameraPortal) {
-	    G_SetOrigin( client->cameraPortal, client->ps.origin );
-	    trap_LinkEntity(client->cameraPortal);
-	    VectorCopy( client->cameraOrigin, client->cameraPortal->s.origin2);
-	}*/
-
 	client->ps.ammo[WP_ARTY] = 0;
 	if (!G_AvailableAirstrikes(ent))
 	{
@@ -1284,7 +1281,7 @@ void ClientThink_real(gentity_t *ent)
 		return;
 	}
 
-	if (!(ent->r.svFlags & SVF_BOT) && level.time - client->pers.lastCCPulseTime > 2000)
+	if (!(ent->r.svFlags & SVF_BOT) && level.time - client->pers.lastCCPulseTime > 1000)
 	{
 		G_SendMapEntityInfo(ent);
 		client->pers.lastCCPulseTime = level.time;
@@ -1609,38 +1606,18 @@ void ClientThink_real(gentity_t *ent)
 	}
 
 	// debug hitboxes
-	if (g_debugHitboxes.integer == 2)
+	if(g_debugPlayerHitboxes.integer & 2)
 	{
-		gentity_t    *bboxEnt, *head;
-		vec3_t       b1, b2;
+		gentity_t    *head;
 		vec3_t       maxs;
 		grefEntity_t refent;
 
-		VectorCopy(ent->r.currentOrigin, b1);
-		VectorCopy(ent->r.currentOrigin, b2);
-		VectorAdd(b1, ent->r.mins, b1);
 		VectorCopy(ent->r.maxs, maxs);
 		maxs[2] = ClientHitboxMaxZ(ent);
-		VectorAdd(b2, maxs, b2);
-		bboxEnt = G_TempEntity(b1, EV_RAILTRAIL);
-		VectorCopy(b2, bboxEnt->s.origin2);
-		bboxEnt->s.dmgFlags  = 1;
-		bboxEnt->s.angles[0] = 0;
-		bboxEnt->s.angles[1] = 255;
-		bboxEnt->s.angles[2] = 0;
+		G_RailBox(ent->r.currentOrigin, ent->r.mins, maxs, tv(0.f,0.f,1.f), ent->s.number);
 
 		head = G_BuildHead(ent, &refent, qtrue);
-		VectorCopy(head->r.currentOrigin, b1);
-		VectorCopy(head->r.currentOrigin, b2);
-		VectorAdd(b1, head->r.mins, b1);
-		VectorAdd(b2, head->r.maxs, b2);
-		bboxEnt = G_TempEntity(b1, EV_RAILTRAIL);
-		VectorCopy(b2, bboxEnt->s.origin2);
-		bboxEnt->s.dmgFlags  = 1;
-		bboxEnt->s.angles[0] = 0;
-		bboxEnt->s.angles[1] = 0;
-		bboxEnt->s.angles[2] = 255;
-
+		G_RailBox(head->r.currentOrigin, head->r.mins, head->r.maxs, tv(0.f,0.f,1.f), head->s.number|HITBOXBIT_HEAD);
 		G_FreeEntity(head);
 	}
 
@@ -1756,7 +1733,6 @@ void SpectatorClientEndFrame(gentity_t *ent)
 		ent->client->ps.stats[STAT_XP_OVERFLOW] = ent->client->ps.stats[STAT_XP] >> 15;     // >>15 == /32768
 		ent->client->ps.stats[STAT_XP]          = ent->client->ps.stats[STAT_XP] & 0x7FFF;
 	}
-
 
 	// if we are doing a chase cam or a remote view, grab the latest info
 	if ((ent->client->sess.spectatorState == SPECTATOR_FOLLOW) || (ent->client->ps.pm_flags & PMF_LIMBO))
@@ -1883,7 +1859,7 @@ void SpectatorClientEndFrame(gentity_t *ent)
 				else
 				{
 					int savedScore = ent->client->ps.persistant[PERS_SCORE];
-					
+
 					ent->client->ps                        = cl->ps;
 					ent->client->ps.pm_flags              |= PMF_FOLLOW;
 					ent->client->ps.persistant[PERS_SCORE] = savedScore;
@@ -2090,7 +2066,7 @@ void ClientEndFrame(gentity_t *ent)
 {
 	int i, frames;
 
-	// don't count skulled player time
+	// count player time
 	if (g_gamestate.integer == GS_PLAYING && !(ent->client->ps.persistant[PERS_RESPAWNS_LEFT] == 0 && (ent->client->ps.pm_flags & PMF_LIMBO)))
 	{
 		if (ent->client->sess.sessionTeam == TEAM_AXIS)
@@ -2102,6 +2078,20 @@ void ClientEndFrame(gentity_t *ent)
 			ent->client->sess.time_allies += level.time - level.previousTime;
 		}
 	}
+
+	// don't count skulled player time
+	if (g_gamestate.integer == GS_PLAYING && !(ent->client->sess.sessionTeam == TEAM_SPECTATOR || ent->client->ps.pm_flags & PMF_LIMBO || ent->client->ps.stats[STAT_HEALTH] <= 0))
+	{
+		ent->client->sess.time_played += level.time - level.previousTime;
+	}
+
+#ifdef FEATURE_RATING
+	if (g_skillRating.integer && !(level.time % 2000))
+	{
+		level.axisProb   = G_CalculateWinProbability(TEAM_AXIS);
+		level.alliesProb = 1.0 - level.axisProb;
+	}
+#endif
 
 	// used for informing of speclocked teams.
 	// Zero out here and set only for certain specs
@@ -2196,9 +2186,6 @@ void ClientEndFrame(gentity_t *ent)
 	// apply all the damage taken this frame
 	P_DamageFeedback(ent);
 
-	// mark as not missing updates initially
-	ent->client->ps.eFlags &= ~EF_CONNECTION;
-
 	ent->client->ps.stats[STAT_HEALTH] = ent->health;
 
 	G_SetClientSound(ent);
@@ -2241,6 +2228,7 @@ void ClientEndFrame(gentity_t *ent)
 
 	// mark as not missing updates initially
 	ent->client->ps.eFlags &= ~EF_CONNECTION;
+	ent->s.eFlags &= ~EF_CONNECTION;
 
 	// see how many frames the client has missed
 	frames = level.framenum - ent->client->lastUpdateFrame - 1;
@@ -2272,38 +2260,18 @@ void ClientEndFrame(gentity_t *ent)
 #endif
 
 	// debug hitboxes
-	if (g_debugHitboxes.integer == 1)
+	if(g_debugPlayerHitboxes.integer & 1)
 	{
-		gentity_t    *bboxEnt, *head;
-		vec3_t       b1, b2;
+		gentity_t    *head;
 		vec3_t       maxs;
 		grefEntity_t refent;
 
-		VectorCopy(ent->r.currentOrigin, b1);
-		VectorCopy(ent->r.currentOrigin, b2);
-		VectorAdd(b1, ent->r.mins, b1);
 		VectorCopy(ent->r.maxs, maxs);
 		maxs[2] = ClientHitboxMaxZ(ent);
-		VectorAdd(b2, maxs, b2);
-		bboxEnt = G_TempEntity(b1, EV_RAILTRAIL);
-		VectorCopy(b2, bboxEnt->s.origin2);
-		bboxEnt->s.dmgFlags  = 1;
-		bboxEnt->s.angles[0] = 0;
-		bboxEnt->s.angles[1] = 0;
-		bboxEnt->s.angles[2] = 255;
+		G_RailBox(ent->r.currentOrigin, ent->r.mins, maxs, tv(0.f,1.f,0.f), ent->s.number);
 
 		head = G_BuildHead(ent, &refent, qtrue);
-		VectorCopy(head->r.currentOrigin, b1);
-		VectorCopy(head->r.currentOrigin, b2);
-		VectorAdd(b1, head->r.mins, b1);
-		VectorAdd(b2, head->r.maxs, b2);
-		bboxEnt = G_TempEntity(b1, EV_RAILTRAIL);
-		VectorCopy(b2, bboxEnt->s.origin2);
-		bboxEnt->s.dmgFlags  = 1;
-		bboxEnt->s.angles[0] = 0;
-		bboxEnt->s.angles[1] = 255;
-		bboxEnt->s.angles[2] = 0;
-
+		G_RailBox(head->r.currentOrigin, head->r.mins, head->r.maxs, tv(0.f,1.f,0.f), ent->s.number|HITBOXBIT_HEAD);
 		G_FreeEntity(head);
 	}
 

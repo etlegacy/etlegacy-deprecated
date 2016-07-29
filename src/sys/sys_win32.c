@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -78,11 +78,11 @@ char *Sys_DefaultHomePath(void)
 
 	if (!*homePath /*&& !com_homepath*/)
 	{
-		// FIXME: forcing SHGFP_TYPE_DEFAULT because file creation fails
+		// FIXME: forcing SHGFP_TYPE_CURRENT because file creation fails
 		//        when real CSIDL_PERSONAL is on a mapped drive
 		// NOTE: SHGetFolderPath is marked as deprecated
 		found = SHGetFolderPath(NULL, CSIDL_PERSONAL,
-		                        NULL, SHGFP_TYPE_DEFAULT, szPath);
+		                        NULL, SHGFP_TYPE_CURRENT, szPath);
 
 		if (found != S_OK)
 		{
@@ -409,6 +409,9 @@ char **Sys_ListFiles(const char *directory, const char *extension, char *filter,
 	int                flag;
 	int                i;
 	int                extLen;
+#ifdef DEDICATED
+	qboolean invalid;
+#endif
 
 	if (filter)
 	{
@@ -475,6 +478,31 @@ char **Sys_ListFiles(const char *directory, const char *extension, char *filter,
 					continue; // didn't match
 				}
 			}
+
+#ifdef DEDICATED
+			// check for bad file names and don't add these
+			invalid = qfalse;
+			// note: this isn't done in Sys_ListFilteredFiles()
+
+			for (i = 0; i < strlen(findinfo.name); i++)
+			{
+				if (findinfo.name[i] <= 31 || findinfo.name[i] == 127)
+				{
+					Com_Printf("ERROR: invalid char in name of file '%s'.\n", findinfo.name);
+					invalid = qtrue;
+					break;
+				}
+			}
+
+			if (invalid)
+			{
+				remove(va("%s%c%s", directory, PATH_SEP, findinfo.name));
+				Sys_Error("Invalid character in filename '%s'. The file has been removed. Start the server again.", findinfo.name);
+
+				continue; // never add invalid files
+			}
+#endif
+
 			if (nfiles == MAX_FOUND_FILES - 1)
 			{
 				break;
@@ -711,31 +739,6 @@ void Sys_GLimpInit(void)
 			Sys_SetEnv("SDL_VIDEODRIVER", "directx");
 		}
 #endif
-	}
-#endif
-}
-
-/*
-==============
-Sys_PlatformInit
-
-Windows specific initialisation
-==============
-*/
-void Sys_PlatformInit(void)
-{
-#ifndef DEDICATED
-	const char *SDL_VIDEODRIVER = getenv("SDL_VIDEODRIVER");
-
-	if (SDL_VIDEODRIVER)
-	{
-		Com_Printf("SDL_VIDEODRIVER is externally set to \"%s\", "
-		           "in_mouse -1 will have no effect\n", SDL_VIDEODRIVER);
-		SDL_VIDEODRIVER_externallySet = qtrue;
-	}
-	else
-	{
-		SDL_VIDEODRIVER_externallySet = qfalse;
 	}
 #endif
 }
@@ -1005,35 +1008,21 @@ void Sys_SetProcessProperties(void)
 #endif
 }
 
-/*
-==================
-WinMain
-==================
-*/
 WinVars_t g_wv;
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+/*
+==============
+Sys_PlatformInit
+
+Windows specific initialization
+==============
+*/
+void Sys_PlatformInit(void)
 {
-	char commandLine[MAX_STRING_CHARS] = { 0 };
-	char cwd[MAX_OSPATH];
-	// should never get a previous instance in Win32
-	if (hPrevInstance)
-	{
-		return EXIT_FAILURE;
-	}
+	g_wv.hInstance = GetModuleHandle(NULL);
 
 #ifdef EXCEPTION_HANDLER
 	WinSetExceptionVersion(Q3_VERSION);
-#endif
-
-	g_wv.hInstance = hInstance;
-
-#if 1
-	commandLine[0] = '\0';
-	Sys_ParseArgs(__argc, __argv);
-	Sys_BuildCommandLine(__argc, __argv, commandLine, sizeof(commandLine));
-#else
-	Q_strncpyz(commandLine, lpCmdLine, sizeof(commandLine));
 #endif
 
 #ifndef DEDICATED
@@ -1055,28 +1044,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// no abort/retry/fail errors
 	SetErrorMode(SEM_FAILCRITICALERRORS);
 
-	// get the initial time base
-	Sys_Milliseconds();
-	Com_Init(commandLine);
-	NET_Init();
+#ifndef DEDICATED
+	const char *SDL_VIDEODRIVER = getenv("SDL_VIDEODRIVER");
 
-	Sys_Splash(qfalse);
-
-	_getcwd(cwd, sizeof(cwd));
-	Com_Printf("Working directory: %s\n", cwd);
-
-	// hide the early console since we've reached the point where we
-	// have a working graphics subsystems
-#ifndef LEGACY_DEBUG
-	if (!com_dedicated->integer && !com_viewlog->integer)
+	if (SDL_VIDEODRIVER)
 	{
-		Sys_ShowConsoleWindow(0, qfalse);
+		Com_Printf("SDL_VIDEODRIVER is externally set to \"%s\", "
+			"in_mouse -1 will have no effect\n", SDL_VIDEODRIVER);
+		SDL_VIDEODRIVER_externallySet = qtrue;
+	}
+	else
+	{
+		SDL_VIDEODRIVER_externallySet = qfalse;
 	}
 #endif
-
-	// main game loop
-	Sys_GameLoop();
-
-	// never gets here
-	return EXIT_SUCCESS;
 }

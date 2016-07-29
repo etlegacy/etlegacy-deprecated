@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -34,7 +34,6 @@
  */
 
 #include "cg_local.h"
-#include "../ui/ui_shared.h"
 
 #if FEATURE_MULTIVIEW
 extern pmove_t cg_pmove;        // cg_predict.c
@@ -271,13 +270,17 @@ void CG_demoTimescaleDraw(void)
 {
 	if (cg.demoPlayback && cgs.timescaleUpdate > cg.time && demo_drawTimeScale.integer != 0)
 	{
-		char *s = va("^3TimeScale: ^7%.1f", cg_timescale.value);
+		vec4_t bgColor = { 0.0f, 0.0f, 0.0f, 0.6f };
+		vec4_t bdColor = { 0.5f, 0.5f, 0.5f, 0.5f };
+
+		char *s = va("^7Time Scale: ^3%.1fx", cg_timescale.value);
 		int  h  = CG_Text_Height_Ext("A", cg_fontScaleSP.value, 0, &cgs.media.limboFont2);
 		int  w  = CG_Text_Width_Ext(s, cg_fontScaleSP.value, 0, &cgs.media.limboFont2);
+		int  x  = Ccg_WideX(SCREEN_WIDTH) - w - 108;
 
-		CG_FillRect(42 - 3, 400, w + 7, h * 2.5, colorDkGreen);
-		CG_DrawRect(42 - 3, 400, w + 7, h * 2.5, 1, colorMdYellow);
-		CG_Text_Paint_Ext(42, 411, cg_fontScaleSP.value, cg_fontScaleSP.value, colorWhite, s, 0, 0, 0, &cgs.media.limboFont2);
+		CG_FillRect(x, SCREEN_HEIGHT - 21, w + 7, h * 2.5, bgColor);
+		CG_DrawRect(x, SCREEN_HEIGHT - 21, w + 7, h * 2.5, 1, bdColor);
+		CG_Text_Paint_Ext(x + 3, SCREEN_HEIGHT - 10, cg_fontScaleSP.value, cg_fontScaleSP.value, colorWhite, s, 0, 0, 0, &cgs.media.limboFont2);
 	}
 }
 
@@ -288,7 +291,7 @@ void CG_windowDraw(void)
 	cg_window_t *w;
 	qboolean    fCleanup = qfalse;
 #if FEATURE_MULTIVIEW
-	qboolean fAllowMV = (cg.snap != NULL && cg.snap->ps.pm_type != PM_INTERMISSION);
+	qboolean fAllowMV = (cg.snap != NULL && cg.snap->ps.pm_type != PM_INTERMISSION && cgs.mvAllowed);
 #endif
 	vec4_t *bg;
 	vec4_t textColor, borderColor, bgColor;
@@ -372,7 +375,7 @@ void CG_windowDraw(void)
 			{
 				if (tmp > 0)
 				{
-					textColor[3] = (float)((float)t_offset / (float)w->targetTime);
+					textColor[3] = ((float)t_offset / (float)w->targetTime);
 				}
 				else
 				{
@@ -400,7 +403,7 @@ void CG_windowDraw(void)
 			{
 				if (tmp > 0)
 				{
-					textColor[3] -= (float)((float)t_offset / (float)w->targetTime);
+					textColor[3] -= ((float)t_offset / (float)w->targetTime);
 				}
 				else
 				{
@@ -423,15 +426,14 @@ void CG_windowDraw(void)
 		{
 			if (w->effects & WFX_TRUETYPE)
 			{
-				CG_Text_Paint_Ext(x, y + h, w->fontScaleX, w->fontScaleY, textColor,
-				                  (char *)w->lineText[j], 0.0f, 0, 0, &cgs.media.limboFont2);
+				CG_Text_Paint_Ext(x, y + h, w->fontScaleX, w->fontScaleY, textColor, w->lineText[j], 0.0f, 0, 0, &cgs.media.limboFont2);
 			}
 
 			h -= (w->lineHeight[j] + 3);
 
 			if (!(w->effects & WFX_TRUETYPE))
 			{
-				CG_Text_Paint_Ext(x, y + h, cg_fontScaleSP.value, cg_fontScaleSP.value, textColor, (char *)w->lineText[j], 0, 0, 0, &cgs.media.limboFont2);
+				CG_Text_Paint_Ext(x, y + h, cg_fontScaleSP.value, cg_fontScaleSP.value, textColor, w->lineText[j], 0, 0, 0, &cgs.media.limboFont2);
 			}
 		}
 	}
@@ -485,11 +487,11 @@ void CG_windowNormalizeOnText(cg_window_t *w)
 	{
 		if (w->effects & WFX_TRUETYPE)
 		{
-			tmp = CG_Text_Width_Ext((char *)w->lineText[i], w->fontScaleX, 0, &cgs.media.limboFont2);
+			tmp = CG_Text_Width_Ext(w->lineText[i], w->fontScaleX, 0, &cgs.media.limboFont2);
 		}
 		else
 		{
-			tmp = CG_Text_Width_Ext((char *)w->lineText[i], cg_fontScaleSP.value, 0, &cgs.media.limboFont2);
+			tmp = CG_Text_Width_Ext(w->lineText[i], cg_fontScaleSP.value, 0, &cgs.media.limboFont2);
 		}
 
 		if (tmp > w->w)
@@ -502,7 +504,7 @@ void CG_windowNormalizeOnText(cg_window_t *w)
 	{
 		if (w->effects & WFX_TRUETYPE)
 		{
-			w->lineHeight[i] = CG_Text_Height_Ext((char *)w->lineText[i], w->fontScaleY, 0, &cgs.media.limboFont2);
+			w->lineHeight[i] = CG_Text_Height_Ext(w->lineText[i], w->fontScaleY, 0, &cgs.media.limboFont2);
 		}
 		else
 		{
@@ -519,7 +521,7 @@ void CG_windowNormalizeOnText(cg_window_t *w)
 	// Set up bottom alignment
 	if (w->x < 0)
 	{
-		w->x += SCREEN_WIDTH - w->w;
+		w->x += Ccg_WideX(SCREEN_WIDTH) - w->w;
 	}
 	if (w->y < 0)
 	{
@@ -657,8 +659,11 @@ void CG_removeStrings(cg_window_t *w)
 void CG_cursorUpdate(void)
 {
 	int                i, x;
-	float              nx, ny;
 	int                nSelectedWindow = -1;
+	float              nx, ny;
+	float              fontScale  = cg_fontScaleSP.value;
+	int                charHeight = CG_Text_Height_Ext("A", fontScale, 0, &cgs.media.limboFont2);
+	int                charWidth  = CG_Text_Width_Ext("A", fontScale, 0, &cgs.media.limboFont2);
 	cg_window_t        *w;
 	cg_windowHandler_t *wh    = &cg.winHandler;
 	qboolean           fFound = qfalse, fUpdateOverlay = qfalse;
@@ -713,9 +718,9 @@ void CG_cursorUpdate(void)
 						if (fResize)
 						{
 							w->w += nx - w->m_x;
-							if (w->x + w->w > SCREEN_WIDTH - 2)
+							if (w->x + w->w > Ccg_WideX(SCREEN_WIDTH) - 2)
 							{
-								w->w = SCREEN_WIDTH - 2 - w->x;
+								w->w = Ccg_WideX(SCREEN_WIDTH) - 2 - w->x;
 							}
 							if (w->w < 64)
 							{
@@ -735,9 +740,9 @@ void CG_cursorUpdate(void)
 						else
 						{
 							w->x += nx - w->m_x;
-							if (w->x + w->w > SCREEN_WIDTH - 2)
+							if (w->x + w->w > Ccg_WideX(SCREEN_WIDTH) - 2)
 							{
-								w->x = SCREEN_WIDTH - 2 - w->w;
+								w->x = Ccg_WideX(SCREEN_WIDTH) - 2 - w->w;
 							}
 							if (w->x < 2)
 							{
@@ -780,8 +785,8 @@ void CG_cursorUpdate(void)
 		}
 	}
 
-	nx = (float)(MVINFO_RIGHT - (MVINFO_TEXTSIZE * 3));
-	ny = (float)(MVINFO_TOP + (MVINFO_TEXTSIZE + 1));
+	nx = (float)(MVINFO_RIGHT - charWidth * 12.0f);
+	ny = (float)(MVINFO_TOP + charHeight * 2.0f);
 
 	// Highlight corresponding active window's overlay element
 	if (fFound)
@@ -799,29 +804,32 @@ void CG_cursorUpdate(void)
 	// General boundary check
 	else
 	{
-		// Ugh, have to loop through BOTH team lists
-		int vOffset = 0;
+		// display on two columns
+		int hOffset = 32;
+		int xOffset = MVINFO_RIGHT - hOffset;
 
+		// Ugh, have to loop through BOTH team lists
 		for (i = TEAM_AXIS; i <= TEAM_ALLIES; i++)
 		{
 			if (cg.mvTotalTeam[i] == 0)
 			{
 				continue;
 			}
-			if (cgs.cursorX >= nx && cgs.cursorY >= ny && cgs.cursorX < MVINFO_RIGHT &&
-			    cgs.cursorY < ny + (cg.mvTotalTeam[i] * (MVINFO_TEXTSIZE + 1)))
+
+			if (cgs.cursorX >= nx && cgs.cursorY >= ny && cgs.cursorX < xOffset &&
+			    cgs.cursorY < ny + (cg.mvTotalTeam[i] * charHeight * 2.0f))
 			{
-				int pos = (int)(cgs.cursorY - ny) / (MVINFO_TEXTSIZE + 1);
+				int pos = (int)(cgs.cursorY - ny) / (charHeight * 2.0f);
 
 				if (pos < cg.mvTotalTeam[i])
 				{
-					int x = MVINFO_RIGHT - cg.mvOverlay[(cg.mvTeamList[i][pos])].width;
-					int y = MVINFO_TOP + vOffset + ((pos + 1) * (MVINFO_TEXTSIZE + 1));
+					int x = xOffset - cg.mvOverlay[(cg.mvTeamList[i][pos])].width;
+					int y = MVINFO_TOP + ((pos + 1) * charHeight * 2.0f);
 
 					// See if we're really over something
 					if (cgs.cursorX >= x && cgs.cursorY >= y &&
-					    cgs.cursorX <= MVINFO_RIGHT &&
-					    cgs.cursorY <= y + MVINFO_TEXTSIZE)
+					    cgs.cursorX <= xOffset &&
+					    cgs.cursorY <= y + charHeight * 2.0f)
 					{
 						// Perform any other window handling here for MV
 						// views based on element selection
@@ -854,8 +862,8 @@ void CG_cursorUpdate(void)
 					}
 				}
 			}
-			vOffset += (cg.mvTotalTeam[i] + 2) * (MVINFO_TEXTSIZE + 1);
-			ny      += vOffset;
+			xOffset += hOffset;
+			nx      += hOffset;
 		}
 	}
 

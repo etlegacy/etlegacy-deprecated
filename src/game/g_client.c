@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -43,6 +43,10 @@
 
 #ifdef FEATURE_LUA
 #include "g_lua.h"
+#endif
+
+#ifdef FEATURE_SERVERMDX
+#include "g_mdx.h"
 #endif
 
 qboolean CompareIPNoPort(char const *ip1, char const *ip2);
@@ -154,7 +158,6 @@ SelectNearestDeathmatchSpawnPoint
 Find the spot that we DON'T want to use
 ================
 */
-#define MAX_SPAWN_POINTS    128
 gentity_t *SelectNearestDeathmatchSpawnPoint(vec3_t from)
 {
 	gentity_t *spot = NULL;
@@ -219,8 +222,11 @@ Chooses a player start, deathmatch start, etc
 */
 gentity_t *SelectSpawnPoint(vec3_t avoidPoint, vec3_t origin, vec3_t angles)
 {
-	gentity_t *nearestSpot = SelectNearestDeathmatchSpawnPoint(avoidPoint);
-	gentity_t *spot        = SelectRandomDeathmatchSpawnPoint();
+	gentity_t *nearestSpot;
+	gentity_t *spot;
+
+	nearestSpot = SelectNearestDeathmatchSpawnPoint(avoidPoint);
+	spot        = SelectRandomDeathmatchSpawnPoint();
 
 	if (spot == nearestSpot)
 	{
@@ -302,7 +308,9 @@ Called by BodySink
 */
 void BodyUnlink(gentity_t *ent)
 {
-	gentity_t *tent = G_TempEntity(ent->r.currentOrigin, EV_BODY_DP);     // so clients will memset them off
+	gentity_t *tent;
+
+	tent = G_TempEntity(ent->r.currentOrigin, EV_BODY_DP);     // so clients will memset them off
 
 	tent->s.otherEntityNum2 = ent->s.number;
 	tent->r.svFlags         = SVF_BROADCAST; // send to everyone
@@ -313,7 +321,9 @@ void BodyUnlink(gentity_t *ent)
 
 void G_BodyDP(gentity_t *ent)
 {
-	gentity_t *tent = G_TempEntity(ent->r.currentOrigin, EV_BODY_DP);     // so clients will memset them off
+	gentity_t *tent;
+
+	tent = G_TempEntity(ent->r.currentOrigin, EV_BODY_DP);     // so clients will memset them off
 
 	tent->s.otherEntityNum2 = ent->s.number;
 	tent->r.svFlags         = SVF_BROADCAST; // send to everyone
@@ -364,7 +374,7 @@ void BodySink(gentity_t *ent)
 		// see if parent is still disguised
 		if (ent->activator->client->ps.powerups[PW_OPS_DISGUISED])
 		{
-			ent->nextthink = level.time + 100;
+			ent->nextthink = level.time + FRAMETIME;
 			return;
 		}
 		else
@@ -375,6 +385,118 @@ void BodySink(gentity_t *ent)
 
 	BodySink2(ent);
 }
+
+#ifdef FEATURE_SERVERMDX
+
+static qboolean G_IsPositionOK(gentity_t *ent, vec3_t newOrigin)
+{
+	trace_t trace;
+
+	trap_TraceCapsule(&trace, ent->s.pos.trBase, ent->r.mins, ent->r.maxs, newOrigin, ent->s.number, MASK_PLAYERSOLID);
+
+	if (trace.fraction == 1)
+	{
+		VectorCopy(trace.endpos, ent->s.pos.trBase);
+		return qtrue;
+	}
+	else
+	{
+		return qfalse;
+	}
+}
+
+// note that this is only with first stage, corpse can just use slidemove
+static void G_StepSlideCorpse(gentity_t *ent, vec3_t newOrigin)
+{
+	vec3_t  start, down, up;
+	trace_t trace;
+
+	VectorCopy(ent->s.pos.trBase, start);
+
+	if (G_IsPositionOK(ent, newOrigin))
+	{
+		// so check if we can fall even more down
+		VectorCopy(ent->s.pos.trBase, down);
+		down[2] -= 16;
+		// item code is using these
+		trap_Trace(&trace, ent->s.pos.trBase, ent->r.mins, ent->r.maxs, down, ent->s.number, MASK_PLAYERSOLID);
+		if (trace.fraction == 1)
+		{
+			// begin with falling again
+			ent->s.pos.trType = TR_GRAVITY;
+			ent->s.pos.trTime = level.time;
+		}
+		else
+		{
+			VectorCopy(trace.endpos, ent->s.pos.trBase);
+		}
+
+		return;     // we got exactly where we wanted to go first try
+	}
+
+	VectorCopy(ent->s.pos.trBase, down);
+
+	down[2] -= 18;
+
+	trap_TraceCapsule(&trace, ent->s.pos.trBase, ent->r.mins, ent->r.maxs, down, ent->s.number, MASK_PLAYERSOLID);
+
+	VectorSet(up, 0, 0, 1);
+	// never step up when you still have up velocity
+	if (ent->s.pos.trDelta[2] > 0 && (trace.fraction == 1.0 || DotProduct(trace.plane.normal, up) < 0.7))
+	{
+		return;
+	}
+
+	VectorCopy(ent->s.pos.trBase, down);
+
+	VectorCopy(start, up);
+	up[2] += 18;
+
+	// test the player position if they were a stepheight higher
+	trap_TraceCapsule(&trace, start, ent->r.mins, ent->r.maxs, up, ent->s.number, MASK_PLAYERSOLID);
+
+	if (trace.allsolid)
+	{
+		return;     // can't step up
+	}
+
+	// try slidemove from this position
+	VectorCopy(trace.endpos, ent->s.pos.trBase);
+
+	G_IsPositionOK(ent, newOrigin);
+
+	// push down the final amount
+	VectorCopy(ent->s.pos.trBase, down);
+	down[2] -= 18;
+
+	memset(&trace, 0, sizeof(trace));
+
+	trap_TraceCapsule(&trace, ent->s.pos.trBase, ent->r.mins, ent->r.maxs, down, ent->s.number, MASK_PLAYERSOLID);
+
+	if (!trace.allsolid)
+	{
+		VectorCopy(trace.endpos, ent->s.pos.trBase);
+	}
+
+	// so check if we can fall even more down
+	if (trace.fraction == 1.f)
+	{
+		down[2] -= 16;
+		// item code is using these
+		trap_Trace(&trace, ent->s.pos.trBase, ent->r.mins, ent->r.maxs, down, ent->s.number, MASK_PLAYERSOLID);
+		if (trace.fraction == 1)
+		{
+			// begin with falling again
+			ent->s.pos.trType = TR_GRAVITY;
+			ent->s.pos.trTime = level.time;
+		}
+		else
+		{
+			VectorCopy(trace.endpos, ent->s.pos.trBase);
+		}
+	}
+}
+#endif
 
 /*
 =============
@@ -431,11 +553,6 @@ void CopyToBodyQue(gentity_t *ent)
 	VectorCopy(ent->client->ps.viewangles, body->s.angles);
 	VectorCopy(ent->client->ps.viewangles, body->r.currentAngles);
 
-	//if ( ent->client->ps.powerups[PW_HELMETSHIELD])
-	//{
-	//	body->s.powerups |= (1 << PW_HELMETSHIELD);
-	//}
-
 	if (body->s.groundEntityNum == ENTITYNUM_NONE)
 	{
 		body->s.pos.trType = TR_GRAVITY;
@@ -456,7 +573,8 @@ void CopyToBodyQue(gentity_t *ent)
 	body->s.eventSequence = 0;
 
 	// time needed to complete animation
-	body->s.torsoAnim = body->s.legsAnim = ent->client->legsDeathAnim;
+	body->s.torsoAnim = ent->client->torsoDeathAnim;
+	body->s.legsAnim  = ent->client->legsDeathAnim;
 
 	body->r.svFlags = ent->r.svFlags & ~SVF_BOT;
 	VectorCopy(ent->r.mins, body->r.mins);
@@ -475,8 +593,7 @@ void CopyToBodyQue(gentity_t *ent)
 
 	VectorCopy(body->s.pos.trBase, body->r.currentOrigin);
 
-//#ifdef FEATURE_SERVERMDX
-#if 0
+#ifdef FEATURE_SERVERMDX
 	if (ent->client->deathAnim)
 	{
 		vec3_t       origin, offset;
@@ -510,7 +627,6 @@ void CopyToBodyQue(gentity_t *ent)
 		VectorCopy(body->r.currentOrigin, body->s.pos.trBase);
 	}
 #endif
-
 
 	body->clipmask = CONTENTS_SOLID | CONTENTS_PLAYERCLIP;
 	// allow bullets to pass through bbox
@@ -729,17 +845,6 @@ void limbo(gentity_t *ent, qboolean makeCorpse)
 			{
 				ent->client->sess.spectatorState = SPECTATOR_FOLLOW;
 			}
-		}
-
-		if (ent->client->sess.sessionTeam == TEAM_AXIS)
-		{
-			ent->client->deployQueueNumber = level.redNumWaiting;
-			level.redNumWaiting++;
-		}
-		else if (ent->client->sess.sessionTeam == TEAM_ALLIES)
-		{
-			ent->client->deployQueueNumber = level.blueNumWaiting;
-			level.blueNumWaiting++;
 		}
 
 		for (i = 0; i < level.numConnectedClients; i++)
@@ -1482,12 +1587,6 @@ static void ClientCleanName(const char *in, char *out, int outSize)
 				break;
 			}
 
-			// don't allow black in a name, period
-/*			if( ColorIndex(*in) == 0 ) {
-                in++;
-                continue;
-            }
-*/
 			// make sure room in dest for both chars
 			if (len > outSize - 2)
 			{
@@ -2008,7 +2107,11 @@ void ClientUserinfoChanged(int clientNum)
 
 	// send over a subset of the userinfo keys so other clients can
 	// print scoreboards, display models, and play custom sounds
-	s = va("n\\%s\\t\\%i\\c\\%i\\lc\\%i\\r\\%i\\m\\%s\\s\\%s\\dn\\%s\\dr\\%i\\w\\%i\\lw\\%i\\sw\\%i\\mu\\%i\\ref\\%i\\u\\%u",
+#ifdef FEATURE_RATING
+	s = va("n\\%s\\t\\%i\\c\\%i\\lc\\%i\\r\\%i\\m\\%s\\s\\%s\\dn\\%i\\w\\%i\\lw\\%i\\sw\\%i\\mu\\%i\\ref\\%i\\sr\\%f\\dr\\%f\\u\\%u",
+#else
+	s = va("n\\%s\\t\\%i\\c\\%i\\lc\\%i\\r\\%i\\m\\%s\\s\\%s\\dn\\%i\\w\\%i\\lw\\%i\\sw\\%i\\mu\\%i\\ref\\%i\\u\\%u",
+#endif
 	       client->pers.netname,
 	       client->sess.sessionTeam,
 	       client->sess.playerType,
@@ -2016,13 +2119,16 @@ void ClientUserinfoChanged(int clientNum)
 	       client->sess.rank,
 	       medalStr,
 	       skillStr,
-	       client->disguiseNetname,
-	       client->disguiseRank,
+	       client->disguiseClientNum,
 	       client->sess.playerWeapon,
 	       client->sess.latchPlayerWeapon,
 	       client->sess.latchPlayerWeapon2,
 	       client->sess.muted ? 1 : 0,
 	       client->sess.referee,
+#ifdef FEATURE_RATING
+	       client->sess.mu - 3 * client->sess.sigma,
+	       client->sess.mu - 3 * client->sess.sigma - (client->sess.oldmu - 3 * client->sess.oldsigma),
+#endif
 	       client->sess.uci
 	       );
 
@@ -2346,6 +2452,8 @@ char *ClientConnect(int clientNum, qboolean firstTime, qboolean isBot)
 	client->pers.connected   = CON_CONNECTING;
 	client->pers.connectTime = level.time;
 
+	client->disguiseClientNum = -1;
+
 	// Set the client ip and guid
 	Q_strncpyz(client->pers.client_ip, cs_ip, MAX_IP4_LENGTH);
 	Q_strncpyz(client->pers.cl_guid, cs_guid, MAX_GUID_LENGTH + 1);
@@ -2402,10 +2510,10 @@ char *ClientConnect(int clientNum, qboolean firstTime, qboolean isBot)
 		{
 			unsigned long ip = GeoIP_addr_to_num(cs_ip);
 
-			//10.0.0.0/8			[RFC1918]
-			//172.16.0.0/12			[RFC1918]
-			//192.168.0.0/16		[RFC1918]
-			//169.254.0.0/16		[RFC3330] we need this ?
+			// 10.0.0.0/8			[RFC1918]
+			// 172.16.0.0/12			[RFC1918]
+			// 192.168.0.0/16		[RFC1918]
+			// 169.254.0.0/16		[RFC3330] we need this ?
 			if (((ip & 0xFF000000) == 0x0A000000) ||
 			    ((ip & 0xFFF00000) == 0xAC100000) ||
 			    ((ip & 0xFFFF0000) == 0xC0A80000) ||
@@ -2511,7 +2619,7 @@ int G_ComputeMaxLives(gclient_t *cl, int maxRespawns)
 	float scaled = (float)(maxRespawns - 1) * (1.0f - ((float)(level.time - level.startTime) / (g_timelimit.value * 60000.0f)));
 	int   val    = (int)scaled;
 
-	// rain - #102 - don't scale of the timelimit is 0
+	// don't scale of the timelimit is 0
 	if (g_timelimit.value == 0.0)
 	{
 		return maxRespawns - 1;
@@ -2692,9 +2800,6 @@ void ClientBegin(int clientNum)
 	// Start players in limbo mode if they change teams during the match
 	if (g_gamestate.integer != GS_INTERMISSION && client->sess.sessionTeam != TEAM_SPECTATOR && (level.time - level.startTime > FRAMETIME * GAME_INIT_FRAMES))
 	{
-/*	  if( (client->sess.sessionTeam != TEAM_SPECTATOR && (level.time - client->pers.connectTime) > 60000) ||
-        ( g_gamestate.integer == GS_PLAYING && ( client->sess.sessionTeam == TEAM_AXIS || client->sess.sessionTeam == TEAM_ALLIES ) &&
-         g_gametype.integer == GT_WOLF_LMS && ( level.numTeamClients[0] > 0 || level.numTeamClients[1] > 0 ) ) ) {*/
 		ent->health     = 0;
 		ent->r.contents = CONTENTS_CORPSE;
 
@@ -2723,7 +2828,7 @@ void ClientBegin(int clientNum)
 			trap_SendServerCommand(-1, va("print \"[lof]%s" S_COLOR_WHITE " [lon]joined the Allies team\n\"", client->pers.netname));
 			break;
 		default:
-			//Just in case
+			// Just in case
 			trap_SendServerCommand(-1, va("print \"[lof]%s" S_COLOR_WHITE " [lon]entered the game\n\"", client->pers.netname));
 			break;
 		}
@@ -2896,19 +3001,7 @@ void ClientSpawn(gentity_t *ent, qboolean revived, qboolean teamChange, qboolean
 		}
 		else
 		{
-			// if we have requested a specific spawn point, use it (fixme: what if this will place us inside another character?)
-/*			spawnPoint = NULL;
-            trap_GetUserinfo( ent->s.number, userinfo, sizeof(userinfo) );
-            if( (str = Info_ValueForKey( userinfo, "spawnPoint" )) != NULL && str[0] ) {
-                spawnPoint = SelectSpawnPointFromList( str, spawn_origin, spawn_angles );
-                if (!spawnPoint) {
-                    G_Printf( "WARNING: unable to find spawn point \"%s\" for bot \"%s\"\n", str, ent->aiName );
-                }
-            }
-            //
-            if( !spawnPoint ) {*/
 			spawnPoint = SelectCTFSpawnPoint(client->sess.sessionTeam, client->pers.teamState.state, spawn_origin, spawn_angles, client->sess.spawnObjectiveIndex);
-//			}
 		}
 	}
 
@@ -2918,9 +3011,9 @@ void ClientSpawn(gentity_t *ent, qboolean revived, qboolean teamChange, qboolean
 	flags  = ent->client->ps.eFlags & EF_TELEPORT_BIT;
 	flags ^= EF_TELEPORT_BIT;
 
-	//unlagged reset history markers
+	// unlagged reset history markers
 	G_ResetMarkers(ent);
-	//unlagged
+	// unlagged
 
 	flags |= (client->ps.eFlags & EF_VOTED);
 	// clear everything but the persistant data
@@ -2945,10 +3038,11 @@ void ClientSpawn(gentity_t *ent, qboolean revived, qboolean teamChange, qboolean
 		client->maxlivescalced = set;
 	}
 
-	client->pers       = saved;
-	client->sess       = savedSess;
-	client->ps.ping    = savedPing;
-	client->ps.teamNum = savedTeam;
+	client->pers              = saved;
+	client->sess              = savedSess;
+	client->ps.ping           = savedPing;
+	client->ps.teamNum        = savedTeam;
+	client->disguiseClientNum = -1;
 
 	if (inIntermission)
 	{
@@ -3041,7 +3135,9 @@ void ClientSpawn(gentity_t *ent, qboolean revived, qboolean teamChange, qboolean
 
 		if (G_IsWeaponDisabled(ent, client->sess.latchPlayerWeapon))
 		{
-			bg_playerclass_t *classInfo = BG_PlayerClassForPlayerState(&ent->client->ps);
+			bg_playerclass_t *classInfo;
+
+			classInfo = BG_PlayerClassForPlayerState(&ent->client->ps);
 
 			client->sess.latchPlayerWeapon = classInfo->classWeapons[0];
 			update                         = qtrue;
@@ -3055,7 +3151,9 @@ void ClientSpawn(gentity_t *ent, qboolean revived, qboolean teamChange, qboolean
 
 		if (G_IsWeaponDisabled(ent, client->sess.playerWeapon))
 		{
-			bg_playerclass_t *classInfo = BG_PlayerClassForPlayerState(&ent->client->ps);
+			bg_playerclass_t *classInfo;
+
+			classInfo = BG_PlayerClassForPlayerState(&ent->client->ps);
 
 			client->sess.playerWeapon = classInfo->classWeapons[0];
 			update                    = qtrue;
@@ -3222,8 +3320,6 @@ void ClientDisconnect(int clientNum)
 {
 	gentity_t *ent  = g_entities + clientNum;
 	gentity_t *flag = NULL;
-	gitem_t   *item = NULL;
-	vec3_t    launchvel;
 	int       i;
 
 	if (!ent->client)
@@ -3244,6 +3340,21 @@ void ClientDisconnect(int clientNum)
 	G_RemoveFromAllIgnoreLists(clientNum);
 	G_LeaveTank(ent, qfalse);
 
+	// update uniform owners
+	for (i = 0 ; i < level.numConnectedClients ; i++)
+	{
+		flag = g_entities + level.sortedClients[i];
+		if (flag->client->disguiseClientNum == clientNum && flag->client->ps.powerups[PW_OPS_DISGUISED])
+		{
+			CPx(flag->s.number,"cp \"Your cover has been blown, steal a new uniform soon!\" 1");
+			flag->client->disguiseClientNum = flag->s.clientNum;
+			// sound effect
+			//G_AddEvent(flag, EV_DISGUISE_SOUND, 0); // FIXME: find a sound + add event
+			ClientUserinfoChanged(flag->s.clientNum);
+			// no break - uniform might be stolen more than once
+		}
+	}
+
 	// stop any following clients
 	for (i = 0 ; i < level.numConnectedClients ; i++)
 	{
@@ -3254,8 +3365,7 @@ void ClientDisconnect(int clientNum)
 		{
 			StopFollowing(flag);
 		}
-		if ((flag->client->ps.pm_flags & PMF_LIMBO)
-		    && flag->client->sess.spectatorClient == clientNum)
+		if ((flag->client->ps.pm_flags & PMF_LIMBO) && flag->client->sess.spectatorClient == clientNum)
 		{
 			Cmd_FollowCycle_f(flag, 1, qfalse);
 		}
@@ -3264,6 +3374,7 @@ void ClientDisconnect(int clientNum)
 	// remove complaint client
 	for (i = 0 ; i < level.numConnectedClients ; i++)
 	{
+		flag = g_entities + level.sortedClients[i];
 		if (flag->client->pers.complaintEndTime > level.time && flag->client->pers.complaintClient == clientNum)
 		{
 			flag->client->pers.complaintClient  = -1;
@@ -3318,48 +3429,7 @@ void ClientDisconnect(int clientNum)
 		// Especially important for stuff like CTF flags
 		TossWeapons(ent);
 
-		// New code for tossing flags
-		if (ent->client->ps.powerups[PW_REDFLAG])
-		{
-			item = BG_GetItem(ITEM_RED_FLAG);
-			if (!item)
-			{
-				item = BG_FindItem("Objective"); // FIXME: there is no item with such pickup_name
-			}
-
-			ent->client->ps.powerups[PW_REDFLAG] = 0;
-		}
-		if (ent->client->ps.powerups[PW_BLUEFLAG])
-		{
-			item = BG_GetItem(ITEM_BLUE_FLAG);
-			if (!item)
-			{
-				item = BG_FindItem("Objective"); // FIXME: there is no item with such pickup_name
-			}
-
-			ent->client->ps.powerups[PW_BLUEFLAG] = 0;
-		}
-
-		if (item)
-		{
-			// fix for suicide drop exploit through walls/gates
-			launchvel[0] = 0;    //crandom()*20;
-			launchvel[1] = 0;    //crandom()*20;
-			launchvel[2] = 0;    //10+random()*10;
-
-			flag                = LaunchItem(item, ent->r.currentOrigin, launchvel, ent - g_entities);
-			flag->s.modelindex2 = ent->s.otherEntityNum2;    // FIXME set player->otherentitynum2 with old modelindex2 from flag and restore here
-			flag->message       = ent->message; // also restore item name
-
-#ifdef FEATURE_OMNIBOT
-			// FIXME: see ETPub G_DropItems()
-			Bot_Util_SendTrigger(flag, NULL, va("%s dropped.", flag->message), "dropped");
-#endif
-
-			// Clear out player's temp copies
-			ent->s.otherEntityNum2 = 0;
-			ent->message           = NULL;
-		}
+		G_DropItems(ent);
 
 		// Log stats too
 		G_LogPrintf("WeaponStats: %s\n", G_createStats(ent));
@@ -3392,6 +3462,14 @@ void ClientDisconnect(int clientNum)
 	G_verifyMatchState(i);
 #ifdef FEATURE_MULTIVIEW
 	G_smvAllRemoveSingleClient(ent - g_entities);
+#endif
+
+#ifdef FEATURE_RATING
+	if (g_skillRating.integer)
+	{
+		level.axisProb   = G_CalculateWinProbability(TEAM_AXIS);
+		level.alliesProb = 1.0 - level.axisProb;
+	}
 #endif
 }
 

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -192,7 +192,8 @@ int PM_ReloadAnimForWeapon(int weapon)
 	case WP_MOBILE_BROWNING_SET:
 		return WEAP_RELOAD3;
 	default:
-		if (pm->skill[SK_LIGHT_WEAPONS] >= 2 && BG_isLightWeaponSupportingFastReload(weapon))
+		// IS_VALID_WEAPON(weapon) ?
+		if (pm->skill[SK_LIGHT_WEAPONS] >= 2 && weaponTable[weapon].isLightWeaponSupportingFastReload)
 		{
 			return WEAP_RELOAD2;        // faster reload
 		}
@@ -2341,7 +2342,15 @@ static void PM_WaterEvents(void)
 		}
 	}
 
-	pm->ps->stats[STAT_AIRLEFT] = pm->pmext->airleft;
+	// fix prediction, ensure full HOLDBREATHTIME when airleft isn't in use
+	if (pm->pmext->airleft < 0 || pm->pmext->airleft > HOLDBREATHTIME)
+	{
+		pm->ps->stats[STAT_AIRLEFT] = HOLDBREATHTIME;
+	}
+	else
+	{
+		pm->ps->stats[STAT_AIRLEFT] = pm->pmext->airleft;
+	}
 }
 
 /*
@@ -2367,7 +2376,7 @@ static void PM_BeginWeaponReload(int weapon)
 	switch (weapon)
 	{
 	// if ((weapon <= WP_NONE || weapon > WP_DYNAMITE) && !(weapon >= WP_KAR98 && weapon < WP_NUM_WEAPONS))
-	// FIXME: case WP_AMMO ?
+	case WP_AMMO:
 	case WP_SMOKETRAIL:
 	case WP_MAPMORTAR:
 	case VERYBIGEXPLOSION:
@@ -2421,7 +2430,7 @@ static void PM_BeginWeaponReload(int weapon)
 	// okay to reload while overheating without tacking the reload time onto the end of the
 	// current weaponTime (the reload time is partially absorbed into the overheat time)
 	reloadTime = GetAmmoTableData(weapon)->reloadTime;
-	if (pm->skill[SK_LIGHT_WEAPONS] >= 2 && BG_isLightWeaponSupportingFastReload(weapon))
+	if (pm->skill[SK_LIGHT_WEAPONS] >= 2 && weaponTable[weapon].isLightWeaponSupportingFastReload)
 	{
 		reloadTime *= .65f;
 	}
@@ -2466,7 +2475,8 @@ void PM_BeginWeaponChange(int oldweapon, int newweapon, qboolean reload)        
 		return;
 	}
 
-	if (pm->ps->weaponstate == WEAPON_DROPPING || pm->ps->weaponstate == WEAPON_DROPPING_TORELOAD)
+	if (pm->ps->weaponstate == WEAPON_DROPPING || pm->ps->weaponstate == WEAPON_DROPPING_TORELOAD ||
+	    pm->ps->weaponstate == WEAPON_RELOADING)
 	{
 		return;
 	}
@@ -2666,8 +2676,8 @@ static void PM_FinishWeaponChange(void)
 	case WP_K43_SCOPE:
 	case WP_GARAND_SCOPE:
 	case WP_FG42SCOPE:
-		pm->ps->aimSpreadScale      = 255;          // initially at lowest accuracy
-		pm->ps->aimSpreadScaleFloat = 255.0f;       // initially at lowest accuracy
+		pm->ps->aimSpreadScale      = AIMSPREAD_MAXSPREAD;          // initially at lowest accuracy
+		pm->ps->aimSpreadScaleFloat = AIMSPREAD_MAXSPREAD;       // initially at lowest accuracy
 		break;
 	case WP_SILENCER:
 		pm->pmext->silencedSideArm |= 1;
@@ -2693,7 +2703,6 @@ static void PM_FinishWeaponChange(void)
 	case WP_GPG40:
 		pm->pmext->silencedSideArm |= 2;
 		break;
-
 	default:
 		break;
 	}
@@ -2786,6 +2795,8 @@ static void PM_FinishWeaponChange(void)
 			switchtime    = 1667;
 			altSwitchAnim = qtrue;
 		}
+		break;
+	default:
 		break;
 	}
 
@@ -2890,6 +2901,11 @@ void PM_CheckForReload(int weapon)
 
 	// some weapons don't reload
 	if (!weaponTable[weapon].isReload)
+	{
+		return;
+	}
+
+	if (pm->ps->eFlags & EF_ZOOMING)
 	{
 		return;
 	}
@@ -3195,8 +3211,8 @@ void PM_AdjustAimSpreadScale(void)
 	// all weapons are very inaccurate in zoomed mode
 	if (pm->ps->eFlags & EF_ZOOMING)
 	{
-		pm->ps->aimSpreadScale      = 255;
-		pm->ps->aimSpreadScaleFloat = 255;
+		pm->ps->aimSpreadScale      = AIMSPREAD_MAXSPREAD;
+		pm->ps->aimSpreadScaleFloat = AIMSPREAD_MAXSPREAD;
 		return;
 	}
 
@@ -3411,6 +3427,8 @@ static qboolean PM_MountedFire(void)
 			//pm->ps->viewlocked = VIEWLOCK_JITTER;     // this enable screen jitter when firing
 		}
 		return qtrue;
+	default:
+		break;
 	}
 
 	if (pm->ps->eFlags & EF_MOUNTEDTANK)
@@ -3795,7 +3813,7 @@ static void PM_Weapon(void)
 		if (pm->ps->weapon != pm->cmd.weapon)
 		{
 			// don't change weapon while unmounting alt weapon
-			if ((IS_MG_WEAPON(pm->ps->weapon) || IS_MORTAR_WEAPON(pm->ps->weapon) || IS_RIFLE_AND_NADE_WEAPON(pm->ps->weapon) || IS_SILENCED_PISTOL(pm->ps->weapon)) && pm->ps->weaponTime > 250)
+			if ((IS_MG_WEAPON(pm->ps->weapon) || IS_MORTAR_WEAPON(pm->ps->weapon) || IS_RIFLE_WEAPON(pm->ps->weapon) || IS_SILENCED_PISTOL(pm->ps->weapon)) && pm->ps->weaponTime > 250)
 			{
 				return;
 			}
@@ -4035,7 +4053,7 @@ static void PM_Weapon(void)
 		return;
 	}
 
-	// player is underwater - no fire
+	// player is underwater - no fire FIXME: weapon table nounderwaterfire
 	if (pm->waterlevel == 3)
 	{
 		switch (pm->ps->weapon)
@@ -4276,11 +4294,6 @@ static void PM_Weapon(void)
 	}
 
 	pm->ps->weaponstate = WEAPON_FIRING;
-
-	// reset player disguise on firing
-	//if( pm->ps->weapon != WP_SMOKE_BOMB && pm->ps->weapon != WP_SATCHEL && pm->ps->weapon != WP_SATCHEL_DET ) { //  not for these weapons
-	//  pm->ps->powerups[PW_OPS_DISGUISED] = 0;
-	//}
 
 	// check for out of ammo
 
@@ -4627,11 +4640,7 @@ static void PM_Weapon(void)
 	case WP_MOBILE_MG42_SET:
 	case WP_MOBILE_BROWNING:
 	case WP_MOBILE_BROWNING_SET:
-		if (weapattackanim == WEAP_ATTACK_LASTSHOT)
-		{
-			addTime = 2000;
-		}
-		else
+		if (weapattackanim != WEAP_ATTACK_LASTSHOT)
 		{
 			addTime = GetAmmoTableData(pm->ps->weapon)->nextShotTime;
 		}
@@ -4766,14 +4775,17 @@ static void PM_Weapon(void)
 	}
 
 	// add the recoil amount to the aimSpreadScale
-	//pm->ps->aimSpreadScale += 3.0*aimSpreadScaleAdd;
-	//if (pm->ps->aimSpreadScale > 255) pm->ps->aimSpreadScale = 255;
 	pm->ps->aimSpreadScaleFloat += 3.0 * aimSpreadScaleAdd;
-	if (pm->ps->aimSpreadScaleFloat > 255)
-	{
-		pm->ps->aimSpreadScaleFloat = 255;
-	}
 
+	if (pm->ps->aimSpreadScaleFloat > AIMSPREAD_MAXSPREAD)
+	{
+		pm->ps->aimSpreadScaleFloat = AIMSPREAD_MAXSPREAD;
+	}
+	//if (pm->ps->aimSpreadScaleFloat < 0)
+	//{
+	//	pm->ps->aimSpreadScaleFloat = 0;
+	//}
+	
 	if (pm->skill[SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS] >= 3 && pm->ps->stats[STAT_PLAYER_CLASS] == PC_COVERTOPS)
 	{
 		pm->ps->aimSpreadScaleFloat *= .5f;
@@ -5032,7 +5044,6 @@ void PM_UpdateViewAngles(playerState_t *ps, pmoveExt_t *pmext, usercmd_t *cmd, v
 
 	if (ps->pm_type != PM_SPECTATOR && ps->stats[STAT_HEALTH] <= 0)
 	{
-
 		// Allow players to look around while 'wounded' or lock to a medic if nearby
 		temp = cmd->angles[1] + ps->delta_angles[1];
 		// always allow this.  viewlocking will take precedence
@@ -5782,19 +5793,15 @@ void PmoveSingle(pmove_t *pmove)
 
 	pm->ps->eFlags &= ~(EF_FIRING | EF_ZOOMING);
 
-	if ((pm->cmd.wbuttons & WBUTTON_ZOOM) && pm->ps->stats[STAT_HEALTH] >= 0 && !(pm->ps->weaponDelay))
+	if ((pm->cmd.wbuttons & WBUTTON_ZOOM) && pm->ps->stats[STAT_HEALTH] >= 0 && !(pm->ps->weaponDelay) && pm->ps->weaponstate != WEAPON_RELOADING)
 	{
 		if (pm->ps->stats[STAT_KEYS] & (1 << INV_BINOCS))          // binoculars are an inventory item (inventory==keys)
 		{
 			if (!weaponTable[pm->ps->weapon].isScoped &&          // don't allow binocs if using the sniper scope
 			    !BG_PlayerMounted(pm->ps->eFlags) &&           // or if mounted on a weapon
 			    // don't allow binocs w/ mounted mob. MG42 or mortar either.
-			    pm->ps->weapon != WP_MOBILE_MG42_SET &&
-			    pm->ps->weapon != WP_MOBILE_BROWNING_SET &&
-			    pm->ps->weapon != WP_MORTAR_SET &&
-			    pm->ps->weapon != WP_MORTAR2_SET)
+			    !IS_SET_WEAPON(pm->ps->weapon))
 			{
-
 				pm->ps->eFlags |= EF_ZOOMING;
 			}
 		}
@@ -6048,6 +6055,8 @@ void PmoveSingle(pmove_t *pmove)
 		PM_AirMove();
 	}
 
+
+
 	if (pm->ps->eFlags & EF_MOUNTEDTANK)
 	{
 		VectorClear(pm->ps->velocity);
@@ -6129,6 +6138,9 @@ void PmoveSingle(pmove_t *pmove)
 		// snap some parts of playerstate to save network bandwidth
 		trap_SnapVector(pm->ps->velocity);
 	}
+
+	// save sprinttime for CG_DrawStaminaBar()
+	pm->ps->stats[STAT_SPRINTTIME] = pm->pmext->sprintTime;
 }
 
 /**

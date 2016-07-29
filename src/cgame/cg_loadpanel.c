@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -33,12 +33,10 @@
  */
 
 #include "cg_local.h"
-#include "../ui/ui_shared.h"
 
 extern displayContextDef_t *DC;
 
 qboolean  bg_loadscreeninited = qfalse;
-qboolean  bg_loadscreeninteractive;
 qhandle_t bg_axispin;
 qhandle_t bg_alliedpin;
 qhandle_t bg_neutralpin;
@@ -140,7 +138,7 @@ panel_button_t missiondescriptionPanelHeaderText =
 	"***TOP SECRET***",
 	{ 440,                     72, 200, 32 },
 	{ 0,                       0,  0,   0, 0, 0, 0, 0},
-	&missiondescriptionHeaderTxt, /* font     */
+	&missiondescriptionHeaderTxt,/* font     */
 	NULL,                      /* keyDown  */
 	NULL,                      /* keyUp    */
 	BG_PanelButtonsRender_Text,
@@ -272,8 +270,6 @@ void CG_DrawConnectScreen(qboolean interactive, qboolean forcerefresh)
 {
 	static qboolean inside = qfalse;
 	char            buffer[1024];
-
-	bg_loadscreeninteractive = interactive;
 
 	if (!DC)
 	{
@@ -620,17 +616,6 @@ void CG_LoadPanel_KeyHandling(int key, qboolean down)
 	{
 		return;
 	}
-}
-
-qboolean CG_LoadPanel_ContinueButtonKeyDown(panel_button_t *button, int key)
-{
-	if (key == K_MOUSE1)
-	{
-		CG_EventHandling(CGAME_EVENT_GAMEVIEW, qfalse);
-		return qtrue;
-	}
-
-	return qfalse;
 }
 
 void CG_LoadPanel_DrawPin(const char *text, float px, float py, float sx, float sy, qhandle_t shader, float pinsize, float backheight)

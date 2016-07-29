@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -40,10 +40,6 @@
 
 #include "../client/client.h"
 #include "../sys/sys_local.h"
-
-#ifdef DISABLE_DINGY
-void IN_EnableDingFilter();
-#endif
 
 static cvar_t *in_keyboardDebug = NULL;
 
@@ -211,6 +207,15 @@ static qboolean IN_IsConsoleKey(keyNum_t key, int character)
 	static consoleKey_t consoleKeys[MAX_CONSOLE_KEYS];
 	static int          numConsoleKeys = 0;
 	int                 i;
+
+	if (key == K_GRAVE
+#ifdef __APPLE__
+		|| key == 60 // Same as console key
+#endif
+		)
+	{
+		return qtrue;
+	}
 
 	// Only parse the variable when it changes
 	if (cl_consoleKeys->modified)
@@ -570,7 +575,7 @@ static keyNum_t IN_TranslateSDLToQ3Key(SDL_Keysym *keysym, qboolean down)
 	if (IN_IsConsoleKey(key, 0))
 	{
 		// Console keys can't be bound or generate characters
-		key = K_CONSOLE;
+		key = CONSOLE_KEY;
 	}
 
 	return key;
@@ -582,10 +587,7 @@ static void IN_GobbleMotionEvents(void)
 
 	// Gobble any mouse motion events
 	SDL_PumpEvents();
-	while (SDL_PeepEvents(dummy, 1, SDL_GETEVENT,
-	                      SDL_MOUSEMOTION, SDL_MOUSEMOTION) > 0)
-	{
-	}
+	while (SDL_PeepEvents(dummy, 1, SDL_GETEVENT, SDL_MOUSEMOTION, SDL_MOUSEMOTION) > 0);
 }
 
 static void IN_GrabMouse(qboolean grab, qboolean relative)
@@ -734,11 +736,20 @@ struct
 	unsigned int oldhats;
 } stick_state;
 
+/**
+ * @brief Inits game controller input devices
+ */
 static void IN_InitJoystick(void)
 {
 	int  i          = 0;
 	int  total      = 0;
 	char buf[16384] = "";
+
+	if (!in_joystick->integer)
+	{
+		Com_Printf("...game controller disabled by cvar setting\n");
+		return;
+	}
 
 	if (stick != NULL)
 	{
@@ -750,17 +761,16 @@ static void IN_InitJoystick(void)
 
 	if (!SDL_WasInit(SDL_INIT_JOYSTICK))
 	{
-		Com_Printf("Initializing joystick devices\n");
+		Com_Printf("Initializing game controller\n");
 		if (SDL_Init(SDL_INIT_JOYSTICK) < 0)
 		{
-			Com_Printf("SDL_Init(SDL_INIT_JOYSTICK) failed: %s\n", SDL_GetError());
+			Com_Printf(S_COLOR_RED "SDL_Init(SDL_INIT_JOYSTICK) failed: %s\n", SDL_GetError());
 			return;
 		}
-		Com_Printf("...joysticks initialized\n");
 	}
 
 	total = SDL_NumJoysticks();
-	Com_Printf("...available joysticks: %d\n", total);
+	Com_Printf("...%d available game controller initialized\n", total);
 
 	// Print list and build cvar to allow ui to select joystick.
 	for (i = 0; i < total; i++)
@@ -770,13 +780,6 @@ static void IN_InitJoystick(void)
 	}
 
 	Cvar_Get("in_availableJoysticks", buf, CVAR_ROM);
-
-	if (!in_joystick->integer)
-	{
-		Com_Printf("...no active joystick set\n");
-		SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
-		return;
-	}
 
 	in_joystickNo = Cvar_Get("in_joystickNo", "0", CVAR_ARCHIVE);
 	if (in_joystickNo->integer < 0 || in_joystickNo->integer >= total)
@@ -790,24 +793,24 @@ static void IN_InitJoystick(void)
 
 	if (stick == NULL)
 	{
-		Com_Printf("No joystick opened.\n");
+		Com_Printf("...no game controller opened.\n");
 		return;
 	}
 
-	Com_DPrintf("Joystick %d opened\n", in_joystickNo->integer);
-	Com_DPrintf("Name:       %s\n", SDL_JoystickNameForIndex(in_joystickNo->integer));
-	Com_DPrintf("Axes:       %d\n", SDL_JoystickNumAxes(stick));
-	Com_DPrintf("Hats:       %d\n", SDL_JoystickNumHats(stick));
-	Com_DPrintf("Buttons:    %d\n", SDL_JoystickNumButtons(stick));
-	Com_DPrintf("Balls:      %d\n", SDL_JoystickNumBalls(stick));
-	Com_DPrintf("Use Analog: %s\n", in_joystickUseAnalog->integer ? "Yes" : "No");
+	Com_Printf("Game controller [%d] '%s' opened\n", in_joystickNo->integer, SDL_JoystickNameForIndex(in_joystickNo->integer));
+	Com_Printf("Axes:       %d\n", SDL_JoystickNumAxes(stick));
+	Com_Printf("Hats:       %d\n", SDL_JoystickNumHats(stick));
+	Com_Printf("Buttons:    %d\n", SDL_JoystickNumButtons(stick));
+	Com_Printf("Balls:      %d\n", SDL_JoystickNumBalls(stick));
+	Com_Printf("Use Analog: %s\n", in_joystickUseAnalog->integer ? "Yes" : "No");
 
 	SDL_JoystickEventState(SDL_QUERY);
 }
 
 static void IN_ShutdownJoystick(void)
 {
-	if (!SDL_WasInit(SDL_INIT_JOYSTICK))
+	// in_joystick cvar is latched
+	if (!SDL_WasInit(SDL_INIT_JOYSTICK) || !in_joystick->integer)
 	{
 		return;
 	}
@@ -828,7 +831,8 @@ static void IN_JoyMove(void)
 	int          total = 0;
 	int          i     = 0;
 
-	if (!stick)
+	// in_joystick cvar is latched
+	if (!in_joystick->integer || !stick)
 	{
 		return;
 	}
@@ -1125,7 +1129,7 @@ static void IN_ProcessEvents(void)
 			lastKeyDown = 0;
 			break;
 		case SDL_TEXTINPUT:
-			if (lastKeyDown != K_CONSOLE)
+			if (lastKeyDown != CONSOLE_KEY)
 			{
 				char *c = e.text.text;
 
@@ -1166,8 +1170,8 @@ static void IN_ProcessEvents(void)
 					{
 						if (IN_IsConsoleKey(0, utf32))
 						{
-							Com_QueueEvent(0, SE_KEY, K_CONSOLE, qtrue, 0, NULL);
-							Com_QueueEvent(0, SE_KEY, K_CONSOLE, qfalse, 0, NULL);
+							Com_QueueEvent(0, SE_KEY, CONSOLE_KEY, qtrue, 0, NULL);
+							Com_QueueEvent(0, SE_KEY, CONSOLE_KEY, qfalse, 0, NULL);
 						}
 						else
 						{
@@ -1255,10 +1259,6 @@ static void IN_ProcessEvents(void)
 				{
 					SDL_RestoreWindow(mainScreen);
 				}
-
-#ifdef DISABLE_DINGY
-				IN_EnableDingFilter();
-#endif
 			}
 			break;
 			}
@@ -1271,19 +1271,16 @@ static void IN_ProcessEvents(void)
 
 void IN_Frame(void)
 {
-	qboolean loading;
-
-	//IN_JoyMove();
-
-	// If not DISCONNECTED (main menu) or ACTIVE (in game), we're loading
-	loading = (cls.state != CA_DISCONNECTED && cls.state != CA_ACTIVE);
+	// If not DISCONNECTED (main menu), ACTIVE (in game) or CINEMATIC (playing video), we're loading
+	qboolean loading   = (cls.state != CA_DISCONNECTED && cls.state != CA_ACTIVE);
+	qboolean cinematic = (cls.state == CA_CINEMATIC);
 
 	if (!cls.glconfig.isFullscreen && (Key_GetCatcher() & KEYCATCH_CONSOLE))
 	{
 		// Console is down in windowed mode
 		IN_DeactivateMouse();
 	}
-	else if (!cls.glconfig.isFullscreen && loading)
+	else if (!cls.glconfig.isFullscreen && loading && !cinematic)
 	{
 		// Loading in windowed mode
 		IN_DeactivateMouse();
@@ -1302,6 +1299,7 @@ void IN_Frame(void)
 		}
 
 		IN_ActivateMouse();
+		IN_JoyMove();
 	}
 
 	// in case we had to delay actual restart of video system...
@@ -1313,55 +1311,6 @@ void IN_Frame(void)
 
 	IN_ProcessEvents();
 }
-
-#ifdef _WIN32
-static WNDPROC LegacyWndProc = NULL;
-
-/**
- * @brief Skips the show menu command for the frame, and thatway disables the "no menu found" error sound.
- */
-LRESULT CALLBACK WNDDingIgnore(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-	if (msg == WM_SYSCOMMAND && (wparam & 0xfff0) == SC_KEYMENU)
-	{
-		return 0;
-	}
-	return CallWindowProc(LegacyWndProc, wnd, msg, wparam, lparam);
-}
-
-/**
- * @brief Disables the filter if active
- */
-void IN_DisableDingFilter()
-{
-	Com_DPrintf("Disabling dingy filter\n");
-	if (LegacyWndProc)
-	{
-		SDL_SysWMinfo wmInfo;
-		SDL_GetVersion(&wmInfo.version);
-		SDL_GetWindowWMInfo(mainScreen, &wmInfo);
-		SetWindowLongPtr(wmInfo.info.win.window, GWLP_WNDPROC, (LONG_PTR)LegacyWndProc);
-		LegacyWndProc = NULL;
-	}
-}
-
-/**
- * @brief Enables the filter if not already active
- */
-void IN_EnableDingFilter()
-{
-	IN_DisableDingFilter();
-	Com_DPrintf("Enabling dingy filter\n");
-	if (!LegacyWndProc)
-	{
-		SDL_SysWMinfo wmInfo;
-		SDL_GetVersion(&wmInfo.version);
-		SDL_GetWindowWMInfo(mainScreen, &wmInfo);
-		LegacyWndProc = (WNDPROC)GetWindowLongPtr(wmInfo.info.win.window, GWLP_WNDPROC);
-		SetWindowLongPtr(wmInfo.info.win.window, GWLP_WNDPROC, (LONG_PTR)&WNDDingIgnore);
-	}
-}
-#endif
 
 static void IN_InitKeyLockStates(void)
 {
@@ -1382,14 +1331,9 @@ void IN_Init(void)
 		return;
 	}
 
-#ifdef FEATURE_RENDERER_GLES
-	// FIXME: something is seriously wrong with the OpenGL ES renderer
-	mainScreen = GLimp_MainWindow();
-#else
-	mainScreen = (SDL_Window *)re.MainWindow();
-#endif
+	mainScreen = (SDL_Window *)GLimp_MainWindow();
 
-	Com_DPrintf("\n------- Input Initialization -------\n");
+	Com_Printf("\n------- Input Initialization -------\n");
 
 	in_keyboardDebug = Cvar_Get("in_keyboardDebug", "0", CVAR_TEMP);
 
@@ -1398,10 +1342,10 @@ void IN_Init(void)
 
 	if (in_mouse->integer == 2)
 	{
-		Com_Printf("Trying to emulate non raw input\n");
+		Com_Printf("...trying to emulate non raw mouse input\n");
 		if (!SDL_SetHintWithPriority(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, "1", SDL_HINT_OVERRIDE))
 		{
-			Com_Printf(S_COLOR_RED "Failed to set the hint");
+			Com_Printf(S_COLOR_RED "...failed to set the hint\n");
 		}
 	}
 	else
@@ -1426,12 +1370,10 @@ void IN_Init(void)
 	IN_InitKeyLockStates();
 
 	// FIXME: Joystick initialization crashes some Windows and Mac OS X clients (see SDL #2833)
-	//IN_InitJoystick();
+	//        (only some clients ... activated again for system which are not affected and to get some more feedback)
+	IN_InitJoystick();
 
-#ifdef DISABLE_DINGY
-	IN_EnableDingFilter();
-#endif
-	Com_DPrintf("------------------------------------\n");
+	Com_Printf("------------------------------------\n");
 }
 
 void IN_Shutdown(void)
@@ -1439,20 +1381,16 @@ void IN_Shutdown(void)
 	SDL_StopTextInput();
 	Com_Printf("SDL input devices shut down.\n");
 
-#ifdef DISABLE_DINGY
-	IN_DisableDingFilter();
-#endif
-
 	IN_DeactivateMouse();
 	mouseAvailable = qfalse;
 
-	//IN_ShutdownJoystick();
+	IN_ShutdownJoystick();
 
 	mainScreen = NULL;
 }
 
 void IN_Restart(void)
 {
-	//IN_ShutdownJoystick();
+	IN_ShutdownJoystick();
 	IN_Init();
 }

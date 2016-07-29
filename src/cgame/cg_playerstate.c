@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -238,9 +238,16 @@ void CG_Respawn(qboolean revived)
 		cgs.limboLoadoutSelected = qfalse;
 	}
 
+	// Saves the state of sidearm (riflenade weapon is considered as one too)
+	// Puts the silencer on if class is COVERTOPS
+	// Puts riflenade on if current weapon is riflenade weapon
 	if (cg.predictedPlayerState.stats[STAT_PLAYER_CLASS] == PC_COVERTOPS)
 	{
 		cg.pmext.silencedSideArm = 1;
+	}
+	else if (cg.predictedPlayerState.weapon == WP_GPG40 || cg.predictedPlayerState.weapon == WP_M7)
+	{
+		cg.pmext.silencedSideArm = 2;
 	}
 
 	cg.proneMovingTime = 0;
@@ -374,6 +381,10 @@ void CG_CheckLocalSounds(playerState_t *ps, playerState_t *ops)
 			{
 				trap_S_StartSound(NULL, ps->clientNum, CHAN_AUTO, cgs.media.headShot);
 			}
+			else if (!(cg_hitSounds.integer & HITSOUNDS_NOBODYSHOT))
+			{
+				trap_S_StartSound(NULL, ps->clientNum, CHAN_AUTO, cgs.media.bodyShot);
+			}
 		}
 		else
 		{
@@ -389,8 +400,8 @@ void CG_CheckLocalSounds(playerState_t *ps, playerState_t *ops)
 	{
 		int msec = cg.time - cgs.levelStartTime;
 
-		if (cgs.timelimit > 5 && !(cg.timelimitWarnings & 1) && (msec > (cgs.timelimit - 5) * 60 * 1000) &&
-		    (msec < (cgs.timelimit - 5) * 60 * 1000 + 1000))
+		if (cgs.timelimit > 5 && !(cg.timelimitWarnings & 1) && (msec > (cgs.timelimit - 5) * 60000) &&
+		    (msec < (cgs.timelimit - 5) * 60000 + 1000)) // 60 * 1000
 		{
 			cg.timelimitWarnings |= 1;
 			if (ps->persistant[PERS_TEAM] == TEAM_AXIS)
@@ -416,8 +427,8 @@ void CG_CheckLocalSounds(playerState_t *ps, playerState_t *ops)
 				}
 			}
 		}
-		if (cgs.timelimit > 2 && !(cg.timelimitWarnings & 2) && (msec > (cgs.timelimit - 2) * 60 * 1000) &&
-		    (msec < (cgs.timelimit - 2) * 60 * 1000 + 1000))
+		if (cgs.timelimit > 2 && !(cg.timelimitWarnings & 2) && (msec > (cgs.timelimit - 2) * 60000) &&
+		    (msec < (cgs.timelimit - 2) * 60000 + 1000)) // 60 * 1000
 		{
 			cg.timelimitWarnings |= 2;
 			if (ps->persistant[PERS_TEAM] == TEAM_AXIS)
@@ -443,8 +454,8 @@ void CG_CheckLocalSounds(playerState_t *ps, playerState_t *ops)
 				}
 			}
 		}
-		if (!(cg.timelimitWarnings & 4) && (msec > (cgs.timelimit) * 60 * 1000 - 30000) &&
-		    (msec < (cgs.timelimit) * 60 * 1000 - 29000))
+		if (!(cg.timelimitWarnings & 4) && (msec > (cgs.timelimit) * 60000 - 30000) &&
+		    (msec < cgs.timelimit * 60000 - 29000)) // 60 * 1000
 		{
 			cg.timelimitWarnings |= 4;
 			if (ps->persistant[PERS_TEAM] == TEAM_AXIS)

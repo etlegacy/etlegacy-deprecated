@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -36,7 +36,6 @@
 
 static mapEntityData_t mapEntities[MAX_GENTITIES];
 static int             mapEntityCount = 0;
-static int             mapEntityTime  = 0;
 static qboolean        expanded       = qfalse;
 
 qboolean ccInitial = qtrue;
@@ -245,7 +244,6 @@ void CG_ParseMapEntityInfo(int axis_number, int allied_number)
 	int i, offset = 3;
 
 	mapEntityCount = 0;
-	mapEntityTime  = cg.time;
 
 	for (i = 0; i < axis_number; i++)
 	{
@@ -1443,6 +1441,13 @@ void CG_DrawAutoMap(float x, float y, float w, float h)
 		}
 	}
 
+#if FEATURE_EDV
+	if (cgs.demoCamera.renderingFreeCam == qtrue || cgs.demoCamera.renderingWeaponCam == qtrue || !cg_drawCompass.integer)
+	{
+		return;
+	}
+#endif
+
 	mapScissor.circular = qtrue;
 
 	mapScissor.zoomFactor = cg_automapZoom.value;
@@ -1808,7 +1813,7 @@ qboolean CG_CommandCentreSpawnPointClick(void)
 		if (BG_RectContainsPoint((point[0] - FLAGSIZE_NORMAL * 0.5f) + cgs.wideXoffset, point[1] - FLAGSIZE_NORMAL * 0.5f, FLAGSIZE_NORMAL, FLAGSIZE_NORMAL, cgDC.cursorx, cgDC.cursory))
 		{
 			trap_SendConsoleCommand(va("setspawnpt %i\n", i));
-			cg.selectedSpawnPoint    = i;
+			cgs.ccSelectedSpawnPoint = i;
 			cgs.ccRequestedObjective = -1;
 			return qtrue;
 		}

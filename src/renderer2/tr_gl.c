@@ -4,7 +4,7 @@
  * Copyright (C) 2010-2011 Robert Beckebans <trebor_7@users.sourceforge.net>
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -273,26 +273,26 @@ void GL_FrontFace(GLenum mode)
 	}
 }
 
-void GL_LoadModelViewMatrix(const matrix_t m)
+void GL_LoadModelViewMatrix(const mat4_t m)
 {
-	if (MatrixCompare(GLSTACK_MVM, m))
+	if (mat4_compare(GLSTACK_MVM, m))
 	{
 		return;
 	}
 
-	MatrixCopy(m, GLSTACK_MVM);
-	MatrixMultiplyMOD(GLSTACK_PM, GLSTACK_MVM, GLSTACK_MVPM);
+	mat4_copy(m, GLSTACK_MVM);
+	mat4_mult(GLSTACK_PM, GLSTACK_MVM, GLSTACK_MVPM);
 }
 
-void GL_LoadProjectionMatrix(const matrix_t m)
+void GL_LoadProjectionMatrix(const mat4_t m)
 {
-	if (MatrixCompare(GLSTACK_PM, m))
+	if (mat4_compare(GLSTACK_PM, m))
 	{
 		return;
 	}
 
-	MatrixCopy(m, GLSTACK_PM);
-	MatrixMultiplyMOD(GLSTACK_PM, GLSTACK_MVM, GLSTACK_MVPM);
+	mat4_copy(m, GLSTACK_PM);
+	mat4_mult(GLSTACK_PM, GLSTACK_MVM, GLSTACK_MVPM);
 }
 
 void GL_PushMatrix()

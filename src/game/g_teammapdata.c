@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -346,6 +346,12 @@ qboolean G_VisibleFromBinoculars(gentity_t *viewer, gentity_t *ent, vec3_t origi
 	VectorCopy(viewer->client->ps.origin, vieworg);
 	vieworg[2] += viewer->client->ps.viewheight;
 
+	// check if head is visible
+	if (ent->methodOfDeath != MOD_LANDMINE)
+	{
+		origin[2] += ent->client->ps.viewheight;
+	}
+
 	if (!G_CullPointAndRadius(origin, 0))
 	{
 		return qfalse;
@@ -360,20 +366,13 @@ qboolean G_VisibleFromBinoculars(gentity_t *viewer, gentity_t *ent, vec3_t origi
 
 	if (trace.fraction != 1.f)
 	{
-		if (ent)
+		if (trace.entityNum != ent->s.number)
 		{
-			if (trace.entityNum != ent->s.number)
-			{
-				return qfalse;
-			}
-			else
-			{
-				return qtrue;
-			}
+			return qfalse;
 		}
 		else
 		{
-			return qfalse;
+			return qtrue;
 		}
 	}
 
@@ -387,6 +386,12 @@ qboolean G_VisibleFromBinoculars_Box(gentity_t *viewer, gentity_t *ent, vec3_t o
 
 	VectorCopy(viewer->client->ps.origin, vieworg);
 	vieworg[2] += viewer->client->ps.viewheight;
+
+	// check if head is visible
+	if (ent->methodOfDeath != MOD_LANDMINE)
+	{
+		origin[2] += ent->client->ps.viewheight;
+	}
 
 	if (!G_CullPointAndRadius(origin, 0))
 	{
@@ -402,20 +407,13 @@ qboolean G_VisibleFromBinoculars_Box(gentity_t *viewer, gentity_t *ent, vec3_t o
 
 	if (trace.fraction != 1.f)
 	{
-		if (ent)
+		if (trace.entityNum != ent->s.number)
 		{
-			if (trace.entityNum != ent->s.number)
-			{
-				return qfalse;
-			}
-			else
-			{
-				return qtrue;
-			}
+			return qfalse;
 		}
 		else
 		{
-			return qfalse;
+			return qtrue;
 		}
 	}
 
@@ -883,7 +881,11 @@ void G_SendSpectatorMapEntityInfo(gentity_t *e)
 	}
 
 	// Data setup
-	Com_sprintf(buffer, sizeof(buffer), "entnfo %i %i", ax_cnt, al_cnt);
+	// FIXME: Find out why objective counts are reset to zero when a new player connects
+	if (ax_cnt > 0 || al_cnt > 0)
+	{
+		Com_sprintf(buffer, sizeof(buffer), "entnfo %i %i", ax_cnt, al_cnt);
+	}
 
 	// Axis data
 	teamList = &mapEntityData[0];
@@ -948,11 +950,10 @@ void G_SendMapEntityInfo(gentity_t *e)
 	mEnt = teamList->activeMapEntityData.next;
 	while (mEnt && mEnt != &teamList->activeMapEntityData)
 	{
-		if (level.time - mEnt->startTime > 5000)
+		if (level.time - mEnt->startTime > 1000)
 		{
-			mEnt->status = 1;
 			// we can free this player from the list now
-			if (mEnt->type == ME_PLAYER)
+			if (mEnt->type == ME_PLAYER || mEnt->type == ME_PLAYER_REVIVE || mEnt->type == ME_PLAYER_OBJECTIVE)
 			{
 				mEnt = G_FreeMapEntityData(teamList, mEnt);
 				continue;
@@ -966,10 +967,6 @@ void G_SendMapEntityInfo(gentity_t *e)
 				}
 			}
 		}
-		else
-		{
-			mEnt->status = 2;
-		}
 		cnt++;
 
 		mEnt = mEnt->next;
@@ -977,11 +974,17 @@ void G_SendMapEntityInfo(gentity_t *e)
 
 	if (e->client->sess.sessionTeam == TEAM_AXIS)
 	{
-		Com_sprintf(buffer, sizeof(buffer), "entnfo %i 0", cnt);
+		if (cnt > 0)
+		{
+			Com_sprintf(buffer, sizeof(buffer), "entnfo %i 0", cnt);
+		}
 	}
 	else
 	{
-		Com_sprintf(buffer, sizeof(buffer), "entnfo 0 %i", cnt);
+		if (cnt > 0)
+		{
+			Com_sprintf(buffer, sizeof(buffer), "entnfo 0 %i", cnt);
+		}
 	}
 
 	for (mEnt = teamList->activeMapEntityData.next; mEnt && mEnt != &teamList->activeMapEntityData; mEnt = mEnt->next)
@@ -997,7 +1000,6 @@ void G_SendMapEntityInfo(gentity_t *e)
 
 	trap_SendServerCommand(e - g_entities, buffer);
 }
-
 
 void G_PopupMessageForMines(gentity_t *player) // int sound
 {
@@ -1016,7 +1018,7 @@ void G_CheckSpottedLandMines(void)
 	int       i, j;
 	gentity_t *ent, *ent2;
 
-	if (level.time - level.lastMapSpottedMinesUpdate < 500)
+	if (level.time - level.lastMapSpottedMinesUpdate < 1000)
 	{
 		return;
 	}
@@ -1102,7 +1104,7 @@ void G_CheckSpottedLandMines(void)
 
 										G_PopupMessageForMines(ent);
 
-										trap_SendServerCommand(ent - g_entities, "cp \"Landmine Revealed\n\"");
+										trap_SendServerCommand(ent - g_entities, "cp \"Landmine revealed\n\"");
 
 										AddScore(ent, 1);
 

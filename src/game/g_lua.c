@@ -264,6 +264,7 @@ static int _et_MutePlayer(lua_State *L)
 
 	if (!ent->client)
 	{
+		luaL_error(L, "clientNum \"%d\" is not a client entity", clientnum);
 		return 0;
 	}
 
@@ -309,6 +310,7 @@ static int _et_UnmutePlayer(lua_State *L)
 
 	if (!ent->client)
 	{
+		luaL_error(L, "clientNum \"%d\" is not a client entity", clientnum);
 		return 0;
 	}
 
@@ -359,10 +361,9 @@ static int _et_trap_DropClient(lua_State *L)
 {
 	int        clientnum = (int)luaL_checkinteger(L, 1);
 	const char *reason   = luaL_checkstring(L, 2);
-	int        ban       = trap_Cvar_VariableIntegerValue("g_defaultBanTime"); // FIXME: 3d add param int for ban time
+	int        ban_time  = (int)luaL_checkinteger(L, 3);
 
-	ban = luaL_optinteger(L, 3, ban);
-	trap_DropClient(clientnum, reason, ban);
+	trap_DropClient(clientnum, reason, ban_time);
 	return 0;
 }
 
@@ -706,30 +707,27 @@ static int _et_G_LoseSkillPoints(lua_State *L)
 // client entity fields
 static const gentity_field_t gclient_fields[] =
 {
-
-	_et_gclient_addfield(acc,                            FIELD_FLOAT,       FIELD_FLAG_READONLY),
-
-	_et_gclient_addfield(lasthurt_mod,                   FIELD_INT,         FIELD_FLAG_READONLY),
-	_et_gclient_addfield(pers.playerStats.selfkills,     FIELD_INT,         FIELD_FLAG_READONLY),
-	_et_gclient_addfield(lastKillTime,                   FIELD_INT,         FIELD_FLAG_READONLY),
-	_et_gclient_addfield(lasthurt_time,                  FIELD_INT,         FIELD_FLAG_READONLY),
-	_et_gclient_addfield(lasthurt_client,                FIELD_INT,         FIELD_FLAG_READONLY),
-	_et_gclient_addfield(freezed,                        FIELD_INT,         0),
-	_et_gclient_addfield(ps.eFlags,                      FIELD_INT,         FIELD_FLAG_READONLY),
-	_et_gclient_addfield(ps.pm_flags,                    FIELD_INT,         FIELD_FLAG_READONLY),
-	_et_gclient_addfield(ps.pm_time,                     FIELD_INT,         FIELD_FLAG_READONLY),
-	_et_gclient_addfield(deathAnimTime,                  FIELD_INT,         FIELD_FLAG_READONLY),
-	_et_gclient_addfield(pers.lastBattleSenseBonusTime,  FIELD_INT,         FIELD_FLAG_READONLY),
-	_et_gclient_addfield(pers.lastHQMineReportTime,      FIELD_INT,         FIELD_FLAG_READONLY),
-	_et_gclient_addfield(pers.maxHealth,                 FIELD_INT,         FIELD_FLAG_READONLY),
-	_et_gclient_addfield(respawnTime,                    FIELD_INT,         FIELD_FLAG_READONLY),
-	_et_gclient_addfield(saved_persistant,               FIELD_INT_ARRAY,   FIELD_FLAG_READONLY),
-	_et_gclient_addfield(PCSpecialPickedUpCount,         FIELD_INT,         FIELD_FLAG_READONLY),
-	_et_gclient_addfield(ps.weaponstate,                 FIELD_INT,         FIELD_FLAG_READONLY),
-	_et_gclient_addfield(combatState,                    FIELD_INT,         FIELD_FLAG_READONLY),
-
-	_et_gclient_addfield(inactivityTime,                 FIELD_INT,         0),
-	_et_gclient_addfield(inactivityWarning,              FIELD_INT,         0),
+	_et_gclient_addfield(noclip,                            FIELD_INT,         FIELD_FLAG_READONLY),
+	_et_gclient_addfield(lastKillTime,                      FIELD_INT,         FIELD_FLAG_READONLY),
+	_et_gclient_addfield(saved_persistant,                  FIELD_INT_ARRAY,   FIELD_FLAG_READONLY),
+	_et_gclient_addfield(lastConstructibleBlockingWarnTime, FIELD_INT,      FIELD_FLAG_READONLY),
+	_et_gclient_addfield(landmineSpottedTime,               FIELD_INT,         FIELD_FLAG_READONLY),
+	_et_gclient_addfield(lasthurt_client,                   FIELD_INT,         FIELD_FLAG_READONLY),
+	_et_gclient_addfield(lasthurt_mod,                      FIELD_INT,         FIELD_FLAG_READONLY),
+	_et_gclient_addfield(lasthurt_time,                     FIELD_INT,         FIELD_FLAG_READONLY),
+	_et_gclient_addfield(respawnTime,                       FIELD_INT,         FIELD_FLAG_READONLY),
+	_et_gclient_addfield(inactivityTime,                    FIELD_INT,         0),
+	_et_gclient_addfield(inactivityWarning,                 FIELD_INT,         0),
+	_et_gclient_addfield(PCSpecialPickedUpCount,            FIELD_INT,         FIELD_FLAG_READONLY),
+	_et_gclient_addfield(combatState,                       FIELD_INT,         FIELD_FLAG_READONLY),
+	_et_gclient_addfield(deathAnimTime,                     FIELD_INT,         FIELD_FLAG_READONLY),
+	_et_gclient_addfield(deathTime,                         FIELD_INT,         FIELD_FLAG_READONLY),
+	_et_gclient_addfield(disguiseClientNum,                 FIELD_INT,         FIELD_FLAG_READONLY),
+	_et_gclient_addfield(medals,                            FIELD_INT,         FIELD_FLAG_READONLY),
+	_et_gclient_addfield(acc,                               FIELD_FLOAT,       FIELD_FLAG_READONLY),
+	_et_gclient_addfield(hspct,                             FIELD_FLOAT,       FIELD_FLAG_READONLY),
+	_et_gclient_addfield(freezed,                           FIELD_INT,         0),
+	_et_gclient_addfield(constructSoundTime,                FIELD_INT,         FIELD_FLAG_READONLY),
 
 	// to be compatible with ETPro:
 	_et_gclient_addfieldalias(client.inactivityTime,     inactivityTime,    FIELD_INT,           0),
@@ -767,7 +765,16 @@ static const gentity_field_t gclient_fields[] =
 	_et_gclient_addfield(pers.lastteambleed_client,      FIELD_INT,         FIELD_FLAG_READONLY),
 	_et_gclient_addfield(pers.lastteambleed_dmg,         FIELD_INT,         FIELD_FLAG_READONLY),
 	_et_gclient_addfield(pers.playerStats.hitRegions,    FIELD_INT_ARRAY,   FIELD_FLAG_READONLY),
+	_et_gclient_addfield(pers.lastBattleSenseBonusTime,  FIELD_INT,         FIELD_FLAG_READONLY),
+	_et_gclient_addfield(pers.lastHQMineReportTime,      FIELD_INT,         FIELD_FLAG_READONLY),
+	_et_gclient_addfield(pers.maxHealth,                 FIELD_INT,         FIELD_FLAG_READONLY),
+	_et_gclient_addfield(pers.playerStats.selfkills,     FIELD_INT,         FIELD_FLAG_READONLY),
 
+	_et_gclient_addfield(ps.pm_flags,                    FIELD_INT,         FIELD_FLAG_READONLY),
+	_et_gclient_addfield(ps.pm_time,                     FIELD_INT,         FIELD_FLAG_READONLY),
+	_et_gclient_addfield(ps.eFlags,                      FIELD_INT,         FIELD_FLAG_READONLY),
+	_et_gclient_addfield(ps.weapon,                      FIELD_INT,         FIELD_FLAG_READONLY),
+	_et_gclient_addfield(ps.weaponstate,                 FIELD_INT,         FIELD_FLAG_READONLY),
 	_et_gclient_addfield(ps.stats,                       FIELD_INT_ARRAY,   0),
 	_et_gclient_addfield(ps.persistant,                  FIELD_INT_ARRAY,   0),
 	_et_gclient_addfield(ps.ping,                        FIELD_INT,         FIELD_FLAG_READONLY), // no ping change for lua scripts
@@ -775,7 +782,7 @@ static const gentity_field_t gclient_fields[] =
 	_et_gclient_addfield(ps.origin,                      FIELD_VEC3,        0),
 	_et_gclient_addfield(ps.ammo,                        FIELD_INT_ARRAY,   0),
 	_et_gclient_addfield(ps.ammoclip,                    FIELD_INT_ARRAY,   0),
-	_et_gclient_addfield(ps.classWeaponTime,             FIELD_INT_ARRAY,   0),
+	_et_gclient_addfield(ps.classWeaponTime,             FIELD_INT,         0),
 
 	// same order as in g_local.h
 	_et_gclient_addfield(sess.sessionTeam,               FIELD_INT,         0),
@@ -790,9 +797,7 @@ static const gentity_field_t gclient_fields[] =
 	_et_gclient_addfield(sess.latchPlayerWeapon,         FIELD_INT,         0),
 	_et_gclient_addfield(sess.latchPlayerWeapon2,        FIELD_INT,         0),
 	_et_gclient_addfield(sess.ignoreClients,             FIELD_INT_ARRAY,   0),
-
 	_et_gclient_addfield(sess.muted,                     FIELD_INT,         0),
-
 	_et_gclient_addfield(sess.skillpoints,               FIELD_FLOAT_ARRAY, FIELD_FLAG_READONLY),
 	_et_gclient_addfield(sess.startskillpoints,          FIELD_FLOAT_ARRAY, FIELD_FLAG_READONLY),
 	_et_gclient_addfield(sess.startxptotal,              FIELD_FLOAT,       FIELD_FLAG_READONLY),
@@ -800,32 +805,38 @@ static const gentity_field_t gclient_fields[] =
 	_et_gclient_addfield(sess.rank,                      FIELD_INT,         0),
 	_et_gclient_addfield(sess.medals,                    FIELD_INT_ARRAY,   0),
 	_et_gclient_addfield(sess.coach_team,                FIELD_INT,         0),
-	_et_gclient_addfield(sess.damage_given,              FIELD_INT,         0),
-	_et_gclient_addfield(sess.damage_received,           FIELD_INT,         0),
-	_et_gclient_addfield(sess.deaths,                    FIELD_INT,         0),
-	_et_gclient_addfield(sess.game_points,               FIELD_INT,         0),
-	_et_gclient_addfield(sess.kills,                     FIELD_INT,         0),
 	_et_gclient_addfield(sess.referee,                   FIELD_INT,         0),
 	_et_gclient_addfield(sess.rounds,                    FIELD_INT,         0),
 	_et_gclient_addfield(sess.spec_invite,               FIELD_INT,         0),
 	_et_gclient_addfield(sess.spec_team,                 FIELD_INT,         0),
-	_et_gclient_addfield(sess.selfkills,                 FIELD_INT,         0),
+	_et_gclient_addfield(sess.kills,                     FIELD_INT,         0),
+	_et_gclient_addfield(sess.deaths,                    FIELD_INT,         0),
+	_et_gclient_addfield(sess.gibs,                      FIELD_INT,         0),
+	_et_gclient_addfield(sess.self_kills,                FIELD_INT,         0),
+	_et_gclient_addfield(sess.team_kills,                FIELD_INT,         0),
+	_et_gclient_addfield(sess.team_gibs,                 FIELD_INT,         0),
+	_et_gclient_addfield(sess.damage_given,              FIELD_INT,         0),
+	_et_gclient_addfield(sess.damage_received,           FIELD_INT,         0),
 	_et_gclient_addfield(sess.team_damage_given,         FIELD_INT,         0),
 	_et_gclient_addfield(sess.team_damage_received,      FIELD_INT,         0),
-	_et_gclient_addfield(sess.team_kills,                FIELD_INT,         0),
 	_et_gclient_addfield(sess.time_axis,                 FIELD_INT,         0),
 	_et_gclient_addfield(sess.time_allies,               FIELD_INT,         0),
+	_et_gclient_addfield(sess.time_played,               FIELD_INT,         0),
+#ifdef FEATURE_RATING
+	_et_gclient_addfield(sess.mu,                        FIELD_FLOAT,       0),
+	_et_gclient_addfield(sess.sigma,                     FIELD_FLOAT,       0),
+	_et_gclient_addfield(sess.oldmu,                     FIELD_FLOAT,       0),
+	_et_gclient_addfield(sess.oldsigma,                  FIELD_FLOAT,       0),
+#endif
 	_et_gclient_addfield(sess.uci,                       FIELD_INT,         0),
 
 	_et_gclient_addfield(sess.aWeaponStats,              FIELD_WEAPONSTAT,  0),
 	// TODO
 	//_et_gclient_addfieldalias(aWeaponStats, sess.aWeaponStats, FIELD_WEAPONSTAT_EXT, FIELD_FLAG_READONLY),
 
-
 	// origin: use ps.origin instead of r.currentOrigin
 	// for client entities
 	_et_gclient_addfieldalias(origin,                    ps.origin,         FIELD_VEC3,          0),
-
 
 	// missing sess.semiadmin
 	// missing sess.gibs
@@ -856,6 +867,7 @@ static const gentity_field_t gentity_fields[] =
 	_et_gentity_addfield(duration,            FIELD_FLOAT,      0),
 	_et_gentity_addfield(end_size,            FIELD_INT,        0),
 	_et_gentity_addfield(enemy,               FIELD_ENTITY,     0),
+	_et_gentity_addfield(entstate,            FIELD_INT,        FIELD_FLAG_READONLY),
 	_et_gentity_addfield(flags,               FIELD_INT,        FIELD_FLAG_READONLY),
 	_et_gentity_addfield(harc,                FIELD_FLOAT,      0),
 	_et_gentity_addfield(health,              FIELD_INT,        0),
@@ -881,7 +893,7 @@ static const gentity_field_t gentity_fields[] =
 	_et_gentity_addfield(r.currentAngles,     FIELD_VEC3,       0),
 	_et_gentity_addfield(r.currentOrigin,     FIELD_VEC3,       0),
 	_et_gentity_addfield(r.eventTime,         FIELD_INT,        0),
-	// _et_gentity_addfield(r.linkcount, FIELD_INT, FIELD_FLAG_READONLY), // IRATA: not used, kept for ET compatibility, so we don't provide it
+	// _et_gentity_addfield(r.linkcount, FIELD_INT, FIELD_FLAG_READONLY), // not used, kept for ET compatibility, so we don't provide it
 	_et_gentity_addfield(r.linked,            FIELD_INT,        FIELD_FLAG_READONLY),
 	_et_gentity_addfield(r.maxs,              FIELD_VEC3,       0),
 	_et_gentity_addfield(r.mins,              FIELD_VEC3,       0),
@@ -1081,14 +1093,78 @@ static void _et_gentity_getweaponstat(lua_State *L, weapon_stat_t *ws)
 	lua_settable(L, -3);
 }
 
-// entnum = et.G_Spawn()
-static int _et_G_Spawn(lua_State *L)
+gentity_t* G_Lua_CreateEntity(char *params)
 {
-	gentity_t *entnum = G_Spawn();
+	gentity_t *create;
+	char      *token;
+	char      *p = params;
+	char      key[MAX_TOKEN_CHARS], value[MAX_TOKEN_CHARS];
 
-	entnum->classname = "lua_spawn";
+	level.numSpawnVars     = 0;
+	level.numSpawnVarChars = 0;
+
+	while (1)
+	{
+		token = COM_ParseExt(&p, qfalse);
+		if (!token[0])
+		{
+			break;
+		}
+		strcpy(key, token);
+
+		token = COM_ParseExt(&p, qfalse);
+		if (!token[0])
+		{
+			G_Error("Lua API: spawn key \"%s\" has no value", key);
+			break;
+		}
+
+		strcpy(value, token);
+
+		if (g_scriptDebug.integer)
+		{
+			G_Printf("Lua API: %d : %s: set [%s] [%s] [%s]\n", level.time, GAMEVERSION, LUA_VERSION, key, value);
+		}
+
+		if (level.numSpawnVars == MAX_SPAWN_VARS)
+		{
+			G_Error("Lua API: can't spawn and entity - MAX_SPAWN_VARS reached");
+		}
+
+		level.spawnVars[level.numSpawnVars][0] = G_AddSpawnVarToken(key);
+		level.spawnVars[level.numSpawnVars][1] = G_AddSpawnVarToken(value);
+
+		level.numSpawnVars++;
+	}
+	create = G_SpawnGEntityFromSpawnVars();
+
+	create->classname = "lua_spawn"; // make additional param?
+
+	trap_LinkEntity(create);
+	return create;
+}
+
+// entnum = _et_G_Lua_CreateEntity(params)
+// This function expects same as G_ScriptAction_Create -  keys & values
+// see http://wolfwiki.anime.net/index.php/Map_scripting
+// was et.G_Spawn() before 2.75 (... and  did not work)
+static int _et_G_Lua_CreateEntity(lua_State *L)
+{
+	gentity_t *entnum;
+	char      *params = (char *)luaL_checkstring(L, 1); // make 2 params for classname?
+
+	entnum = G_Lua_CreateEntity(params);
 
 	lua_pushinteger(L, entnum - g_entities);
+
+	return 1;
+}
+
+static int _et_G_Lua_DeleteEntity(lua_State *L)
+{
+	char *params = (char *)luaL_checkstring(L, 1);
+
+	lua_pushinteger(L, G_ScriptAction_Delete(NULL, params)); // FIXME: make own function for proper outputs?
 	return 1;
 }
 
@@ -1293,9 +1369,6 @@ static int _et_G_SetSpawnVar(lua_State *L)
 	return 0;
 }
 
-// TODO:
-// integer entnum = et.G_SpawnGEntityFromSpawnVars( string spawnvar, string spawnvalue, ... )
-
 // et.trap_LinkEntity( entnum )
 static int _et_trap_LinkEntity(lua_State *L)
 {
@@ -1345,7 +1418,7 @@ static int _et_gentity_get(lua_State *L)
 		return 1;
 	}
 
-	addr += (unsigned long)field->mapping;
+	addr += field->mapping;
 
 	switch (field->type)
 	{
@@ -1439,7 +1512,7 @@ static int _et_gentity_set(lua_State *L)
 		return 1;
 	}
 
-	addr += (unsigned long)field->mapping;
+	addr += field->mapping;
 
 	switch (field->type)
 	{
@@ -1477,6 +1550,9 @@ static int _et_gentity_set(lua_State *L)
 	case FIELD_FLOAT_ARRAY:
 		*(float *)(addr + (sizeof(int) * (int)luaL_checkinteger(L, 3))) = luaL_checknumber(L, 4);
 		return 1;
+	default:
+		G_Printf("Lua API: et.gentity_set with no valid field type\n");
+		break;
 	}
 	return 0;
 }
@@ -1498,7 +1574,7 @@ static int _et_G_XP_Set(lua_State *L)
 {
 	gentity_t *ent      = NULL;
 	int       clientNum = (int)luaL_checkinteger(L, 1);
-	int       xp        = (int)luaL_checkinteger(L, 2);
+	float     xp        = (float)luaL_checknumber(L, 2);
 	int       skill     = (int)luaL_checkinteger(L, 3);
 	int       add       = (int)luaL_checkinteger(L, 4); // 'add' just checks to be 0 or not to be 0
 
@@ -1541,16 +1617,16 @@ static int _et_G_XP_Set(lua_State *L)
 	{
 		float oldxp = ent->client->sess.skillpoints[skill];
 
-		ent->client->sess.skillpoints[skill] = (float)xp;
-		// ent->client->sess.mapstartSkillpoints[skill] = (float)xp;
+		ent->client->sess.skillpoints[skill] = xp;
+		//ent->client->sess.mapstartSkillpoints[skill] = xp;
 		ent->client->sess.startxptotal -= oldxp;
-		ent->client->sess.startxptotal += (float)xp;
+		ent->client->sess.startxptotal += xp;
 	}
 	else
 	{
-		ent->client->sess.skillpoints[skill] += (float)xp;
-		// ent->client->sess.mapstartSkillpoints[skill] += (float)xp;
-		ent->client->sess.startxptotal += (float)xp;
+		ent->client->sess.skillpoints[skill] += xp;
+		//ent->client->sess.mapstartSkillpoints[skill] += xp;
+		ent->client->sess.startxptotal += xp;
 	}
 
 	ent->client->ps.stats[STAT_XP] = (int)ent->client->sess.startxptotal;
@@ -1569,14 +1645,65 @@ static int _et_G_XP_Set(lua_State *L)
 static int _et_G_ResetXP(lua_State *L)
 {
 	int       entnum = luaL_optinteger(L, 1, -1);
-	gentity_t *ent   = NULL;
+	gentity_t *ent;
 
-	if (entnum > -1)
+	if (entnum > -1 && entnum < MAX_CLIENTS)
 	{
 		ent = g_entities + entnum;
+
+		if (!ent->client)
+		{
+			luaL_error(L, "clientNum \"%d\" is not a client entity", entnum);
+			return 0;
+		}
+
+		G_ResetXP(ent);
 	}
-	G_ResetXP(ent);
-	return 1;
+	else
+	{
+		luaL_error(L, "clientNum \"%d\" is not a client entity number", entnum);
+	}
+	return 0;
+}
+
+static int _et_G_SetEntState(lua_State *L)
+{
+	gentity_t  *ent;
+	int        entnum   = (int)luaL_checkinteger(L, 1);
+	entState_t newstate = (int)luaL_checkinteger(L, 2);
+
+	if (entnum > -1 && entnum < ENTITYNUM_MAX_NORMAL) // don't do this with world ent
+	{
+		ent = g_entities + entnum;
+		G_SetEntState(ent, newstate);
+	}
+	else
+	{
+		luaL_error(L, "entity number \"%d\" is out of range", entnum);
+	}
+	return 0;
+}
+
+static int _et_G_ShaderRemap(lua_State *L)
+{
+	float f               = level.time * 0.001;
+	const char *oldShader = luaL_checkstring(L, 1);
+	const char *newShader = luaL_checkstring(L, 2);
+
+	AddRemap(oldShader, newShader, f);
+	return 0;
+}
+
+static int _et_G_ResetRemappedShaders(lua_State *L)
+{
+	G_ResetRemappedShaders();
+	return 0;
+}
+
+static int _et_G_ShaderRemapFlush(lua_State *L)
+{
+	trap_SetConfigstring(CS_SHADERSTATE, BuildShaderStateConfig());
+	return 0;
 }
 
 /** @}*/ // doxygen addtogroup lua_etfncs
@@ -1644,7 +1771,8 @@ static const luaL_Reg etlib[] =
 	{ "G_AddSkillPoints",        _et_G_AddSkillPoints        },
 	{ "G_LoseSkillPoints",       _et_G_LoseSkillPoints       },
 	// Entities
-	{ "G_Spawn",                 _et_G_Spawn                 },
+	{ "G_CreateEntity",          _et_G_Lua_CreateEntity      },
+	{ "G_DeleteEntity",          _et_G_Lua_DeleteEntity      },
 	{ "G_TempEntity",            _et_G_TempEntity            },
 	{ "G_FreeEntity",            _et_G_FreeEntity            },
 
@@ -1661,7 +1789,11 @@ static const luaL_Reg etlib[] =
 	// XP functions
 	{ "G_XP_Set",                _et_G_XP_Set                },
 	{ "G_ResetXP",               _et_G_ResetXP               },
+	{ "G_SetEntState",           _et_G_SetEntState           },
 
+	{ "G_ShaderRemap",           _et_G_ShaderRemap           },
+	{ "G_ResetRemappedShaders",  _et_G_ResetRemappedShaders  },
+	{ "G_ShaderRemapFlush",      _et_G_ShaderRemapFlush      },
 	{ NULL },
 };
 
@@ -2195,7 +2327,7 @@ static void registerConstants(lua_vm_t *vm)
  */
 qboolean G_LuaStartVM(lua_vm_t *vm)
 {
-	int        res = 0;
+	int        res;
 	char       basepath[MAX_QPATH];
 	char       homepath[MAX_QPATH];
 	char       gamepath[MAX_QPATH];
@@ -2262,19 +2394,29 @@ qboolean G_LuaStartVM(lua_vm_t *vm)
 	lua_setglobal(vm->L, "et");
 
 	// Load the code
-	G_Printf("%s API: Loading %s\n", LUA_VERSION, vm->file_name);
+	G_Printf("%s API: %sLoading %s\n", LUA_VERSION, S_COLOR_BLUE ,vm->file_name);
 
 	res = luaL_loadbuffer(vm->L, vm->code, vm->code_size, vm->file_name);
-	if (res == LUA_ERRSYNTAX)
+
+	switch (res)
 	{
+	case LUA_OK:
+		break;
+	case LUA_ERRSYNTAX:
 		G_Printf("%s API: syntax error during pre-compilation: %s\n", LUA_VERSION, lua_tostring(vm->L, -1));
 		lua_pop(vm->L, 1);
 		vm->err++;
 		return qfalse;
-	}
-	else if (res == LUA_ERRMEM)
-	{
+	case LUA_ERRMEM:
 		G_Printf("%s API: memory allocation error #1 ( %s )\n", LUA_VERSION, vm->file_name);
+		vm->err++;
+		return qfalse;
+	case LUA_ERRGCMM:
+		G_Printf("%s API: error while running a __gc metamethod caused by garbage collector ( %s )\n", LUA_VERSION, vm->file_name);
+		vm->err++;
+		return qfalse;
+	default:
+		G_Printf("%s API: unknown error %i ( %s )\n", LUA_VERSION, res ,vm->file_name);
 		vm->err++;
 		return qfalse;
 	}
@@ -2282,6 +2424,7 @@ qboolean G_LuaStartVM(lua_vm_t *vm)
 	// Execute the code
 	if (!G_LuaCall(vm, "G_LuaStartVM", 0, 0))
 	{
+		G_Printf("%s API: Lua VM start failed ( %s ) \n", LUA_VERSION, vm->file_name);
 		return qfalse;
 	}
 
@@ -3008,6 +3151,39 @@ qboolean G_LuaHook_Damage(int target, int attacker, int damage, int dflags, int 
 		}
 	}
 	return qfalse;
+}
+
+/*
+ * G_LuaHook_SpawnEntitiesFromString
+ * et_LuaSpawnEntitiesFromString()
+ */
+void G_LuaHook_SpawnEntitiesFromString()
+{
+	int      i;
+	lua_vm_t *vm;
+
+	for (i = 0; i < LUA_NUM_VM; i++)
+	{
+		vm = lVM[i];
+		if (vm)
+		{
+			if (vm->id < 0 /*|| vm->err*/)
+			{
+				continue;
+			}
+			if (!G_LuaGetNamedFunction(vm, "et_LuaSpawnEntitiesFromString"))
+			{
+				continue;
+			}
+
+			// Call
+			if (!G_LuaCall(vm, "et_LuaSpawnEntitiesFromString", 0, 0))
+			{
+				//G_LuaStopVM(vm);
+				continue;
+			}
+		}
+	}
 }
 
 /** @} */ // doxygen addtogroup lua_etevents

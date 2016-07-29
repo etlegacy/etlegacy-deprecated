@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -110,11 +110,6 @@ hudStucture_t hudlist[MAXHUDS];
 
 hudStucture_t *activehud;
 hudStucture_t hud0;
-
-// FIXME: use these in all HUD related draw functions to have unique colors
-vec4_t HUD_Background = { 0.16f, 0.2f, 0.17f, 0.8f };
-vec4_t HUD_Border = { 0.5f, 0.5f, 0.5f, 0.5f };
-vec4_t HUD_Text = { 0.625f, 0.625f, 0.6f, 1.0f };
 
 /* unused
 rectDef_t CG_getRect(float x, float y, float w, float h)
@@ -588,13 +583,16 @@ void CG_ReadHudScripts(void)
 
 // HUD DRAWING FUNCTIONS BELLOW
 
+vec4_t HUD_Background = { 0.16f, 0.2f, 0.17f, 0.8f };
+vec4_t HUD_Border = { 0.5f, 0.5f, 0.5f, 0.5f };
+vec4_t HUD_Text = { 0.6f, 0.6f, 0.6f, 1.0f };
+
 static void CG_DrawPicShadowed(float x, float y, float w, float h, qhandle_t icon)
 {
 	trap_R_SetColor(colorBlack);
 	CG_DrawPic(x + 2, y + 2, w, h, icon);
 	trap_R_SetColor(NULL);
 	CG_DrawPic(x, y, w, h, icon);
-
 }
 
 static void CG_DrawPlayerStatusHead(hudComponent_t comp)
@@ -729,7 +727,7 @@ static int CG_PlayerAmmoValue(int *ammo, int *clips, int *akimboammo)
 		break;
 	}
 
-	if ((cg.snap->ps.eFlags & EF_MG42_ACTIVE) || (cg.snap->ps.eFlags & EF_MOUNTEDTANK))
+	if ((cg.snap->ps.eFlags & EF_MG42_ACTIVE) || (cg.snap->ps.eFlags & EF_MOUNTEDTANK) || (cg.snap->ps.eFlags & EF_AAGUN_ACTIVE))
 	{
 		if (cg_entities[cg_entities[cg_entities[cg.snap->ps.clientNum].tagParent].tankparent].currentState.density & 8)
 		{
@@ -787,8 +785,7 @@ static int CG_PlayerAmmoValue(int *ammo, int *clips, int *akimboammo)
 	return weap;
 }
 
-// stamina-/breathbar
-vec4_t bgcolour = { 1.f, 1.f, 1.f, 0.3f };
+vec4_t bgcolor = { 1.f, 1.f, 1.f, .3f };    // bars backgound
 
 static void CG_DrawPlayerHealthBar(rectDef_t *rect)
 {
@@ -808,7 +805,7 @@ static void CG_DrawPlayerHealthBar(rectDef_t *rect)
 		frac = cg.snap->ps.stats[STAT_HEALTH] / (float) cg.snap->ps.stats[STAT_MAX_HEALTH];
 	}
 
-	CG_FilledBar(rect->x, rect->y + (rect->h * 0.1f), rect->w, rect->h * 0.84f, colour, NULL, bgcolour, frac, flags);
+	CG_FilledBar(rect->x, rect->y + (rect->h * 0.1f), rect->w, rect->h * 0.84f, colour, NULL, bgcolor, frac, flags);
 
 	trap_R_SetColor(NULL);
 	CG_DrawPic(rect->x, rect->y, rect->w, rect->h, cgs.media.hudSprintBar);
@@ -817,11 +814,10 @@ static void CG_DrawPlayerHealthBar(rectDef_t *rect)
 
 static void CG_DrawStaminaBar(rectDef_t *rect)
 {
-	vec4_t colour    = { 0.1f, 1.0f, 0.1f, 0.5f };
-	vec4_t colourlow = { 1.0f, 0.1f, 0.1f, 0.5f };
-	vec_t  *color    = colour;
-	int    flags     = 1 | 4 | 16 | 64;
-	float  frac      = cg.pmext.sprintTime / (float)SPRINTTIME;
+	vec4_t colour = { 0.1f, 1.0f, 0.1f, 0.5f };
+	vec_t  *color = colour;
+	int    flags  = 1 | 4 | 16 | 64;
+	float  frac   = cg.snap->ps.stats[STAT_SPRINTTIME] / (float)SPRINTTIME;
 
 	if (cg.snap->ps.powerups[PW_ADRENALINE])
 	{
@@ -845,46 +841,41 @@ static void CG_DrawStaminaBar(rectDef_t *rect)
 	}
 	else
 	{
-		if (frac < 0.25)
-		{
-			color = colourlow;
-		}
+		color[0] = 1.0f - frac;
+		color[1] = frac;
 	}
 
-	CG_FilledBar(rect->x, rect->y + (rect->h * 0.1f), rect->w, rect->h * 0.84f, color, NULL, bgcolour, frac, flags);
+	CG_FilledBar(rect->x, rect->y + (rect->h * 0.1f), rect->w, rect->h * 0.84f, color, NULL, bgcolor, frac, flags);
 
 	trap_R_SetColor(NULL);
 	CG_DrawPic(rect->x, rect->y, rect->w, rect->h, cgs.media.hudSprintBar);
 	CG_DrawPic(rect->x, rect->y + rect->h + 4, rect->w, rect->w, cgs.media.hudSprintIcon);
 }
 
-// draw the breath bar! Thanks to bacon from the splashdamage forums for this
+// draw the breath bar
 static void CG_DrawBreathBar(rectDef_t *rect)
 {
-	static vec4_t colour    = { 0.1f, 0.1f, 1.0f, 0.5f };
-	static vec4_t colourlow = { 1.0f, 0.1f, 0.1f, 0.5f };
-	vec_t         *color    = colour;
-	int           flags     = 1 | 4 | 16 | 64;
-	float         frac      = cg.snap->ps.stats[STAT_AIRLEFT] / (float)HOLDBREATHTIME;
+	static vec4_t colour = { 0.1f, 0.1f, 1.0f, 0.5f };
+	vec_t         *color = colour;
+	int           flags  = 1 | 4 | 16 | 64;
+	float         frac   = cg.snap->ps.stats[STAT_AIRLEFT] / (float)HOLDBREATHTIME;
 
-	if (frac < 0.25)
-	{
-		color = colourlow;
-	}
+	color[0] = 1.0f - frac;
+	color[2] = frac;
 
-	CG_FilledBar(rect->x, rect->y + (rect->h * 0.1f), rect->w, rect->h * 0.84f, color, NULL, bgcolour, frac, flags);
+	CG_FilledBar(rect->x, rect->y + (rect->h * 0.1f), rect->w, rect->h * 0.84f, color, NULL, bgcolor, frac, flags);
 
 	trap_R_SetColor(NULL);
 	CG_DrawPic(rect->x, rect->y, rect->w, rect->h, cgs.media.hudSprintBar);
 	CG_DrawPic(rect->x, rect->y + rect->h + 4, rect->w, rect->w, cgs.media.waterHintShader);
 }
 
+// draw weapon recharge bar
 static void CG_DrawWeapRecharge(rectDef_t *rect)
 {
 	float    barFrac, chargeTime;
-	int      flags   = 1 | 4 | 16;
-	qboolean charge  = qtrue;
-	vec4_t   bgcolor = { 1.0f, 1.0f, 1.0f, 0.25f };
+	int      flags  = 1 | 4 | 16;
+	qboolean charge = qtrue;
 	vec4_t   color;
 
 	// Draw power bar
@@ -1049,8 +1040,8 @@ static void CG_DrawWeapRecharge(rectDef_t *rect)
 	if (!charge)
 	{
 		color[0] = 1.0f;
-		color[1] = color[2] = 0.0f;
-		color[3] = 1.0f;
+		color[1] = color[2] = 0.1f;
+		color[3] = 0.5f;
 	}
 	else
 	{
@@ -1178,6 +1169,8 @@ static void CG_DrawSkillBar(float x, float y, float w, float h, int skill)
 	}
 }
 
+extern pmove_t *pm;
+
 skillType_t CG_ClassSkillForPosition(clientInfo_t *ci, int pos)
 {
 	switch (pos)
@@ -1187,7 +1180,14 @@ skillType_t CG_ClassSkillForPosition(clientInfo_t *ci, int pos)
 	case 1:
 		return SK_BATTLE_SENSE;
 	case 2:
+		// draw soldier level if using a heavy weapon instead of light weapons icon
+		if ((pm && (pm->ps->persistant[PERS_HWEAPON_USE] || (pm->ps->eFlags & EF_MOUNTEDTANK) || IS_HEAVY_WEAPON(pm->ps->weapon))) && ci->cls != PC_SOLDIER)
+		{
+			return SK_SOLDIER;
+		}
 		return SK_LIGHT_WEAPONS;
+	default:
+		break;
 	}
 
 	return SK_BATTLE_SENSE;
@@ -1877,15 +1877,13 @@ CG_DrawTimersAlt
 */
 static void CG_DrawTimersAlt(rectDef_t *respawn, rectDef_t *spawntimer, rectDef_t *localtime, rectDef_t *roundtimer)
 {
-	char    *s;
+	char    *s, *rt;
 	qtime_t time;
 	vec4_t  color = { 0.625f, 0.625f, 0.6f, 1.0f };
 	int     tens;
-	char    *rt = (cgs.gametype != GT_WOLF_LMS && (cgs.clientinfo[cg.clientNum].team != TEAM_SPECTATOR || (cg.snap->ps.pm_flags & PMF_FOLLOW)) && cg_drawReinforcementTime.integer > 0) ?
-	              va("^F%d%s", CG_CalculateReinfTime(qfalse), ((cgs.timelimit <= 0.0f) ? "" : " ")) : "";
-	int msec    = (cgs.timelimit * 60.f * 1000.f) - (cg.time - cgs.levelStartTime);
-	int seconds = msec / 1000;
-	int mins    = seconds / 60;
+	int     msec    = (cgs.timelimit * 60000.f) - (cg.time - cgs.levelStartTime); // 60.f * 1000.f
+	int     seconds = msec / 1000;
+	int     mins    = seconds / 60;
 
 	seconds -= mins * 60;
 	tens     = seconds / 10;
@@ -1908,6 +1906,18 @@ static void CG_DrawTimersAlt(rectDef_t *respawn, rectDef_t *spawntimer, rectDef_
 		{
 			CG_Text_Paint_Ext(roundtimer->x, roundtimer->y, 0.19f, 0.19f, color, va("^7%i:%i%i", mins, tens, seconds), 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont1);
 		}
+
+		if (cgs.gametype != GT_WOLF_LMS && (cgs.clientinfo[cg.clientNum].team != TEAM_SPECTATOR || (cg.snap->ps.pm_flags & PMF_FOLLOW)) && cg_drawReinforcementTime.integer > 0)
+		{
+			int reinfTime = CG_CalculateReinfTime(qfalse);
+
+			rt = va("%s%d%s", (reinfTime <= 2 && cgs.clientinfo[cg.clientNum].health == 0) ? "^3" : "^F", reinfTime, ((cgs.timelimit <= 0.0f) ? "" : " "));
+		}
+		else
+		{
+			rt = "";
+		}
+
 		s = va("%s", rt);
 	}
 	CG_Text_Paint_Ext(respawn->x, respawn->y, 0.19f, 0.19f, color, s, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont1);
@@ -1974,16 +1984,14 @@ CG_DrawTimerNormal
 */
 static float CG_DrawTimerNormal(float y)
 {
-	char   *s;
+	vec4_t color = { .6f, .6f, .6f, 1.f };
+	char   *s, *rt;
 	int    w, w2;
-	vec4_t color = { 0.625f, 0.625f, 0.6f, 1.0f };
 	int    tens;
-	char   *rt = (cgs.gametype != GT_WOLF_LMS && (cgs.clientinfo[cg.clientNum].team != TEAM_SPECTATOR || (cg.snap->ps.pm_flags & PMF_FOLLOW)) && cg_drawReinforcementTime.integer > 0) ?
-	             va("^F%d%s", CG_CalculateReinfTime(qfalse), ((cgs.timelimit <= 0.0f) ? "" : " ")) : "";
-	int x;
-	int msec    = (cgs.timelimit * 60.f * 1000.f) - (cg.time - cgs.levelStartTime);
-	int seconds = msec / 1000;
-	int mins    = seconds / 60;
+	int    x;
+	int    msec    = (cgs.timelimit * 60000.f) - (cg.time - cgs.levelStartTime); // 60.f * 1000.f
+	int    seconds = msec / 1000;
+	int    mins    = seconds / 60;
 
 	seconds -= mins * 60;
 	tens     = seconds / 10;
@@ -2001,6 +2009,17 @@ static float CG_DrawTimerNormal(float y)
 	}
 	else
 	{
+		if (cgs.gametype != GT_WOLF_LMS && (cgs.clientinfo[cg.clientNum].team != TEAM_SPECTATOR || (cg.snap->ps.pm_flags & PMF_FOLLOW)) && cg_drawReinforcementTime.integer > 0)
+		{
+			int reinfTime = CG_CalculateReinfTime(qfalse);
+
+			rt = va("%s%d%s", (reinfTime <= 2 && cgs.clientinfo[cg.clientNum].health == 0) ? "^3" : "^F", reinfTime, ((cgs.timelimit <= 0.0f) ? "" : " "));
+		}
+		else
+		{
+			rt = "";
+		}
+
 		if (cgs.timelimit <= 0.0f)
 		{
 			s = va("%s", rt);
@@ -2021,10 +2040,9 @@ static float CG_DrawTimerNormal(float y)
 	}
 	else if (cg_spawnTimer_set.integer != -1 && cg_spawnTimer_period.integer > 0 && cgs.gamestate != GS_PLAYING)
 	{
-		//We are not playing and the timer is set so reset/disable it
+		// we are not playing and the timer is set so reset/disable it
 		trap_Cvar_Set("cg_spawnTimer_set", "-1");
 	}
-	// end spawntimer
 
 	w  = CG_Text_Width_Ext(s, 0.19f, 0, &cgs.media.limboFont1);
 	w2 = (UPPERRIGHT_W > w) ? UPPERRIGHT_W : w;
@@ -2039,7 +2057,6 @@ static float CG_DrawTimerNormal(float y)
 
 static float CG_DrawLocalTime(float y)
 {
-	vec4_t   color = { 0.625f, 0.625f, 0.6f, 1.0f };
 	qtime_t  time;
 	int      w, w2, x;
 	char     *s;
@@ -2085,7 +2102,7 @@ static float CG_DrawLocalTime(float y)
 	x = Ccg_WideX(UPPERRIGHT_X) - w2 - 2;
 	CG_FillRect(x, y, w2 + 5, 12 + 2, HUD_Background);
 	CG_DrawRect_FixedBorder(x, y, w2 + 5, 12 + 2, 1, HUD_Border);
-	CG_Text_Paint_Ext(x + ((w2 - w) / 2) + 2, y + 11, 0.19f, 0.19f, color, s, 0, 0, 0, &cgs.media.limboFont1);
+	CG_Text_Paint_Ext(x + ((w2 - w) / 2) + 2, y + 11, 0.19f, 0.19f, HUD_Text, s, 0, 0, 0, &cgs.media.limboFont1);
 
 	return y + 12 + 4;
 }
@@ -2106,6 +2123,7 @@ typedef struct
 	int frameCount;
 	int snapshotFlags[LAG_SAMPLES];
 	int snapshotSamples[LAG_SAMPLES];
+    int snapshotAntiwarp[LAG_SAMPLES];
 	int snapshotCount;
 } lagometer_t;
 
@@ -2125,17 +2143,14 @@ void CG_AddLagometerFrameInfo(void)
  */
 void CG_AddLagometerSnapshotInfo(snapshot_t *snap)
 {
+	int index = lagometer.snapshotCount & (LAG_SAMPLES - 1);
+
 	// dropped packet
 	if (!snap)
 	{
-		lagometer.snapshotSamples[lagometer.snapshotCount & (LAG_SAMPLES - 1)] = -1;
+		lagometer.snapshotSamples[index] = -1;
 		lagometer.snapshotCount++;
 		return;
-	}
-
-	if (cg.demoPlayback)
-	{
-		snap->ping = (snap->serverTime - snap->ps.commandTime) - 50;
 	}
 
 	// add this snapshot's info
@@ -2143,15 +2158,18 @@ void CG_AddLagometerSnapshotInfo(snapshot_t *snap)
 	{
 		static int lasttime = 0;
 
+		snap->ping = (snap->serverTime - snap->ps.commandTime) - 50;
+
 		// display snapshot time delta instead of ping
-		lagometer.snapshotSamples[lagometer.snapshotCount & (LAG_SAMPLES - 1)] = snap->serverTime - lasttime;
-		lasttime                                                               = snap->serverTime;
+		lagometer.snapshotSamples[index] = snap->serverTime - lasttime;
+		lasttime                         = snap->serverTime;
 	}
 	else
 	{
-		lagometer.snapshotSamples[lagometer.snapshotCount & (LAG_SAMPLES - 1)] = snap->ping;
+		lagometer.snapshotSamples[index] = MAX(snap->ping - snap->ps.stats[STAT_ANTIWARP_DELAY], 0);
 	}
-	lagometer.snapshotFlags[lagometer.snapshotCount & (LAG_SAMPLES - 1)] = snap->snapFlags;
+	lagometer.snapshotAntiwarp[index]  = snap->ping; // TODO: check this for demoPlayback
+	lagometer.snapshotFlags[index]     = snap->snapFlags;
 	lagometer.snapshotCount++;
 }
 
@@ -2226,6 +2244,8 @@ static float CG_DrawPing(float y)
 
 	return y + 12 + 4;
 }
+
+vec4_t colorAW = { 0, 0.5, 0, 0.5f };
 
 /**
  * @brief Draw the lagometer
@@ -2305,6 +2325,24 @@ static float CG_DrawLagometer(float y)
 		v = lagometer.snapshotSamples[i];
 		if (v > 0)
 		{
+            // antiwarp indicator
+            if (lagometer.snapshotAntiwarp[i] > 0)
+            {
+            	float w = lagometer.snapshotAntiwarp[i] * vscale;
+
+                if (color != 6)
+                {
+                    color = 6;
+                    trap_R_SetColor(colorAW);
+                }
+
+                if (w > range)
+                {
+                    w = range;
+                }
+                trap_R_DrawStretchPic( ax + aw - a, ay + ah - w - 2, 1, w, 0, 0, 0, 0, cgs.media.whiteShader );
+            }
+
 			if (lagometer.snapshotFlags[i] & SNAPFLAG_RATE_DELAYED)
 			{
 				if (color != 5)
@@ -2350,8 +2388,8 @@ static float CG_DrawLagometer(float y)
 		CG_Text_Paint_Ext(ax, ay, cg_fontScaleTP.value, cg_fontScaleTP.value, colorWhite, "snc", 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
 	}
 
-	// don't draw if a demo and we're running at a different timescale, or if the server is respawning
-	if (!cg.demoPlayback && !cg.serverRespawning)
+	// don't draw if a demo and we're running at a different timescale
+	if (!cg.demoPlayback)
 	{
 		CG_DrawDisconnect(y);
 	}
@@ -2690,8 +2728,12 @@ void CG_DrawUpperRight(void)
 		y = CG_DrawPing(y);
 	}
 
-	if (cg_lagometer.integer && !cg.serverRespawning)
+	if (cg_lagometer.integer)
 	{
 		y = CG_DrawLagometer(y);
+	}
+	else
+	{
+		CG_DrawDisconnect(y);
 	}
 }

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -403,13 +403,13 @@ G_FindByTargetname
 gentity_t *G_FindByTargetname(gentity_t *from, const char *match)
 {
 	gentity_t *max = &g_entities[level.num_entities];
-	int       hash = -1;
+	int       hash;
 
 	hash = BG_StringHashValue(match);
 
 	if (hash == -1) // if there is no name (not empty string!) BG_StringHashValue returns -1
 	{
-		G_Printf("G_FindByTargetname WARNING: invalid match pointer\n");
+		G_Printf("G_FindByTargetname WARNING: invalid match pointer '%s' - run devmap & g_scriptdebug 1 to get more info about\n", match);
 		//return NULL; ?! - won't be found - NULL is returned anyway
 	}
 
@@ -748,6 +748,7 @@ gentity_t *G_Spawn(void)
 			break;
 		}
 	}
+
 	if (i == ENTITYNUM_MAX_NORMAL)
 	{
 		for (i = 0; i < MAX_GENTITIES; i++)
@@ -773,21 +774,22 @@ gentity_t *G_Spawn(void)
 G_EntitiesFree
 =================
 */
-qboolean G_EntitiesFree(void)
+int G_EntitiesFree(void)
 {
-	int       i;
-	gentity_t *e = &g_entities[MAX_CLIENTS];
+	int	      i;
+	gentity_t *e       = &g_entities[MAX_CLIENTS];
+	int       entities = MAX_CLIENTS;
 
 	for (i = MAX_CLIENTS; i < level.num_entities; i++, e++)
 	{
 		if (e->inuse)
 		{
-			continue;
+			entities++;
+			//continue;
 		}
-		// slot available
-		return qtrue;
 	}
-	return qfalse;
+
+	return MAX_GENTITIES - entities;
 }
 
 /**
@@ -816,9 +818,9 @@ void G_FreeEntity(gentity_t *ed)
 	// before all game entities did relax - now  ET_TEMPHEAD, ET_TEMPLEGS and ET_EVENTS no longer relax
 	// - fix: ET_TEMP* entities are linked for a short amount of time but have no ent->r.svFlags set
 	// - optimization: if events are freed EVENT_VALID_MSEC has already passed (keep in mind these are broadcasted)
-	// - when enabled g_debughitboxes or g_debugbullets 3 we want visible trace effects - don't free immediately
+	// - when enabled g_debugHitboxes, g_debugPlayerHitboxes or g_debugbullets 3 we want visible trace effects - don't free immediately
 	// FIXME: remove tmp var l_free if we are sure there are no issues caused by this change (especially on network games)
-	if ((ed->s.eType == ET_TEMPHEAD || ed->s.eType == ET_TEMPLEGS || ed->s.eType == ET_CORPSE || ed->s.eType >= ET_EVENTS) && trap_Cvar_VariableIntegerValue("l_free") == 0 && trap_Cvar_VariableIntegerValue("g_debughitboxes") == 0 && trap_Cvar_VariableIntegerValue("g_debugbullets") < 3)
+	if ((ed->s.eType == ET_TEMPHEAD || ed->s.eType == ET_TEMPLEGS || ed->s.eType == ET_CORPSE || ed->s.eType >= ET_EVENTS) && trap_Cvar_VariableIntegerValue("l_free") == 0 && trap_Cvar_VariableIntegerValue("g_debugHitboxes") == 0 && trap_Cvar_VariableIntegerValue("g_debugPlayerHitboxes") == 0 && trap_Cvar_VariableIntegerValue("g_debugbullets") < 3)
 	{
 		// debug
 		//if (ed->s.eType >= ET_EVENTS)
@@ -856,8 +858,10 @@ must be taken if the origin is right on a surface (snap towards start vector fir
 */
 gentity_t *G_TempEntity(vec3_t origin, int event)
 {
-	gentity_t *e = G_Spawn();
+	gentity_t *e;
 	vec3_t    snapped;
+
+	e = G_Spawn();
 
 	e->s.eType = ET_EVENTS + event;
 
@@ -888,7 +892,9 @@ Note: Don't forget to call e->r.svFlags = SVF_BROADCAST; after
 */
 gentity_t *G_TempEntityNotLinked(int event)
 {
-	gentity_t *e = G_Spawn();
+	gentity_t *e;
+
+	e = G_Spawn();
 
 	e->s.eType        = ET_EVENTS + event;
 	e->classname      = "tempEntity";
@@ -902,7 +908,9 @@ gentity_t *G_TempEntityNotLinked(int event)
 
 gentity_t *G_PopupMessage(popupMessageType_t type)
 {
-	gentity_t *e = G_Spawn();
+	gentity_t *e;
+
+	e = G_Spawn();
 
 	e->s.eType        = ET_EVENTS + EV_POPUPMESSAGE;
 	e->classname      = "messageent";
@@ -969,7 +977,9 @@ void G_AddEvent(gentity_t *ent, int event, int eventParm)
  */
 void G_Sound(gentity_t *ent, int soundIndex)
 {
-	gentity_t *te = G_TempEntity(ent->r.currentOrigin, EV_GENERAL_SOUND);
+	gentity_t *te;
+
+	te = G_TempEntity(ent->r.currentOrigin, EV_GENERAL_SOUND);
 
 	te->s.eventParm = soundIndex;
 }
@@ -983,7 +993,9 @@ void G_ClientSound(gentity_t *ent, int soundIndex)
 {
 	if (ent && ent->client)
 	{
-		gentity_t *te = G_TempEntityNotLinked(EV_GLOBAL_CLIENT_SOUND);
+		gentity_t *te;
+
+		te = G_TempEntityNotLinked(EV_GLOBAL_CLIENT_SOUND);
 
 		te->s.teamNum   = (ent->client - level.clients);
 		te->s.eventParm = soundIndex;
@@ -1292,6 +1304,10 @@ void G_SetEntState(gentity_t *ent, entState_t state)
 			// stop using the mg42
 			mg42_stopusing(ent);
 		}
+		else if (!Q_stricmp(ent->classname, "misc_aagun"))
+		{
+			aagun_stopusing(ent);
+		}
 
 		if (ent->s.eType == ET_COMMANDMAP_MARKER)
 		{
@@ -1326,6 +1342,10 @@ void G_SetEntState(gentity_t *ent, entState_t state)
 		if (!Q_stricmp(ent->classname, "misc_mg42"))
 		{
 			mg42_stopusing(ent);
+		}
+		else if (!Q_stricmp(ent->classname, "misc_aagun"))
+		{
+			aagun_stopusing(ent);
 		}
 		else if (ent->s.eType == ET_WOLF_OBJECTIVE)
 		{
@@ -1729,10 +1749,9 @@ team_t G_GetTeamFromEntity(gentity_t *ent)
 		break;
 	case ET_CONSTRUCTIBLE:
 		return ent->s.teamNum;
-		break;
 	case ET_MG42_BARREL:
+	case ET_AAGUN:
 		return G_GetTeamFromEntity(&g_entities[ent->r.ownerNum]);
-
 	default:
 		break;
 	}

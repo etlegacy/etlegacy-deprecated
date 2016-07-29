@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -43,6 +43,16 @@ void IN_Init(void);
 void IN_Frame(void);
 void IN_Shutdown(void);
 void IN_Restart(void);
+
+//SDL Window system
+void *GLimp_MainWindow(void);
+void GLimp_Minimize(void);
+
+//Export to renderer
+void GLimp_Init(glconfig_t *glConfig, windowContext_t *context);
+void GLimp_Shutdown(void);
+void GLimp_EndFrame(void);
+void GLimp_SetGamma(unsigned char red[256], unsigned char green[256], unsigned char blue[256]);
 
 // Console
 void CON_Shutdown(void);

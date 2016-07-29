@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -479,6 +479,7 @@ qboolean G_TryPushingEntity(gentity_t *check, gentity_t *pusher, vec3_t move, ve
 
 // referenced in G_MoverPush()
 extern void LandMineTrigger(gentity_t *self);
+extern void GibEntity(gentity_t *self, int killer);
 
 /*
 ============
@@ -631,6 +632,28 @@ qboolean G_MoverPush(gentity_t *pusher, vec3_t move, vec3_t amove, gentity_t **o
 	for (e = 0; e < moveEntities; e++)
 	{
 		check = &g_entities[moveList[e]];
+
+		// some situations in front of mover should gib players (by damage)
+		if (check->s.eType == ET_PLAYER && check->client)
+		{
+			if (check->s.groundEntityNum != pusher->s.number)
+			{
+				if (check->client->ps.eFlags & (EF_DEAD | EF_PRONE | EF_PRONE_MOVING))
+				{
+					trap_LinkEntity(check);
+					G_Damage(check, pusher, pusher, NULL, NULL, 9999, 0, MOD_CRUSH);
+					moveList[e] = ENTITYNUM_NONE;	// prevent re-linking later on
+					continue;
+				}
+			}
+		}
+		if (check->s.eType == ET_CORPSE) // always gib corpses ...
+		{
+			trap_LinkEntity(check);
+			GibEntity(check, ENTITYNUM_WORLD);
+			moveList[e] = ENTITYNUM_NONE; // prevent re-linking later on
+			continue;
+		}
 
 		// the entity needs to be pushed
 		pushedStackDepth = 0;   // new push, reset stack depth
@@ -1624,16 +1647,15 @@ void Use_BinaryMover(gentity_t *ent, gentity_t *other, gentity_t *activator)
 			}
 		}
 
-		ent->s.loopSound = 0;
-
 		// looping sound
 		if (!nosound)
 		{
 			ent->s.loopSound = ent->sound2to3;
 		}
-		else if (!nosound)
+		else
 		{
-			ent->s.loopSound = ent->soundLoop;
+			//ent->s.loopSound = ent->soundLoop; // FIXME: check out this line (see blocked mover in Use_TrinaryMover)
+			ent->s.loopSound = 0;
 		}
 
 		// open areaportal
@@ -1665,12 +1687,14 @@ void Use_BinaryMover(gentity_t *ent, gentity_t *other, gentity_t *activator)
 			G_AddEvent(ent, EV_GENERAL_SOUND, ent->sound1to2);
 		}
 
-		ent->s.loopSound = 0;
-
 		// set looping sound
 		if (!nosound)
 		{
 			ent->s.loopSound = ent->sound2to3;
+		}
+		else
+		{
+			ent->s.loopSound = 0;
 		}
 
 		// open areaportal
@@ -1697,11 +1721,14 @@ void Use_BinaryMover(gentity_t *ent, gentity_t *other, gentity_t *activator)
 			}
 		}
 
-		ent->s.loopSound = 0;
 		// set looping sound
 		if (!nosound)
 		{
 			ent->s.loopSound = ent->sound2to3;
+		}
+		else
+		{
+			ent->s.loopSound = 0;
 		}
 
 		// open areaportal
@@ -2894,8 +2921,8 @@ TRAIN
 ===============================================================================
 */
 
-#define TRAIN_START_ON      1
-#define TRAIN_TOGGLE        2
+//#define TRAIN_START_ON      1 // unused
+//#define TRAIN_TOGGLE        2 // unused
 #define TRAIN_BLOCK_STOPS   4
 
 /*
@@ -2951,7 +2978,7 @@ void Reached_Train(gentity_t *ent)
 	// if the path_corner has a speed, use that
 	if (next->speed)
 	{
-		speed = next->speed * (float)g_moverScale.value;
+		speed = next->speed * g_moverScale.value;
 	}
 	else
 	{
@@ -3339,7 +3366,7 @@ void Reached_Train_rotating(gentity_t *ent)
 	// if the path_corner has a speed, use that
 	if (next->speed)
 	{
-		speed = next->speed * (float)g_moverScale.value;
+		speed = next->speed * g_moverScale.value;
 	}
 	else
 	{
@@ -4829,54 +4856,6 @@ void SP_func_invisible_user(gentity_t *ent)
 }
 
 /*
-==========
-G_Activate
-
-  Generic activation routine for doors
-==========
-*/
-void G_Activate(gentity_t *ent, gentity_t *activator)
-{
-	if ((ent->s.apos.trType == TR_STATIONARY && ent->s.pos.trType == TR_STATIONARY)
-	    && ent->active == qfalse)
-	{
-		// trigger the ent if possible, if not, then we'll just wait at the marker until it opens, which could be never(!?)
-		if (ent->key < 0)      // ent force locked
-		{
-			return;
-		}
-
-		if (!Q_stricmp(ent->classname, "script_mover"))        // dont activate script_mover's
-		{
-			return;
-		}
-
-		// hack fix for bigdoor1 on tram1_21
-
-		if (!(ent->teammaster))
-		{
-			ent->active = qtrue;
-			Use_BinaryMover(ent, activator, activator);
-			G_UseTargets(ent->teammaster, activator);
-			return;
-		}
-
-		if (ent->team && ent != ent->teammaster)
-		{
-			ent->teammaster->active = qtrue;
-			Use_BinaryMover(ent->teammaster, activator, activator);
-			G_UseTargets(ent->teammaster, activator);
-		}
-		else
-		{
-			ent->active = qtrue;
-			Use_BinaryMover(ent, activator, activator);
-			G_UseTargets(ent->teammaster, activator);
-		}
-	}
-}
-
-/*
 ==============
 InitConstructible
 ==============
@@ -5043,6 +5022,8 @@ void func_constructible_explode(gentity_t *self, gentity_t *inflictor, gentity_t
 					break;
 				case 3:
 					G_Script_ScriptEvent(self, "destroyed", "stage3");
+					break;
+				default:
 					break;
 				}
 			}
@@ -5265,6 +5246,8 @@ void func_constructible_underconstructionthink(gentity_t *ent)
 						break;
 					case 3:
 						G_Script_ScriptEvent(ent, "decayed", "stage3");
+						break;
+					default:
 						break;
 					}
 				}

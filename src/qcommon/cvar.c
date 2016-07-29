@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -1254,6 +1254,9 @@ Unsets a cvar
 cvar_t *Cvar_Unset(cvar_t *cv)
 {
 	cvar_t *next = cv->next;
+
+	// note what types of cvars have been modified (userinfo, archive, serverinfo, systeminfo)
+	cvar_modifiedFlags |= cv->flags;
 
 	if (cv->name)
 	{

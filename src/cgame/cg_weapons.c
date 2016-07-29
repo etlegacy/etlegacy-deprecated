@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -829,12 +829,28 @@ CG_RailTrail
     re-inserted this as a debug mechanism for bullets
 ==========================
 */
-void CG_RailTrail2(vec3_t color, clientInfo_t *ci, vec3_t start, vec3_t end)
+void CG_RailTrail2(vec3_t color, vec3_t start, vec3_t end, int index, int sideNum)
 {
 	localEntity_t *le;
 	refEntity_t   *re;
 
-	le = CG_AllocLocalEntity();
+	if (index)
+	{
+		le = CG_FindLocalEntity(index, sideNum);
+
+		if (!le)
+		{
+			le = CG_AllocLocalEntity();
+		}
+
+		le->data1 = index;
+		le->data2 = sideNum;
+	}
+	else
+	{
+		le = CG_AllocLocalEntity();
+	}
+
 	re = &le->refEntity;
 
 	le->leType    = LE_CONST_RGB;
@@ -860,13 +876,13 @@ void CG_RailTrail2(vec3_t color, clientInfo_t *ci, vec3_t start, vec3_t end)
 /**
  * @brief draw boxes for debugging
  */
-void CG_RailTrail(vec3_t color, clientInfo_t *ci, vec3_t start, vec3_t end, int type)      // added 'type'
+void CG_RailTrail(vec3_t color, vec3_t start, vec3_t end, int type, int index)
 {
 	vec3_t diff, v1, v2, v3, v4, v5, v6;
 
 	if (!type)     // just a line
 	{
-		CG_RailTrail2(color, ci, start, end);
+		CG_RailTrail2(color, start, end, index, -1);
 		return;
 	}
 
@@ -880,9 +896,9 @@ void CG_RailTrail(vec3_t color, clientInfo_t *ci, vec3_t start, vec3_t end, int 
 	v1[0] -= diff[0];
 	v2[1] -= diff[1];
 	v3[2] -= diff[2];
-	CG_RailTrail2(color, ci, start, v1);
-	CG_RailTrail2(color, ci, start, v2);
-	CG_RailTrail2(color, ci, start, v3);
+	CG_RailTrail2(color, start, v1, index, 1);
+	CG_RailTrail2(color, start, v2, index, 2);
+	CG_RailTrail2(color, start, v3, index, 3);
 
 	VectorCopy(end, v4);
 	VectorCopy(end, v5);
@@ -890,17 +906,17 @@ void CG_RailTrail(vec3_t color, clientInfo_t *ci, vec3_t start, vec3_t end, int 
 	v4[0] += diff[0];
 	v5[1] += diff[1];
 	v6[2] += diff[2];
-	CG_RailTrail2(color, ci, end, v4);
-	CG_RailTrail2(color, ci, end, v5);
-	CG_RailTrail2(color, ci, end, v6);
+	CG_RailTrail2(color, end, v4, index, 4);
+	CG_RailTrail2(color, end, v5, index, 5);
+	CG_RailTrail2(color, end, v6, index, 6);
 
-	CG_RailTrail2(color, ci, v2, v6);
-	CG_RailTrail2(color, ci, v6, v1);
-	CG_RailTrail2(color, ci, v1, v5);
+	CG_RailTrail2(color, v2, v6, index, 7);
+	CG_RailTrail2(color, v6, v1, index, 8);
+	CG_RailTrail2(color, v1, v5, index, 9);
 
-	CG_RailTrail2(color, ci, v2, v4);
-	CG_RailTrail2(color, ci, v4, v3);
-	CG_RailTrail2(color, ci, v3, v5);
+	CG_RailTrail2(color, v2, v4, index, 10);
+	CG_RailTrail2(color, v4, v3, index, 11);
+	CG_RailTrail2(color, v3, v5, index, 12);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -944,22 +960,27 @@ static qboolean CG_ParseWeaponConfig(const char *filename, weaponInfo_t *wi)
 	// parse the text
 	text_p = text;
 
+	COM_BeginParseSession("CG_ParseWeaponConfig");
+
 	// read optional parameters
 	while (1)
 	{
 		prev  = text_p; // so we can unget
 		token = COM_Parse(&text_p);
-		if (!token)                         // get the variable
+		if (!token[0])                         // get the variable
 		{
 			break;
 		}
-		/*      if ( !Q_stricmp( token, "whatever_variable" ) ) {
-		            token = COM_Parse( &text_p );   // get the value
-		            if ( !token ) {
-		                break;
-		            }
-		            continue;
-		        }*/
+
+		//if ( !Q_stricmp( token, "whatever_variable" ) )
+		//{
+		//  token = COM_Parse( &text_p );   // get the value
+		//  if (!token[0])
+		//  {
+		//    break;
+		//  }
+		//  continue;
+		//}
 
 		if (!Q_stricmp(token, "newfmt"))
 		{
@@ -979,21 +1000,21 @@ static qboolean CG_ParseWeaponConfig(const char *filename, weaponInfo_t *wi)
 	for (i = 0 ; i < MAX_WP_ANIMATIONS  ; i++)
 	{
 		token = COM_Parse(&text_p);     // first frame
-		if (!token)
+		if (!token[0])
 		{
 			break;
 		}
 		wi->weapAnimations[i].firstFrame = atoi(token);
 
 		token = COM_Parse(&text_p);     // length
-		if (!token)
+		if (!token[0])
 		{
 			break;
 		}
 		wi->weapAnimations[i].numFrames = atoi(token);
 
 		token = COM_Parse(&text_p);     // fps
-		if (!token)
+		if (!token[0])
 		{
 			break;
 		}
@@ -1007,7 +1028,7 @@ static qboolean CG_ParseWeaponConfig(const char *filename, weaponInfo_t *wi)
 		wi->weapAnimations[i].initialLerp = 1000 / fps;
 
 		token = COM_Parse(&text_p);     // looping frames
-		if (!token)
+		if (!token[0])
 		{
 			break;
 		}
@@ -1028,14 +1049,14 @@ static qboolean CG_ParseWeaponConfig(const char *filename, weaponInfo_t *wi)
 		if (newfmt)
 		{
 			token = COM_Parse(&text_p);     // barrel anim bits
-			if (!token)
+			if (!token[0])
 			{
 				break;
 			}
 			wi->weapAnimations[i].moveSpeed = atoi(token);
 
 			token = COM_Parse(&text_p);     // animated weapon
-			if (!token)
+			if (!token[0])
 			{
 				break;
 			}
@@ -1045,7 +1066,7 @@ static qboolean CG_ParseWeaponConfig(const char *filename, weaponInfo_t *wi)
 
 			}
 			token = COM_Parse(&text_p);     // barrel hide bits (so objects can be flagged to not be drawn during all sequences (a reloading hand that comes in from off screen for that one animation for example)
-			if (!token)
+			if (!token[0])
 			{
 				break;
 			}
@@ -1056,7 +1077,7 @@ static qboolean CG_ParseWeaponConfig(const char *filename, weaponInfo_t *wi)
 
 	if (i != MAX_WP_ANIMATIONS)
 	{
-		CG_Printf("CG_ParseWeaponConfig: Error parsing weapon animation file: %s", filename);
+		CG_Printf("CG_ParseWeaponConfig: Error parsing weapon animation file: %s\n", filename);
 		return qfalse;
 	}
 
@@ -1613,6 +1634,13 @@ static qboolean CG_RW_ParseClient(int handle, weaponInfo_t *weaponInfo)
 				weaponInfo->weaponIcon[0] = trap_R_RegisterShader(filename);
 			}
 		}
+		else if (!Q_stricmp(token.string, "weaponIconScale"))
+		{
+			if (!PC_Int_Parse(handle, &weaponInfo->weaponIconScale))
+			{
+				return CG_RW_ParseError(handle, "expected weaponIconScale filename");
+			}
+		}
 		else if (!Q_stricmp(token.string, "weaponSelectedIcon"))
 		{
 			if (!PC_String_ParseNoAlloc(handle, filename, sizeof(filename)))
@@ -1990,6 +2018,7 @@ void CG_RegisterWeapon(int weaponNum, qboolean force)
 	case VERYBIGEXPLOSION:
 	case WP_DUMMY_MG42:
 		//CG_Printf(S_COLOR_YELLOW "WARNING: skipping weapon %i to register.\n", weaponNum);
+		weaponInfo->weaponIconScale = 1;
 		return;     // to shut the game up
 	default:
 		CG_Printf(S_COLOR_RED "WARNING: trying to register weapon %i but there is no weapon file entry for it.\n", weaponNum);
@@ -2604,13 +2633,11 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 		}
 
 		gun.hModel = weapon->weaponModel[W_TP_MODEL].model;
-		if ((team == TEAM_AXIS) &&
-		    weapon->weaponModel[W_TP_MODEL].skin[TEAM_AXIS])
+		if (team == TEAM_AXIS && weapon->weaponModel[W_TP_MODEL].skin[TEAM_AXIS])
 		{
 			gun.customSkin = weapon->weaponModel[W_FP_MODEL].skin[TEAM_AXIS];
 		}
-		else if ((team == TEAM_ALLIES) &&
-		         weapon->weaponModel[W_TP_MODEL].skin[TEAM_ALLIES])
+		else if (team == TEAM_ALLIES && weapon->weaponModel[W_TP_MODEL].skin[TEAM_ALLIES])
 		{
 			gun.customSkin = weapon->weaponModel[W_TP_MODEL].skin[TEAM_ALLIES];
 		}
@@ -3281,7 +3308,7 @@ void CG_AddViewWeapon(playerState_t *ps)
 	// allow the gun to be completely removed
 	if ((!cg_drawGun.integer))
 	{
-		if ((cg.predictedPlayerState.eFlags & EF_FIRING) && !(cg.predictedPlayerState.eFlags & (EF_MG42_ACTIVE | EF_MOUNTEDTANK)))
+		if ((cg.predictedPlayerState.eFlags & EF_FIRING) && !(cg.predictedPlayerState.eFlags & (EF_MG42_ACTIVE | EF_AAGUN_ACTIVE | EF_MOUNTEDTANK)))
 		{
 			vec3_t origin;
 
@@ -3517,18 +3544,6 @@ void CG_AddViewWeapon(playerState_t *ps)
 WEAPON SELECTION
 ==============================================================================
 */
-
-#define WP_ICON_X       38  // new sizes per MK
-#define WP_ICON_X_WIDE  72  // new sizes per MK
-#define WP_ICON_Y       38
-#define WP_ICON_SPACE_Y 10
-#define WP_DRAW_X       SCREEN_WIDTH - WP_ICON_X - 4 // 4 is 'selected' border width
-#define WP_DRAW_X_WIDE  SCREEN_WIDTH - WP_ICON_X_WIDE - 4
-#define WP_DRAW_Y       4
-
-// secondary fire icons
-#define WP_ICON_SEC_X   18  // new sizes per MK
-#define WP_ICON_SEC_Y   18
 
 /*
 ==============
@@ -4262,22 +4277,36 @@ void CG_NextWeap(qboolean switchBanks)
 		return;
 	}
 
-	switch (num)
+	switch (curweap)
 	{
 	case WP_LUGER:
-		curweap = num = WP_SILENCER;
+		num = WP_SILENCER;
 		break;
 	case WP_COLT:
-		curweap = num = WP_SILENCED_COLT;
+		num = WP_SILENCED_COLT;
 		break;
 	case WP_KAR98:
-		curweap = num = WP_GPG40;
+		num = WP_GPG40;
 		break;
 	case WP_CARBINE:
-		curweap = num = WP_M7;
+		num = WP_M7;
 		break;
 	default:
 		break;
+	}
+
+	if (cg.snap->ps.weaponstate == WEAPON_RAISING || cg.snap->ps.weaponstate == WEAPON_DROPPING)
+	{
+		switch (curweap)
+		{
+		case WP_KAR98:
+		case WP_CARBINE:
+		case WP_SILENCER:
+		case WP_SILENCED_COLT:
+			return;
+		default:
+			break;
+		}
 	}
 
 	CG_WeaponIndex(curweap, &bank, &cycle);       // get bank/cycle of current weapon
@@ -4478,41 +4507,44 @@ void CG_PrevWeap(qboolean switchBanks)
 		return;
 	}
 
-	switch (num)
+	switch (curweap)
 	{
 	case WP_SILENCER:
-		curweap = num = WP_LUGER;
+		num = WP_LUGER;
 		break;
 	case WP_SILENCED_COLT:
-		curweap = num = WP_COLT;
+		num = WP_COLT;
 		break;
 	case WP_GPG40:
-		curweap = num = WP_KAR98;
+		num = WP_KAR98;
 		break;
 	case WP_M7:
-		curweap = num = WP_CARBINE;
+		num = WP_CARBINE;
 		break;
 	default:
 		break;
 	}
 
-	CG_WeaponIndex(curweap, &bank, &cycle);       // get bank/cycle of current weapon
-
-	// if you're using an alt mode weapon, try switching back to the parent first
-	if (IS_RIFLENADE_WEAPON(curweap))
+	if (cg.snap->ps.weaponstate == WEAPON_RAISING || cg.snap->ps.weaponstate == WEAPON_DROPPING)
 	{
-		num = getAltWeapon(curweap);      // base any further changes on the parent
-		if (CG_WeaponSelectable(num))        // the parent was selectable, drop back to that
+		switch (curweap)
 		{
-			CG_FinishWeaponChange(curweap, num);
+		case WP_GPG40:
+		case WP_M7:
+		case WP_LUGER:
+		case WP_COLT:
 			return;
+		default:
+			break;
 		}
 	}
+
+	CG_WeaponIndex(curweap, &bank, &cycle);       // get bank/cycle of current weapon
 
 	// initially, just try to find a lower weapon in the current bank
 	if (cg_cycleAllWeaps.integer || !switchBanks)
 	{
-		for (i = cycle; i >= 0; i--)
+		for (i = MAX_WEAPS_IN_BANK_MP; i >= 0; i--)
 		{
 			num = getPrevWeapInBankBynum(num);
 
@@ -5111,8 +5143,7 @@ The current weapon has just run out of ammo
 void CG_OutOfAmmoChange(qboolean allowforceswitch)
 {
 	int i;
-	int bank  = 0, cycle = 0;
-	int equiv = WP_NONE;
+	int bank = 0, cycle = 0;
 
 	// trivial switching
 	if (cg.weaponSelect == WP_PLIERS || (cg.weaponSelect == WP_SATCHEL_DET && cg.predictedPlayerState.ammo[WP_SATCHEL_DET]))
@@ -5122,6 +5153,8 @@ void CG_OutOfAmmoChange(qboolean allowforceswitch)
 
 	if (allowforceswitch)
 	{
+		int equiv;
+
 		switch (cg.weaponSelect)
 		{
 		case WP_LANDMINE:
@@ -5467,7 +5500,7 @@ void CG_FireWeapon(centity_t *cent)
 	{
 		if (cent->currentState.eFlags & EF_AAGUN_ACTIVE)
 		{
-			//trap_S_StartSound( NULL, cent->currentState.number, CHAN_WEAPON, cgs.media.hflakWeaponSnd );
+			trap_S_StartSound(NULL, cent->currentState.number, CHAN_WEAPON, cgs.media.hflakWeaponSnd);
 		}
 		else
 		{
@@ -5780,6 +5813,11 @@ void CG_AddDebris(vec3_t origin, vec3_t dir, int speed, int duration, int count,
 	float         timeAdd;
 	int           i;
 
+	if (!cg_wolfparticles.integer)
+	{
+		return;
+	}
+
 	for (i = 0; i < count; i++)
 	{
 		le = CG_AllocLocalEntity();
@@ -5968,7 +6006,7 @@ void CG_MissileHitWall(int weapon, int clientNum, vec3_t origin, vec3_t dir, int
 	qhandle_t   mod      = 0, mark = 0, shader = 0;
 	sfxHandle_t sfx      = 0, sfx2 = 0;
 	qboolean    isSprite = qfalse;
-	int         duration = 600, lightOverdraw = 0, i, j, markDuration = -1, volume = 127; // keep -1 markDuration for temporary marks
+	int         duration = 600, i, j, markDuration = -1, volume = 127; // keep -1 markDuration for temporary marks
 	trace_t     trace;
 	vec3_t      lightColor = { 1, 1, 0 }, tmpv, tmpv2, sprOrg, sprVel;
 	float       radius     = 32, light = 0, sfx2range = 0;
@@ -6090,7 +6128,7 @@ void CG_MissileHitWall(int weapon, int clientNum, vec3_t origin, vec3_t dir, int
 			if (clientNum)
 			{
 				// mark and sound can potentially use the surface for override values
-				mark   = cgs.media.bulletMarkShader;    // default
+				//mark   = cgs.media.bulletMarkShader;    // default
 				radius = 1.0f + 0.5f * (rand() % 2);
 
 				if ((surfFlags & SURF_METAL) || (surfFlags & SURF_ROOF))
@@ -6408,8 +6446,7 @@ void CG_MissileHitWall(int weapon, int clientNum, vec3_t origin, vec3_t dir, int
 
 		le = CG_MakeExplosion(origin, dir, mod, shader, duration, isSprite);
 
-		le->light         = light;
-		le->lightOverdraw = lightOverdraw;
+		le->light = light;
 		VectorCopy(lightColor, le->lightColor);
 	}
 
@@ -6520,7 +6557,7 @@ void CG_SpawnTracer(int sourceEnt, vec3_t pstart, vec3_t pend)
 	VectorCopy(pend, end);
 
 	// make MG42 tracers line up
-	if (cg_entities[sourceEnt].currentState.eFlags & EF_MG42_ACTIVE)
+	if (cg_entities[sourceEnt].currentState.eFlags & EF_MG42_ACTIVE) // FIXME: AAGUN
 	{
 		start[2] -= 42;
 	}
@@ -6880,7 +6917,7 @@ void CG_Bullet(vec3_t end, int sourceEntityNum, qboolean flesh, int fleshEntityN
 	}
 
 	// snap tracers for MG42 to viewangle of client when antilag is enabled
-	if (cgs.antilag && otherEntNum2 == cg.snap->ps.clientNum && (cg_entities[otherEntNum2].currentState.eFlags & EF_MG42_ACTIVE))
+	if (cgs.antilag && otherEntNum2 == cg.snap->ps.clientNum && (cg_entities[otherEntNum2].currentState.eFlags & EF_MG42_ACTIVE)) // FIXME: AAGUN
 	{
 		vec3_t  muzzle, forward, right, up;
 		float   r, u;
@@ -7099,10 +7136,9 @@ void CG_Bullet(vec3_t end, int sourceEntityNum, qboolean flesh, int fleshEntityN
 	else        // (not flesh)
 	{   // all bullet weapons have the same fx, and this stops pvs issues causing grenade explosions
 		int fromweap = WP_MP40; // cg_entities[sourceEntityNum].currentState.weapon;
+		// FIXME: remove fromweap (use WP_MP40) or DO different fx for different weapons
 
-		if (!fromweap ||
-		    (cg_entities[sourceEntityNum].currentState.eFlags & EF_MG42_ACTIVE) ||
-		    (cg_entities[sourceEntityNum].currentState.eFlags & EF_MOUNTEDTANK))        // mounted
+		if (!fromweap || (cg_entities[sourceEntityNum].currentState.eFlags & (EF_MG42_ACTIVE | EF_AAGUN_ACTIVE | EF_MOUNTEDTANK))) // mounted
 		{
 			fromweap = WP_MP40;
 		}

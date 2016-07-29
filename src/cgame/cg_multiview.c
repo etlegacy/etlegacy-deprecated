@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -44,9 +44,19 @@ void CG_CalcVrect(void);
 qhandle_t axis_flag   = 0;
 qhandle_t allies_flag = 0;
 
+extern vec4_t HUD_Border;
+extern vec4_t HUD_Background;
+extern vec4_t HUD_Text;
+
 // Explicit server command to add a view to the client's snapshot
 void CG_mvNew_f(void)
 {
+	if (!cgs.mvAllowed)
+	{
+		CG_Printf("Info: Multiview is disabled by server.\n");
+		return;
+	}
+
 	if (cg.demoPlayback || trap_Argc() < 2)
 	{
 		return;
@@ -69,6 +79,12 @@ void CG_mvNew_f(void)
 // Explicit server command to remove a view from the client's snapshot
 void CG_mvDelete_f(void)
 {
+	if (!cgs.mvAllowed)
+	{
+		CG_Printf("Info: Multiview is disabled by server.\n");
+		return;
+	}
+
 	if (cg.demoPlayback)
 	{
 		return;
@@ -104,6 +120,12 @@ void CG_mvDelete_f(void)
 // Swap highlighted window with main view
 void CG_mvSwapViews_f(void)
 {
+	if (!cgs.mvAllowed)
+	{
+		CG_Printf("Info: Multiview is disabled by server.\n");
+		return;
+	}
+
 	if (cg.mv_cnt >= 2 && cg.mvCurrentActive != cg.mvCurrentMainview)
 	{
 		CG_mvMainviewSwap(cg.mvCurrentActive);
@@ -113,6 +135,12 @@ void CG_mvSwapViews_f(void)
 // Shut down a window view for a particular MV client
 void CG_mvHideView_f(void)
 {
+	if (!cgs.mvAllowed)
+	{
+		CG_Printf("Info: Multiview is disabled by server.\n");
+		return;
+	}
+
 	if (cg.mvCurrentActive == NULL || cg.mvCurrentMainview == cg.mvCurrentActive)
 	{
 		return;
@@ -125,6 +153,12 @@ void CG_mvHideView_f(void)
 void CG_mvShowView_f(void)
 {
 	int i;
+
+	if (!cgs.mvAllowed)
+	{
+		CG_Printf("Info: Multiview is disabled by server.\n");
+		return;
+	}
 
 	for (i = 0; i < cg.mvTotalClients; i++)
 	{
@@ -144,6 +178,12 @@ void CG_mvShowView_f(void)
 void CG_mvToggleView_f(void)
 {
 	int i;
+
+	if (!cgs.mvAllowed)
+	{
+		CG_Printf("Info: Multiview is disabled by server.\n");
+		return;
+	}
 
 	for (i = 0; i < cg.mvTotalClients; i++)
 	{
@@ -166,6 +206,12 @@ void CG_mvToggleView_f(void)
 // Toggle all views
 void CG_mvToggleAll_f(void)
 {
+	if (!cgs.mvAllowed)
+	{
+		CG_Printf("Info: Multiview is disabled by server.\n");
+		return;
+	}
+
 	if (!cg.demoPlayback)
 	{
 		trap_SendClientCommand((cg.mvTotalClients > 0) ? "mvnone\n" : "mvall\n");
@@ -177,13 +223,9 @@ void CG_mvToggleAll_f(void)
 	}
 }
 
-//
 // Multiview Primitives
-//
 
-///////////////////////////////
 // Create a new view window
-//
 void CG_mvCreate(int pID)
 {
 	cg_window_t *w;
@@ -203,8 +245,8 @@ void CG_mvCreate(int pID)
 	w->id     = WID_NONE;
 	w->x      = (cg.mv_cnt == 0) ? 0 : 30 + (12 * pID);
 	w->y      = (cg.mv_cnt == 0) ? 0 : 300 + (5 * pID);
-	w->w      = (cg.mv_cnt == 0) ? 640 : 128;
-	w->h      = (cg.mv_cnt == 0) ? 480 : 96;
+	w->w      = (cg.mv_cnt == 0) ? Ccg_WideX(SCREEN_WIDTH) : 128;
+	w->h      = (cg.mv_cnt == 0) ? SCREEN_HEIGHT : 96;
 	w->mvInfo = (pID & MV_PID) | MV_SELECTED;
 	w->state  = (cg.mv_cnt == 0) ? WSTATE_COMPLETE : WSTATE_START;
 
@@ -224,10 +266,11 @@ void CG_mvCreate(int pID)
 }
 
 // Delete a view window
-//
 void CG_mvFree(int pID)
 {
-	cg_window_t *w = CG_mvClientLocate(pID);
+	cg_window_t *w;
+
+	w = CG_mvClientLocate(pID);
 
 	if (w != NULL)
 	{
@@ -268,7 +311,6 @@ void CG_mvMainviewSwap(cg_window_t *av)
 }
 
 // Track our list of merged clients
-//
 void CG_mvProcessClientList(void)
 {
 	int i, bit, newList = cg.snap->ps.powerups[PW_MVCLIENTLIST];
@@ -354,12 +396,11 @@ cg_window_t *CG_mvFindNonMainview(void)
 	return(cg.mvCurrentMainview);
 }
 
-//    Rendering/Display Management
+// Rendering/Display Management
 
 // Update all info for a merged client
 void CG_mvUpdateClientInfo(int pID)
 {
-
 	if (pID >= 0 && pID < MAX_MVCLIENTS && (cg.mvClientList & (1 << pID)))
 	{
 		int           weap = cg_entities[pID].currentState.weapon;
@@ -604,9 +645,16 @@ void CG_mvDraw(cg_window_t *sw)
 	refdef.rdflags = cg.refdef.rdflags;
 	refdef.time    = cg.time;
 
+
 	AnglesToAxis(cent->lerpAngles, refdef.viewaxis);
 	VectorCopy(cent->lerpOrigin, refdef.vieworg);
 	VectorCopy(cent->lerpAngles, cg.refdefViewAngles);
+
+#if FEATURE_EDV
+	// only copy mainview origin/angles freecam
+	VectorCopy(refdef.vieworg, cgs.demoCamera.camOrigin);
+	VectorCopy(cg.refdefViewAngles, cgs.demoCamera.camAngle);
+#endif
 
 	cg.refdef_current = &refdef;
 
@@ -684,18 +732,19 @@ void CG_mvWindowOverlay(int pID, float b_x, float b_y, float b_w, float b_h, flo
 {
 	int          w, x;
 	rectDef_t    rect;
-	float        fw              = 8.0f, fh = 8.0f;
 	centity_t    *cent           = &cg_entities[pID];
 	clientInfo_t *ci             = &cgs.clientinfo[pID];
 	const char   *p_class        = "?";
 	vec4_t       *noSelectBorder = &colorDkGrey;
+	int          fw              = CG_Text_Width_Ext("A", cg_fontScaleSP.value, 0, &cgs.media.limboFont2);
+	int          fh              = CG_Text_Height_Ext("A", cg_fontScaleSP.value, 0, &cgs.media.limboFont2);
 
 
 	// Overlays for zoomed views
 	if (ci->health > 0)
 	{
-		/*if(cent->currentState.weapon == WP_SNIPERRIFLE) CG_mvZoomSniper(b_x, b_y, b_w, b_h);  // ARNOUT: this needs updating?
-		else */
+		//if(cent->currentState.weapon == WP_SNIPERRIFLE) CG_mvZoomSniper(b_x, b_y, b_w, b_h);  // ARNOUT: this needs updating?
+		//else
 		if (cent->currentState.eFlags & EF_ZOOMING)
 		{
 			CG_mvZoomBinoc(b_x, b_y, b_w, b_h);
@@ -732,30 +781,38 @@ void CG_mvWindowOverlay(int pID, float b_x, float b_y, float b_w, float b_h, flo
 		noSelectBorder = &colorMdYellow;
 	}
 
-	CG_Text_Paint_Ext(b_x + 1, b_h - (fh * 2 + 1 + 2), cg_fontScaleSP.value, cg_fontScaleSP.value, colorWhite, ci->name, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
-	CG_Text_Paint_Ext(b_x + 1, b_h - (fh * 2), cg_fontScaleSP.value, cg_fontScaleSP.value, colorWhite, va("%s^7%d", CG_TranslateString(p_class), ci->health), 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
+	CG_Text_Paint_Ext(b_x + 1, b_y + b_h - fh * 3, cg_fontScaleSP.value, cg_fontScaleSP.value, colorWhite, ci->name, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
+	CG_Text_Paint_Ext(b_x + 1, b_y + b_h - fh, cg_fontScaleSP.value, cg_fontScaleSP.value, colorWhite, va("%s", CG_TranslateString(p_class)), 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
+
+	if (ci->health > 0)
+	{
+		CG_Text_Paint_Ext(b_x + 7, b_y + b_h - fh, cg_fontScaleSP.value, cg_fontScaleSP.value, colorWhite, va("^7%d", ci->health), 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
+	}
+	else
+	{
+		CG_Text_Paint_Ext(b_x + 7, b_y + b_h - fh, cg_fontScaleSP.value, cg_fontScaleSP.value, ((cg.time % 500) > 250)  ? colorWhite : colorRed, "*", 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
+		CG_Text_Paint_Ext(b_x + 13, b_y + b_h - fh, cg_fontScaleSP.value, cg_fontScaleSP.value, ((cg.time % 500) > 250)  ? colorRed : colorWhite, "0", 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
+	}
 
 	p_class = va("%d^1/^7%d", ci->ammoclip, ci->ammo);
 	w       = CG_Text_Width_Ext(p_class, cg_fontScaleSP.value, 0, &cgs.media.limboFont2);
-	CG_Text_Paint_Ext(b_x + b_w - w - 1, b_y + b_h - (fh + 2), cg_fontScaleSP.value, cg_fontScaleSP.value, colorWhite, p_class, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
+	CG_Text_Paint_Ext(b_x + b_w - w - 1, b_y + b_h - fh, cg_fontScaleSP.value, cg_fontScaleSP.value, colorWhite, p_class, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
 
 	// Weapon icon
 	rect.x                                  = b_x + b_w - (50 + 1);
-	rect.y                                  = b_y + b_h - (25 + fh + 1 + 2);
+	rect.y                                  = b_y + b_h - (25 + fh * 2);
 	rect.w                                  = 50;
 	rect.h                                  = 25;
 	cg.predictedPlayerState.grenadeTimeLeft = 0;
 	cg.predictedPlayerState.weapon          = cent->currentState.weapon;
 	CG_DrawPlayerWeaponIcon(&rect, (ci->weaponState > WSTATE_IDLE), ITEM_ALIGN_RIGHT,
-	                        ((ci->weaponState == WSTATE_SWITCH) ? &colorWhite :
-	                         (ci->weaponState == WSTATE_FIRE) ? &colorRed :
-	                         &colorYellow));
+	                        ((ci->weaponState == WSTATE_SWITCH || ci->weaponState == WSTATE_RELOAD) ? &colorYellow : (ci->weaponState == WSTATE_FIRE) ? &colorRed : &colorWhite));
 
 	// Sprint charge info
 	if (ci->sprintTime >= 0)
 	{
 		p_class = va("^2S^7%d%%", ci->sprintTime);
-		rect.y -= (fh + 1);
+		rect.y -= fh * 2;
 		w       = CG_Text_Width_Ext(p_class, cg_fontScaleSP.value, 0, &cgs.media.limboFont2);
 		CG_Text_Paint_Ext(b_x + b_w - w - 1, rect.y, cg_fontScaleSP.value, cg_fontScaleSP.value, colorWhite, p_class, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
 	}
@@ -764,7 +821,7 @@ void CG_mvWindowOverlay(int pID, float b_x, float b_y, float b_w, float b_h, flo
 	if (ci->chargeTime >= 0)
 	{
 		p_class = va("^1C^7%d%%", ci->chargeTime);
-		rect.y -= (fh + 1);
+		rect.y -= fh * 2;
 		w       = CG_Text_Width_Ext(p_class, cg_fontScaleSP.value, 0, &cgs.media.limboFont2);
 		CG_Text_Paint_Ext(b_x + b_w - w - 1, rect.y, cg_fontScaleSP.value, cg_fontScaleSP.value, colorWhite, p_class, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
 	}
@@ -773,9 +830,9 @@ void CG_mvWindowOverlay(int pID, float b_x, float b_y, float b_w, float b_h, flo
 	if (ci->hintTime >= 0)
 	{
 		p_class = va("^3W:^7%d%%", ci->hintTime);
-		rect.y -= (fh + 1);
+		rect.y -= fh * 2;
 		w       = CG_Text_Width_Ext(p_class, cg_fontScaleSP.value, 0, &cgs.media.limboFont2);
-		CG_Text_Paint_Ext(b_x + (b_w - (w - w / fw)) / 2, b_y + b_h - (fh + 2), cg_fontScaleSP.value, cg_fontScaleSP.value, colorWhite, p_class, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
+		CG_Text_Paint_Ext(b_x + (b_w - (w - w / fw)) / 2, b_y + b_h - fh * 2, cg_fontScaleSP.value, cg_fontScaleSP.value, colorWhite, p_class, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
 	}
 
 	// Finally, the window border
@@ -812,14 +869,14 @@ void CG_mvWindowOverlay(int pID, float b_x, float b_y, float b_w, float b_h, flo
 	}
 }
 
-//            MV Text Overlay Handling
+// MV Text Overlay Handling
 
 char *strClassHighlights[] =
 {
-	S_COLOR_RED,    S_COLOR_MDRED,      // Soldier
-	S_COLOR_WHITE,  S_COLOR_MDGREY,     // Medic
-	S_COLOR_BLUE,   S_COLOR_MDBLUE,     // Engineer
-	S_COLOR_GREEN,  S_COLOR_MDGREEN,    // Lt.
+	S_COLOR_RED, S_COLOR_MDRED,         // Soldier
+	S_COLOR_WHITE, S_COLOR_MDGREY,      // Medic
+	S_COLOR_BLUE, S_COLOR_MDBLUE,       // Engineer
+	S_COLOR_GREEN, S_COLOR_MDGREEN,     // Lt.
 	S_COLOR_YELLOW, S_COLOR_MDYELLOW    // CovertOps
 };
 
@@ -848,7 +905,7 @@ void CG_mvOverlayClientUpdate(int pID, int index)
 		       );
 	}
 
-	cg.mvOverlay[index].width = CG_Text_Width_Ext(cg.mvOverlay[index].info, cg_fontScaleCP.value, 0, &cgs.media.limboFont2);
+	cg.mvOverlay[index].width = CG_Text_Width_Ext(cg.mvOverlay[index].info, cg_fontScaleSP.value, 0, &cgs.media.limboFont2);
 }
 
 // Update info on all clients received for display/cursor interaction
@@ -884,7 +941,9 @@ qboolean CG_mvMergedClientLocate(int pID)
 // Display available client info
 void CG_mvOverlayDisplay(void)
 {
-	int         j, i, x, y, pID;
+	float       fontScale = cg_fontScaleSP.value;
+	int         j, i, x, y, pID, xOffset;
+	int         charHeight = CG_Text_Height_Ext("A", fontScale, 0, &cgs.media.limboFont2);
 	cg_mvinfo_t *o;
 
 	if (cg.mvTotalClients < 1)
@@ -892,7 +951,9 @@ void CG_mvOverlayDisplay(void)
 		return;
 	}
 
-	y = MVINFO_TOP - (2 * (MVINFO_TEXTSIZE + 1));
+	xOffset = 32;
+	x       = MVINFO_RIGHT - xOffset;
+	y       = MVINFO_TOP + (charHeight * 2.0f);
 
 	for (j = TEAM_AXIS; j <= TEAM_ALLIES; j++)
 	{
@@ -911,13 +972,12 @@ void CG_mvOverlayDisplay(void)
 			{
 				qhandle_t flag_used = 0;
 
-				//change these, were "ui/assets/ger_flag.tga" : "ui/assets/usa_flag.tga" but they are missing
 				switch (j)
 				{
 				case TEAM_AXIS:
 					if (!axis_flag)
 					{
-						axis_flag = trap_R_RegisterShaderNoMip("gfx/limbo/filter_axis.tga");
+						axis_flag = cgs.media.axisFlag;
 					}
 					flag_used = axis_flag;
 					break;
@@ -925,14 +985,16 @@ void CG_mvOverlayDisplay(void)
 				default:
 					if (!allies_flag)
 					{
-						allies_flag = trap_R_RegisterShaderNoMip("gfx/limbo/filter_allied.tga");
+						allies_flag = cgs.media.alliedFlag;
 					}
 					flag_used = allies_flag;
 					break;
 				}
 
-				y += 2 * (MVINFO_TEXTSIZE + 1);
-				CG_DrawPic(MVINFO_RIGHT - (2 * MVINFO_TEXTSIZE), y, 2 * MVINFO_TEXTSIZE, MVINFO_TEXTSIZE, flag_used);
+				y += charHeight * 2.0f;
+
+				CG_DrawPic(x - 18, y - charHeight * 2.0f - 12, 18, 12, flag_used);
+				CG_DrawRect_FixedBorder(x - 19, y - charHeight * 2.0f - 13, 20, 14, 1, HUD_Border);
 			}
 
 			// Update team list info for mouse detection
@@ -945,23 +1007,24 @@ void CG_mvOverlayDisplay(void)
 				CG_mvOverlayClientUpdate(o->pID, i);
 			}
 
-			x  = MVINFO_RIGHT - o->width;
-			y += MVINFO_TEXTSIZE + 1;
-
 			if (o->fActive)
 			{
-				CG_FillRect(x - 1, y, o->width + 2, MVINFO_TEXTSIZE + 2, colorMdYellow);
+				CG_FillRect(x - o->width - 1, y - 9, o->width + 2, charHeight * 2.0f, HUD_Text);
 
 				// Draw name info only if we're hovering over the text element
 				if (!(cg.mvCurrentActive->mvInfo & MV_SELECTED) || cg.mvCurrentActive == cg.mvCurrentMainview)
 				{
-					int w = CG_Text_Width_Ext(cgs.clientinfo[pID].name, cg_fontScaleCP.value, 0, &cgs.media.limboFont2);
-					CG_FillRect(x - 1 - w - 6, y + 1, w + 2, MVINFO_TEXTSIZE - 1 + 2, colorMdGrey);
-					CG_Text_Paint_Ext(x - w - 6, y + 1, cg_fontScaleCP.value, cg_fontScaleCP.value, colorYellow, cgs.clientinfo[pID].name, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
+					int w = CG_Text_Width_Ext(cgs.clientinfo[pID].name, cg_fontScaleSP.value, 0, &cgs.media.limboFont2);
+					CG_FillRect(x - o->width - 1 - w - 6, y - 9, w + 2, charHeight * 2.0f, HUD_Background);
+					CG_Text_Paint_Ext(x - o->width - w - 6, y, fontScale, fontScale, colorYellow, cgs.clientinfo[pID].name, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
 				}
 			}
-			CG_Text_Paint_Ext(x, y, cg_fontScaleCP.value, cg_fontScaleCP.value, colorWhite, o->info, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
+			CG_Text_Paint_Ext(x - o->width, y, fontScale, fontScale, colorWhite, o->info, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
+
+			y += charHeight * 2.0f;
 		}
+		x += xOffset;
+		y  = MVINFO_TOP + (charHeight * 2.0f);
 	}
 }
 
@@ -984,8 +1047,8 @@ void CG_mvZoomSniper(float x, float y, float w, float h)
 
 	// hairs
 	CG_FillRect(x + 84.0f * ws, y + 239.0f * hs, 177.0f * ws, 2.0f, colorBlack);      // left
-	CG_FillRect(x + 320.0f * ws, y + 242.0f * hs, 1.0f, 58.0f * hs, colorBlack);          // center top
-	CG_FillRect(x + 319.0f * ws, y + 300.0f * hs, 2.0f, 178.0f * hs, colorBlack);             // center bot
+	CG_FillRect(x + 320.0f * ws, y + 242.0f * hs, 1.0f, 58.0f * hs, colorBlack);      // center top
+	CG_FillRect(x + 319.0f * ws, y + 300.0f * hs, 2.0f, 178.0f * hs, colorBlack);     // center bot
 	CG_FillRect(x + 380.0f * ws, y + 239.0f * hs, 177.0f * ws, 2.0f, colorBlack);     // right
 }
 

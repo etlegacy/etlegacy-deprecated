@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -97,10 +97,6 @@ projection is a normal and distance (not a plane, but rather how far to project)
 it MUST be normalized!
 if lifeTime < 0, then generate a temporary mark
 */
-
-// increased this since we leave them around for longer
-#define MAX_MARK_FRAGMENTS  384  // 128
-#define MAX_MARK_POINTS     1024 // 384
 
 void CG_ImpactMark(qhandle_t markShader, vec3_t origin, vec4_t projection, float radius, float orientation, float r, float g, float b, float a, int lifeTime)
 {

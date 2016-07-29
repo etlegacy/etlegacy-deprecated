@@ -4,7 +4,7 @@
  * Copyright (C) 2010-2011 Robert Beckebans <trebor_7@users.sourceforge.net>
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -1062,12 +1062,12 @@ TEX COORDS
 RB_CalcTexMatrix
 ===============
 */
-void RB_CalcTexMatrix(const textureBundle_t *bundle, matrix_t matrix)
+void RB_CalcTexMatrix(const textureBundle_t *bundle, mat4_t matrix)
 {
 	int   j;
 	float x, y;
 
-	MatrixIdentity(matrix);
+	mat4_ident(matrix);
 
 	for (j = 0; j < bundle->numTexMods; j++)
 	{
@@ -1138,7 +1138,7 @@ void RB_CalcTexMatrix(const textureBundle_t *bundle, matrix_t matrix)
 		{
 			const texModInfo_t *tmi = &bundle->texMods[j];
 
-			MatrixMultiply2(matrix, tmi->matrix);
+			mat4_mult_self(matrix, tmi->matrix);
 			break;
 		}
 		case TMOD_ROTATE:

@@ -1,6 +1,6 @@
 /*
  * ET: Legacy
- * Copyright (C) 2012 ET:L dev team <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -39,11 +39,10 @@
 //#define NO_BOT_SUPPORT
 
 // IMPORTANT: when changed this has to be copied manually to GAMEVERSION (g_local.h)
-#define OMNIBOT_NAME "Omni-Bot:etmain"
+#define OMNIBOT_NAME "Legacy"
 
-// #define OMNIBOT_MODNAME GAMEVERSION
-#define OMNIBOT_MODNAME                 "etmain" // don't change to 'legacy' - omnibot gm scripts don't know us (for now)!
-#define OMNIBOT_MODVERSION              ETLEGACY_VERSION_SHORT
+#define OMNIBOT_MODNAME    GAMEVERSION
+#define OMNIBOT_MODVERSION ETLEGACY_VERSION_SHORT
 
 //////////////////////////////////////////////////////////////////////////
 // g_OmniBotFlags bits
@@ -121,8 +120,8 @@ void Bot_Event_FireTeam_Warn(int _client, int _warned);
 // goal helpers
 void Bot_AddDynamiteGoal(gentity_t *_ent, int _team, const char *_tag);
 void Bot_AddFallenTeammateGoals(gentity_t *_teammate, int _team);
-// void AddDeferredGoal(gentity_t *ent);
+void AddDeferredGoal(gentity_t *ent);
 void UpdateGoalEntity(gentity_t *oldent, gentity_t *newent);
 void GetEntityCenter(gentity_t *ent, vec3_t pos);
 
-#endif // #ifndef INCLUDE_G_ETBOT_INTERFACE_H
+#endif

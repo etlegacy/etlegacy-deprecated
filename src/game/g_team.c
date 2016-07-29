@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -471,6 +471,7 @@ int Team_TouchEnemyFlag(gentity_t *ent, gentity_t *other, int team)
 
 	// reset player disguise on stealing docs
 	other->client->ps.powerups[PW_OPS_DISGUISED] = 0;
+	other->client->disguiseClientNum             = -1;
 
 	if (team == TEAM_AXIS)
 	{
@@ -702,14 +703,15 @@ Format:
 void TeamplayInfoMessage(team_t team)
 {
 	char      entry[1024];
-	char      string[1400];
+	char      string[1024];
 	int       stringlength = 0;
 	int       i, j;
 	gentity_t *player;
 	int       cnt;
 	int       h;
 	char      *bufferedData;
-	char      *tinfo;
+	char      *tinfo; // currently 32 players in team create about max 750 chars of tinfo
+                      // note: trap_SendServerCommand won't send tinfo > 1022 - also see string[1024]
 
 	// send the latest information on all clients
 	string[0] = 0;
@@ -733,11 +735,12 @@ void TeamplayInfoMessage(team_t team)
 				}
 			}
 
-			Com_sprintf(entry, sizeof(entry), " %i %i %i %i %i", level.sortedClients[i], player->client->pers.teamState.location[0], player->client->pers.teamState.location[1], h, player->s.powerups);
+			Com_sprintf(entry, sizeof(entry), " %i %i %i %i %i %i", level.sortedClients[i], player->client->pers.teamState.location[0], player->client->pers.teamState.location[1], player->client->pers.teamState.location[2], h, player->s.powerups);
 
 			j = strlen(entry);
-			if (stringlength + j > sizeof(string))
+			if (stringlength + j > sizeof(string) - 10) // reserve some chars for tinfo prefix
 			{
+				G_Printf("Warning: tinfo exceeds limit");
 				break;
 			}
 			strcpy(string + stringlength, entry);
@@ -754,28 +757,24 @@ void TeamplayInfoMessage(team_t team)
 		return;
 	}
 
-	Q_strncpyz(bufferedData, tinfo, 1400);
+	Q_strncpyz(bufferedData, tinfo, 1024);
 
 	for (i = 0; i < level.numConnectedClients; i++)
 	{
 		player = g_entities + level.sortedClients[i];
-		if (player->inuse && player->client->sess.sessionTeam == team)
+		if (player->inuse && player->client->sess.sessionTeam == team && !(player->r.svFlags & SVF_BOT) && player->client->pers.connected == CON_CONNECTED)
 		{
-			if (player->client->pers.connected == CON_CONNECTED)
-			{
-				trap_SendServerCommand(player - g_entities, tinfo);
-			}
+			trap_SendServerCommand(player - g_entities, tinfo);
 		}
 	}
 }
 
 void CheckTeamStatus(void)
 {
-	gentity_t *ent;
-
 	if (level.time - level.lastTeamLocationTime > TEAM_LOCATION_UPDATE_TIME)
 	{
-		int i;
+		int       i;
+		gentity_t *ent;
 
 		level.lastTeamLocationTime = level.time;
 		for (i = 0; i < level.numConnectedClients; i++)
@@ -785,6 +784,7 @@ void CheckTeamStatus(void)
 			{
 				ent->client->pers.teamState.location[0] = (int)ent->r.currentOrigin[0];
 				ent->client->pers.teamState.location[1] = (int)ent->r.currentOrigin[1];
+				ent->client->pers.teamState.location[2] = (int)ent->r.currentOrigin[2];
 			}
 		}
 
@@ -1088,25 +1088,13 @@ void checkpoint_use(gentity_t *ent, gentity_t *other, gentity_t *activator)
 
 	// reset player disguise on touching flag
 	other->client->ps.powerups[PW_OPS_DISGUISED] = 0;
+	other->client->disguiseClientNum             = -1;
 }
 
 void checkpoint_spawntouch(gentity_t *self, gentity_t *other, trace_t *trace);
 
 void checkpoint_hold_think(gentity_t *self)
 {
-	switch (self->s.frame)
-	{
-	case WCP_ANIM_RAISE_AXIS:
-	case WCP_ANIM_AXIS_RAISED:
-		level.capturetimes[TEAM_AXIS]++;
-		break;
-	case WCP_ANIM_RAISE_AMERICAN:
-	case WCP_ANIM_AMERICAN_RAISED:
-		level.capturetimes[TEAM_ALLIES]++;
-		break;
-	default:
-		break;
-	}
 	self->nextthink = level.time + 5000;
 }
 
@@ -1208,6 +1196,8 @@ void checkpoint_touch(gentity_t *self, gentity_t *other, trace_t *trace)
 
 	// reset player disguise on touching flag
 	other->client->ps.powerups[PW_OPS_DISGUISED] = 0;
+	other->client->disguiseClientNum             = -1;
+
 	// Run script trigger
 	if (self->count == TEAM_AXIS)
 	{
@@ -1347,6 +1337,8 @@ void checkpoint_spawntouch(gentity_t *self, gentity_t *other, trace_t *trace)
 
 	// reset player disguise on touching flag
 	other->client->ps.powerups[PW_OPS_DISGUISED] = 0;
+	other->client->disguiseClientNum             = -1;
+
 	// Run script trigger
 	if (self->count == TEAM_AXIS)
 	{
@@ -1514,7 +1506,7 @@ int Team_ClassForString(char *string)
 	return -1;
 }
 
-char      *aTeams[TEAM_NUM_TEAMS] = { "FFA", "^1Axis^7", "^4Allies^7", "Spectators" };
+char      *aTeams[TEAM_NUM_TEAMS] = { "FFA", "^1Axis^7", "^4Allies^7", "^2Spectators^7" };
 team_info teamInfo[TEAM_NUM_TEAMS];
 
 // Resets a team's settings

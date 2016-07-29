@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -83,7 +83,11 @@ static void SV_Netchan_Encode(client_t *client, msg_t *msg, char *commandString)
 			index = 0;
 		}
 
-		key ^= GET_SKIPPED_CHAR(string[index]) << (i & 1);
+		if ((IS_LEGACY_MOD && string[index] == '%') || ((byte)string[index] > 127 || string[index] == '%'))
+		{
+			string[index] = '.';
+		}
+		key ^= string[index] << (i & 1);
 
 		index++;
 		// encode the data with this key
@@ -132,7 +136,11 @@ static void SV_Netchan_Decode(client_t *client, msg_t *msg)
 			index = 0;
 		}
 
-		key ^= GET_SKIPPED_CHAR(string[index]) << (i & 1);
+		if ((IS_LEGACY_MOD && string[index] == '%') || ((byte)string[index] > 127 || string[index] == '%'))
+		{
+			string[index] = '.';
+		}
+		key ^= string[index] << (i & 1);
 
 		index++;
 		// decode the data with this key

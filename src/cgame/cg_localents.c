@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -124,6 +124,7 @@ char *CG_BuildLocationString(int clientNum, vec3_t origin, int flag)
 
 	loc[0] = origin[0];
 	loc[1] = origin[1];
+	//loc[2] = origin[2]; // no need for this - BG_GetLocationString is 2d
 
 	if (cg_locations.integer & flag)
 	{
@@ -134,7 +135,7 @@ char *CG_BuildLocationString(int clientNum, vec3_t origin, int flag)
 			if (clientNum == cg.clientNum)
 			{
 				locStr = va("^3     ");
-				CG_Printf("same client\n");
+				// CG_Printf("same client\n");
 			}
 			else
 			{
@@ -397,6 +398,28 @@ void CG_FreeLocalEntity(localEntity_t *le)
 	// the free list is only singly linked
 	le->next             = cg_freeLocalEntities;
 	cg_freeLocalEntities = le;
+}
+
+/*
+===================
+CG_AllocLocalEntity
+
+Will allways succeed, even if it requires freeing an old active entity
+===================
+*/
+localEntity_t *CG_FindLocalEntity(int index, int sideNum)
+{
+	int i;
+
+	for (i = 0 ; i < localEntCount ; i++)
+	{
+		if (cg_localEntities[i].data1 == index)
+		{
+			if (cg_localEntities[i].data2 == sideNum)
+				return &cg_localEntities[i];
+		}
+	}
+	return NULL;
 }
 
 /*
@@ -1145,7 +1168,7 @@ void CG_AddFuseSparkElements(localEntity_t *le)
 		// calculate new position
 		BG_EvaluateTrajectory(&le->pos, time, le->refEntity.origin, qfalse, -1);
 
-		lifeFrac = (float)(time - le->startTime) / (float)(le->endTime - le->startTime);
+		lifeFrac = (time - le->startTime) / (float)(le->endTime - le->startTime);
 
 		//if (lifeFrac > 0.2) {
 		// add a trail
@@ -1577,7 +1600,7 @@ static void CG_AddExplosion(localEntity_t *ex)
 	}
 
 	// add the dlight
-	if (ex->light || 1)
+	if (ex->light)
 	{
 		float light = (float)(cg.time - ex->startTime) / (ex->endTime - ex->startTime);
 
@@ -1629,7 +1652,7 @@ static void CG_AddSpriteExplosion(localEntity_t *le)
 	}
 
 	// add the dlight
-	if (le->light || 1)
+	//if (le->light || 1)
 	{
 		float light = (float)(cg.time - le->startTime) / (le->endTime - le->startTime);
 

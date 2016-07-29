@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -80,7 +80,7 @@ qboolean isEntVisible(entityState_t *ent)
 		vec3_t lright, v3ViewAngles;
 		VectorCopy(cl.snap.ps.viewangles, v3ViewAngles);
 		v3ViewAngles[2] += cl.snap.ps.leanf / 2.0f;
-		AngleVectors(v3ViewAngles, NULL, lright, NULL);
+		angles_vectors(v3ViewAngles, NULL, lright, NULL);
 		VectorMA(start, cl.snap.ps.leanf, lright, start);
 	}
 
@@ -88,10 +88,10 @@ qboolean isEntVisible(entityState_t *ent)
 
 	// Compute vector perpindicular to view to ent
 	VectorSubtract(end, start, forward);
-	VectorNormalizeFast(forward);
+	vec3_norm_fast(forward);
 	VectorSet(up, 0, 0, 1);
-	CrossProduct(forward, up, right);
-	VectorNormalizeFast(right);
+	vec3_cross(forward, up, right);
+	vec3_norm_fast(right);
 	VectorScale(right, 10, right2);
 	VectorScale(right, 18, right);
 
@@ -491,7 +491,7 @@ void CL_ParseSnapshot(msg_t *msg)
 	// read areamask
 	len = MSG_ReadByte(msg);
 
-	if (len > sizeof(newSnap.areamask))
+	if (len < 0 || len > sizeof(newSnap.areamask))
 	{
 		Com_Error(ERR_DROP, "CL_ParseSnapshot: Invalid size %d for areamask.", len);
 		return;
@@ -721,7 +721,7 @@ void CL_ParseGamestate(msg_t *msg)
 			i = MSG_ReadShort(msg);
 			if (i < 0 || i >= MAX_CONFIGSTRINGS)
 			{
-				Com_Error(ERR_DROP, "configstring > MAX_CONFIGSTRINGS");
+				Com_Error(ERR_DROP, "configstring < 0 or configstring >= MAX_CONFIGSTRINGS");
 			}
 			s   = MSG_ReadBigString(msg);
 			len = strlen(s);
@@ -798,6 +798,12 @@ void CL_ParseDownload(msg_t *msg)
 
 	// read the data
 	block = MSG_ReadShort(msg);
+
+	// unfortunately DLTYPE_WWW is -1 FIXME: change this someday!
+	//if (block < 0)
+	//{
+	//Com_Error(ERR_DROP, "CL_ParseDownload: Server sending invalid download data");
+	//}
 
 	// www dl, if we haven't acknowledged the download redirect yet
 	if (block == DLTYPE_WWW)

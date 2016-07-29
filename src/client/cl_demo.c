@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -93,10 +93,11 @@ typedef struct
 cvar_t *cl_maxRewindBackups;
 
 demoInfo_t      di;
-demoPlayInfo_t  dpi;
 rewindBackups_t *rewindBackups   = NULL;
 int             maxRewindBackups = 0;
 #endif
+
+demoPlayInfo_t  dpi = { 0,0 };
 
 /*
 ====================
@@ -193,6 +194,12 @@ qboolean CL_PeekSnapshot(int snapshotNumber, snapshot_t *snapshot)
 	lastPacketTimeOrig   = clc.lastPacketTime;
 	// CL_ReadDemoMessage()
 	origPosition = FS_FTell(clc.demofile);
+
+	if (origPosition < 0)
+	{
+		// FS_FTell prints the warning ...
+		return qfalse;
+	}
 
 	currentSnapNum = cl.snap.messageNum;
 

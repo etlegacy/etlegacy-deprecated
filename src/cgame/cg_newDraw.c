@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -201,7 +201,6 @@ CG_DrawPlayerWeaponIcon
 */
 void CG_DrawPlayerWeaponIcon(rectDef_t *rect, qboolean drawHighlighted, int align, vec4_t *refcolor)
 {
-	int       size;
 	int       realweap;
 	qhandle_t icon;
 	float     scale, halfScale;
@@ -221,20 +220,13 @@ void CG_DrawPlayerWeaponIcon(rectDef_t *rect, qboolean drawHighlighted, int alig
 			realweap = WP_MOBILE_MG42;
 		}
 	}
-	else if (cg.predictedPlayerEntity.currentState.eFlags & EF_MG42_ACTIVE)
+	else if ((cg.predictedPlayerEntity.currentState.eFlags & EF_MG42_ACTIVE) || (cg.predictedPlayerEntity.currentState.eFlags & EF_AAGUN_ACTIVE))
 	{
 		realweap = WP_MOBILE_MG42;
 	}
 	else
 	{
 		realweap = cg.predictedPlayerState.weapon;
-	}
-
-	size = CG_WeaponIconScale(realweap);
-
-	if (!size)
-	{
-		return;
 	}
 
 	// we don't have icon[0];
@@ -294,7 +286,7 @@ void CG_DrawPlayerWeaponIcon(rectDef_t *rect, qboolean drawHighlighted, int alig
 	{
 		float x, y, w, h;
 
-		if (size == 1)     // draw half width to match the icon asset
+		if (IS_VALID_WEAPON(realweap) && cg_weapons[realweap].weaponIconScale == 1)     // draw half width to match the icon asset
 		{   // start at left
 			x = rect->x - halfScale;
 			y = rect->y - halfScale;
@@ -370,10 +362,8 @@ void CG_DrawCursorhint(rectDef_t *rect)
 		icon = cgs.media.doorRotateHintShader;
 		break;
 	case HINT_DOOR_LOCKED:
-		icon = cgs.media.doorLockHintShader;
-		break;
 	case HINT_DOOR_ROTATING_LOCKED:
-		icon = cgs.media.doorRotateLockHintShader;
+		icon = cgs.media.doorLockHintShader;
 		break;
 	case HINT_MG42:
 		icon = cgs.media.mg42HintShader;
@@ -553,8 +543,6 @@ qboolean CG_OwnerDrawVisible(int flags)
 	return qfalse;
 }
 
-#define PIC_WIDTH 12
-
 /*
 ==============
 CG_DrawWeapStability
@@ -625,6 +613,10 @@ void CG_DrawWeapHeat(rectDef_t *rect, int align)
 	CG_FilledBar(rect->x, rect->y, rect->w, rect->h, color, color2, NULL, (float)cg.snap->ps.curWeapHeat / 255.0f, flags);
 }
 
+#if FEATURE_EDV
+int old_mouse_x_pos = 0, old_mouse_y_pos = 0;
+#endif
+
 void CG_MouseEvent(int x, int y)
 {
 	switch (cgs.eventHandling)
@@ -639,30 +631,99 @@ void CG_MouseEvent(int x, int y)
 	case CGAME_EVENT_GAMEVIEW:
 	case CGAME_EVENT_CAMPAIGNBREIFING:
 	case CGAME_EVENT_FIRETEAMMSG:
-		cgs.cursorX += x;
-		if (cgs.cursorX < 0)
-		{
-			cgs.cursorX = 0;
-		}
-		else if (cgs.cursorX > SCREEN_WIDTH_SAFE)
-		{
-			cgs.cursorX = SCREEN_WIDTH_SAFE;
-		}
 
-		cgs.cursorY += y;
-		if (cgs.cursorY < 0)
+#if FEATURE_EDV
+		if (!cgs.demoCamera.renderingFreeCam)
 		{
-			cgs.cursorY = 0;
-		}
-		else if (cgs.cursorY > SCREEN_HEIGHT_SAFE)
-		{
-			cgs.cursorY = SCREEN_HEIGHT_SAFE;
-		}
+#endif
 
-		if (cgs.eventHandling == CGAME_EVENT_SPEAKEREDITOR)
-		{
-			CG_SpeakerEditorMouseMove_Handling(x, y);
-		}
+            cgs.cursorX += x;
+            if (cgs.cursorX < 0)
+            {
+                cgs.cursorX = 0;
+            }
+            else if (cgs.cursorX > SCREEN_WIDTH_SAFE)
+            {
+                cgs.cursorX = SCREEN_WIDTH_SAFE;
+            }
+
+            cgs.cursorY += y;
+            if (cgs.cursorY < 0)
+            {
+                cgs.cursorY = 0;
+            }
+            else if (cgs.cursorY > SCREEN_HEIGHT_SAFE)
+            {
+                cgs.cursorY = SCREEN_HEIGHT_SAFE;
+            }
+
+            if (cgs.eventHandling == CGAME_EVENT_SPEAKEREDITOR)
+            {
+                CG_SpeakerEditorMouseMove_Handling(x, y);
+            }
+#if FEATURE_EDV
+        }
+        else
+        {
+            // mousemovement *should* feel the same as ingame
+            char buffer[64];
+            int  mx          = 0, my = 0;
+            int  mouse_x_pos = 0, mouse_y_pos = 0;
+
+            float sensitivity, m_pitch, m_yaw;
+            int   m_filter = 0;
+
+            if (demo_lookat.integer != -1)
+            {
+                return;
+            }
+
+            mx += x;
+            my += y;
+
+            trap_Cvar_VariableStringBuffer("m_filter", buffer, sizeof(buffer));
+            m_filter = atoi(buffer);
+
+            trap_Cvar_VariableStringBuffer("sensitivity", buffer, sizeof(buffer));
+            sensitivity = atof(buffer);
+
+            trap_Cvar_VariableStringBuffer("m_pitch", buffer, sizeof(buffer));
+            m_pitch = atof(buffer);
+
+            trap_Cvar_VariableStringBuffer("m_yaw", buffer, sizeof(buffer));
+            m_yaw = atof(buffer);
+
+            if (m_filter)
+            {
+                mouse_x_pos = (mx + old_mouse_x_pos) * 0.5;
+                mouse_y_pos = (my + old_mouse_y_pos) * 0.5;
+            }
+            else
+            {
+                mouse_x_pos = mx;
+                mouse_y_pos = my;
+            }
+
+            old_mouse_x_pos = mx;
+            old_mouse_y_pos = my;
+
+            mouse_x_pos *= sensitivity;
+            mouse_y_pos *= sensitivity;
+
+            cg.refdefViewAngles[YAW]   -= m_yaw * mouse_x_pos;
+            cg.refdefViewAngles[PITCH] += m_pitch * mouse_y_pos;
+
+            if (cg.refdefViewAngles[PITCH] < -90)
+            {
+                cg.refdefViewAngles[PITCH] = -90;
+            }
+
+            if (cg.refdefViewAngles[PITCH] > 90)
+            {
+                cg.refdefViewAngles[PITCH] = 90;
+            }
+        }
+#endif
 		break;
 	default:
 		if (cg.snap->ps.pm_type == PM_INTERMISSION)
@@ -819,8 +880,20 @@ void CG_KeyEvent(int key, qboolean down)
 	{
 	// Demos get their own keys
 	case CGAME_EVENT_DEMO:
+#if FEATURE_EDV
+		if (cg_predefineddemokeys.integer)
+		{
+			CG_DemoClick(key, down);
+		}
+		else
+		{
+			CG_RunBinding(key, down);
+		}
+		return;
+#else
 		CG_DemoClick(key, down);
 		return;
+#endif
 	case CGAME_EVENT_CAMPAIGNBREIFING:
 		CG_LoadPanel_KeyHandling(key, down);
 		break;
@@ -834,8 +907,20 @@ void CG_KeyEvent(int key, qboolean down)
 		CG_SpeakerEditor_KeyHandling(key, down);
 		break;
 #ifdef FEATURE_MULTIVIEW
-	case CGAME_EVENT_MULTIVIEW:
+	case  CGAME_EVENT_MULTIVIEW:
+#if FEATURE_EDV
+		if (cg_predefineddemokeys.integer)
+		{
+			CG_mv_KeyHandling(key, down);
+		}
+		else
+		{
+			CG_RunBinding(key, down);
+		}
+		break;
+#else
 		CG_mv_KeyHandling(key, down);
+#endif
 		break;
 #endif
 	default:

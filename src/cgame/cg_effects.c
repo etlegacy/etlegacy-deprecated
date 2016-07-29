@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -536,8 +536,7 @@ int CG_GetOriginForTag(centity_t *cent, refEntity_t *parent, char *tagName, int 
 
 	if (axis)
 	{
-		// had to cast away the const to avoid compiler problems...
-		MatrixMultiply(lerped.axis, ((refEntity_t *)parent)->axis, axis);
+		MatrixMultiply(lerped.axis, parent->axis, axis);
 	}
 
 	return retval;

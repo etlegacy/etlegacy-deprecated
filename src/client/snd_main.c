@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -534,15 +534,7 @@ void S_Play_f(void)
 	for (i = 1; i < c; i++)
 	{
 		Q_strncpyz(tempBuffer, Cmd_Argv(i), MAX_QPATH);
-		if (!strrchr(tempBuffer, '.'))
-		{
-#if 1
-			// Just add the .wav ending to be compatible with vanilla clients
-			Q_strcat(tempBuffer, MAX_QPATH, ".wav");
-#else
-			Com_Printf("Warning: S_Play_f sound name '%s' has no file extension\n", tempBuffer);
-#endif
-		}
+		COM_DefaultExtension(tempBuffer, sizeof(tempBuffer), ".wav");
 
 		h = si.RegisterSound(tempBuffer, qfalse); // TODO: detect compression via extension? ioq uses qfalse by default
 
@@ -552,7 +544,7 @@ void S_Play_f(void)
 		}
 		else
 		{
-			Com_Printf("Warning: S_Play_f sound '%s' not played.\n", tempBuffer);
+			Com_Printf("Warning: S_Play_f sound '%s' not played\n", tempBuffer);
 		}
 	}
 }
@@ -646,7 +638,7 @@ void S_StopMusic_f(void)
  */
 void S_Init(void)
 {
-	cvar_t *cv = Cvar_Get("s_initsound", "1", CVAR_ARCHIVE | CVAR_LATCH | CVAR_UNSAFE);  // 0 = disabled, 1 = base, 2 = OpenAL
+	cvar_t *cv = Cvar_Get("s_initsound", "1", CVAR_ARCHIVE | CVAR_LATCH | CVAR_UNSAFE);  // 0 = disabled, 1 = SDL2, 2 = OpenAL
 
 	Com_Printf("------ Initializing Sound (%i)------\n", cv->integer);
 
@@ -660,7 +652,7 @@ void S_Init(void)
 
 	if (!cv->integer)
 	{
-		Com_Printf("Sound disabled.\n");
+		Com_Printf("Sound disabled\n");
 	}
 	else
 	{
@@ -679,7 +671,7 @@ void S_Init(void)
 #ifdef FEATURE_OPENAL
 		if (cv->integer == 2)
 		{
-			//OpenAL
+			// OpenAL
 			started = S_AL_Init(&si);
 			Cvar_Set("s_backend", "OpenAL");
 		}
@@ -689,26 +681,30 @@ void S_Init(void)
 		{
 			if (cv->integer == 2)
 			{
-				Com_Printf("Can't initialize OpenAL - reverting to base interface.\n");
+#ifdef FEATURE_OPENAL
+				Com_Printf("Can't initialize OpenAL - reverting to SDL2 interface\n");
+#else
+				Com_Printf("Can't initialize OpenAL - disabled on build-time\n");
+#endif
 			}
 
 			started = S_Base_Init(&si);
-			Cvar_Set("s_backend", "base");
+			Cvar_Set("s_backend", "SDL2");
 		}
 
 		if (started)
 		{
 			if (!S_ValidSoundInterface(&si))
 			{
-				Com_Error(ERR_FATAL, "Invalid sound interface.");
+				Com_Error(ERR_FATAL, "Invalid sound interface");
 			}
 
 			S_SoundInfo();
-			Com_Printf("Sound initialization successfully done.\ns_backend set to %s\n", s_backend->string);
+			Com_Printf("Sound initialization successfully done\ns_backend set to %s\n", s_backend->string);
 		}
 		else
 		{
-			Com_Printf("Sound initialization failed.\n");
+			Com_Printf("Sound initialization failed\n");
 		}
 	}
 

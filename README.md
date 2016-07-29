@@ -1,16 +1,17 @@
-Enemy Territory: Legacy [![Build Status](https://travis-ci.org/etlegacy/etlegacy.png?branch=master)](https://travis-ci.org/etlegacy/etlegacy) [![Analysis Status](https://scan.coverity.com/projects/1160/badge.svg)](https://scan.coverity.com/projects/1160)
+Enemy Territory: Legacy [![Build Status](https://travis-ci.org/etlegacy/etlegacy.png?branch=master)](https://travis-ci.org/etlegacy/etlegacy) [![Analysis Status](https://scan.coverity.com/projects/1160/badge.svg)](https://scan.coverity.com/projects/1160) [![Join the chat at https://gitter.im/etlegacy/etlegacy](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/etlegacy/etlegacy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 ==========
 
 *A second breath of life for Wolfenstein: Enemy Territory*
 
-* Website: [http://www.etlegacy.com](http://www.etlegacy.com)
-* Release downloads: [http://dev.etlegacy.com/download](http://dev.etlegacy.com/download)
-* Wiki/FAQ: [http://dev.etlegacy.com/projects/etlegacy/wiki](http://dev.etlegacy.com/projects/etlegacy/wiki)
-* Forums: [http://dev.etlegacy.com/projects/etlegacy/boards](http://dev.etlegacy.com/projects/etlegacy/boards)
-* Development (bug reports and feature requests): [http://dev.etlegacy.com](http://dev.etlegacy.com)
+* Website: [https://www.etlegacy.com](https://www.etlegacy.com)
+* Downloads: [https://www.etlegacy.com/download](https://www.etlegacy.com/download)
+* Wiki/FAQ: [https://dev.etlegacy.com/projects/etlegacy/wiki](https://dev.etlegacy.com/projects/etlegacy/wiki)
+* Forums: [https://dev.etlegacy.com/projects/etlegacy/boards](https://dev.etlegacy.com/projects/etlegacy/boards)
+* Development (bug reports and feature requests): [https://dev.etlegacy.com](https://dev.etlegacy.com)
 * Repository: [https://github.com/etlegacy/etlegacy](https://github.com/etlegacy/etlegacy)
 * Translation: [https://www.transifex.com/projects/p/etlegacy/](https://www.transifex.com/projects/p/etlegacy/)
-* IRC: [\#etlegacy](http://webchat.freenode.net/?channels=#etlegacy) on irc.freenode.net
+* Contact: [\#etlegacy](http://webchat.freenode.net/?channels=#etlegacy) on irc.freenode.net and [etlegacy/etlegacy](https://gitter.im/etlegacy/etlegacy) on Gitter.im
+
 
 INTRODUCTION
 ============
@@ -22,19 +23,28 @@ The main goals of the project are fixing bugs, cleaning up the codebase and addi
 while remaining compatible with the ET 2.60b version.
 
 The Legacy mod is the default mod shipped with ET: Legacy. It aims to add many useful features and
-improvements, while staying close to the original gameplay, as well as being lightweight and fully
-extensible through Lua scripts.
+improvements, while staying close to the original gameplay, as well as being lightweight and extensible
+through Lua scripts.
 
-For more information consult our [changelog](http://dev.etlegacy.com/projects/etlegacy/wiki/Changelog).
+For more information consult our [changelog](https://dev.etlegacy.com/projects/etlegacy/wiki/Changelog).
 
 ET: Legacy development is a collaborative effort done in an open, transparent and friendly manner.
 Anyone is welcome to join our efforts!
 
+
+### Donations
+
+By request, we have finally managed to create a PayPal account for donations. So if you like the
+ET: Legacy project or our game server, don't hesitate to send us some cash at **Paypal: etlegacy@liebt-dich.info**
+
+Your contribution will be used to pay for our server and domain. To clarify, the project is not dependant
+on donations. But we don't reject them if you want to honor our work. Thank you!
+
+
 GENERAL NOTES
 =============
 
-Game data
------------------------------------------------------------------------------
+### Game data
 
 Wolfenstein: Enemy Territory is a free release, and can be downloaded from [Splash Damage](http://www.splashdamage.com/content/download-wolfenstein-enemy-territory).
 
@@ -44,16 +54,16 @@ which is still covered by the original EULA and must be obeyed as usual.
 In order to run ET: Legacy you will need to copy the original assets files
 (*pak0.pk3*, *pak1.pk3* and *pak2.pk3*) to the etmain folder.
 
-Compatibility with Enemy Territory 2.60b
-----------------------------------------------------------------------------
+
+### Compatibility with Enemy Territory 2.60b
 
 ET: Legacy remains compatible with the ET 2.60b version as much as possible.
 
 Please note that ET: Legacy is *not* compatible with PunkBuster enabled servers.
 ET: Legacy clients also cannot connect to servers running the ETPro mod.
 
-Linux 64 bit
-------------
+
+### Linux 64 bit
 
 Please remember that 64 bit ET: Legacy clients can only connect to servers running
 mods providing a 64 bit version. You will be able to play 32 bit-only mods only if
@@ -68,19 +78,24 @@ In case you are a running a 64 bit system, you probably might want to use the
 can be automatically downloaded using the `git submodule` command. See the next
 section for more details.
 
-Dependencies
------------------------------------------------------------------------------
+
+DEPENDENCIES
+============
 
 * **CMake** (compile-time only)
 * **OpenGL**
 * **GLEW** version 1.10
-* **SDL** version 2.0.3
+* **SDL** version 2.0.4
+* **ZLib** version 1.2.8
+* **MiniZip**
 * **libjpeg-turbo** version 1.3, or **libjpeg** version 8
 * **libcurl** (optional, enabled by default)
 * **Lua** version 5.3 (optional, enabled by default)
 * **Ogg Vorbis** (optional, enabled by default)
+* **Theora** (optional, enabled by default)
 * **Freetype** version 2 (optional, enabled by default)
-* **OpenAL** (optional)
+* **SQLite** version 3 (optional, enabled by default)
+* **OpenAL** version 1.17 (optional, enabled by default)
 * **Jansson** (optional)
 
 To get the latest source code install [git](http://git-scm.com/) and
@@ -98,8 +113,9 @@ whether to use bundled libraries instead of the system ones by changing the
 `BUNDLED_LIBS` variable in the CMakeList.txt configuration file. You can then select
 which bundled libraries to use by toggling the respective `BUNDLED_XXX` variable.
 
-Compile and install
------------------------------------------------------------------------------
+
+COMPILE AND INSTALL
+===================
 
 To install the binaries system-wide, you need to compile ET: Legacy with hardcoded
 fs_basepath.
@@ -120,7 +136,17 @@ The following variables can be adjusted in CMake:
 
 ### Linux
 
-* option A: **command line**
+Install required dependencies.
+
+* option A: **easybuild**
+
+In terminal, run:
+
+    $ ./easybuild.sh
+
+ET: Legacy will be installed in `~/etlegacy`.
+
+* option B: **command line**
 
 In terminal, run:
 
@@ -136,21 +162,8 @@ If you wish to install ET: Legacy system-wide, run:
 
 Be sure to set the CMake variables (see above) beforehand.
 
-* option B: **easybuild**
 
-In terminal, run:
-
-    $ ./easybuild.sh
-
-To install, run:
-
-    $ cd build
-    $ make install
-
-ET: Legacy will be installed in `~/etlegacy`. To change it, set the CMake variables
-(see above) in the easybuild.sh file beforehand.
-
-**NOTE:**
+**NOTES:**
 
   * Even if you have a 64 bit linux distribution which provides 32 bit versions of all
   the required libraries, you might also need the development libraries (-devel packages)
@@ -173,13 +186,22 @@ By default, MinGW name is set to *i686-w64-mingw32*. You may have to change it i
 
 ### Windows
 
-* option A: **Visual Studio**
+Install:
 
-    1. install the free [Visual Studio](http://www.visualstudio.com/) (C++ Express 2010 or newer)
-    2. install [CMake](http://www.cmake.org/) and make sure it is added to your system PATH
-    3. create a `build` directory inside the directory which contains ET: Legacy sources
-    4. open *Visual Studio Command Prompt* in the Start menu
-    5. change directory with `cd` to the newly created build directory
+  1. [Visual Studio Community](http://www.visualstudio.com/)
+  2. [CMake](http://www.cmake.org/) and make sure it is added to your system PATH
+
+* option A: **easybuild**
+
+    1. run easybuild.bat
+
+ET: Legacy will be installed in `My Documents\ETLegacy-Build`.
+
+* option B: **Visual Studio**
+
+    1. create a `build` directory inside the directory which contains ET: Legacy sources
+    2. open *Visual Studio Command Prompt* in the Start menu
+    3. change directory with `cd` to the newly created build directory
 
 In the command prompt, run:
 
@@ -191,20 +213,6 @@ or
 
 and open the resulting project in Visual Studio.
 
-* option B: **QtCreator**
-
-    1. install the free [QtCreator](http://www.qt.io/download-open-source/)
-    2. install [CMake](http://www.cmake.org/) and make sure it is added to your system PATH
-    3. open the CMakeLists.txt file in QtCreator.
-
-* option C: **easybuild**
-
-    1. install the free [Visual Studio](http://www.visualstudio.com/) (C++ Express 2010 or newer)
-    2. install [CMake](http://www.cmake.org/) and make sure it is added to your system PATH
-    3. run easybuild.bat
-
-ET: Legacy will be installed in `My Documents\ETLegacy-Build`. To change it, set the CMake variables
-(see above) in the easybuild.bat file beforehand.
 
 **NOTES:**
 
@@ -221,21 +229,34 @@ ET: Legacy will be installed in `My Documents\ETLegacy-Build`. To change it, set
   Unfortunately this file isn't shipped with Windows 8.0 and 8.1 SDK versions.
   Solution: Get the Windows SDK 7 and copy 'win32.mak' to `libs/jpeturbo/`.
 
+  * Compiling renderer 2 on Windows requires GNU sed (gsed) to be installed. It can be downloaded
+  from the [GnuWin](http://gnuwin32.sourceforge.net/packages/sed.htm) website.
+
 
 ### Mac OS X
 
-* option A: **command line**
+Install:
 
-    1. install [Xcode](https://developer.apple.com/xcode/downloads/)
-    2. install [Homebrew](http://brew.sh/)
-    3. install [Homebrew Cask](http://caskroom.io/)
+    1. [Xcode](https://developer.apple.com/xcode/downloads/)
+    2. [Homebrew](http://brew.sh/)
+    3. [Homebrew Cask](http://caskroom.io/)
 
 Then brew the following packages in the terminal app:
 
     $ brew cask install xquartz
-    $ brew install --universal gnu-sed cmake glew sdl2 jpeg-turbo curl lua libogg libvorbis freetype
+    $ brew install --universal gnu-sed cmake glew sdl2 minizip jpeg-turbo curl lua libogg libvorbis libtheora freetype sqlite openal-soft
 
 The --universal flag ensures both 32bit and 64bit libraries are installed. Although your system curl library supports both architectures, you also need to install its headers.
+
+* option A: **easybuild**
+
+In Terminal, run:
+
+    $ ./easybuild.sh
+
+This will put an 'etlegacy' folder into your user folder.
+
+* option B: **command line**
 
 In terminal, run:
 
@@ -251,28 +272,18 @@ If you wish to install ET: Legacy system-wide, run:
 
 Be sure to set the CMake variables (see above) beforehand.
 
-* option B: **easybuild**
 
-In Terminal, run:
+**NOTES**:
 
-    $ ./easybuild.sh
-    $ cd build && make install
-
-This will put an 'etlegacy' folder into your user folder.
-
-**NOTE**:
-
-In the legacy mod folder, the cgame_mac and ui_mac files are redundant since they are in the
-etl_bin.pk3 and will be extracted at runtime, so you can delete those. The client is named etl.app
-(and can safely be renamed), while the dedicated server is just a command-line binary named "etlded".
-
+  * In the legacy mod folder, the cgame_mac and ui_mac files are redundant since they are in the 
+  etl_bin.pk3 and will be extracted at runtime, so you can delete those. The client is named etl.app
+  (and can safely be renamed), while the dedicated server is just a command-line binary named "etlded".
 
 
 LICENSE
 =======
 
-Enemy Territory: Legacy
------------------------------------------------------------------------------
+### Enemy Territory: Legacy
 
 Wolfenstein: Enemy Territory GPL Source Code
 Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
@@ -281,7 +292,7 @@ OpenWolf GPL Source Code
 Copyright (C) 2011 Dusan Jocic
 
 ET: Legacy
-Copyright (C) 2012-2015 Jan Simek <mail@etlegacy.com>
+Copyright (C) 2012-2016 ET:Legacy Team <mail@etlegacy.com>
 
   ET: Legacy is free software: you can redistribute it and/or modify it under
   the terms of the GNU General Public License as published by the Free Software
@@ -308,82 +319,8 @@ Copyright (C) 2012-2015 Jan Simek <mail@etlegacy.com>
   for obtaining from the copyright holder a license for such code and complying
   with the applicable license terms.
 
-zLib - general purpose compression library
------------------------------------------------------------------------------
-Copyright (C) 1995-2013 Jean-loup Gailly and Mark Adler
 
-  This software is provided 'as-is', without any express or implied
-  warranty.  In no event will the authors be held liable for any damages
-  arising from the use of this software.
-
-  Permission is granted to anyone to use this software for any purpose,
-  including commercial applications, and to alter it and redistribute it
-  freely, subject to the following restrictions:
-
-  1. The origin of this software must not be misrepresented; you must not
-     claim that you wrote the original software. If you use this software
-     in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required.
-  2. Altered source versions must be plainly marked as such, and must not be
-     misrepresented as being the original software.
-  3. This notice may not be removed or altered from any source distribution.
-
-  Jean-loup Gailly        Mark Adler
-  jloup@gzip.org          madler@alumni.caltech.edu
-
-
-  The data format used by the zlib library is described by RFCs (Request for
-  Comments) 1950 to 1952 in the files http://tools.ietf.org/html/rfc1950
-  (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
-
-Minizip - IO on .zip files using portions of zlib
------------------------------------------------------------------------------
-
-Copyright (c) 1990-2000 Info-ZIP.  All rights reserved.
-Copyright (C) 1998-2009 Gilles Vollant
-
-This unzip package allow extract file from .ZIP file, compatible with PKZip 2.04g
-WinZip, InfoZip tools and compatible.
-
-  This software is provided 'as-is', without any express or implied
-  warranty.  In no event will the authors be held liable for any damages
-  arising from the use of this software.
-
-  Permission is granted to anyone to use this software for any purpose,
-  including commercial applications, and to alter it and redistribute it
-  freely, subject to the following restrictions:
-
-  1. The origin of this software must not be misrepresented; you must not
-     claim that you wrote the original software. If you use this software
-     in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required.
-  2. Altered source versions must be plainly marked as such, and must not be
-     misrepresented as being the original software.
-  3. This notice may not be removed or altered from any source distribution.
-
-Decryption code comes from crypt.c by Info-ZIP but has been greatly reduced in
-terms of compatibility with older software. The following is from the original
-crypt.c. Code woven in by Terry Thorsen 1/2003.
-
-  See the accompanying file LICENSE, version 2000-Apr-09 or later
-  (the contents of which are also included in zip.h) for terms of use.
-  If, for some reason, all these files are missing, the Info-ZIP license
-  also may be found at:  ftp://ftp.info-zip.org/pub/infozip/license.html
-
-  crypt.c (full version) by Info-ZIP.
-
-  The encryption/decryption parts of this source code (as opposed to the
-  non-echoing password parts) were originally written in Europe.  The
-  whole source package can be freely distributed, including from the USA.
-  (Prior to January 2000, re-export from the US was a violation of US law.)
-
-  This encryption code is a direct transcription of the algorithm from
-  Roger Schlafly, described by Phil Katz in the file appnote.txt.  This
-  file (appnote.txt) is distributed with the PKZIP program (even in the
-  version without encryption capabilities).
-
-MD4 Message-Digest Algorithm
------------------------------------------------------------------------------
+### MD4 Message-Digest Algorithm
 
 Copyright (C) 1991-1992, RSA Data Security, Inc. Created 1991. All rights reserved.
 
@@ -400,8 +337,8 @@ Copyright (C) 1991-1992, RSA Data Security, Inc. Created 1991. All rights reserv
   urpose. It is provided "as is" without express or implied warranty of any
   kind.
 
-MD5 Message-Digest Algorithm
------------------------------------------------------------------------------
+
+### MD5 Message-Digest Algorithm
 
 The MD5 algorithm was developed by Ron Rivest. The public domain C language
 implementation used in this program was written by Colin Plumb in 1993, no copyright

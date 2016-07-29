@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -95,7 +95,7 @@ cvar_t *sv_dlRate;
 // do we communicate with others ?
 cvar_t *sv_advert;      // 0 - no big brothers
                         // 1 - communicate with master server
-                        // 2 - send trackbase infos
+                        // 2 - communicate with tracker
 
 // server attack protection
 cvar_t *sv_protect;     // 0 - unprotected
@@ -364,8 +364,8 @@ void SV_MasterHeartbeat(const char *message)
 		}
 #endif
 
-		if (((netenabled & NET_ENABLEV4 && adr[i][0].type == NA_BAD) || !(netenabled & NET_ENABLEV4))
-		    && ((netenabled & NET_ENABLEV6 && adr[i][1].type == NA_BAD) || !(netenabled & NET_ENABLEV6)))
+		if ((((netenabled & NET_ENABLEV4) && adr[i][0].type == NA_BAD) || !(netenabled & NET_ENABLEV4))
+		    && (((netenabled & NET_ENABLEV6) && adr[i][1].type == NA_BAD) || !(netenabled & NET_ENABLEV6)))
 		{
 			// if the address failed to resolve, clear it
 			// so we don't take repeated dns hits
@@ -379,7 +379,7 @@ void SV_MasterHeartbeat(const char *message)
 		// this command should be changed if the server info / status format
 		// ever incompatably changes
 
-		if (netenabled & NET_ENABLEV4 && adr[i][0].type != NA_BAD)
+		if ((netenabled & NET_ENABLEV4) && adr[i][0].type != NA_BAD)
 		{
 			NET_OutOfBandPrint(NS_SERVER, adr[i][0], "heartbeat %s\n", message);
 		}
@@ -482,8 +482,8 @@ void SV_MasterGameCompleteStatus()
 		}
 #endif
 
-		if (((netenabled & NET_ENABLEV4 && adr[i][0].type == NA_BAD) || !(netenabled & NET_ENABLEV4))
-		    && ((netenabled & NET_ENABLEV6 && adr[i][1].type == NA_BAD) || !(netenabled & NET_ENABLEV6)))
+		if ((((netenabled & NET_ENABLEV4) && adr[i][0].type == NA_BAD) || !(netenabled & NET_ENABLEV4))
+		    && (((netenabled & NET_ENABLEV6) && adr[i][1].type == NA_BAD) || !(netenabled & NET_ENABLEV6)))
 		{
 			// if the address failed to resolve, clear it
 			// so we don't take repeated dns hits
@@ -497,7 +497,7 @@ void SV_MasterGameCompleteStatus()
 		// this command should be changed if the server info / status format
 		// ever incompatably changes
 
-		if (netenabled & NET_ENABLEV4 && adr[i][0].type != NA_BAD)
+		if ((netenabled & NET_ENABLEV4) && adr[i][0].type != NA_BAD)
 		{
 			SVC_Status(adr[i][0], qtrue);
 		}
@@ -552,6 +552,12 @@ static long SVC_HashForAddress(netadr_t address)
 		break;
 	default:
 		break;
+	}
+
+	if (!ip)
+	{
+		Com_Printf("SVC_HashForAddress: Invalid IP - hash value is 0.\n");
+		return 0;
 	}
 
 	for (i = 0; i < size; i++)
@@ -748,7 +754,7 @@ static void SVC_Status(netadr_t from, qboolean force)
 	// A maximum challenge length of 128 should be more than plenty.
 	if (strlen(Cmd_Argv(1)) > 128)
 	{
-		SV_WriteAttackLog(va("SVC_Status: challenge lenght exceeded from %s, dropping request\n", NET_AdrToString(from)));
+		SV_WriteAttackLog(va("SVC_Status: challenge length exceeded from %s, dropping request\n", NET_AdrToString(from)));
 		return;
 	}
 
@@ -821,7 +827,7 @@ void SVC_Info(netadr_t from)
 	// A maximum challenge length of 128 should be more than plenty.
 	if (strlen(Cmd_Argv(1)) > 128)
 	{
-		SV_WriteAttackLog(va("SVC_Info: challenge lenght from %s exceeded, dropping request\n", NET_AdrToString(from)));
+		SV_WriteAttackLog(va("SVC_Info: challenge length from %s exceeded, dropping request\n", NET_AdrToString(from)));
 		return;
 	}
 

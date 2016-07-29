@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -44,16 +44,6 @@
 #       include <GL/glew.h>
 #   endif
 #endif // FEATURE_RENDERER_GLES
-
-/*
-#ifndef FEATURE_RENDERER2
-#ifdef BUNDLED_SDL
-#    include "SDL_opengl.h"
-#else
-#    include <SDL2/SDL_opengl.h>
-#endif
-#endif
-*/
 
 #ifdef FEATURE_RENDERER_GLES
 #   define qglMultiTexCoord2fARB(t, s)                             glMultiTexCoord4f(t, s, 0, 1.0f)

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -90,16 +90,16 @@ void GL_SelectTexture(int unit)
 	if (unit == 0)
 	{
 		qglActiveTextureARB(GL_TEXTURE0_ARB);
-		GLimp_LogComment("glActiveTextureARB( GL_TEXTURE0_ARB )\n");
+		Ren_LogComment("glActiveTextureARB( GL_TEXTURE0_ARB )\n");
 		qglClientActiveTextureARB(GL_TEXTURE0_ARB);
-		GLimp_LogComment("glClientActiveTextureARB( GL_TEXTURE0_ARB )\n");
+		Ren_LogComment("glClientActiveTextureARB( GL_TEXTURE0_ARB )\n");
 	}
 	else if (unit == 1)
 	{
 		qglActiveTextureARB(GL_TEXTURE1_ARB);
-		GLimp_LogComment("glActiveTextureARB( GL_TEXTURE1_ARB )\n");
+		Ren_LogComment("glActiveTextureARB( GL_TEXTURE1_ARB )\n");
 		qglClientActiveTextureARB(GL_TEXTURE1_ARB);
-		GLimp_LogComment("glClientActiveTextureARB( GL_TEXTURE1_ARB )\n");
+		Ren_LogComment("glClientActiveTextureARB( GL_TEXTURE1_ARB )\n");
 	}
 	else
 	{
@@ -1484,9 +1484,9 @@ const void *RB_SwapBuffers(const void *data)
 		qglFinish();
 	}
 
-	GLimp_LogComment("***************** RB_SwapBuffers *****************\n\n\n");
+	Ren_LogComment("***************** RB_SwapBuffers *****************\n\n\n");
 
-	GLimp_EndFrame();
+	ri.GLimp_SwapFrame();
 
 	backEnd.projection2D = qfalse;
 

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -238,7 +238,7 @@ void SV_LinkEntity(sharedEntity_t *gEnt)
 	ent = SV_SvEntityForGentity(gEnt);
 
 	// sanity check for possible currentOrigin being reset bug
-	if (!gEnt->r.bmodel && VectorCompare(gEnt->r.currentOrigin, vec3_origin))
+	if (!gEnt->r.bmodel && vec3_compare(gEnt->r.currentOrigin, vec3_origin))
 	{
 		// I've seen this warning a lot - let map makers know which entity is affected.
 		// FIXME: - Clarify if this warning is false positive for some ents

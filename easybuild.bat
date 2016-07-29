@@ -7,11 +7,14 @@
 @echo off
 @setLocal EnableDelayedExpansion
 
-:: The default VS version
-set vsversion=12
+:: The default VS version (minimal supported vs version is 12)
+set vsversion=9001
 set vsvarsbat=!VS%vsversion%0COMNTOOLS!\vsvars32.bat
 :: Setup the NMake env or find the correct .bat this also finds msbuild
+
 CALL:SETUPNMAKE
+
+if %errorlevel% neq 0 exit /b %errorlevel%
 
 :: Init the submdule
 CALL:INITSUBMODULE
@@ -34,12 +37,9 @@ GOTO:EOF
 :: process command line arguments if any
 :PROCESSARGS
 	FOR %%A IN (%*) DO (
-		IF errorlevel 1 (
-			echo Failure errorlevel: %errorlevel%
-			GOTO:EOF
-		) ELSE (
-			CALL:FUNCTIONS %%A
-		)
+		if %errorlevel% neq 0 exit /b %errorlevel%
+
+		CALL:FUNCTIONS %%A
 	)
 GOTO:EOF
 
@@ -49,7 +49,7 @@ GOTO:EOF
 	IF /I "%curvar%"=="build" CALL:DOBUILD
 	IF /I "%curvar%"=="build64" CALL:DOBUILD " Win64"
 	IF /I "%curvar%"=="install" CALL:DOINSTALL
-	IF /I "%curvar%"=="pack" CALL:DOPACKAGE
+	IF /I "%curvar%"=="package" CALL:DOPACKAGE
 	IF /I "%curvar%"=="crust" GOTO:UNCRUSTCODE
 	IF /I "%curvar%"=="project" CALL:GENERATEPROJECT %project_dir% "%batloc%" "" "" "YES"
 	:: download pak0 - 2 to the homepath if they do not exist
@@ -66,16 +66,35 @@ GOTO:EOF
 
 :SETUPNMAKE
 	where nmake >nul 2>&1
-	if errorlevel 1 (
+	if !errorlevel neq 0 (
+		SET errorlevel=0
 		IF EXIST "%vsvarsbat%" (
+			ECHO HOLY SHIT YOU ARE AWESOME!
 			CALL "%vsvarsbat%" >nul
 		) ELSE (
-			CALL:FINDNMAKE
+			CALL:FINDVSVARS
+			if !errorlevel! neq 0 (
+				ECHO Cannot find build environment
+				exit /b %errorlevel%
+			)
 		)
 	)
-	set errorlevel=0
+	SET errorlevel=0
 GOTO:EOF
 
+:FINDVSVARS
+	ECHO Finding VSVARS
+	FOR /L %%G IN (20,-1,12) DO (
+		IF EXIST "!VS%%G0COMNTOOLS!\vsvars32.bat" (
+			SET vsvarsbat=!VS%%G0COMNTOOLS!\vsvars32.bat
+			SET vsversion=%%G
+			GOTO:EOF
+		)
+	)
+	exit /b 1
+GOTO:EOF
+
+:: @deprecated
 :FINDNMAKE
 	ECHO Finding nmake
 	FOR /F "delims==" %%G IN ('SET') DO (
@@ -85,6 +104,7 @@ GOTO:EOF
 			GOTO:EOF
 		)
 	)
+	exit /b 1
 GOTO:EOF
 
 :INITSUBMODULE
@@ -152,17 +172,23 @@ GOTO:EOF
 	ECHO Cleaning...
 	IF EXIST %game_basepath% RMDIR /s /q %game_basepath%
 	IF EXIST %build_dir% RMDIR /s /q %build_dir%
+	IF EXIST %batloc%libs (
+		cd "%batloc%libs"
+		git clean -d -f
+	)
 GOTO:EOF
 
 :: GenerateProject(targetDir, sourceDir, compileType, crossCompile, buildR2)
 :GENERATEPROJECT
 	ECHO Generating...
-	IF NOT EXIST "%~1" MKDIR "%~1"
+	IF EXIST "%~1" RMDIR /s /q "%~1"
+	MKDIR "%~1"
 	CD "%~1"
 
 	set build_string=
 	CALL:GENERATECMAKE build_string "%~4" "%~5"
 	cmake -G "Visual Studio %vsversion%%~3" -T v%vsversion%0_xp %build_string% "%~2"
+	ETLEGACY.sln
 GOTO:EOF
 
 :DOBUILD
