@@ -37,7 +37,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
+#include <cmath>
 
 #include "../sys/sys_local.h"
 #include "../client/client.h"
