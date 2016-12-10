@@ -33,6 +33,8 @@
  * @brief Draw the scoreboard on top of the game screen
  */
 
+#include <cmath>
+
 #include "cg_local.h"
 
 // colors and fonts for overlays

@@ -33,6 +33,8 @@
  * @brief Setup all the parameters (position, angle, etc) for a 3D rendering
  */
 
+#include <cmath>
+
 #include "cg_local.h"
 
 /*

@@ -34,6 +34,8 @@
  *        gameplay
  */
 
+#include <cmath>
+
 #include "cg_local.h"
 
 char *Binding_FromName(const char *cvar);
