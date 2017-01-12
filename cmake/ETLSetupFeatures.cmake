@@ -48,7 +48,7 @@ if(BUILD_CLIENT)
 		list(APPEND SDL_LIBRARIES ${SDL2_LIBRARY})
 		include_directories(SYSTEM ${SDL2_INCLUDE_DIR})
 	else() # BUNDLED_SDL
-		list(APPEND SDL_LIBRARIES ${SDL32_BUNDLED_LIBRARIES})
+		list(APPEND SDL_LIBRARIES ${SDL32_BUNDLED_LIBRARIES} sndio)
 		include_directories(SYSTEM ${SDL32_BUNDLED_INCLUDE_DIR})
 		add_definitions(-DBUNDLED_SDL)
 		add_definitions(-DHAVE_SDL) # for tinygettext
