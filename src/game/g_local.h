@@ -2467,8 +2467,8 @@ fieldtype_t GetFieldType(const char *fieldname);
 #endif
 
 // g_protect flags
-#define G_PROTECT_LOCALHOST_REF        1
-#define G_PROTECT_MAX_LIVES_BAN_GUID   2
+#define G_PROTECT_LOCALHOST_REF        BIT(0)
+#define G_PROTECT_MAX_LIVES_BAN_GUID   BIT(1)
 
 // MAPVOTE
 void G_MapVoteInfoWrite(void);
@@ -2483,9 +2483,9 @@ void G_MapVoteInfoRead(void);
 #define G_MISC_LOOSE_SPAWN_PROTECTION  BIT(5)
 
 // g_voting flags
-#define VOTEF_USE_TOTAL_VOTERS      1   // use total voters instead of total players to decide if a vote passes
-#define VOTEF_NO_POPULIST_PENALTY   2   // successful votes do not count against vote_limit
-#define VOTEF_DISP_CALLER           4   // append "(called by name)" in vote string
+#define VOTEF_USE_TOTAL_VOTERS         BIT(0)   // use total voters instead of total players to decide if a vote passes
+#define VOTEF_NO_POPULIST_PENALTY      BIT(1)   // successful votes do not count against vote_limit
+#define VOTEF_DISP_CALLER              BIT(2)   // append "(called by name)" in vote string
 
 // Server frametime is calculated with the sv_fps
 #define SERVER_FRAMETIME    (1000 / trap_Cvar_VariableIntegerValue("sv_fps"))   // (1000/20) default
