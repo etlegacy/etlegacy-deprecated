@@ -49,9 +49,9 @@ function LegacyEngine()
 	return self
 end
 
-if etl == nil then
+if _G.etl == nil then
     -- we do this here so that we can test script in a normal lua binary
-    etl = LegacyEngine()
+    _G.etl = LegacyEngine()
 end
 
 -- The ui Base written by Jere 'Jacker' S.
