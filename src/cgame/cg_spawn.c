@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -35,6 +35,13 @@
 
 #include "cg_local.h"
 
+/**
+ * @brief CG_SpawnString
+ * @param[in] key
+ * @param[in] defaultString
+ * @param[out] out
+ * @return
+ */
 qboolean CG_SpawnString(const char *key, const char *defaultString, char **out)
 {
 	int i;
@@ -58,16 +65,30 @@ qboolean CG_SpawnString(const char *key, const char *defaultString, char **out)
 	return qfalse;
 }
 
+/**
+ * @brief CG_SpawnFloat
+ * @param[in] key
+ * @param[in] defaultString
+ * @param[out] out
+ * @return
+ */
 qboolean CG_SpawnFloat(const char *key, const char *defaultString, float *out)
 {
 	char     *s;
 	qboolean present;
 
 	present = CG_SpawnString(key, defaultString, &s);
-	*out    = atof(s);
+	*out    = (float)atof(s);
 	return present;
 }
 
+/**
+ * @brief CG_SpawnInt
+ * @param[in] key
+ * @param[in] defaultString
+ * @param[out] out
+ * @return
+ */
 qboolean CG_SpawnInt(const char *key, const char *defaultString, int *out)
 {
 	char     *s;
@@ -78,6 +99,13 @@ qboolean CG_SpawnInt(const char *key, const char *defaultString, int *out)
 	return present;
 }
 
+/**
+ * @brief CG_SpawnVector
+ * @param[in] key
+ * @param[in] defaultString
+ * @param[out] out
+ * @return
+ */
 qboolean CG_SpawnVector(const char *key, const char *defaultString, float *out)
 {
 	char     *s;
@@ -88,6 +116,13 @@ qboolean CG_SpawnVector(const char *key, const char *defaultString, float *out)
 	return present;
 }
 
+/**
+ * @brief CG_SpawnVector2D
+ * @param[in] key
+ * @param[in] defaultString
+ * @param[out] out
+ * @return
+ */
 qboolean CG_SpawnVector2D(const char *key, const char *defaultString, float *out)
 {
 	char     *s;
@@ -98,14 +133,11 @@ qboolean CG_SpawnVector2D(const char *key, const char *defaultString, float *out
 	return present;
 }
 
-/*
-=============
-VectorToString
-
-This is just a convenience function
-for printing vectors
-=============
-*/
+/**
+ * @brief This is just a convenience function for printing vectors
+ * @param[in] v
+ * @return
+ */
 char *vtos(const vec3_t v)
 {
 	static int  index;
@@ -121,6 +153,9 @@ char *vtos(const vec3_t v)
 	return s;
 }
 
+/**
+ * @brief SP_path_corner_2
+ */
 void SP_path_corner_2(void)
 {
 	char   *targetname;
@@ -132,18 +167,19 @@ void SP_path_corner_2(void)
 	if (!*targetname)
 	{
 		CG_Error("path_corner_2 with no targetname at %s\n", vtos(origin));
-		return;
 	}
 
 	if (numPathCorners >= MAX_PATH_CORNERS)
 	{
 		CG_Error("Maximum path_corners hit\n");
-		return;
 	}
 
 	BG_AddPathCorner(targetname, origin);
 }
 
+/**
+ * @brief SP_info_train_spline_main
+ */
 void SP_info_train_spline_main(void)
 {
 	char         *targetname;
@@ -188,11 +224,9 @@ void SP_info_train_spline_main(void)
 	}
 }
 
-/*
-====================
-CG_corona
-====================
-*/
+/**
+ * @brief CG_corona
+ */
 void CG_corona(void)
 {
 	cg_corona_t *corona;
@@ -233,6 +267,9 @@ void CG_corona(void)
 	//CG_Printf("loaded corona %i \n", cg.numCoronas );
 }
 
+/**
+ * @brief SP_misc_gamemodel
+ */
 void SP_misc_gamemodel(void)
 {
 	char           *model;
@@ -275,8 +312,14 @@ void SP_misc_gamemodel(void)
 		}
 	}
 
-	gamemodel        = &cgs.miscGameModels[cg.numMiscGameModels++];
-	gamemodel->model = trap_R_RegisterModel(model);
+	gamemodel = &cgs.miscGameModels[cg.numMiscGameModels++];
+
+	// don't register models more than once (f.e. after warmup or map_restart)
+	if (gamemodel->model == 0)
+	{
+		gamemodel->model = trap_R_RegisterModel(model);
+	}
+
 	AnglesToAxis(angles, gamemodel->axes);
 	for (i = 0; i < 3; i++)
 	{
@@ -304,6 +347,9 @@ void SP_misc_gamemodel(void)
 	}
 }
 
+/**
+ * @brief SP_trigger_objective_info
+ */
 void SP_trigger_objective_info(void)
 {
 	char *temp;
@@ -319,7 +365,7 @@ void SP_trigger_objective_info(void)
 
 typedef struct
 {
-	char *name;
+	const char *name;
 	void (*spawn)(void);
 } spawn_t;
 
@@ -335,16 +381,12 @@ spawn_t spawns[] =
 	{ "corona",                    CG_corona                 },
 };
 
-#define NUMSPAWNS   (sizeof(spawns) / sizeof(spawn_t))
+#define NUMSPAWNS (int)(sizeof(spawns) / sizeof(spawn_t))
 
-/*
-===================
-CG_ParseEntityFromSpawnVars
-
-Spawn an entity and fill in all of the level fields from
-cg.spawnVars[], then call the class specfic spawn function
-===================
-*/
+/**
+ * @brief Spawn an entity and fill in all of the level fields from
+ * cg.spawnVars[], then call the class specfic spawn function
+ */
 void CG_ParseEntityFromSpawnVars(void)
 {
 	int  i;
@@ -370,15 +412,15 @@ void CG_ParseEntityFromSpawnVars(void)
 	}
 }
 
-/*
-====================
-CG_AddSpawnVarToken
-====================
-*/
+/**
+ * @brief CG_AddSpawnVarToken
+ * @param[in] string
+ * @return
+ */
 char *CG_AddSpawnVarToken(const char *string)
 {
-	int  l;
-	char *dest;
+	size_t l;
+	char   *dest;
 
 	l = strlen(string);
 	if (cg.numSpawnVarChars + l + 1 > MAX_SPAWN_VARS_CHARS)
@@ -394,16 +436,13 @@ char *CG_AddSpawnVarToken(const char *string)
 	return dest;
 }
 
-/*
-====================
-CG_ParseSpawnVars
-
-Parses a brace bounded set of key / value pairs out of the
-level's entity strings into cg.spawnVars[]
-
-This does not actually spawn an entity.
-====================
-*/
+/**
+ * @brief Parses a brace bounded set of key / value pairs out of the
+ * level's entity strings into cg.spawnVars[]
+ *
+ * @details This does not actually spawn an entity.
+ * @return
+ */
 qboolean CG_ParseSpawnVars(void)
 {
 	char keyname[MAX_TOKEN_CHARS];
@@ -459,6 +498,9 @@ qboolean CG_ParseSpawnVars(void)
 	return qtrue;
 }
 
+/**
+ * @brief SP_worldspawn
+ */
 void SP_worldspawn(void)
 {
 	char *s;
@@ -617,13 +659,9 @@ void SP_worldspawn(void)
 	}
 }
 
-/*
-==============
-CG_ParseEntitiesFromString
-
-Parses textual entity definitions out of an entstring and spawns gentities.
-==============
-*/
+/**
+ * @brief Parses textual entity definitions out of an entstring and spawns gentities.
+ */
 void CG_ParseEntitiesFromString(void)
 {
 	// allow calls to CG_Spawn*()

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -36,6 +36,23 @@
 
 static int sortedFireTeamClients[MAX_CLIENTS];
 
+// colors and fonts for overlays
+static vec4_t FT_bg = { 0.16f, 0.2f, 0.17f, 0.8f };               // header
+static vec4_t FT_bg2 = { 0.0f, 0.0f, 0.0f, 0.3f };                // box itself
+static vec4_t FT_border = { 0.5f, 0.5f, 0.5f, 0.5f };
+static vec4_t FT_noselect = { 0.0f, 0.0f, 0.0f, 0.1f };           // not selected
+static vec4_t FT_select = { 0.5f, 0.5f, 0.2f, 0.3f };             // selected member
+static vec4_t FT_text = { 0.6f, 0.6f, 0.6f, 1.0f };
+
+#define FONT_HEADER         &cgs.media.limboFont1
+#define FONT_TEXT           &cgs.media.limboFont2
+
+/**
+ * @brief CG_SortFireTeam
+ * @param[in] a
+ * @param[in] b
+ * @return
+ */
 int QDECL CG_SortFireTeam(const void *a, const void *b)
 {
 	clientInfo_t *ca, *cb;
@@ -88,7 +105,9 @@ int QDECL CG_SortFireTeam(const void *a, const void *b)
 	return 0;
 }
 
-// sorts client's fireteam by leader then rank
+/**
+ * @brief Sorts client's fireteam by leader then rank
+ */
 void CG_SortClientFireteam()
 {
 	int i;
@@ -107,7 +126,9 @@ void CG_SortClientFireteam()
 	//C/G_Printf( "\n" );
 }
 
-// parses fireteam servercommand
+/**
+ * @brief Parses fireteam servercommand
+ */
 void CG_ParseFireteams()
 {
 	int        i, j;
@@ -153,7 +174,7 @@ void CG_ParseFireteams()
 		cg.fireTeams[i].leader = atoi(s);
 
 		s                    = Info_ValueForKey(p, "p");
-		cg.fireTeams[i].priv = atoi(s);
+		cg.fireTeams[i].priv = (qboolean)atoi(s);
 
 		s = Info_ValueForKey(p, "c");
 		Q_strncpyz(hexbuffer + 2, s, 9);
@@ -179,7 +200,26 @@ void CG_ParseFireteams()
 	CG_SortClientFireteam();
 }
 
-// Fireteam that both specified clients are on, if they both are on the same team
+/**
+ * @brief Fireteam that the specified client is a part of
+ * @param[in] clientNum
+ * @return
+ */
+fireteamData_t *CG_IsOnFireteam(int clientNum)
+{
+	if (cgs.clientinfo[clientNum].team == TEAM_SPECTATOR)
+	{
+		return NULL;
+	}
+	return cgs.clientinfo[clientNum].fireteamData;
+}
+
+/**
+ * @brief Fireteam that both specified clients are on, if they both are on the same team
+ * @param[in] clientNum
+ * @param[in] clientNum2
+ * @return
+ */
 fireteamData_t *CG_IsOnSameFireteam(int clientNum, int clientNum2)
 {
 	if (CG_IsOnFireteam(clientNum) == CG_IsOnFireteam(clientNum2))
@@ -190,7 +230,11 @@ fireteamData_t *CG_IsOnSameFireteam(int clientNum, int clientNum2)
 	return NULL;
 }
 
-// Fireteam that specified client is leader of, or NULL if none
+/**
+ * @brief Fireteam that specified client is leader of, or NULL if none
+ * @param[in] clientNum
+ * @return
+ */
 fireteamData_t *CG_IsFireTeamLeader(int clientNum)
 {
 	fireteamData_t *f;
@@ -208,7 +252,12 @@ fireteamData_t *CG_IsFireTeamLeader(int clientNum)
 	return f ;
 }
 
-// Client, not on a fireteam, not sorted, but on your team
+/**
+ * @brief Client, not on a fireteam, not sorted, but on your team
+ * @param[in] pos
+ * @param[in] max
+ * @return Client information
+ */
 clientInfo_t *CG_ClientInfoForPosition(int pos, int max)
 {
 	int i, cnt = 0;
@@ -228,7 +277,12 @@ clientInfo_t *CG_ClientInfoForPosition(int pos, int max)
 	return NULL;
 }
 
-// Fireteam, that's on your same team
+/**
+ * @brief Fireteam, that's on your same team
+ * @param[in] pos
+ * @param[in] max
+ * @return
+ */
 fireteamData_t *CG_FireTeamForPosition(int pos, int max)
 {
 	int i, cnt = 0;
@@ -248,7 +302,12 @@ fireteamData_t *CG_FireTeamForPosition(int pos, int max)
 	return NULL;
 }
 
-// Client, not sorted by rank, on CLIENT'S fireteam
+/**
+ * @brief Client, not sorted by rank, on CLIENT'S fireteam
+ * @param[in] pos
+ * @param[in] max
+ * @return
+ */
 clientInfo_t *CG_FireTeamPlayerForPosition(int pos, int max)
 {
 	int            i, cnt = 0;
@@ -279,7 +338,11 @@ clientInfo_t *CG_FireTeamPlayerForPosition(int pos, int max)
 	return NULL;
 }
 
-// Client, sorted by rank, on CLIENT'S fireteam
+/**
+ * @brief Client, sorted by rank, on CLIENT'S fireteam
+ * @param[in] pos
+ * @return
+ */
 clientInfo_t *CG_SortedFireTeamPlayerForPosition(int pos)
 {
 	int            i;
@@ -313,67 +376,16 @@ clientInfo_t *CG_SortedFireTeamPlayerForPosition(int pos)
 #define FT_BAR_YSPACING 2.f
 #define FT_BAR_HEIGHT   10.f
 
-// FIXME: weapon table
-int CG_WeaponIconScale(int weap)
-{
-	switch (weap)
-	{
-	// weapons with 'wide' icons
-	case WP_THOMPSON:
-	case WP_MP40:
-	case WP_STEN:
-	case WP_PANZERFAUST:
-	case WP_BAZOOKA:
-	case WP_FLAMETHROWER:
-	case WP_GARAND:
-	case WP_FG42:
-	case WP_FG42SCOPE:
-	case WP_KAR98:
-	case WP_GPG40:
-	case WP_CARBINE:
-	case WP_M7:
-	case WP_MOBILE_MG42:
-	case WP_MOBILE_MG42_SET:
-	case WP_MOBILE_BROWNING:
-	case WP_MOBILE_BROWNING_SET:
-	case WP_K43:
-	case WP_GARAND_SCOPE:
-	case WP_K43_SCOPE:
-	case WP_MORTAR:
-	case WP_MORTAR_SET:
-	case WP_MORTAR2:
-	case WP_MORTAR2_SET:
-	case WP_SILENCED_COLT:
-	case WP_SILENCER:
-	case WP_AKIMBO_COLT:
-	case WP_AKIMBO_LUGER:
-	case WP_AKIMBO_SILENCEDCOLT:
-	case WP_AKIMBO_SILENCEDLUGER:
-		return 2;
-	}
+#define MIN_BORDER_DISTANCE 10 // currently used for X axis only
 
-	return 1;
-}
-
-/*
-CG_DrawFireTeamOverlay
-    based on NQ CG_DrawFireTeamOverlay
-*/
-
-static vec4_t clr1 = { 0.0f, 0.0f, 0.0f, 0.8f };                // box itselfs - { 0.16f,	0.2f,	0.17f,	0.8f }
-static vec4_t clr2 = { 0.0f, 0.0f, 0.0f, 0.2f };                // not selected
-static vec4_t clr3 = { 0.25f, 0.0f, 0.0f, 0.6f };               // selected member
-static vec4_t tclr = { 0.6f, 0.6f, 0.6f, 1.0f };
-static vec4_t bgColor = { 0.0f, 0.0f, 0.0f, 0.6f };       // window
-static vec4_t borderColor = { 0.5f, 0.5f, 0.5f, 0.5f };   // window
-
-#define MIN_BORDER_DISTANCE 10 //Currently this if is used for X axis only
-
-// FIXME: add more options to shorten this box
+/**
+ * @brief Draw FireTeam overlay
+ * @param[in] rect
+ */
 void CG_DrawFireTeamOverlay(rectDef_t *rect)
 {
-	int            x = rect->x;
-	int            y = rect->y + 1;             // +1, jitter it into place in 1024 :)
+	float          x = rect->x;
+	float          y = rect->y + 1;             // +1, jitter it into place
 	int            i, locwidth, namewidth, puwidth, lineX;
 	int            boxWidth      = 90;
 	int            bestNameWidth = -1;
@@ -410,22 +422,23 @@ void CG_DrawFireTeamOverlay(rectDef_t *rect)
 		{
 			origin[0] = ci->location[0];
 			origin[1] = ci->location[1];
+			origin[2] = ci->location[2];
 
 			locStr[i] = CG_BuildLocationString(ci->clientNum, origin, LOC_FTEAM);
 
 			if (!locStr[i][1] || !*locStr[i])
 			{
-				locStr[i] = "";
+				locStr[i] = 0;
 			}
 
-			locwidth = CG_Text_Width_Ext(locStr[i], 0.2f, 0, &cgs.media.limboFont2);
+			locwidth = CG_Text_Width_Ext(locStr[i], 0.2f, 0, FONT_TEXT);
 		}
 		else
 		{
 			locwidth = 0;
 		}
 
-		namewidth = CG_Text_Width_Ext(ci->name, 0.2f, 0, &cgs.media.limboFont2);
+		namewidth = CG_Text_Width_Ext(ci->name, 0.2f, 0, FONT_TEXT);
 
 		if (ci->powerups & ((1 << PW_REDFLAG) | (1 << PW_BLUEFLAG) | (1 << PW_OPS_DISGUISED)))
 		{
@@ -454,21 +467,20 @@ void CG_DrawFireTeamOverlay(rectDef_t *rect)
 
 	if ((Ccg_WideX(640) - MIN_BORDER_DISTANCE) < (x + boxWidth))
 	{
-		float realw = Ccg_WideX(640);
-		x = x - ((x + boxWidth) - realw) - MIN_BORDER_DISTANCE;
+		x = x - ((x + boxWidth) - Ccg_WideX(640)) - MIN_BORDER_DISTANCE;
 	}
 	else if (x < MIN_BORDER_DISTANCE)
 	{
 		x = MIN_BORDER_DISTANCE;
 	}
 
-	CG_DrawRect(x, y, boxWidth, h, 1, borderColor);
-	CG_FillRect(x + 1, y + 1, boxWidth - 2, h - 2, bgColor);
+	CG_FillRect(x, y, boxWidth, h, FT_bg2);
+	CG_DrawRect(x, y, boxWidth, h, 1, FT_border);
 
-	x += 2;
-	y += 2;
+	x += 1;
+	y += 1;
 
-	CG_FillRect(x, y, boxWidth - 4, 12, clr1);
+	CG_FillRect(x, y, boxWidth - 2, 12, FT_bg);
 
 	if (f->priv)
 	{
@@ -480,9 +492,9 @@ void CG_DrawFireTeamOverlay(rectDef_t *rect)
 	}
 
 	Q_strupr(buffer);
-	CG_Text_Paint_Ext(x + 3, y + FT_BAR_HEIGHT, .19f, .19f, tclr, buffer, 0, 0, 0, &cgs.media.limboFont1);
-	x    += 2;
-	lineX = x;
+	CG_Text_Paint_Ext(x + 4, y + FT_BAR_HEIGHT, .19f, .19f, FT_text, buffer, 0, 0, 0, FONT_HEADER);
+
+	lineX = (int)x;
 	for (i = 0; i < MAX_FIRETEAM_MEMBERS; i++)
 	{
 		x  = lineX;
@@ -499,26 +511,26 @@ void CG_DrawFireTeamOverlay(rectDef_t *rect)
 		// hilight selected players
 		if (ci->selected)
 		{
-			CG_FillRect(x, y + FT_BAR_YSPACING, boxWidth - 6, FT_BAR_HEIGHT, clr3);
+			CG_FillRect(x, y + FT_BAR_YSPACING, boxWidth - 2, FT_BAR_HEIGHT, FT_select);
 		}
 		else
 		{
-			CG_FillRect(x, y + FT_BAR_YSPACING, boxWidth - 6, FT_BAR_HEIGHT, clr2);
+			CG_FillRect(x, y + FT_BAR_YSPACING, boxWidth - 2, FT_BAR_HEIGHT, FT_noselect);
 		}
 
 		x += 4;
 
 		// draw class icon in fireteam overlay
-		CG_DrawPic(x, y, 12, 12, cgs.media.skillPics[SkillNumForClass(ci->cls)]);
+		CG_DrawPic(x, y + 2, 12, 12, cgs.media.skillPics[SkillNumForClass(ci->cls)]);
 		x += 14;
 
 		if (cg_fireteamLatchedClass.integer && ci->cls != ci->latchedcls)
 		{
 			// draw the yellow arrow
-			CG_Text_Paint_Ext(x, y + FT_BAR_HEIGHT, .2f, .2f, tclr, "^3->", 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
+			CG_Text_Paint_Ext(x, y + FT_BAR_HEIGHT, .2f, .2f, FT_text, "^3->", 0, 0, ITEM_TEXTSTYLE_SHADOWED, FONT_TEXT);
 			x += 14;
 			// draw latched class icon in fireteam overlay
-			CG_DrawPic(x, y, 12, 12, cgs.media.skillPics[SkillNumForClass(ci->latchedcls)]);
+			CG_DrawPic(x, y + 2, 12, 12, cgs.media.skillPics[SkillNumForClass(ci->latchedcls)]);
 			x += 14;
 		}
 		else if (cg_fireteamLatchedClass.integer)
@@ -534,14 +546,14 @@ void CG_DrawFireTeamOverlay(rectDef_t *rect)
 		// draw objective icon (if they are carrying one) in fireteam overlay
 		if (ci->powerups & ((1 << PW_REDFLAG) | (1 << PW_BLUEFLAG)))
 		{
-			CG_DrawPic(x, y, 12, 12, cgs.media.objectiveShader);
+			CG_DrawPic(x, y + 2, 12, 12, cgs.media.objectiveShader);
 			x      += 14;
 			puwidth = 14;
 		}
 		// or else draw the disguised icon in fireteam overlay
 		else if (ci->powerups & (1 << PW_OPS_DISGUISED))
 		{
-			CG_DrawPic(x, y, 12, 12, ci->team == TEAM_AXIS ? cgs.media.alliedUniformShader : cgs.media.axisUniformShader);
+			CG_DrawPic(x, y + 2, 12, 12, ci->team == TEAM_AXIS ? cgs.media.alliedUniformShader : cgs.media.axisUniformShader);
 			x      += 14;
 			puwidth = 14;
 		}
@@ -554,7 +566,7 @@ void CG_DrawFireTeamOverlay(rectDef_t *rect)
 		}
 
 		// draw the player's name
-		CG_Text_Paint_Ext(x, y + FT_BAR_HEIGHT, .2f, .2f, colorWhite, ci->name, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
+		CG_Text_Paint_Ext(x, y + FT_BAR_HEIGHT, .2f, .2f, colorWhite, ci->name, 0, 0, ITEM_TEXTSTYLE_SHADOWED, FONT_TEXT);
 
 		// add space
 		x += 14 + bestNameWidth - puwidth;
@@ -571,7 +583,7 @@ void CG_DrawFireTeamOverlay(rectDef_t *rect)
 				curWeap = WP_MOBILE_MG42;
 			}
 		}
-		else if (cg.predictedPlayerEntity.currentState.eFlags & EF_MG42_ACTIVE)
+		else if ((cg.predictedPlayerEntity.currentState.eFlags & EF_MG42_ACTIVE) || (cg.predictedPlayerEntity.currentState.eFlags & EF_AAGUN_ACTIVE))
 		{
 			curWeap = WP_MOBILE_MG42;
 		}
@@ -580,55 +592,60 @@ void CG_DrawFireTeamOverlay(rectDef_t *rect)
 			curWeap = cg_entities[ci->clientNum].currentState.weapon;
 		}
 
-		if (cg_weapons[curWeap].weaponIcon[0])     // do not try to draw nothing
+		// note: WP_NONE is excluded
+		if (IS_VALID_WEAPON(curWeap) && cg_weapons[curWeap].weaponIcon[0])     // do not try to draw nothing
 		{
-			CG_DrawPic(x, y, CG_WeaponIconScale(curWeap) * 10, 10, cg_weapons[curWeap].weaponIcon[0]);
+			CG_DrawPic(x, y + 2, cg_weapons[curWeap].weaponIconScale * 10, 10, cg_weapons[curWeap].weaponIcon[0]);
 		}
-		else if (cg_weapons[curWeap].weaponIcon[1])
+		else if (IS_VALID_WEAPON(curWeap) && cg_weapons[curWeap].weaponIcon[1])
 		{
-			CG_DrawPic(x, y, CG_WeaponIconScale(curWeap) * 10, 10, cg_weapons[curWeap].weaponIcon[1]);
+			CG_DrawPic(x, y + 2, cg_weapons[curWeap].weaponIconScale * 10, 10, cg_weapons[curWeap].weaponIcon[1]);
 		}
 
 		x += 24;
 
 		if (ci->health >= 100)
 		{
-			CG_Text_Paint_Ext(x, y + FT_BAR_HEIGHT, .2f, .2f, colorGreen, va("%i", ci->health < 0 ? 0 : ci->health), 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
+			CG_Text_Paint_Ext(x, y + FT_BAR_HEIGHT, .2f, .2f, colorGreen, va("%i", ci->health < 0 ? 0 : ci->health), 0, 0, ITEM_TEXTSTYLE_SHADOWED, FONT_TEXT);
 			x += 12;
 		}
 		else if (ci->health >= 10)
 		{
 			x += 6;
-			CG_Text_Paint_Ext(x, y + FT_BAR_HEIGHT, .2f, .2f, ci->health > 80 ? colorGreen : colorYellow, va("%i", ci->health < 0 ? 0 : ci->health), 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
+			CG_Text_Paint_Ext(x, y + FT_BAR_HEIGHT, .2f, .2f, ci->health > 80 ? colorGreen : colorYellow, va("%i", ci->health < 0 ? 0 : ci->health), 0, 0, ITEM_TEXTSTYLE_SHADOWED, FONT_TEXT);
 			x += 6;
 		}
 		else if (ci->health > 0)
 		{
 			x += 12;
-			CG_Text_Paint_Ext(x, y + FT_BAR_HEIGHT, .2f, .2f, colorRed, va("%i", ci->health < 0 ? 0 : ci->health), 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
+			CG_Text_Paint_Ext(x, y + FT_BAR_HEIGHT, .2f, .2f, colorRed, va("%i", ci->health < 0 ? 0 : ci->health), 0, 0, ITEM_TEXTSTYLE_SHADOWED, FONT_TEXT);
 		}
 		else if (ci->health == 0)
 		{
 			x += 6;
-			CG_Text_Paint_Ext(x, y + FT_BAR_HEIGHT, .2f, .2f, ((cg.time % 500) > 250)  ? colorWhite : colorRed, "*", 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
+			CG_Text_Paint_Ext(x, y + FT_BAR_HEIGHT, .2f, .2f, ((cg.time % 500) > 250)  ? colorWhite : colorRed, "*", 0, 0, ITEM_TEXTSTYLE_SHADOWED, FONT_TEXT);
 			x += 6;
-			CG_Text_Paint_Ext(x, y + FT_BAR_HEIGHT, .2f, .2f, ((cg.time % 500) > 250)  ? colorRed : colorWhite, "0", 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
+			CG_Text_Paint_Ext(x, y + FT_BAR_HEIGHT, .2f, .2f, ((cg.time % 500) > 250)  ? colorRed : colorWhite, "0", 0, 0, ITEM_TEXTSTYLE_SHADOWED, FONT_TEXT);
 		}
 		else
 		{
 			x += 12;
-			CG_Text_Paint_Ext(x, y + FT_BAR_HEIGHT, .2f, .2f, colorRed, "0", 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
+			CG_Text_Paint_Ext(x, y + FT_BAR_HEIGHT, .2f, .2f, colorRed, "0", 0, 0, ITEM_TEXTSTYLE_SHADOWED, FONT_TEXT);
 		}
 		// set hard limit on width
 		x += 12;
 		if (cg_locations.integer & LOC_FTEAM)
 		{
-			CG_Text_Paint_Ext(x, y + FT_BAR_HEIGHT, .2f, .2f, tclr, locStr[i], 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
+			CG_Text_Paint_Ext(x, y + FT_BAR_HEIGHT, .2f, .2f, FT_text, locStr[i], 0, 0, ITEM_TEXTSTYLE_SHADOWED, FONT_TEXT);
 		}
 	}
 }
 
-/* unused
+/*
+ * @brief CG_FireteamGetBoxNeedsButtons
+ * @return
+ * @note Unused
+ *
 qboolean CG_FireteamGetBoxNeedsButtons(void)
 {
     if (cgs.applicationEndTime > cg.time)
@@ -662,101 +679,113 @@ qboolean CG_FireteamGetBoxNeedsButtons(void)
 }
 */
 
+/*
+ * @brief CG_FireteamGetBoxText
+ * @return
+ * @note Unused
+ *
 const char *CG_FireteamGetBoxText(void)
 {
-	if (cgs.applicationEndTime > cg.time)
-	{
-		if (cgs.applicationClient == -1)
-		{
-			return "Sent";
-		}
+    if (cgs.applicationEndTime > cg.time)
+    {
+        if (cgs.applicationClient == -1)
+        {
+            return "Sent";
+        }
 
-		if (cgs.applicationClient == -2)
-		{
-			return "Failed";
-		}
+        if (cgs.applicationClient == -2)
+        {
+            return "Failed";
+        }
 
-		if (cgs.applicationClient == -3)
-		{
-			return "Accepted";
-		}
+        if (cgs.applicationClient == -3)
+        {
+            return "Accepted";
+        }
 
-		if (cgs.applicationClient == -4)
-		{
-			return "Sent";
-		}
+        if (cgs.applicationClient == -4)
+        {
+            return "Sent";
+        }
 
-		if (cgs.applicationClient < 0)
-		{
-			return NULL;
-		}
+        if (cgs.applicationClient < 0)
+        {
+            return NULL;
+        }
 
-		return va("Accept application from %s?", cgs.clientinfo[cgs.applicationClient].name);
-	}
+        return va("Accept application from %s?", cgs.clientinfo[cgs.applicationClient].name);
+    }
 
-	if (cgs.invitationEndTime > cg.time)
-	{
-		if (cgs.invitationClient == -1)
-		{
-			return "Sent";
-		}
+    if (cgs.invitationEndTime > cg.time)
+    {
+        if (cgs.invitationClient == -1)
+        {
+            return "Sent";
+        }
 
-		if (cgs.invitationClient == -2)
-		{
-			return "Failed";
-		}
+        if (cgs.invitationClient == -2)
+        {
+            return "Failed";
+        }
 
-		if (cgs.invitationClient == -3)
-		{
-			return "Accepted";
-		}
+        if (cgs.invitationClient == -3)
+        {
+            return "Accepted";
+        }
 
-		if (cgs.invitationClient == -4)
-		{
-			return "Sent";
-		}
+        if (cgs.invitationClient == -4)
+        {
+            return "Sent";
+        }
 
-		if (cgs.invitationClient < 0)
-		{
-			return NULL;
-		}
+        if (cgs.invitationClient < 0)
+        {
+            return NULL;
+        }
 
-		return va("Accept invitiation from %s?", cgs.clientinfo[cgs.invitationClient].name);
-	}
+        return va("Accept invitiation from %s?", cgs.clientinfo[cgs.invitationClient].name);
+    }
 
-	if (cgs.propositionEndTime > cg.time)
-	{
-		if (cgs.propositionClient == -1)
-		{
-			return "Sent";
-		}
+    if (cgs.propositionEndTime > cg.time)
+    {
+        if (cgs.propositionClient == -1)
+        {
+            return "Sent";
+        }
 
-		if (cgs.propositionClient == -2)
-		{
-			return "Failed";
-		}
+        if (cgs.propositionClient == -2)
+        {
+            return "Failed";
+        }
 
-		if (cgs.propositionClient == -3)
-		{
-			return "Accepted";
-		}
+        if (cgs.propositionClient == -3)
+        {
+            return "Accepted";
+        }
 
-		if (cgs.propositionClient == -4)
-		{
-			return "Sent";
-		}
+        if (cgs.propositionClient == -4)
+        {
+            return "Sent";
+        }
 
-		if (cgs.propositionClient < 0)
-		{
-			return NULL;
-		}
+        if (cgs.propositionClient < 0)
+        {
+            return NULL;
+        }
 
-		return va("Accept %s's proposition to invite %s to join your fireteam?", cgs.clientinfo[cgs.propositionClient2].name, cgs.clientinfo[cgs.propositionClient].name);
-	}
+        return va("Accept %s's proposition to invite %s to join your fireteam?", cgs.clientinfo[cgs.propositionClient2].name, cgs.clientinfo[cgs.propositionClient].name);
+    }
 
-	return NULL;
+    return NULL;
 }
+*/
 
+/**
+ * @brief CG_FireteamHasClass
+ * @param[in] classnum
+ * @param[in] selectedonly
+ * @return
+ */
 qboolean CG_FireteamHasClass(int classnum, qboolean selectedonly)
 {
 	fireteamData_t *ft;
@@ -799,6 +828,10 @@ qboolean CG_FireteamHasClass(int classnum, qboolean selectedonly)
 	return qfalse;
 }
 
+/**
+ * @brief CG_BuildSelectedFirteamString
+ * @return
+ */
 const char *CG_BuildSelectedFirteamString(void)
 {
 	char         buffer[256];

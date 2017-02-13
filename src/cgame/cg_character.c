@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -40,6 +40,9 @@ char bigTextBuffer[100000];
 /**
  * @brief Parse gib models
  * @details Read a configuration file containing gib models for use with this character.
+ * @param modelPath
+ * @param character
+ * @return
  */
 static qboolean CG_ParseGibModels(char *modelPath, bg_character_t *character)
 {
@@ -60,7 +63,7 @@ static qboolean CG_ParseGibModels(char *modelPath, bg_character_t *character)
 		return qfalse;
 	}
 
-	if (len >= sizeof(bigTextBuffer) - 1)
+	if (len >= (int)sizeof(bigTextBuffer) - 1)
 	{
 		CG_Printf("File %s.gibs too long\n", modelPath);
 		trap_FS_FCloseFile(f);
@@ -76,11 +79,13 @@ static qboolean CG_ParseGibModels(char *modelPath, bg_character_t *character)
 	// parse the text
 	text_p = bigTextBuffer;
 
+	COM_BeginParseSession("CG_ParseGibModels");
+
 	for (i = 0; i < MAX_GIB_MODELS; i++)
 	{
 		token = COM_Parse(&text_p);
 
-		if (!token || !token[0])
+		if (!token[0])
 		{
 			break;
 		}
@@ -98,8 +103,14 @@ static qboolean CG_ParseGibModels(char *modelPath, bg_character_t *character)
 }
 
 /**
+
+ */
+/**
  * @brief Parse HUD head config
  * @details Parse HUD head config
+ * @param[in] filename
+ * @param[out] hha
+ * @return
  */
 static qboolean CG_ParseHudHeadConfig(const char *filename, animation_t *hha)
 {
@@ -117,7 +128,7 @@ static qboolean CG_ParseHudHeadConfig(const char *filename, animation_t *hha)
 		return qfalse;
 	}
 
-	if (len >= sizeof(bigTextBuffer) - 1)
+	if (len >= (int)sizeof(bigTextBuffer) - 1)
 	{
 		CG_Printf("File %s too long\n", filename);
 		trap_FS_FCloseFile(f);
@@ -131,11 +142,13 @@ static qboolean CG_ParseHudHeadConfig(const char *filename, animation_t *hha)
 	// parse the text
 	text_p = bigTextBuffer;
 
+	COM_BeginParseSession("CG_ParseHudHeadConfig");
+
 	for (i = 0 ; i < MAX_HD_ANIMATIONS ; i++)
 	{
 		token = COM_Parse(&text_p);     // first frame
 
-		if (!token)
+		if (!token[0])
 		{
 			break;
 		}
@@ -144,7 +157,7 @@ static qboolean CG_ParseHudHeadConfig(const char *filename, animation_t *hha)
 
 		token = COM_Parse(&text_p);     // length
 
-		if (!token)
+		if (!token[0])
 		{
 			break;
 		}
@@ -153,24 +166,24 @@ static qboolean CG_ParseHudHeadConfig(const char *filename, animation_t *hha)
 
 		token = COM_Parse(&text_p);     // fps
 
-		if (!token)
+		if (!token[0])
 		{
 			break;
 		}
 
-		fps = atof(token);
+		fps = (float)atof(token);
 
-		if (fps == 0)
+		if (fps == 0.f)
 		{
 			fps = 1;
 		}
 
-		hha[i].frameLerp   = 1000 / fps;
-		hha[i].initialLerp = 1000 / fps;
+		hha[i].frameLerp   = (int)(1000 / fps);
+		hha[i].initialLerp = (int)(1000 / fps);
 
 		token = COM_Parse(&text_p);     // looping frames
 
-		if (!token)
+		if (!token[0])
 		{
 			break;
 		}
@@ -199,10 +212,11 @@ static qboolean CG_ParseHudHeadConfig(const char *filename, animation_t *hha)
 /**
  * @brief Calculate move speeds
  * @details Calculate movement speeds.
+ * @param[in] character
  */
 static void CG_CalcMoveSpeeds(bg_character_t *character)
 {
-	char          *tags[2] = { "tag_footleft", "tag_footright" };
+	const char    *tags[2] = { "tag_footleft", "tag_footright" };
 	vec3_t        oldPos[2];
 	refEntity_t   refent;
 	animation_t   *anim;
@@ -280,13 +294,17 @@ static void CG_CalcMoveSpeeds(bg_character_t *character)
 		}
 
 		// record the speed
-		anim->moveSpeed = (int)((totalSpeed / numSpeed) * 1000.0 / anim->frameLerp);
+		anim->moveSpeed = round(((totalSpeed / numSpeed) * 1000.0f / anim->frameLerp));
 	}
 }
 
 /**
  * @brief Parse animation files
  * @details Read in all the configuration and script files for this model.
+ * @param[in] character
+ * @param[in] animationGroup
+ * @param[in] animationScript
+ * @return
  */
 static qboolean CG_ParseAnimationFiles(bg_character_t *character, const char *animationGroup, const char *animationScript)
 {
@@ -310,7 +328,7 @@ static qboolean CG_ParseAnimationFiles(bg_character_t *character, const char *an
 		return qfalse;
 	}
 
-	if (len >= sizeof(bigTextBuffer) - 1)
+	if (len >= (int)sizeof(bigTextBuffer) - 1)
 	{
 		CG_Printf("File %s is too long\n", animationScript);
 		trap_FS_FCloseFile(f);
@@ -332,6 +350,10 @@ static qboolean CG_ParseAnimationFiles(bg_character_t *character, const char *an
  * @brief Check for existing animation model information
  * @details If this player model has already been parsed, then use the existing information.
  *          Otherwise, set the modelInfo pointer to the first free slot.
+ * @param[in] animationGroup
+ * @param[in] animationScript
+ * @param[in] animModelInfo
+ * @return
  */
 static qboolean CG_CheckForExistingAnimModelInfo(const char *animationGroup, const char *animationScript, animModelInfo_t **animModelInfo)
 {
@@ -372,7 +394,12 @@ static qboolean CG_CheckForExistingAnimModelInfo(const char *animationGroup, con
 
 /**
  * @brief Register accessories
- * @details  Register model accessories.
+ * @details Register model accessories.
+ * @param[in] modelName
+ * @param[in,out] model
+ * @param[in] skinname
+ * @param[out] skin
+ * @return
  */
 static qboolean CG_RegisterAcc(const char *modelName, int *model, const char *skinname, qhandle_t *skin)
 {
@@ -394,7 +421,7 @@ static qboolean CG_RegisterAcc(const char *modelName, int *model, const char *sk
 
 typedef struct
 {
-	char *type;
+	const char *type;
 	accType_t index;
 } acc_t;
 
@@ -423,6 +450,9 @@ static int cg_numHeadAccessories = sizeof(cg_headAccessories) / sizeof(cg_headAc
 /**
  * @brief Register character
  * @details Register character.
+ * @param[in] characterFile
+ * @param[in] character
+ * @return
  */
 qboolean CG_RegisterCharacter(const char *characterFile, bg_character_t *character)
 {
@@ -473,7 +503,7 @@ qboolean CG_RegisterCharacter(const char *characterFile, bg_character_t *charact
 			{
 				if (!CG_RegisterAcc(accessoryname, &character->accModels[cg_headAccessories[i].index], characterDef.skin, &character->accSkins[cg_headAccessories[i].index]))
 				{
-					CG_Printf(S_COLOR_YELLOW "WARNING: failed to register accessory '%s' referenced from '%s'->'%s'\n", accessoryname, characterFile, filename);
+					CG_Printf(S_COLOR_YELLOW "WARNING: failed to register hud accessory '%s' referenced from '%s'->'%s'\n", accessoryname, characterFile, filename);
 				}
 			}
 		}
@@ -546,6 +576,9 @@ qboolean CG_RegisterCharacter(const char *characterFile, bg_character_t *charact
 /**
  * @brief Character for clientinfo
  * @details Define character for clientinfo.
+ * @param[in] ci
+ * @param[in] cent
+ * @return
  */
 bg_character_t *CG_CharacterForClientinfo(clientInfo_t *ci, centity_t *cent)
 {
@@ -587,6 +620,8 @@ bg_character_t *CG_CharacterForClientinfo(clientInfo_t *ci, centity_t *cent)
 /**
  * @brief Character for playerstate
  * @details Define character for playerstate.
+ * @param[in] ps
+ * @return
  */
 bg_character_t *CG_CharacterForPlayerstate(playerState_t *ps)
 {

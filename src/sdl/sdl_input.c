@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -41,10 +41,6 @@
 #include "../client/client.h"
 #include "../sys/sys_local.h"
 
-#ifdef DISABLE_DINGY
-void IN_EnableDingFilter();
-#endif
-
 static cvar_t *in_keyboardDebug = NULL;
 
 static cvar_t *in_mouse = NULL;
@@ -62,14 +58,26 @@ static cvar_t       *in_joystickUseAnalog = NULL;
 static int vidRestartTime = 0;
 SDL_Window *mainScreen    = NULL;
 
+// Used for giving the engine better (= unlagged) input timestamps
+// We give the engine the time we last polled inputs as the timestamp to the current inputs.
+// As long as the input backend doesn't have reliable timestamps, this is the right thing to do!
+// The engine simulates *the period from the last frame's beginning to the current frame's beginning* when it simulates the current frame.
+// It's not simulating "the next 1/60th or 1/125th" of a second. If you give it "now" as input timestamps, your inputs do not occur until the *next* simulated chunk of time.
+// Try it. com_maxfps 1, press "forward", have fun.
+static int lasttime = 0; // if 0, Com_QueueEvent will use the current time. This is for the first frame.
+
 #define CTRL(a) ((a) - 'a' + 1)
 
+/**
+ * @brief IN_GetClipboardData
+ * @return
+ */
 char *IN_GetClipboardData(void)
 {
 	if (SDL_HasClipboardText())
 	{
-		char *data = NULL, *temp = NULL;
-		int  len   = 0;
+		char   *data = NULL, *temp = NULL;
+		size_t len   = 0;
 
 		temp = SDL_GetClipboardText();
 		if (!temp || !temp[0])
@@ -96,11 +104,10 @@ char *IN_GetClipboardData(void)
 	}
 }
 
-/*
-==============
-Sys_IsNumLockDown
-==============
-*/
+/**
+ * @brief Check if Num key is lock down
+ * @return qtrue if Num key is lock down, qfalse if not
+ */
 qboolean IN_IsNumLockDown(void)
 {
 #ifdef _WIN32
@@ -109,7 +116,6 @@ qboolean IN_IsNumLockDown(void)
 		return qtrue;
 	}
 #else
-	//if(keys[K_KP_NUMLOCK].down)
 	if (SDL_GetModState() & KMOD_NUM)
 	{
 		return qtrue;
@@ -121,6 +127,9 @@ qboolean IN_IsNumLockDown(void)
 
 /**
  * @brief Prints keyboard identifiers in the console
+ * @param[in] keysym
+ * @param[in] key
+ * @param[in] down
  */
 static void IN_PrintKey(const SDL_Keysym *keysym, keyNum_t key, qboolean down)
 {
@@ -191,6 +200,12 @@ static void IN_PrintKey(const SDL_Keysym *keysym, keyNum_t key, qboolean down)
 
 #define MAX_CONSOLE_KEYS 16
 
+/**
+ * @brief IN_IsConsoleKey
+ * @param[in] key
+ * @param[in] character
+ * @return
+ */
 static qboolean IN_IsConsoleKey(keyNum_t key, int character)
 {
 	typedef struct consoleKey_s
@@ -211,6 +226,15 @@ static qboolean IN_IsConsoleKey(keyNum_t key, int character)
 	static consoleKey_t consoleKeys[MAX_CONSOLE_KEYS];
 	static int          numConsoleKeys = 0;
 	int                 i;
+
+	if (key == K_GRAVE
+#ifdef __APPLE__
+	    || key == 60 // Same as console key
+#endif
+	    )
+	{
+		return qtrue;
+	}
 
 	// Only parse the variable when it changes
 	if (cl_consoleKeys->modified)
@@ -289,7 +313,13 @@ static qboolean IN_IsConsoleKey(keyNum_t key, int character)
 }
 
 /**
- * @brief translates SDL keyboard identifier to its Q3 counterpart
+
+ */
+/**
+ * @brief Translates SDL keyboard identifier to its Q3 counterpart
+ * @param[in] keysym
+ * @param[in] down
+ * @return
  */
 static keyNum_t IN_TranslateSDLToQ3Key(SDL_Keysym *keysym, qboolean down)
 {
@@ -302,86 +332,38 @@ static keyNum_t IN_TranslateSDLToQ3Key(SDL_Keysym *keysym, qboolean down)
 	}
 	else
 	{
-/*
-        // FIXME/SDL2 BUG/FEATUTE NUM keyboard state
-        // https://forums.libsdl.org/viewtopic.php?p=43816&sid=b2ff6e037c85e6a80c6c506035668246
-        // currently SDL2 only sets NUM keyboard status when key is pressed and expects NUM disabled at start
-        // see SDL_SendKeyboardKey in SDL_Keyboard.c
-        // notes:
-        // - SDL_SCANCODE_NUMLOCKCLEAR does the job
-        // - clarify APPLE clear key
-        if (SDL_GetModState() & KMOD_NUM)
-        {
-            Com_Printf("NUM LED on\n");
-        }
-        else
-        {
-            Com_Printf("NUM LED off\n");
-        }
-*/
-
 		switch (keysym->sym)
 		{
 		// keypad
 		case SDLK_KP_0:
-			if (!(keysym->mod & KMOD_NUM))
-			{
-				key = K_KP_INS;
-			}
+			key = K_KP_INS;
 			break;
 		case SDLK_KP_1:
-			if (!(keysym->mod & KMOD_NUM))
-			{
-				key = K_KP_END;
-			}
+			key = K_KP_END;
 			break;
 		case SDLK_KP_2:
-			if (!(keysym->mod & KMOD_NUM))
-			{
-				key = K_KP_DOWNARROW;
-			}
+			key = K_KP_DOWNARROW;
 			break;
 		case SDLK_KP_3:
-			if (!(keysym->mod & KMOD_NUM))
-			{
-				key = K_KP_PGDN;
-			}
+			key = K_KP_PGDN;
 			break;
 		case SDLK_KP_4:
-			if (!(keysym->mod & KMOD_NUM))
-			{
-				key = K_KP_LEFTARROW;
-			}
+			key = K_KP_LEFTARROW;
 			break;
 		case SDLK_KP_5:
-			if (!(keysym->mod & KMOD_NUM))
-			{
-				key = K_KP_5;
-			}
+			key = K_KP_5;
 			break;
 		case SDLK_KP_6:
-			if (!(keysym->mod & KMOD_NUM))
-			{
-				key = K_KP_RIGHTARROW;
-			}
+			key = K_KP_RIGHTARROW;
 			break;
 		case SDLK_KP_7:
-			if (!(keysym->mod & KMOD_NUM))
-			{
-				key = K_KP_HOME;
-			}
+			key = K_KP_HOME;
 			break;
 		case SDLK_KP_8:
-			if (!(keysym->mod & KMOD_NUM))
-			{
-				key = K_KP_UPARROW;
-			}
+			key = K_KP_UPARROW;
 			break;
 		case SDLK_KP_9:
-			if (!(keysym->mod & KMOD_NUM))
-			{
-				key = K_KP_PGUP;
-			}
+			key = K_KP_PGUP;
 			break;
 		case SDLK_KP_ENTER:     key = K_KP_ENTER;
 			break;
@@ -570,24 +552,30 @@ static keyNum_t IN_TranslateSDLToQ3Key(SDL_Keysym *keysym, qboolean down)
 	if (IN_IsConsoleKey(key, 0))
 	{
 		// Console keys can't be bound or generate characters
-		key = K_CONSOLE;
+		key = CONSOLE_KEY;
 	}
 
 	return key;
 }
 
+/**
+ * @brief IN_GobbleMotionEvents
+ */
 static void IN_GobbleMotionEvents(void)
 {
 	SDL_Event dummy[1];
 
 	// Gobble any mouse motion events
 	SDL_PumpEvents();
-	while (SDL_PeepEvents(dummy, 1, SDL_GETEVENT,
-	                      SDL_MOUSEMOTION, SDL_MOUSEMOTION) > 0)
-	{
-	}
+	while (SDL_PeepEvents(dummy, 1, SDL_GETEVENT, SDL_MOUSEMOTION, SDL_MOUSEMOTION) > 0)
+		;
 }
 
+/**
+ * @brief IN_GrabMouse
+ * @param[in] grab
+ * @param[in] relative
+ */
 static void IN_GrabMouse(qboolean grab, qboolean relative)
 {
 	static qboolean mouse_grabbed   = qfalse, mouse_relative = qfalse;
@@ -618,6 +606,9 @@ static void IN_GrabMouse(qboolean grab, qboolean relative)
 	}
 }
 
+/**
+ * @brief IN_ActivateMouse
+ */
 static void IN_ActivateMouse(void)
 {
 	if (!mouseAvailable || !SDL_WasInit(SDL_INIT_VIDEO))
@@ -653,6 +644,9 @@ static void IN_ActivateMouse(void)
 	mouseActive = qtrue;
 }
 
+/**
+ * @brief IN_DeactivateMouse
+ */
 static void IN_DeactivateMouse(void)
 {
 	if (!SDL_WasInit(SDL_INIT_VIDEO))
@@ -734,11 +728,20 @@ struct
 	unsigned int oldhats;
 } stick_state;
 
+/**
+ * @brief Inits game controller input devices
+ */
 static void IN_InitJoystick(void)
 {
 	int  i          = 0;
 	int  total      = 0;
 	char buf[16384] = "";
+
+	if (!in_joystick->integer)
+	{
+		Com_Printf("...game controller disabled by cvar setting\n");
+		return;
+	}
 
 	if (stick != NULL)
 	{
@@ -750,17 +753,16 @@ static void IN_InitJoystick(void)
 
 	if (!SDL_WasInit(SDL_INIT_JOYSTICK))
 	{
-		Com_Printf("Initializing joystick devices\n");
+		Com_Printf("Initializing game controller\n");
 		if (SDL_Init(SDL_INIT_JOYSTICK) < 0)
 		{
-			Com_Printf("SDL_Init(SDL_INIT_JOYSTICK) failed: %s\n", SDL_GetError());
+			Com_Printf(S_COLOR_RED "SDL_Init(SDL_INIT_JOYSTICK) failed: %s\n", SDL_GetError());
 			return;
 		}
-		Com_Printf("...joysticks initialized\n");
 	}
 
 	total = SDL_NumJoysticks();
-	Com_Printf("...available joysticks: %d\n", total);
+	Com_Printf("...%d available game controller initialized\n", total);
 
 	// Print list and build cvar to allow ui to select joystick.
 	for (i = 0; i < total; i++)
@@ -770,13 +772,6 @@ static void IN_InitJoystick(void)
 	}
 
 	Cvar_Get("in_availableJoysticks", buf, CVAR_ROM);
-
-	if (!in_joystick->integer)
-	{
-		Com_Printf("...no active joystick set\n");
-		SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
-		return;
-	}
 
 	in_joystickNo = Cvar_Get("in_joystickNo", "0", CVAR_ARCHIVE);
 	if (in_joystickNo->integer < 0 || in_joystickNo->integer >= total)
@@ -790,24 +785,27 @@ static void IN_InitJoystick(void)
 
 	if (stick == NULL)
 	{
-		Com_Printf("No joystick opened.\n");
+		Com_Printf("...no game controller opened.\n");
 		return;
 	}
 
-	Com_DPrintf("Joystick %d opened\n", in_joystickNo->integer);
-	Com_DPrintf("Name:       %s\n", SDL_JoystickNameForIndex(in_joystickNo->integer));
-	Com_DPrintf("Axes:       %d\n", SDL_JoystickNumAxes(stick));
-	Com_DPrintf("Hats:       %d\n", SDL_JoystickNumHats(stick));
-	Com_DPrintf("Buttons:    %d\n", SDL_JoystickNumButtons(stick));
-	Com_DPrintf("Balls:      %d\n", SDL_JoystickNumBalls(stick));
-	Com_DPrintf("Use Analog: %s\n", in_joystickUseAnalog->integer ? "Yes" : "No");
+	Com_Printf("Game controller [%d] '%s' opened\n", in_joystickNo->integer, SDL_JoystickNameForIndex(in_joystickNo->integer));
+	Com_Printf("Axes:       %d\n", SDL_JoystickNumAxes(stick));
+	Com_Printf("Hats:       %d\n", SDL_JoystickNumHats(stick));
+	Com_Printf("Buttons:    %d\n", SDL_JoystickNumButtons(stick));
+	Com_Printf("Balls:      %d\n", SDL_JoystickNumBalls(stick));
+	Com_Printf("Use Analog: %s\n", in_joystickUseAnalog->integer ? "Yes" : "No");
 
 	SDL_JoystickEventState(SDL_QUERY);
 }
 
+/**
+ * @brief IN_ShutdownJoystick
+ */
 static void IN_ShutdownJoystick(void)
 {
-	if (!SDL_WasInit(SDL_INIT_JOYSTICK))
+	// in_joystick cvar is latched
+	if (!SDL_WasInit(SDL_INIT_JOYSTICK) || !in_joystick->integer)
 	{
 		return;
 	}
@@ -821,6 +819,9 @@ static void IN_ShutdownJoystick(void)
 	SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
 }
 
+/**
+ * @brief IN_JoyMove
+ */
 static void IN_JoyMove(void)
 {
 	unsigned int axes  = 0;
@@ -828,7 +829,8 @@ static void IN_JoyMove(void)
 	int          total = 0;
 	int          i     = 0;
 
-	if (!stick)
+	// in_joystick cvar is latched
+	if (!in_joystick->integer || !stick)
 	{
 		return;
 	}
@@ -865,7 +867,7 @@ static void IN_JoyMove(void)
 			{
 				balldy *= 2;
 			}
-			Com_QueueEvent(0, SE_MOUSE, balldx, balldy, 0, NULL);
+			Com_QueueEvent(lasttime, SE_MOUSE, balldx, balldy, 0, NULL);
 		}
 	}
 
@@ -883,7 +885,7 @@ static void IN_JoyMove(void)
 
 			if (pressed != stick_state.buttons[i])
 			{
-				Com_QueueEvent(0, SE_KEY, K_JOY1 + i, pressed, 0, NULL);
+				Com_QueueEvent(lasttime, SE_KEY, K_JOY1 + i, pressed, 0, NULL);
 				stick_state.buttons[i] = pressed;
 			}
 		}
@@ -914,32 +916,32 @@ static void IN_JoyMove(void)
 				switch (((Uint8 *)&stick_state.oldhats)[i])
 				{
 				case SDL_HAT_UP:
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 0], qfalse, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 0], qfalse, 0, NULL);
 					break;
 				case SDL_HAT_RIGHT:
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 1], qfalse, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 1], qfalse, 0, NULL);
 					break;
 				case SDL_HAT_DOWN:
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 2], qfalse, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 2], qfalse, 0, NULL);
 					break;
 				case SDL_HAT_LEFT:
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 3], qfalse, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 3], qfalse, 0, NULL);
 					break;
 				case SDL_HAT_RIGHTUP:
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 0], qfalse, 0, NULL);
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 1], qfalse, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 0], qfalse, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 1], qfalse, 0, NULL);
 					break;
 				case SDL_HAT_RIGHTDOWN:
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 2], qfalse, 0, NULL);
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 1], qfalse, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 2], qfalse, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 1], qfalse, 0, NULL);
 					break;
 				case SDL_HAT_LEFTUP:
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 0], qfalse, 0, NULL);
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 3], qfalse, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 0], qfalse, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 3], qfalse, 0, NULL);
 					break;
 				case SDL_HAT_LEFTDOWN:
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 2], qfalse, 0, NULL);
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 3], qfalse, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 2], qfalse, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 3], qfalse, 0, NULL);
 					break;
 				default:
 					break;
@@ -948,32 +950,32 @@ static void IN_JoyMove(void)
 				switch (((Uint8 *)&hats)[i])
 				{
 				case SDL_HAT_UP:
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 0], qtrue, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 0], qtrue, 0, NULL);
 					break;
 				case SDL_HAT_RIGHT:
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 1], qtrue, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 1], qtrue, 0, NULL);
 					break;
 				case SDL_HAT_DOWN:
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 2], qtrue, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 2], qtrue, 0, NULL);
 					break;
 				case SDL_HAT_LEFT:
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 3], qtrue, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 3], qtrue, 0, NULL);
 					break;
 				case SDL_HAT_RIGHTUP:
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 0], qtrue, 0, NULL);
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 1], qtrue, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 0], qtrue, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 1], qtrue, 0, NULL);
 					break;
 				case SDL_HAT_RIGHTDOWN:
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 2], qtrue, 0, NULL);
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 1], qtrue, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 2], qtrue, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 1], qtrue, 0, NULL);
 					break;
 				case SDL_HAT_LEFTUP:
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 0], qtrue, 0, NULL);
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 3], qtrue, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 0], qtrue, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 3], qtrue, 0, NULL);
 					break;
 				case SDL_HAT_LEFTDOWN:
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 2], qtrue, 0, NULL);
-					Com_QueueEvent(0, SE_KEY, hat_keys[4 * i + 3], qtrue, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 2], qtrue, 0, NULL);
+					Com_QueueEvent(lasttime, SE_KEY, hat_keys[4 * i + 3], qtrue, 0, NULL);
 					break;
 				default:
 					break;
@@ -1008,7 +1010,7 @@ static void IN_JoyMove(void)
 
 				if (axis != stick_state.oldaaxes[i])
 				{
-					Com_QueueEvent(0, SE_JOYSTICK_AXIS, i, axis, 0, NULL);
+					Com_QueueEvent(lasttime, SE_JOYSTICK_AXIS, i, axis, 0, NULL);
 					stick_state.oldaaxes[i] = axis;
 				}
 			}
@@ -1035,12 +1037,12 @@ static void IN_JoyMove(void)
 		{
 			if ((axes & (1 << i)) && !(stick_state.oldaxes & (1 << i)))
 			{
-				Com_QueueEvent(0, SE_KEY, joy_keys[i], qtrue, 0, NULL);
+				Com_QueueEvent(lasttime, SE_KEY, joy_keys[i], qtrue, 0, NULL);
 			}
 
 			if (!(axes & (1 << i)) && (stick_state.oldaxes & (1 << i)))
 			{
-				Com_QueueEvent(0, SE_KEY, joy_keys[i], qfalse, 0, NULL);
+				Com_QueueEvent(lasttime, SE_KEY, joy_keys[i], qfalse, 0, NULL);
 			}
 		}
 	}
@@ -1049,6 +1051,10 @@ static void IN_JoyMove(void)
 	stick_state.oldaxes = axes;
 }
 
+/**
+ * @brief IN_WindowResize
+ * @param[in] e
+ */
 static void IN_WindowResize(SDL_Event *e)
 {
 	// Only do a vid_restart if the size of the window actually changed. On OS X at least, it's possible
@@ -1071,6 +1077,8 @@ static void IN_WindowResize(SDL_Event *e)
 }
 
 /*
+ * @brief IN_WindowFocusLost
+ * @note Unused
 static void IN_WindowFocusLost()
 {
     if (cls.rendererStarted && cls.glconfig.isFullscreen)
@@ -1080,6 +1088,9 @@ static void IN_WindowFocusLost()
 }
 */
 
+/**
+ * @brief IN_ProcessEvents
+ */
 static void IN_ProcessEvents(void)
 {
 	SDL_Event       e;
@@ -1103,16 +1114,16 @@ static void IN_ProcessEvents(void)
 
 			if ((key = IN_TranslateSDLToQ3Key(&e.key.keysym, qtrue)))
 			{
-				Com_QueueEvent(0, SE_KEY, key, qtrue, 0, NULL);
+				Com_QueueEvent(lasttime, SE_KEY, key, qtrue, 0, NULL);
 				if (key == K_BACKSPACE)
 				{
 					// This was added to keep mod comp, mods do not check K_BACKSPACE but instead use char 8 which is backspace in ascii
 					// 8 == CTRL('h') == BS aka Backspace from ascii table
-					Com_QueueEvent(0, SE_CHAR, CTRL('h'), 0, 0, NULL);
+					Com_QueueEvent(lasttime, SE_CHAR, CTRL('h'), 0, 0, NULL);
 				}
 				else if (keys[K_CTRL].down && key >= 'a' && key <= 'z')
 				{
-					Com_QueueEvent(0, SE_CHAR, CTRL(key), 0, 0, NULL);
+					Com_QueueEvent(lasttime, SE_CHAR, CTRL(key), 0, 0, NULL);
 				}
 			}
 			lastKeyDown = key;
@@ -1120,12 +1131,12 @@ static void IN_ProcessEvents(void)
 		case SDL_KEYUP:
 			if ((key = IN_TranslateSDLToQ3Key(&e.key.keysym, qfalse)))
 			{
-				Com_QueueEvent(0, SE_KEY, key, qfalse, 0, NULL);
+				Com_QueueEvent(lasttime, SE_KEY, key, qfalse, 0, NULL);
 			}
 			lastKeyDown = 0;
 			break;
 		case SDL_TEXTINPUT:
-			if (lastKeyDown != K_CONSOLE)
+			if (lastKeyDown != CONSOLE_KEY)
 			{
 				char *c = e.text.text;
 
@@ -1166,12 +1177,12 @@ static void IN_ProcessEvents(void)
 					{
 						if (IN_IsConsoleKey(0, utf32))
 						{
-							Com_QueueEvent(0, SE_KEY, K_CONSOLE, qtrue, 0, NULL);
-							Com_QueueEvent(0, SE_KEY, K_CONSOLE, qfalse, 0, NULL);
+							Com_QueueEvent(lasttime, SE_KEY, CONSOLE_KEY, qtrue, 0, NULL);
+							Com_QueueEvent(lasttime, SE_KEY, CONSOLE_KEY, qfalse, 0, NULL);
 						}
 						else
 						{
-							Com_QueueEvent(0, SE_CHAR, utf32, 0, 0, NULL);
+							Com_QueueEvent(lasttime, SE_CHAR, utf32, 0, 0, NULL);
 						}
 					}
 				}
@@ -1184,7 +1195,7 @@ static void IN_ProcessEvents(void)
 				{
 					break;
 				}
-				Com_QueueEvent(0, SE_MOUSE, e.motion.xrel, e.motion.yrel, 0, NULL);
+				Com_QueueEvent(lasttime, SE_MOUSE, e.motion.xrel, e.motion.yrel, 0, NULL);
 			}
 			break;
 		case SDL_MOUSEBUTTONDOWN:
@@ -1207,19 +1218,19 @@ static void IN_ProcessEvents(void)
 			default:                   b = K_AUX1 + (e.button.button - SDL_BUTTON_X2 + 1) % 16;
 				break;
 			}
-			Com_QueueEvent(0, SE_KEY, b, (e.type == SDL_MOUSEBUTTONDOWN ? qtrue : qfalse), 0, NULL);
+			Com_QueueEvent(lasttime, SE_KEY, b, (e.type == SDL_MOUSEBUTTONDOWN ? qtrue : qfalse), 0, NULL);
 		}
 		break;
 		case SDL_MOUSEWHEEL:
 			if (e.wheel.y > 0)
 			{
-				Com_QueueEvent(0, SE_KEY, K_MWHEELUP, qtrue, 0, NULL);
-				Com_QueueEvent(0, SE_KEY, K_MWHEELUP, qfalse, 0, NULL);
+				Com_QueueEvent(lasttime, SE_KEY, K_MWHEELUP, qtrue, 0, NULL);
+				Com_QueueEvent(lasttime, SE_KEY, K_MWHEELUP, qfalse, 0, NULL);
 			}
 			else if (e.wheel.y < 0)
 			{
-				Com_QueueEvent(0, SE_KEY, K_MWHEELDOWN, qtrue, 0, NULL);
-				Com_QueueEvent(0, SE_KEY, K_MWHEELDOWN, qfalse, 0, NULL);
+				Com_QueueEvent(lasttime, SE_KEY, K_MWHEELDOWN, qtrue, 0, NULL);
+				Com_QueueEvent(lasttime, SE_KEY, K_MWHEELDOWN, qfalse, 0, NULL);
 			}
 
 			break;
@@ -1255,10 +1266,6 @@ static void IN_ProcessEvents(void)
 				{
 					SDL_RestoreWindow(mainScreen);
 				}
-
-#ifdef DISABLE_DINGY
-				IN_EnableDingFilter();
-#endif
 			}
 			break;
 			}
@@ -1269,21 +1276,24 @@ static void IN_ProcessEvents(void)
 	}
 }
 
+/**
+ * @brief IN_Frame
+ */
 void IN_Frame(void)
 {
-	qboolean loading;
+	// If not DISCONNECTED (main menu), ACTIVE (in game) or CINEMATIC (playing video), we're loading
+	qboolean loading   = (cls.state != CA_DISCONNECTED && cls.state != CA_ACTIVE);
+	qboolean cinematic = (cls.state == CA_CINEMATIC);
 
-	//IN_JoyMove();
-
-	// If not DISCONNECTED (main menu) or ACTIVE (in game), we're loading
-	loading = (cls.state != CA_DISCONNECTED && cls.state != CA_ACTIVE);
+	// Get the timestamp to give the next frame's input events (not the ones we're gathering right now, though)
+	int start = Sys_Milliseconds();
 
 	if (!cls.glconfig.isFullscreen && (Key_GetCatcher() & KEYCATCH_CONSOLE))
 	{
 		// Console is down in windowed mode
 		IN_DeactivateMouse();
 	}
-	else if (!cls.glconfig.isFullscreen && loading)
+	else if (!cls.glconfig.isFullscreen && loading && !cinematic)
 	{
 		// Loading in windowed mode
 		IN_DeactivateMouse();
@@ -1302,6 +1312,7 @@ void IN_Frame(void)
 		}
 
 		IN_ActivateMouse();
+		IN_JoyMove();
 	}
 
 	// in case we had to delay actual restart of video system...
@@ -1312,57 +1323,14 @@ void IN_Frame(void)
 	}
 
 	IN_ProcessEvents();
-}
 
-#ifdef _WIN32
-static WNDPROC LegacyWndProc = NULL;
-
-/**
- * @brief Skips the show menu command for the frame, and thatway disables the "no menu found" error sound.
- */
-LRESULT CALLBACK WNDDingIgnore(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-	if (msg == WM_SYSCOMMAND && (wparam & 0xfff0) == SC_KEYMENU)
-	{
-		return 0;
-	}
-	return CallWindowProc(LegacyWndProc, wnd, msg, wparam, lparam);
+	// Store the timestamp for the next frame's input events
+	lasttime = start;
 }
 
 /**
- * @brief Disables the filter if active
+ * @brief IN_InitKeyLockStates
  */
-void IN_DisableDingFilter()
-{
-	Com_DPrintf("Disabling dingy filter\n");
-	if (LegacyWndProc)
-	{
-		SDL_SysWMinfo wmInfo;
-		SDL_GetVersion(&wmInfo.version);
-		SDL_GetWindowWMInfo(mainScreen, &wmInfo);
-		SetWindowLongPtr(wmInfo.info.win.window, GWLP_WNDPROC, (LONG_PTR)LegacyWndProc);
-		LegacyWndProc = NULL;
-	}
-}
-
-/**
- * @brief Enables the filter if not already active
- */
-void IN_EnableDingFilter()
-{
-	IN_DisableDingFilter();
-	Com_DPrintf("Enabling dingy filter\n");
-	if (!LegacyWndProc)
-	{
-		SDL_SysWMinfo wmInfo;
-		SDL_GetVersion(&wmInfo.version);
-		SDL_GetWindowWMInfo(mainScreen, &wmInfo);
-		LegacyWndProc = (WNDPROC)GetWindowLongPtr(wmInfo.info.win.window, GWLP_WNDPROC);
-		SetWindowLongPtr(wmInfo.info.win.window, GWLP_WNDPROC, (LONG_PTR)&WNDDingIgnore);
-	}
-}
-#endif
-
 static void IN_InitKeyLockStates(void)
 {
 	unsigned const char *keystate = SDL_GetKeyboardState(NULL);
@@ -1372,6 +1340,9 @@ static void IN_InitKeyLockStates(void)
 	keys[K_CAPSLOCK].down   = keystate[SDL_SCANCODE_CAPSLOCK];
 }
 
+/**
+ * @brief IN_Init
+ */
 void IN_Init(void)
 {
 	int appState;
@@ -1379,17 +1350,11 @@ void IN_Init(void)
 	if (!SDL_WasInit(SDL_INIT_VIDEO))
 	{
 		Com_Error(ERR_FATAL, "IN_Init called before SDL_Init( SDL_INIT_VIDEO )");
-		return;
 	}
 
-#ifdef FEATURE_RENDERER_GLES
-	// FIXME: something is seriously wrong with the OpenGL ES renderer
-	mainScreen = GLimp_MainWindow();
-#else
-	mainScreen = (SDL_Window *)re.MainWindow();
-#endif
+	mainScreen = (SDL_Window *)GLimp_MainWindow();
 
-	Com_DPrintf("\n------- Input Initialization -------\n");
+	Com_Printf("\n------- Input Initialization -------\n");
 
 	in_keyboardDebug = Cvar_Get("in_keyboardDebug", "0", CVAR_TEMP);
 
@@ -1398,10 +1363,10 @@ void IN_Init(void)
 
 	if (in_mouse->integer == 2)
 	{
-		Com_Printf("Trying to emulate non raw input\n");
+		Com_Printf("...trying to emulate non raw mouse input\n");
 		if (!SDL_SetHintWithPriority(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, "1", SDL_HINT_OVERRIDE))
 		{
-			Com_Printf(S_COLOR_RED "Failed to set the hint");
+			Com_Printf(S_COLOR_RED "...failed to set the hint\n");
 		}
 	}
 	else
@@ -1412,11 +1377,11 @@ void IN_Init(void)
 	in_nograb = Cvar_Get("in_nograb", "0", CVAR_ARCHIVE);
 
 	in_joystick          = Cvar_Get("in_joystick", "0", CVAR_ARCHIVE | CVAR_LATCH);
-	in_joystickThreshold = Cvar_Get("joy_threshold", "0.15", CVAR_ARCHIVE);
+	in_joystickThreshold = Cvar_Get("in_joystickThreshold", "0.15", CVAR_ARCHIVE);
 
 	SDL_StartTextInput();
 
-	mouseAvailable = (in_mouse->value != 0);
+	mouseAvailable = (in_mouse->value != 0.f);
 	IN_DeactivateMouse();
 
 	appState = SDL_GetWindowFlags(mainScreen);
@@ -1425,34 +1390,32 @@ void IN_Init(void)
 
 	IN_InitKeyLockStates();
 
-	// FIXME: Joystick initialization crashes some Windows and Mac OS X clients (see SDL #2833)
-	//IN_InitJoystick();
+	IN_InitJoystick();
 
-#ifdef DISABLE_DINGY
-	IN_EnableDingFilter();
-#endif
-	Com_DPrintf("------------------------------------\n");
+	Com_Printf("------------------------------------\n");
 }
 
+/**
+ * @brief IN_Shutdown
+ */
 void IN_Shutdown(void)
 {
 	SDL_StopTextInput();
 	Com_Printf("SDL input devices shut down.\n");
 
-#ifdef DISABLE_DINGY
-	IN_DisableDingFilter();
-#endif
-
 	IN_DeactivateMouse();
 	mouseAvailable = qfalse;
 
-	//IN_ShutdownJoystick();
+	IN_ShutdownJoystick();
 
 	mainScreen = NULL;
 }
 
+/**
+ * @brief IN_Restart
+ */
 void IN_Restart(void)
 {
-	//IN_ShutdownJoystick();
+	IN_ShutdownJoystick();
 	IN_Init();
 }

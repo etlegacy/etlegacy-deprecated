@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -116,7 +116,7 @@ typedef struct botlib_export_s
 	// sets a library variable returns BLERR_
 
 	// sets a C-like define returns BLERR_
-	int (*PC_AddGlobalDefine)(char *string);
+	int (*PC_AddGlobalDefine)(const char *string);
 	void (*PC_RemoveAllGlobalDefines)(void);
 	int (*PC_LoadSourceHandle)(const char *filename);
 	int (*PC_FreeSourceHandle)(int handle);

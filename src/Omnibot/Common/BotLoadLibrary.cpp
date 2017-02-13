@@ -22,7 +22,12 @@
 
 #endif
 
-
+/**
+ * @brief Omnibot_strncpy
+ * @param[out] dest
+ * @param[in] source
+ * @param[in] count
+ */
 void Omnibot_strncpy(char *dest, const char *source, int count)
 {
 	// Only doing this because some engines(HL2), think it a good idea to fuck up the
@@ -38,6 +43,9 @@ void Omnibot_strncpy(char *dest, const char *source, int count)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+#ifdef GAMEDLL
+//this is compiled into qagame_mp_x86.dll or qagame.mp.i386.so
 
 #ifdef _WIN32
 #pragma warning(disable:4530) //C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc
@@ -60,18 +68,26 @@ void Omnibot_strncpy(char *dest, const char *source, int count)
 //////////////////////////////////////////////////////////////////////////
 
 bool              g_IsOmnibotLoaded = false;
-Bot_EngineFuncs_t g_BotFunctions    = { 0 };
+Bot_EngineFuncs_t g_BotFunctions    = { 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 IEngineInterface  *g_InterfaceFunctions = 0;
 std::string       g_OmnibotLibPath;
 
 void Omnibot_Load_PrintMsg(const char *_msg);
 void Omnibot_Load_PrintErr(const char *_msg);
 
+/**
+ * @brief IsOmnibotLoaded
+ * @return
+ */
 bool IsOmnibotLoaded()
 {
 	return g_IsOmnibotLoaded;
 }
 
+/**
+ * @brief Omnibot_GetLibraryPath
+ * @return
+ */
 const char *Omnibot_GetLibraryPath()
 {
 	return g_OmnibotLibPath.c_str();
@@ -90,11 +106,21 @@ static const char *BOTERRORS[BOT_NUM_ERRORS] =
 	"Error Initializing File System",
 };
 
+/**
+ * @brief Omnibot_ErrorString
+ * @param[in] err
+ * @return
+ */
 const char *Omnibot_ErrorString(eomnibot_error err)
 {
 	return ((err >= BOT_ERROR_NONE) && (err < BOT_NUM_ERRORS)) ? BOTERRORS[err] : "";
 }
 
+/**
+ * @brief Omnibot_FixPath
+ * @param[in] _path
+ * @return
+ */
 const char *Omnibot_FixPath(const char *_path)
 {
 	const int   iBufferSize          = 512;
@@ -147,6 +173,11 @@ const char *Omnibot_FixPath(const char *_path)
 //////////////////////////////////////////////////////////////////////////
 // Utilities
 
+/**
+ * @brief OB_VA
+ * @param[in] _msg
+ * @return
+ */
 const char *OB_VA(const char *_msg, ...)
 {
 	static int iCurrentBuffer = 0;
@@ -169,14 +200,23 @@ const char *OB_VA(const char *_msg, ...)
 	return pNextBuffer;
 }
 
-int OB_VA_OWNBUFFER(char *_buffer, int _buffersize, const char *_msg, ...)
+/*
+ * @brief OB_VA_OWNBUFFER
+ * @param[out] _buffer
+ * @param[in] _buffersize
+ * @param[in] _msg
+ * @return
+ *
+ * @note Unused
+int OB_VA_OWNBUFFER(char *_buffer, size_t _buffersize, const char *_msg, ...)
 {
-	va_list list;
-	va_start(list, _msg);
-	const int ret = _vsnprintf(_buffer, _buffersize, _msg, list);
-	va_end(list);
-	return ret;
+    va_list list;
+    va_start(list, _msg);
+    const int ret = _vsnprintf(_buffer, _buffersize, _msg, list);
+    va_end(list);
+    return ret;
 }
+*/
 
 //////////////////////////////////////////////////////////////////////////
 HINSTANCE g_BotLibrary = 0;
@@ -184,7 +224,7 @@ HINSTANCE g_BotLibrary = 0;
 void OB_ShowLastError(const char *context)
 {
 #ifdef WIN32
-	char *pMessage;
+	char *pMessage = 0;
 	FormatMessage(
 	    FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
 	    0,
@@ -193,19 +233,22 @@ void OB_ShowLastError(const char *context)
 	    (LPTSTR)&pMessage,
 	    0, 0);
 
-	// Strip Newlines
-	int i = (int)strlen(pMessage) - 1;
-	while (pMessage[i] == '\n' || pMessage[i] == '\r')
-		pMessage[i--] = 0;
+	if (pMessage)
+	{
+		// Strip Newlines
+		size_t i = strlen(pMessage) - 1;
+		while (pMessage[i] == '\n' || pMessage[i] == '\r')
+			pMessage[i--] = 0;
+	}
 
 #else
 	const char *pMessage = dlerror();
+#endif
+
 	if (!pMessage)
 	{
 		pMessage = "<unknown error>";
 	}
-#endif
-
 	Omnibot_Load_PrintErr(OB_VA("%s Failed with Error: %s", context, pMessage));
 
 #ifdef WIN32
@@ -213,6 +256,11 @@ void OB_ShowLastError(const char *context)
 #endif
 }
 
+/**
+ * @brief Omnibot_LL
+ * @param[in] file
+ * @return
+ */
 HINSTANCE Omnibot_LL(const char *file)
 {
 	//////////////////////////////////////////////////////////////////////////
@@ -235,6 +283,13 @@ HINSTANCE Omnibot_LL(const char *file)
 	return hndl;
 }
 
+/**
+ * @brief Omnibot_LoadLibrary
+ * @param[in] version
+ * @param[in] lib
+ * @param[in] path
+ * @return
+ */
 eomnibot_error Omnibot_LoadLibrary(int version, const char *lib, const char *path)
 {
 	eomnibot_error r = BOT_ERROR_NONE;
@@ -318,6 +373,9 @@ eomnibot_error Omnibot_LoadLibrary(int version, const char *lib, const char *pat
 	return r;
 }
 
+/**
+ * @brief Omnibot_FreeLibrary
+ */
 void Omnibot_FreeLibrary()
 {
 	if (g_BotLibrary)
@@ -333,37 +391,92 @@ void Omnibot_FreeLibrary()
 	g_IsOmnibotLoaded = false;
 }
 
+
+#endif // GAMEDLL
+
 //////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief KeyVals::KeyVals
+ */
 KeyVals::KeyVals()
 {
 	Reset();
 }
+
+/**
+ * @brief KeyVals::Reset
+ */
 void KeyVals::Reset()
 {
 	memset(m_Key, 0, sizeof(m_Key));
 	memset(m_String, 0, sizeof(m_String));
 	memset(m_Value, 0, sizeof(m_Value));
 }
+
+/**
+ * @brief KeyVals::SetInt
+ * @param[in] _key
+ * @param[in] _val
+ * @return
+ */
 bool KeyVals::SetInt(const char *_key, int _val)
 {
 	return SetKeyVal(_key, obUserData(_val));
 }
+
+/**
+ * @brief KeyVals::SetFloat
+ * @param[in] _key
+ * @param[in] _val
+ * @return
+ */
 bool KeyVals::SetFloat(const char *_key, float _val)
 {
 	return SetKeyVal(_key, obUserData(_val));
 }
+
+/**
+ * @brief KeyVals::SetEntity
+ * @param[in] _key
+ * @param[in] _val
+ * @return
+ */
 bool KeyVals::SetEntity(const char *_key, GameEntity _val)
 {
 	return SetKeyVal(_key, obUserData(_val));
 }
+
+/**
+ * @brief KeyVals::SetVector
+ * @param[in] _key
+ * @param[in] _x
+ * @param[in] _y
+ * @param[in] _z
+ * @return
+ */
 bool KeyVals::SetVector(const char *_key, float _x, float _y, float _z)
 {
 	return SetKeyVal(_key, obUserData(_x, _y, _z));
 }
+
+/**
+ * @brief KeyVals::SetVector
+ * @param[in] _key
+ * @param[in] _v
+ * @return
+ */
 bool KeyVals::SetVector(const char *_key, const float *_v)
 {
 	return SetKeyVal(_key, obUserData(_v[0], _v[1], _v[2]));
 }
+
+/**
+ * @brief KeyVals::SetString
+ * @param[in] _key
+ * @param[in] _value
+ * @return
+ */
 bool KeyVals::SetString(const char *_key, const char *_value)
 {
 	_value = _value ? _value : "";
@@ -380,10 +493,24 @@ bool KeyVals::SetString(const char *_key, const char *_value)
 	assert(false);
 	return false;
 }
+
+/**
+ * @brief KeyVals::Set
+ * @param[in] _key
+ * @param[in] _value
+ * @return
+ */
 bool KeyVals::Set(const char *_key, const obUserData &_value)
 {
 	return SetKeyVal(_key, _value);
 }
+
+/**
+ * @brief KeyVals::SetKeyVal
+ * @param[in] _key
+ * @param[in] _ud
+ * @return
+ */
 bool KeyVals::SetKeyVal(const char *_key, const obUserData &_ud)
 {
 	if (!_key)
@@ -413,6 +540,12 @@ bool KeyVals::SetKeyVal(const char *_key, const obUserData &_ud)
 	return false;
 }
 
+/**
+ * @brief KeyVals::GetInt
+ * @param[in] _key
+ * @param[out] _val
+ * @return
+ */
 bool KeyVals::GetInt(const char *_key, int &_val) const
 {
 	obUserData d;
@@ -423,6 +556,13 @@ bool KeyVals::GetInt(const char *_key, int &_val) const
 	}
 	return false;
 }
+
+/**
+ * @brief KeyVals::GetFloat
+ * @param[in] _key
+ * @param[out] _val
+ * @return
+ */
 bool KeyVals::GetFloat(const char *_key, float &_val) const
 {
 	obUserData d;
@@ -433,6 +573,13 @@ bool KeyVals::GetFloat(const char *_key, float &_val) const
 	}
 	return false;
 }
+
+/**
+ * @brief KeyVals::GetEntity
+ * @param[in] _key
+ * @param[out] _val
+ * @return
+ */
 bool KeyVals::GetEntity(const char *_key, GameEntity &_val) const
 {
 	obUserData d;
@@ -443,6 +590,15 @@ bool KeyVals::GetEntity(const char *_key, GameEntity &_val) const
 	}
 	return false;
 }
+
+/**
+ * @brief KeyVals::GetVector
+ * @param[in] _key
+ * @param[out] _x
+ * @param[out] _y
+ * @param[out] _z
+ * @return
+ */
 bool KeyVals::GetVector(const char *_key, float &_x, float &_y, float &_z) const
 {
 	obUserData d;
@@ -455,6 +611,13 @@ bool KeyVals::GetVector(const char *_key, float &_x, float &_y, float &_z) const
 	}
 	return false;
 }
+
+/**
+ * @brief KeyVals::GetVector
+ * @param[in] _key
+ * @param[out] _v
+ * @return
+ */
 bool KeyVals::GetVector(const char *_key, float *_v) const
 {
 	obUserData d;
@@ -467,6 +630,13 @@ bool KeyVals::GetVector(const char *_key, float *_v) const
 	}
 	return false;
 }
+
+/**
+ * @brief KeyVals::GetString
+ * @param[in] _key
+ * @param[out] _val
+ * @return
+ */
 bool KeyVals::GetString(const char *_key, const char *&_val) const
 {
 	obUserData d;
@@ -477,6 +647,13 @@ bool KeyVals::GetString(const char *_key, const char *&_val) const
 	}
 	return false;
 }
+
+/**
+ * @brief KeyVals::GetKeyVal
+ * @param[in] _key
+ * @param[out] _ud
+ * @return
+ */
 bool KeyVals::GetKeyVal(const char *_key, obUserData &_ud) const
 {
 	for (int i = 0; i < MaxArgs; ++i)
@@ -489,6 +666,13 @@ bool KeyVals::GetKeyVal(const char *_key, obUserData &_ud) const
 	}
 	return false;
 }
+
+/**
+ * @brief KeyVals::GetKV
+ * @param[in] _index
+ * @param[out] _key
+ * @param[out] ud
+ */
 void KeyVals::GetKV(int _index, const char *&_key, obUserData &ud) const
 {
 	_key = m_Key[_index];

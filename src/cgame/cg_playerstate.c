@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -39,11 +39,12 @@
 
 #include "cg_local.h"
 
-/*
-==============
-CG_DamageFeedback
-==============
-*/
+/**
+ * @brief CG_DamageFeedback
+ * @param[in] yawByte
+ * @param[in] pitchByte
+ * @param[in] damage
+ */
 void CG_DamageFeedback(int yawByte, int pitchByte, int damage)
 {
 	float        kick;
@@ -64,7 +65,7 @@ void CG_DamageFeedback(int yawByte, int pitchByte, int damage)
 	}
 	else
 	{
-		scale = 40.0 / health;
+		scale = 40.0f / health;
 	}
 	kick = damage * scale;
 
@@ -105,8 +106,8 @@ void CG_DamageFeedback(int yawByte, int pitchByte, int damage)
 	{
 		float left, front, up, dist;
 		// positional
-		float pitch = pitchByte / 255.0 * 360;
-		float yaw   = yawByte / 255.0 * 360;
+		float pitch = pitchByte / 255.0f * 360;
+		float yaw   = yawByte / 255.0f * 360;
 
 		angles[PITCH] = pitch;
 		angles[YAW]   = yaw;
@@ -123,40 +124,40 @@ void CG_DamageFeedback(int yawByte, int pitchByte, int damage)
 		dir[1] = left;
 		dir[2] = 0;
 		dist   = VectorLength(dir);
-		if (dist < 0.1)
+		if (dist < 0.1f)
 		{
-			dist = 0.1;
+			dist = 0.1f;
 		}
 
 		cg.v_dmg_roll = kick * left;
 
 		cg.v_dmg_pitch = -kick * front;
 
-		if (front <= 0.1)
+		if (front <= 0.1f)
 		{
-			front = 0.1;
+			front = 0.1f;
 		}
-		vd->damageX = crandom() * 0.3 + -left / front;
-		vd->damageY = crandom() * 0.3 + up / dist;
+		vd->damageX = crandom() * 0.3f + -left / front;
+		vd->damageY = crandom() * 0.3f + up / dist;
 	}
 
 	// clamp the position
-	if (vd->damageX > 1.0)
+	if (vd->damageX > 1.0f)
 	{
-		vd->damageX = 1.0;
+		vd->damageX = 1.0f;
 	}
-	if (vd->damageX < -1.0)
+	if (vd->damageX < -1.0f)
 	{
-		vd->damageX = -1.0;
+		vd->damageX = -1.0f;
 	}
 
-	if (vd->damageY > 1.0)
+	if (vd->damageY > 1.0f)
 	{
-		vd->damageY = 1.0;
+		vd->damageY = 1.0f;
 	}
-	if (vd->damageY < -1.0)
+	if (vd->damageY < -1.0f)
 	{
-		vd->damageY = -1.0;
+		vd->damageY = -1.0f;
 	}
 
 	// don't let the screen flashes vary as much
@@ -167,18 +168,15 @@ void CG_DamageFeedback(int yawByte, int pitchByte, int damage)
 	vd->damageValue    = kick;
 	cg.v_dmg_time      = cg.time + DAMAGE_TIME;
 	vd->damageTime     = cg.snap->serverTime;
-	vd->damageDuration = kick * 50 * (1 + 2 * (!vd->damageX && !vd->damageY));
+	vd->damageDuration = (int)(kick * 50 * (1 + 2 * (!vd->damageX && !vd->damageY)));
 	cg.damageTime      = cg.snap->serverTime;
 	cg.damageIndex     = slot;
 }
 
-/*
-================
-CG_Respawn
-
-A respawn happened this snapshot
-================
-*/
+/**
+ * @brief A respawn happened this snapshot
+ * @param[in] revived
+ */
 void CG_Respawn(qboolean revived)
 {
 	static int oldTeam = -1;
@@ -229,7 +227,7 @@ void CG_Respawn(qboolean revived)
 	// clear pmext
 	memset(&cg.pmext, 0, sizeof(cg.pmext));
 
-	cg.pmext.bAutoReload = (cg_autoReload.integer > 0);
+	cg.pmext.bAutoReload = (qboolean)(cg_autoReload.integer > 0);
 
 	cg.pmext.sprintTime = SPRINTTIME;
 
@@ -238,9 +236,16 @@ void CG_Respawn(qboolean revived)
 		cgs.limboLoadoutSelected = qfalse;
 	}
 
+	// Saves the state of sidearm (riflenade weapon is considered as one too)
+	// Puts the silencer on if class is COVERTOPS
+	// Puts riflenade on if current weapon is riflenade weapon
 	if (cg.predictedPlayerState.stats[STAT_PLAYER_CLASS] == PC_COVERTOPS)
 	{
 		cg.pmext.silencedSideArm = 1;
+	}
+	else if (cg.predictedPlayerState.weapon == WP_GPG40 || cg.predictedPlayerState.weapon == WP_M7)
+	{
+		cg.pmext.silencedSideArm = 2;
 	}
 
 	cg.proneMovingTime = 0;
@@ -264,6 +269,11 @@ void CG_Respawn(qboolean revived)
 	}
 }
 
+/**
+ * @brief CG_CheckPlayerstateEvents
+ * @param[in] ps
+ * @param[in] ops
+ */
 void CG_CheckPlayerstateEvents(playerState_t *ps, playerState_t *ops)
 {
 	int       i;
@@ -300,10 +310,10 @@ void CG_CheckPlayerstateEvents(playerState_t *ps, playerState_t *ops)
 	}
 }
 
-/* unused
-==================
-CG_CheckChangedPredictableEvents
-==================
+/*
+ * @brief CG_CheckChangedPredictableEvents
+ * @param ps
+ * @note Unused
 void CG_CheckChangedPredictableEvents(playerState_t *ps)
 {
     int       i;
@@ -339,11 +349,11 @@ void CG_CheckChangedPredictableEvents(playerState_t *ps)
 }
 */
 
-/*
-==================
-CG_CheckLocalSounds
-==================
-*/
+/**
+ * @brief CG_CheckLocalSounds
+ * @param[in] ps
+ * @param[in] ops
+ */
 void CG_CheckLocalSounds(playerState_t *ps, playerState_t *ops)
 {
 	// health changes of more than -1 should make pain sounds
@@ -374,6 +384,10 @@ void CG_CheckLocalSounds(playerState_t *ps, playerState_t *ops)
 			{
 				trap_S_StartSound(NULL, ps->clientNum, CHAN_AUTO, cgs.media.headShot);
 			}
+			else if (!(cg_hitSounds.integer & HITSOUNDS_NOBODYSHOT))
+			{
+				trap_S_StartSound(NULL, ps->clientNum, CHAN_AUTO, cgs.media.bodyShot);
+			}
 		}
 		else
 		{
@@ -389,8 +403,8 @@ void CG_CheckLocalSounds(playerState_t *ps, playerState_t *ops)
 	{
 		int msec = cg.time - cgs.levelStartTime;
 
-		if (cgs.timelimit > 5 && !(cg.timelimitWarnings & 1) && (msec > (cgs.timelimit - 5) * 60 * 1000) &&
-		    (msec < (cgs.timelimit - 5) * 60 * 1000 + 1000))
+		if (cgs.timelimit > 5 && !(cg.timelimitWarnings & 1) && (msec > (cgs.timelimit - 5) * 60000) &&
+		    (msec < (cgs.timelimit - 5) * 60000 + 1000)) // 60 * 1000
 		{
 			cg.timelimitWarnings |= 1;
 			if (ps->persistant[PERS_TEAM] == TEAM_AXIS)
@@ -416,8 +430,8 @@ void CG_CheckLocalSounds(playerState_t *ps, playerState_t *ops)
 				}
 			}
 		}
-		if (cgs.timelimit > 2 && !(cg.timelimitWarnings & 2) && (msec > (cgs.timelimit - 2) * 60 * 1000) &&
-		    (msec < (cgs.timelimit - 2) * 60 * 1000 + 1000))
+		if (cgs.timelimit > 2 && !(cg.timelimitWarnings & 2) && (msec > (cgs.timelimit - 2) * 60000) &&
+		    (msec < (cgs.timelimit - 2) * 60000 + 1000)) // 60 * 1000
 		{
 			cg.timelimitWarnings |= 2;
 			if (ps->persistant[PERS_TEAM] == TEAM_AXIS)
@@ -443,8 +457,8 @@ void CG_CheckLocalSounds(playerState_t *ps, playerState_t *ops)
 				}
 			}
 		}
-		if (!(cg.timelimitWarnings & 4) && (msec > (cgs.timelimit) * 60 * 1000 - 30000) &&
-		    (msec < (cgs.timelimit) * 60 * 1000 - 29000))
+		if (!(cg.timelimitWarnings & 4) && (msec > (cgs.timelimit) * 60000 - 30000) &&
+		    (msec < cgs.timelimit * 60000 - 29000)) // 60 * 1000
 		{
 			cg.timelimitWarnings |= 4;
 			if (ps->persistant[PERS_TEAM] == TEAM_AXIS)
@@ -473,14 +487,14 @@ void CG_CheckLocalSounds(playerState_t *ps, playerState_t *ops)
 	}
 }
 
-/*
-===============
-CG_TransitionPlayerState
-===============
-*/
+/**
+ * @brief CG_TransitionPlayerState
+ * @param[in] ps
+ * @param[in] ops
+ */
 void CG_TransitionPlayerState(playerState_t *ps, playerState_t *ops)
 {
-#if FEATURE_MULTIVIEW
+#ifdef FEATURE_MULTIVIEW
 	// MV client handling
 	if (cg.mvTotalClients > 0)
 	{
@@ -525,7 +539,7 @@ void CG_TransitionPlayerState(playerState_t *ps, playerState_t *ops)
 	}
 	else
 	{
-		if (cg.weaponFireTime > 500 && cg.weaponFireTime)
+		if (cg.weaponFireTime > 500 /*&& cg.weaponFireTime*/)
 		{
 			cg.lastFiredWeaponTime = cg.time;
 		}

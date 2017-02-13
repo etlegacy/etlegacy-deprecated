@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -37,6 +37,12 @@
 
 #include "tr_local.h"
 
+/**
+ * @brief ProjectRadius
+ * @param[in] r
+ * @param[in] location
+ * @return
+ */
 static float ProjectRadius(float r, vec3_t location)
 {
 	float  pr;
@@ -88,11 +94,12 @@ static float ProjectRadius(float r, vec3_t location)
 	return pr;
 }
 
-/*
-=============
-R_CullModel
-=============
-*/
+/**
+ * @brief R_CullModel
+ * @param[in] header
+ * @param[in] ent
+ * @return
+ */
 static int R_CullModel(mdcHeader_t *header, trRefEntity_t *ent)
 {
 	vec3_t bounds[2];
@@ -177,11 +184,11 @@ static int R_CullModel(mdcHeader_t *header, trRefEntity_t *ent)
 	}
 }
 
-/*
-=================
-R_ComputeLOD
-=================
-*/
+/**
+ * @brief R_ComputeLOD
+ * @param[in] ent
+ * @return
+ */
 static int R_ComputeLOD(trRefEntity_t *ent)
 {
 	int lod;
@@ -222,7 +229,7 @@ static int R_ComputeLOD(trRefEntity_t *ent)
 		//          radius = radius/2.0f;
 		//}
 
-		if ((projectedRadius = ProjectRadius(radius, ent->e.origin)) != 0)
+		if ((projectedRadius = ProjectRadius(radius, ent->e.origin)) != 0.f)
 		{
 			float lodscale = r_lodscale->value;
 
@@ -239,7 +246,7 @@ static int R_ComputeLOD(trRefEntity_t *ent)
 		}
 
 		flod *= tr.currentModel->numLods;
-		lod   = ROUND_INT(flod);
+		lod   = round(flod);
 
 		if (lod < 0)
 		{
@@ -265,11 +272,12 @@ static int R_ComputeLOD(trRefEntity_t *ent)
 	return lod;
 }
 
-/*
-=================
-R_ComputeFogNum
-=================
-*/
+/**
+ * @brief R_ComputeFogNum
+ * @param[in] header
+ * @param[in] ent
+ * @return
+ */
 static int R_ComputeFogNum(mdcHeader_t *header, trRefEntity_t *ent)
 {
 	int        i, j;
@@ -308,11 +316,10 @@ static int R_ComputeFogNum(mdcHeader_t *header, trRefEntity_t *ent)
 	return 0;
 }
 
-/*
-=================
-R_AddMDCSurfaces
-=================
-*/
+/**
+ * @brief R_AddMDCSurfaces
+ * @param[in,out] ent
+ */
 void R_AddMDCSurfaces(trRefEntity_t *ent)
 {
 	int          i;

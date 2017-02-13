@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -35,7 +35,11 @@
 #include "q_shared.h"
 #include "qcommon.h"
 
-// FIXME: necessary for entityShared_t management to work (since we need the definitions...), which is a very necessary function for server-side demos recording. It would be better if this functionality would be separated in an _ext.c file, but I could not find a way to make it work (because it also needs the definitions in msg.c, and since it's not a header, these are being redefined when included, producing a lot of recursive declarations errors...)
+// FIXME: necessary for entityShared_t management to work (since we need the definitions...),
+// which is a very necessary function for server-side demos recording. It would be better if this
+// functionality would be separated in an _ext.c file, but I could not find a way to make it work
+// (because it also needs the definitions in msg.c, and since it's not a header, these are being
+// redefined when included, producing a lot of recursive declarations errors...)
 #include "../game/g_public.h"
 
 static huffman_t msgHuff;
@@ -45,7 +49,6 @@ int pcount[256];
 int wastedbits = 0;
 
 static int oldsize = 0;
-//static int overflows = 0;
 
 /*
 ==============================================================================
@@ -160,29 +163,6 @@ void MSG_WriteBits(msg_t *msg, int value, int bits)
 		Com_Error(ERR_DROP, "MSG_WriteBits: bad bits %i", bits);
 	}
 
-	// the overflow count is not used anywhere atm
-#if 0
-	// check for overflows
-	if (bits != 32)
-	{
-		if (bits > 0)
-		{
-			if (value > ((1 << bits) - 1) || value < 0)
-			{
-				overflows++;
-			}
-		}
-		else
-		{
-			int r = 1 << (bits - 1);
-
-			if (value >  r - 1 || value < -r)
-			{
-				overflows++;
-			}
-		}
-	}
-#endif
 	if (bits < 0)
 	{
 		bits = -bits;
@@ -212,7 +192,7 @@ void MSG_WriteBits(msg_t *msg, int value, int bits)
 
 			*ip           = LittleLong(value);
 			msg->cursize += 4;
-			msg->bit     += 8;
+			msg->bit     += 32;
 		}
 		break;
 		default:
@@ -406,28 +386,31 @@ void MSG_WriteString(msg_t *sb, const char *s)
 	}
 	else
 	{
-		int l;
-#if SKIP_UTF8
-		int i;
-#endif
+		int  l;
 		char string[MAX_STRING_CHARS];
 
 		l = strlen(s);
 		if (l >= MAX_STRING_CHARS)
 		{
-			Com_Printf("MSG_WriteString: MAX_STRING_CHARS");
+			Com_Printf("MSG_WriteString: MAX_STRING_CHARS size reached\n");
 			MSG_WriteData(sb, "", 1);
 			return;
 		}
 		Q_strncpyz(string, s, sizeof(string));
 
-#if SKIP_UTF8
-		// get rid of 0xff chars, because old clients don't like them
-		for (i = 0 ; i < l ; i++)
+		if (!IS_LEGACY_MOD)
 		{
-			SET_SKIPPED_CHAR(string[i]);
+			int i;
+
+			// only allow ascii and translate all '%' fmt spec to avoid crash bugs
+			for (i = 0 ; i < l ; i++)
+			{
+				if ((byte)string[i] > 127 || string[i] == '%')
+				{
+					string[i] = '.';
+				}
+			}
 		}
-#endif
 
 		MSG_WriteData(sb, string, l + 1);
 	}
@@ -441,28 +424,31 @@ void MSG_WriteBigString(msg_t *sb, const char *s)
 	}
 	else
 	{
-		int l;
-#if SKIP_UTF8
-		int i;
-#endif
+		int  l;
 		char string[BIG_INFO_STRING];
 
 		l = strlen(s);
 		if (l >= BIG_INFO_STRING)
 		{
-			Com_Printf("MSG_WriteString: BIG_INFO_STRING");
+			Com_Printf("MSG_WriteString: BIG_INFO_STRING size reached\n");
 			MSG_WriteData(sb, "", 1);
 			return;
 		}
 		Q_strncpyz(string, s, sizeof(string));
 
-#if SKIP_UTF8
-		// get rid of 0xff chars, because old clients don't like them
-		for (i = 0 ; i < l ; i++)
+		if (!IS_LEGACY_MOD)
 		{
-			SET_SKIPPED_CHAR(string[i]);
+			int i;
+
+			// only allow ascii and translate all '%' fmt spec to avoid crash bugs
+			for (i = 0 ; i < l ; i++)
+			{
+				if ((byte)string[i] > 127 || string[i] == '%')
+				{
+					string[i] = '.';
+				}
+			}
 		}
-#endif
 
 		MSG_WriteData(sb, string, l + 1);
 	}
@@ -565,7 +551,11 @@ char *MSG_ReadString(msg_t *msg)
 			break;
 		}
 
-		SET_SKIPPED_CHAR(c);
+		// translate all '%' fmt spec to avoid crash bugs
+		if (c == '%')
+		{
+			c = '.';
+		}
 
 		string[l] = c;
 		l++;
@@ -590,7 +580,11 @@ char *MSG_ReadBigString(msg_t *msg)
 			break;
 		}
 
-		SET_SKIPPED_CHAR(c);
+		// translate all '%' fmt spec to avoid crash bugs
+		if (c == '%')
+		{
+			c = '.';
+		}
 
 		string[l] = c;
 		l++;
@@ -615,7 +609,11 @@ char *MSG_ReadStringLine(msg_t *msg)
 			break;
 		}
 
-		SET_SKIPPED_CHAR(c);
+		// translate all '%' fmt spec to avoid crash bugs
+		if (c == '%')
+		{
+			c = '.';
+		}
 
 		string[l] = c;
 		l++;

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -115,13 +115,13 @@ pathCorner_t pathCorners[MAX_PATH_CORNERS];
 
 // Using one unified list for which weapons can received ammo
 // This is used both by the ammo pack code and by the bot code to determine if reloads are needed
-int reloadableWeapons[] =
+const weapon_t reloadableWeapons[] =
 {
 	WP_MP40,                WP_THOMPSON,             WP_STEN,            WP_GARAND,       WP_PANZERFAUST, WP_FLAMETHROWER,
 	WP_KAR98,               WP_CARBINE,              WP_FG42,            WP_K43,          WP_MOBILE_MG42, WP_COLT,
 	WP_LUGER,               WP_MORTAR,               WP_AKIMBO_COLT,     WP_AKIMBO_LUGER, WP_M7,          WP_GPG40,
 	WP_AKIMBO_SILENCEDCOLT, WP_AKIMBO_SILENCEDLUGER, WP_MOBILE_BROWNING, WP_MORTAR2,      WP_BAZOOKA,
-	-1
+	WP_NONE
 };
 
 // [0]  = maxammo        -   max player ammo carrying capacity.
@@ -210,79 +210,80 @@ ammotable_t ammoTableMP[WP_NUM_WEAPONS] =
 
 // [0]  = weapon         -
 // [1]  = weapAlts       -
-// [2]  = akimboSideram
+// [2]  = akimboSideArm
 // [3]  = ammoIndex
 // [4]  = clipIndex
 // [5]  = isScoped
-// [6]  = damage         -
-// [7]  = canGib
-// [8]  = isReload       - some weapons don't reload
-// [9]  = spread         -
-// [10] = desc
+// [6]  = LightWeaponSupportingFastReload (isLWSF)
+// [7]  = damage         -
+// [8]  = canGib
+// [9]  = isReload       - some weapons don't reload
+// [10] = spread         -
+// [11] = desc
 weaponTable_t weaponTable[WP_NUM_WEAPONS] =
 {
-	// weapon                  weapAlts          akimboSidearm   ammoIndex             clipIndex          isScoped damage canGib isRealod spread desc
-	{ WP_NONE,                 WP_NONE,                WP_NONE,  0,                    0,                    qfalse, 1,   qfalse, qfalse, 0,    "WP_NONE",             }, // 0
-	{ WP_KNIFE,                WP_NONE,                WP_NONE,  WP_KNIFE,             WP_KNIFE,             qfalse, 10,  qtrue,  qfalse, 0,    "KNIFE",               }, // 1
-	{ WP_LUGER,                WP_SILENCER,            WP_NONE,  WP_LUGER,             WP_LUGER,             qfalse, 18,  qfalse, qtrue,  600,  "LUGER",               }, // 2
-	{ WP_MP40,                 WP_NONE,                WP_NONE,  WP_MP40,              WP_MP40,              qfalse, 18,  qfalse, qtrue,  400,  "MP 40",               }, // 3
-	{ WP_GRENADE_LAUNCHER,     WP_NONE,                WP_NONE,  WP_GRENADE_LAUNCHER,  WP_GRENADE_LAUNCHER,  qfalse, 250, qtrue,  qfalse, 0,    "",                    }, // 4
-	{ WP_PANZERFAUST,          WP_NONE,                WP_NONE,  WP_PANZERFAUST,       WP_PANZERFAUST,       qfalse, 400, qtrue,  qfalse, 0,    "PANZERFAUST",         }, // 5
-	{ WP_FLAMETHROWER,         WP_NONE,                WP_NONE,  WP_FLAMETHROWER,      WP_FLAMETHROWER,      qfalse, 5,   qfalse, qfalse, 0,    "FLAMETHROWER",        }, // 6
-	{ WP_COLT,                 WP_SILENCED_COLT,       WP_NONE,  WP_COLT,              WP_COLT,              qfalse, 18,  qfalse, qtrue,  600,  "COLT",                }, // 7	// equivalent american weapon to german luger
-	{ WP_THOMPSON,             WP_NONE,                WP_NONE,  WP_THOMPSON,          WP_THOMPSON,          qfalse, 18,  qfalse, qtrue,  400,  "THOMPSON",            }, // 8	// equivalent american weapon to german mp40
-	{ WP_GRENADE_PINEAPPLE,    WP_NONE,                WP_NONE,  WP_GRENADE_PINEAPPLE, WP_GRENADE_PINEAPPLE, qfalse, 250, qtrue,  qfalse, 0,    "",                    }, // 9
+	// weapon                  weapAlts          akimboSidearm   ammoIndex             clipIndex           isScoped isLWSF damage canGib isRealod spread desc     isLightWeaponSupportingFastReload
+	{ WP_NONE,                 WP_NONE,                WP_NONE,  WP_NONE,              WP_NONE,              qfalse, qfalse, 1,   qfalse, qfalse, 0,    "WP_NONE",             }, // 0
+	{ WP_KNIFE,                WP_NONE,                WP_NONE,  WP_KNIFE,             WP_KNIFE,             qfalse, qfalse, 10,  qtrue,  qfalse, 0,    "KNIFE",               }, // 1
+	{ WP_LUGER,                WP_SILENCER,            WP_NONE,  WP_LUGER,             WP_LUGER,             qfalse, qtrue,  18,  qfalse, qtrue,  600,  "LUGER",               }, // 2
+	{ WP_MP40,                 WP_NONE,                WP_NONE,  WP_MP40,              WP_MP40,              qfalse, qtrue,  18,  qfalse, qtrue,  400,  "MP 40",               }, // 3
+	{ WP_GRENADE_LAUNCHER,     WP_NONE,                WP_NONE,  WP_GRENADE_LAUNCHER,  WP_GRENADE_LAUNCHER,  qfalse, qfalse, 250, qtrue,  qfalse, 0,    "",                    }, // 4
+	{ WP_PANZERFAUST,          WP_NONE,                WP_NONE,  WP_PANZERFAUST,       WP_PANZERFAUST,       qfalse, qfalse, 400, qtrue,  qfalse, 0,    "PANZERFAUST",         }, // 5
+	{ WP_FLAMETHROWER,         WP_NONE,                WP_NONE,  WP_FLAMETHROWER,      WP_FLAMETHROWER,      qfalse, qfalse, 5,   qfalse, qfalse, 0,    "FLAMETHROWER",        }, // 6
+	{ WP_COLT,                 WP_SILENCED_COLT,       WP_NONE,  WP_COLT,              WP_COLT,              qfalse, qtrue,  18,  qfalse, qtrue,  600,  "COLT",                }, // 7	// equivalent american weapon to german luger
+	{ WP_THOMPSON,             WP_NONE,                WP_NONE,  WP_THOMPSON,          WP_THOMPSON,          qfalse, qtrue,  18,  qfalse, qtrue,  400,  "THOMPSON",            }, // 8	// equivalent american weapon to german mp40
+	{ WP_GRENADE_PINEAPPLE,    WP_NONE,                WP_NONE,  WP_GRENADE_PINEAPPLE, WP_GRENADE_PINEAPPLE, qfalse, qfalse, 250, qtrue,  qfalse, 0,    "",                    }, // 9
 
-	{ WP_STEN,                 WP_NONE,                WP_NONE,  WP_STEN,              WP_STEN,              qfalse, 14,  qfalse, qtrue,  200,  "STEN",                }, // 10	// silenced sten sub-machinegun
-	{ WP_MEDIC_SYRINGE,        WP_NONE,                WP_NONE,  WP_MEDIC_SYRINGE,     WP_MEDIC_SYRINGE,     qfalse, 1,   qfalse, qfalse, 0,    "MEDIC",               }, // 11	// broken out from CLASS_SPECIAL per Id request
-	{ WP_AMMO,                 WP_NONE,                WP_NONE,  WP_AMMO,              WP_AMMO,              qfalse, 1,   qfalse, qfalse, 0,    "AMMO",                }, // 12	// likewise
-	{ WP_ARTY,                 WP_NONE,                WP_NONE,  WP_ARTY,              WP_ARTY,              qfalse, 1,   qtrue,  qfalse, 0,    "ARTY",                }, // 13
-	{ WP_SILENCER,             WP_LUGER,               WP_NONE,  WP_LUGER,             WP_LUGER,             qfalse, 18,  qfalse, qtrue,  600,  "SILENCED LUGER",      }, // 14	// used to be sp5
-	{ WP_DYNAMITE,             WP_NONE,                WP_NONE,  WP_DYNAMITE,          WP_DYNAMITE,          qfalse, 400, qtrue,  qfalse, 0,    "DYNAMITE",            }, // 15
-	{ WP_SMOKETRAIL,           WP_NONE,                WP_NONE,  WP_SMOKETRAIL,        WP_SMOKETRAIL,        qfalse, 1,   qfalse, qfalse, 0,    "",                    }, // 16
-	{ WP_MAPMORTAR,            WP_NONE,                WP_NONE,  WP_MAPMORTAR,         WP_MAPMORTAR,         qfalse, 250, qtrue,  qfalse, 0,    "",                    }, // 17
-	{ VERYBIGEXPLOSION,        WP_NONE,                WP_NONE,  0,                    0,                    qfalse, 1,   qtrue,  qfalse, 0,    "",                    }, // 18	// explosion effect for airplanes
-	{ WP_MEDKIT,               WP_NONE,                WP_NONE,  WP_MEDKIT,            WP_MEDKIT,            qfalse, 1,   qfalse, qfalse, 0,    "",                    }, // 19
+	{ WP_STEN,                 WP_NONE,                WP_NONE,  WP_STEN,              WP_STEN,              qfalse, qtrue,  14,  qfalse, qtrue,  200,  "STEN",                }, // 10	// silenced sten sub-machinegun
+	{ WP_MEDIC_SYRINGE,        WP_NONE,                WP_NONE,  WP_MEDIC_SYRINGE,     WP_MEDIC_SYRINGE,     qfalse, qfalse, 1,   qfalse, qfalse, 0,    "MEDIC",               }, // 11	// broken out from CLASS_SPECIAL per Id request
+	{ WP_AMMO,                 WP_NONE,                WP_NONE,  WP_AMMO,              WP_AMMO,              qfalse, qfalse, 1,   qfalse, qfalse, 0,    "AMMO",                }, // 12	// likewise
+	{ WP_ARTY,                 WP_NONE,                WP_NONE,  WP_ARTY,              WP_ARTY,              qfalse, qfalse, 1,   qtrue,  qfalse, 0,    "ARTY",                }, // 13
+	{ WP_SILENCER,             WP_LUGER,               WP_NONE,  WP_LUGER,             WP_LUGER,             qfalse, qtrue,  18,  qfalse, qtrue,  600,  "SILENCED LUGER",      }, // 14	// used to be sp5
+	{ WP_DYNAMITE,             WP_NONE,                WP_NONE,  WP_DYNAMITE,          WP_DYNAMITE,          qfalse, qfalse, 400, qtrue,  qfalse, 0,    "DYNAMITE",            }, // 15
+	{ WP_SMOKETRAIL,           WP_NONE,                WP_NONE,  WP_SMOKETRAIL,        WP_SMOKETRAIL,        qfalse, qfalse, 1,   qfalse, qfalse, 0,    "",                    }, // 16
+	{ WP_MAPMORTAR,            WP_NONE,                WP_NONE,  WP_MAPMORTAR,         WP_MAPMORTAR,         qfalse, qfalse, 250, qtrue,  qfalse, 0,    "",                    }, // 17
+	{ VERYBIGEXPLOSION,        WP_NONE,                WP_NONE,  WP_NONE,              WP_NONE,              qfalse, qfalse, 1,   qtrue,  qfalse, 0,    "",                    }, // 18	// explosion effect for airplanes
+	{ WP_MEDKIT,               WP_NONE,                WP_NONE,  WP_MEDKIT,            WP_MEDKIT,            qfalse, qfalse, 1,   qfalse, qfalse, 0,    "",                    }, // 19
 
-	{ WP_BINOCULARS,           WP_NONE,                WP_NONE,  WP_BINOCULARS,        WP_BINOCULARS,        qfalse, 1,   qfalse, qfalse, 0,    "",                    }, // 20
-	{ WP_PLIERS,               WP_NONE,                WP_NONE,  WP_PLIERS,            WP_PLIERS,            qfalse, 1,   qfalse, qfalse, 0,    "PLIERS",              }, // 21
-	{ WP_SMOKE_MARKER,         WP_NONE,                WP_NONE,  WP_SMOKE_MARKER,      WP_SMOKE_MARKER,      qfalse, 140, qtrue,  qfalse, 0,    "",                    }, // 22	// changed name to cause less confusion
-	{ WP_KAR98,                WP_GPG40,               WP_NONE,  WP_KAR98,             WP_KAR98,             qfalse, 34,  qfalse, qtrue,  250,  "K43",                 }, // 23	// WolfXP weapons
-	{ WP_CARBINE,              WP_M7,                  WP_NONE,  WP_CARBINE,           WP_CARBINE,           qfalse, 34,  qfalse, qtrue,  250,  "M1 GARAND",           }, // 24
-	{ WP_GARAND,               WP_GARAND_SCOPE,        WP_NONE,  WP_GARAND,            WP_GARAND,            qfalse, 34,  qfalse, qtrue,  250,  "SCOPED M1 GARAND",    }, // 25
-	{ WP_LANDMINE,             WP_NONE,                WP_NONE,  WP_LANDMINE,          WP_LANDMINE,          qfalse, 250, qtrue,  qfalse, 0,    "",                    }, // 26
-	{ WP_SATCHEL,              WP_NONE,                WP_NONE,  WP_SATCHEL,           WP_SATCHEL,           qfalse, 250, qtrue,  qfalse, 0,    "SATCHEL",             }, // 27
-	{ WP_SATCHEL_DET,          WP_NONE,                WP_NONE,  WP_SATCHEL_DET,       WP_SATCHEL_DET,       qfalse, 1,   qtrue,  qfalse, 0,    "SATCHEL",             }, // 28
-	{ WP_SMOKE_BOMB,           WP_NONE,                WP_NONE,  WP_SMOKE_BOMB,        WP_SMOKE_BOMB,        qfalse, 1,   qfalse, qfalse, 0,    "",                    }, // 29
+	{ WP_BINOCULARS,           WP_NONE,                WP_NONE,  WP_BINOCULARS,        WP_BINOCULARS,        qfalse, qfalse, 1,   qfalse, qfalse, 0,    "",                    }, // 20
+	{ WP_PLIERS,               WP_NONE,                WP_NONE,  WP_PLIERS,            WP_PLIERS,            qfalse, qfalse, 1,   qfalse, qfalse, 0,    "PLIERS",              }, // 21
+	{ WP_SMOKE_MARKER,         WP_NONE,                WP_NONE,  WP_SMOKE_MARKER,      WP_SMOKE_MARKER,      qfalse, qfalse, 140, qtrue,  qfalse, 0,    "",                    }, // 22	// changed name to cause less confusion
+	{ WP_KAR98,                WP_GPG40,               WP_NONE,  WP_KAR98,             WP_KAR98,             qfalse, qfalse, 34,  qfalse, qtrue,  250,  "K43",                 }, // 23	// WolfXP weapons
+	{ WP_CARBINE,              WP_M7,                  WP_NONE,  WP_CARBINE,           WP_CARBINE,           qfalse, qfalse, 34,  qfalse, qtrue,  250,  "M1 GARAND",           }, // 24
+	{ WP_GARAND,               WP_GARAND_SCOPE,        WP_NONE,  WP_GARAND,            WP_GARAND,            qfalse, qfalse, 34,  qfalse, qtrue,  250,  "SCOPED M1 GARAND",    }, // 25
+	{ WP_LANDMINE,             WP_NONE,                WP_NONE,  WP_LANDMINE,          WP_LANDMINE,          qfalse, qfalse, 250, qtrue,  qfalse, 0,    "",                    }, // 26
+	{ WP_SATCHEL,              WP_NONE,                WP_NONE,  WP_SATCHEL,           WP_SATCHEL,           qfalse, qfalse, 250, qtrue,  qfalse, 0,    "SATCHEL",             }, // 27
+	{ WP_SATCHEL_DET,          WP_NONE,                WP_NONE,  WP_SATCHEL_DET,       WP_SATCHEL_DET,       qfalse, qfalse, 1,   qtrue,  qfalse, 0,    "SATCHEL",             }, // 28
+	{ WP_SMOKE_BOMB,           WP_NONE,                WP_NONE,  WP_SMOKE_BOMB,        WP_SMOKE_BOMB,        qfalse, qfalse, 1,   qfalse, qfalse, 0,    "",                    }, // 29
 
-	{ WP_MOBILE_MG42,          WP_MOBILE_MG42_SET,     WP_NONE,  WP_MOBILE_MG42,       WP_MOBILE_MG42,       qfalse, 18,  qfalse, qtrue,  2500, "MOBILE MG 42",        }, // 30
-	{ WP_K43,                  WP_K43_SCOPE,           WP_NONE,  WP_K43,               WP_K43,               qfalse, 34,  qfalse, qtrue,  250,  "SCOPED K43",          }, // 31
-	{ WP_FG42,                 WP_FG42SCOPE,           WP_NONE,  WP_FG42,              WP_FG42,              qfalse, 16,  qfalse, qtrue,  500,  "FG 42",               }, // 32
-	{ WP_DUMMY_MG42,           WP_NONE,                WP_NONE,  WP_DUMMY_MG42,        WP_DUMMY_MG42,        qfalse, 1,   qfalse, qfalse, 0,    "",                    }, // 33   // for storing heat on mounted mg42s...
-	{ WP_MORTAR,               WP_MORTAR_SET,          WP_NONE,  WP_MORTAR,            WP_MORTAR,            qfalse, 1,   qtrue,  qtrue,  0,    "MORTAR",              }, // 34
-	{ WP_AKIMBO_COLT,          WP_NONE,                WP_COLT,  WP_COLT,              WP_AKIMBO_COLT,       qfalse, 18,  qfalse, qtrue,  600,  "AKIMBO COLTS",        }, // 35
-	{ WP_AKIMBO_LUGER,         WP_NONE,                WP_LUGER, WP_LUGER,             WP_AKIMBO_LUGER,      qfalse, 18,  qfalse, qtrue,  600,  "AKIMBO LUGERS",       }, // 36
+	{ WP_MOBILE_MG42,          WP_MOBILE_MG42_SET,     WP_NONE,  WP_MOBILE_MG42,       WP_MOBILE_MG42,       qfalse, qfalse, 18,  qfalse, qtrue,  2500, "MOBILE MG 42",        }, // 30
+	{ WP_K43,                  WP_K43_SCOPE,           WP_NONE,  WP_K43,               WP_K43,               qfalse, qfalse, 34,  qfalse, qtrue,  250,  "SCOPED K43",          }, // 31
+	{ WP_FG42,                 WP_FG42SCOPE,           WP_NONE,  WP_FG42,              WP_FG42,              qfalse, qtrue,  16,  qfalse, qtrue,  500,  "FG 42",               }, // 32
+	{ WP_DUMMY_MG42,           WP_NONE,                WP_NONE,  WP_DUMMY_MG42,        WP_DUMMY_MG42,        qfalse, qfalse, 1,   qfalse, qfalse, 0,    "",                    }, // 33   // for storing heat on mounted mg42s...
+	{ WP_MORTAR,               WP_MORTAR_SET,          WP_NONE,  WP_MORTAR,            WP_MORTAR,            qfalse, qfalse, 1,   qtrue,  qtrue,  0,    "MORTAR",              }, // 34
+	{ WP_AKIMBO_COLT,          WP_NONE,                WP_COLT,  WP_COLT,              WP_AKIMBO_COLT,       qfalse, qfalse, 18,  qfalse, qtrue,  600,  "AKIMBO COLTS",        }, // 35
+	{ WP_AKIMBO_LUGER,         WP_NONE,                WP_LUGER, WP_LUGER,             WP_AKIMBO_LUGER,      qfalse, qfalse, 18,  qfalse, qtrue,  600,  "AKIMBO LUGERS",       }, // 36
 
-	{ WP_GPG40,                WP_KAR98,               WP_NONE,  WP_GPG40,             WP_GPG40,             qfalse, 250, qtrue,  qfalse, 0,    "",                    }, // 37
-	{ WP_M7,                   WP_CARBINE,             WP_NONE,  WP_M7,                WP_M7,                qfalse, 250, qtrue,  qfalse, 0,    "",                    }, // 38
-	{ WP_SILENCED_COLT,        WP_COLT,                WP_NONE,  WP_COLT,              WP_COLT,              qfalse, 18,  qfalse, qtrue,  600,  "SILENCED COLT",       }, // 39
+	{ WP_GPG40,                WP_KAR98,               WP_NONE,  WP_GPG40,             WP_GPG40,             qfalse, qfalse, 250, qtrue,  qfalse, 0,    "",                    }, // 37
+	{ WP_M7,                   WP_CARBINE,             WP_NONE,  WP_M7,                WP_M7,                qfalse, qfalse, 250, qtrue,  qfalse, 0,    "",                    }, // 38
+	{ WP_SILENCED_COLT,        WP_COLT,                WP_NONE,  WP_COLT,              WP_COLT,              qfalse, qfalse, 18,  qfalse, qtrue,  600,  "SILENCED COLT",       }, // 39
 
-	{ WP_GARAND_SCOPE,         WP_GARAND,              WP_NONE,  WP_GARAND,            WP_GARAND,            qtrue,  50,  qfalse, qtrue,  700,  "",                    }, // 40
-	{ WP_K43_SCOPE,            WP_K43,                 WP_NONE,  WP_K43,               WP_K43,               qtrue,  50,  qfalse, qtrue,  700,  "",                    }, // 41
-	{ WP_FG42SCOPE,            WP_FG42,                WP_NONE,  WP_FG42,              WP_FG42,              qtrue,  30,  qfalse, qtrue,  200,  "FG 42",               }, // 42
-	{ WP_MORTAR_SET,           WP_MORTAR,              WP_NONE,  WP_MORTAR,            WP_MORTAR,            qfalse, 400, qtrue,  qtrue,  0,    "MORTAR",              }, // 43
-	{ WP_MEDIC_ADRENALINE,     WP_NONE,                WP_NONE,  WP_MEDIC_SYRINGE,     WP_MEDIC_SYRINGE,     qfalse, 1,   qfalse, qfalse, 0,    "ADRENALINE",          }, // 44
-	{ WP_AKIMBO_SILENCEDCOLT,  WP_NONE,                WP_COLT,  WP_COLT,              WP_AKIMBO_COLT,       qfalse, 18,  qfalse, qtrue,  600,  "SLNCD AKIMBO COLTS",  }, // 45
-	{ WP_AKIMBO_SILENCEDLUGER, WP_NONE,                WP_LUGER, WP_LUGER,             WP_AKIMBO_LUGER,      qfalse, 18,  qfalse, qtrue,  600,  "SLNCD AKIMBO LUGERS", }, // 46
-	{ WP_MOBILE_MG42_SET,      WP_MOBILE_MG42,         WP_NONE,  WP_MOBILE_MG42,       WP_MOBILE_MG42,       qfalse, 18,  qfalse, qtrue,  2500, "MOBILE MG 42",        }, // 47
+	{ WP_GARAND_SCOPE,         WP_GARAND,              WP_NONE,  WP_GARAND,            WP_GARAND,            qtrue,  qfalse, 50,  qfalse, qtrue,  700,  "",                    }, // 40
+	{ WP_K43_SCOPE,            WP_K43,                 WP_NONE,  WP_K43,               WP_K43,               qtrue,  qfalse, 50,  qfalse, qtrue,  700,  "",                    }, // 41
+	{ WP_FG42SCOPE,            WP_FG42,                WP_NONE,  WP_FG42,              WP_FG42,              qtrue,  qfalse, 30,  qfalse, qtrue,  200,  "FG 42",               }, // 42
+	{ WP_MORTAR_SET,           WP_MORTAR,              WP_NONE,  WP_MORTAR,            WP_MORTAR,            qfalse, qfalse, 400, qtrue,  qtrue,  0,    "MORTAR",              }, // 43
+	{ WP_MEDIC_ADRENALINE,     WP_NONE,                WP_NONE,  WP_MEDIC_SYRINGE,     WP_MEDIC_SYRINGE,     qfalse, qfalse, 1,   qfalse, qfalse, 0,    "ADRENALINE",          }, // 44
+	{ WP_AKIMBO_SILENCEDCOLT,  WP_NONE,                WP_COLT,  WP_COLT,              WP_AKIMBO_COLT,       qfalse, qfalse, 18,  qfalse, qtrue,  600,  "SLNCD AKIMBO COLTS",  }, // 45
+	{ WP_AKIMBO_SILENCEDLUGER, WP_NONE,                WP_LUGER, WP_LUGER,             WP_AKIMBO_LUGER,      qfalse, qfalse, 18,  qfalse, qtrue,  600,  "SLNCD AKIMBO LUGERS", }, // 46
+	{ WP_MOBILE_MG42_SET,      WP_MOBILE_MG42,         WP_NONE,  WP_MOBILE_MG42,       WP_MOBILE_MG42,       qfalse, qfalse, 18,  qfalse, qtrue,  2500, "MOBILE MG 42",        }, // 47
 
 	// legacy weapons
-	{ WP_KNIFE_KABAR,          WP_NONE,                WP_NONE,  WP_KNIFE_KABAR,       WP_KNIFE_KABAR,       qfalse, 10,  qtrue,  qfalse, 0,    "KABAR",               }, // 48
-	{ WP_MOBILE_BROWNING,      WP_MOBILE_BROWNING_SET, WP_NONE,  WP_MOBILE_BROWNING,   WP_MOBILE_BROWNING,   qfalse, 18,  qfalse, qtrue,  2500, "MOBILE BROWNING",     }, // 49
-	{ WP_MOBILE_BROWNING_SET,  WP_MOBILE_BROWNING,     WP_NONE,  WP_MOBILE_BROWNING,   WP_MOBILE_BROWNING,   qfalse, 18,  qfalse, qtrue,  2500, "MOBILE BROWNING",     }, // 50
-	{ WP_MORTAR2,              WP_MORTAR2_SET,         WP_NONE,  WP_MORTAR2,           WP_MORTAR2,           qfalse, 1,   qtrue,  qtrue,  0,    "GRANATWERFER",        }, // 51
-	{ WP_MORTAR2_SET,          WP_MORTAR2,             WP_NONE,  WP_MORTAR2,           WP_MORTAR2,           qfalse, 400, qtrue,  qtrue,  0,    "GRANATWERFER",        }, // 52
-	{ WP_BAZOOKA,              WP_NONE,                WP_NONE,  WP_BAZOOKA,           WP_BAZOOKA,           qfalse, 400, qtrue,  qfalse, 0,    "BAZOOKA",             }, // 53
+	{ WP_KNIFE_KABAR,          WP_NONE,                WP_NONE,  WP_KNIFE_KABAR,       WP_KNIFE_KABAR,       qfalse, qfalse, 10,  qtrue,  qfalse, 0,    "KABAR",               }, // 48
+	{ WP_MOBILE_BROWNING,      WP_MOBILE_BROWNING_SET, WP_NONE,  WP_MOBILE_BROWNING,   WP_MOBILE_BROWNING,   qfalse, qfalse, 18,  qfalse, qtrue,  2500, "MOBILE BROWNING",     }, // 49
+	{ WP_MOBILE_BROWNING_SET,  WP_MOBILE_BROWNING,     WP_NONE,  WP_MOBILE_BROWNING,   WP_MOBILE_BROWNING,   qfalse, qfalse, 18,  qfalse, qtrue,  2500, "MOBILE BROWNING",     }, // 50
+	{ WP_MORTAR2,              WP_MORTAR2_SET,         WP_NONE,  WP_MORTAR2,           WP_MORTAR2,           qfalse, qfalse, 1,   qtrue,  qtrue,  0,    "GRANATWERFER",        }, // 51
+	{ WP_MORTAR2_SET,          WP_MORTAR2,             WP_NONE,  WP_MORTAR2,           WP_MORTAR2,           qfalse, qfalse, 400, qtrue,  qtrue,  0,    "GRANATWERFER",        }, // 52
+	{ WP_BAZOOKA,              WP_NONE,                WP_NONE,  WP_BAZOOKA,           WP_BAZOOKA,           qfalse, qfalse, 400, qtrue,  qfalse, 0,    "BAZOOKA",             }, // 53
 };
 
 // WIP: New weapon table for mod properties
@@ -375,6 +376,7 @@ modTable_t modTable[MOD_NUM_MODS] =
 	{ MOD_MOBILE_BROWNING,                    qfalse, qfalse, WEAPON_CLASS_FOR_MOD_NO        },
 	{ MOD_MORTAR2,                            qfalse, qtrue,  WEAPON_CLASS_FOR_MOD_EXPLOSIVE },
 	{ MOD_BAZOOKA,                            qfalse, qtrue,  WEAPON_CLASS_FOR_MOD_EXPLOSIVE },
+	{ MOD_BACKSTAB,                           qfalse, qfalse, WEAPON_CLASS_FOR_MOD_NO        },
 };
 
 const char *animStrings[] =
@@ -570,7 +572,7 @@ gitem_t bg_itemlist[] =
 		NULL,                   // ammoicon
 		NULL,                   // pickup_name
 		0,                      // quantity
-		0,                      // giType
+		IT_BAD,                 // giType
 		0,                      // giTag
 	},  // leave index 0 alone
 	/*QUAKED item_treasure (1 1 0) (-8 -8 -8) (8 8 8) suspended
@@ -2066,11 +2068,30 @@ gitem_t bg_itemlist[] =
 	},
 
 	// end of list marker
-	{ NULL }
+	{
+		NULL,                   // classname
+		NULL,                   // pickup_sound
+		{
+			0,                  // world_model[0]
+			0,                  // world_model[1]
+			0                   // world_model[2]
+		},
+		NULL,                   // icon
+		NULL,                   // ammoicon
+		NULL,                   // pickup_name
+		0,                      // quantity
+		IT_BAD,                 // giType
+		0,                      // giTag
+	}
 };
 
 int bg_numItems = ARRAY_LEN(bg_itemlist) - 1;     // keep in sync with ITEM_MAX_ITEMS!
 
+/**
+ * @brief BG_FindItemForWeapon
+ * @param[in] weapon
+ * @return
+ */
 gitem_t *BG_FindItemForWeapon(weapon_t weapon)
 {
 	gitem_t *it;
@@ -2087,12 +2108,22 @@ gitem_t *BG_FindItemForWeapon(weapon_t weapon)
 	return NULL;
 }
 
+/**
+ * @brief BG_FindClipForWeapon
+ * @param[in] weapon
+ * @return
+ */
 weapon_t BG_FindClipForWeapon(weapon_t weapon)
 {
 	// FIXME: check valid weapon?
 	return weaponTable[weapon].clipIndex;
 }
 
+/**
+ * @brief BG_FindAmmoForWeapon
+ * @param[in] weapon
+ * @return
+ */
 weapon_t BG_FindAmmoForWeapon(weapon_t weapon)
 {
 	// FIXME: check valid weapon?
@@ -2100,6 +2131,10 @@ weapon_t BG_FindAmmoForWeapon(weapon_t weapon)
 }
 
 /**
+ * @brief BG_AkimboFireSequence
+ * @param[in] weapon
+ * @param[in] akimboClip
+ * @param[in] mainClip
  * @return 'true' if it's the left hand's turn to fire, 'false' if it's the right hand's turn
  */
 qboolean BG_AkimboFireSequence(int weapon, int akimboClip, int mainClip)
@@ -2131,11 +2166,21 @@ qboolean BG_AkimboFireSequence(int weapon, int akimboClip, int mainClip)
 	return qtrue;
 }
 
+/**
+ * @brief BG_GetItem
+ * @param[in] index
+ * @return
+ */
 gitem_t *BG_GetItem(int index)
 {
 	return &bg_itemlist[index];
 }
 
+/**
+ * @brief BG_FindItem
+ * @param[in] pickupName
+ * @return
+ */
 gitem_t *BG_FindItem(const char *pickupName)
 {
 	gitem_t *it;
@@ -2151,6 +2196,11 @@ gitem_t *BG_FindItem(const char *pickupName)
 	return NULL;
 }
 
+/**
+ * @brief BG_FindItemForClassName
+ * @param[in] className
+ * @return
+ */
 gitem_t *BG_FindItemForClassName(const char *className)
 {
 	gitem_t *it;
@@ -2165,10 +2215,13 @@ gitem_t *BG_FindItemForClassName(const char *className)
 
 	return NULL;
 }
-
 /**
  * @brief Items can be picked up without actually touching their physical bounds to make
  *        grabbing them easier
+ * @param[in] ps
+ * @param[in] item
+ * @param[in] atTime
+ * @return
  */
 qboolean BG_PlayerTouchesItem(playerState_t *ps, entityState_t *item, int atTime)
 {
@@ -2194,6 +2247,9 @@ qboolean BG_PlayerTouchesItem(playerState_t *ps, entityState_t *item, int atTime
  *  @brief if numOfClips is 0, no ammo is added, it just return whether any ammo CAN be added;
  *         otherwise return whether any ammo was ACTUALLY added.
  *         WARNING: when numOfClips is 0, DO NOT CHANGE ANYTHING under ps.
+ * @param[in] cls
+ * @param[in] skills
+ * @return
  */
 int BG_GrenadesForClass(int cls, int *skills)
 {
@@ -2222,6 +2278,11 @@ int BG_GrenadesForClass(int cls, int *skills)
 	return 0;
 }
 
+/**
+ * @brief BG_GrenadeTypeForTeam
+ * @param[in] team
+ * @return
+ */
 weapon_t BG_GrenadeTypeForTeam(team_t team)
 {
 	switch (team)
@@ -2230,22 +2291,30 @@ weapon_t BG_GrenadeTypeForTeam(team_t team)
 		return WP_GRENADE_LAUNCHER;
 	case TEAM_ALLIES:
 		return WP_GRENADE_PINEAPPLE;
+	//case TEAM_FREE:
+	//case TEAM_SPECTATOR:
+	//case TEAM_NUM_TEAMS:
 	default:
 		return WP_NONE;
 	}
 }
 
 /**
- * @brief  setting numOfClips = 0 allows you to check if the client needs ammo, but doesnt give any
+ * @brief Setting numOfClips = 0 allows you to check if the client needs ammo, but doesnt give any
+ * @param[in] ps
+ * @param[in] skill
+ * @param[in] teamNum
+ * @param[in] numOfClips
+ * @return
  */
 qboolean BG_AddMagicAmmo(playerState_t *ps, int *skill, int teamNum, int numOfClips)
 {
-	int ammoAdded = qfalse;
-	int maxammo;
-	int weapNumOfClips;
-	int i      = BG_GrenadesForClass(ps->stats[STAT_PLAYER_CLASS], skill);     // handle grenades first
-	int weapon = BG_GrenadeTypeForTeam(teamNum);
-	int clip   = BG_FindClipForWeapon(weapon);
+	qboolean ammoAdded = qfalse;
+	int      maxammo;
+	int      weapNumOfClips;
+	int      i      = BG_GrenadesForClass(ps->stats[STAT_PLAYER_CLASS], skill); // handle grenades first
+	weapon_t weapon = BG_GrenadeTypeForTeam((team_t)teamNum);
+	weapon_t clip   = BG_FindClipForWeapon((weapon_t)weapon);
 
 	if (ps->ammoclip[clip] < i)
 	{
@@ -2292,7 +2361,7 @@ qboolean BG_AddMagicAmmo(playerState_t *ps, int *skill, int teamNum, int numOfCl
 	}
 
 	// now other weapons
-	for (i = 0; reloadableWeapons[i] >= 0; i++)
+	for (i = 0; reloadableWeapons[i] > 0; i++)
 	{
 		weapon = reloadableWeapons[i];
 		if (COM_BitCheck(ps->weapons, weapon))
@@ -2370,6 +2439,10 @@ qboolean BG_AddMagicAmmo(playerState_t *ps, int *skill, int teamNum, int numOfCl
 
 /**
  * @brief This needs to be the same for client side prediction and server use.
+ * @param[in] ent
+ * @param[in] ps
+ * @param[in] skill
+ * @param[in] teamNum
  * @return false if the item should not be picked up.
  */
 qboolean BG_CanItemBeGrabbed(const entityState_t *ent, const playerState_t *ps, int *skill, int teamNum)
@@ -2458,13 +2531,19 @@ qboolean BG_CanItemBeGrabbed(const entityState_t *ent, const playerState_t *ps, 
 		return qtrue;     // keys are always picked up
 	case IT_BAD:
 		Com_Error(ERR_DROP, "BG_CanItemBeGrabbed: IT_BAD");
-		break;
 	}
 	return qfalse;
 }
 
 //======================================================================
 
+/**
+ * @brief BG_CalculateSpline_r
+ * @param[in] spline
+ * @param[out] out1
+ * @param[out] out2
+ * @param[in] tension
+ */
 void BG_CalculateSpline_r(splinePath_t *spline, vec3_t out1, vec3_t out2, float tension)
 {
 	vec3_t points[18];
@@ -2498,6 +2577,12 @@ void BG_CalculateSpline_r(splinePath_t *spline, vec3_t out1, vec3_t out2, float 
 	VectorCopy(points[1], out2);
 }
 
+/**
+ * @brief BG_TraverseSpline
+ * @param[in] deltaTime
+ * @param[in,out] pSpline
+ * @return
+ */
 qboolean BG_TraverseSpline(float *deltaTime, splinePath_t **pSpline)
 {
 	float dist;
@@ -2507,7 +2592,7 @@ qboolean BG_TraverseSpline(float *deltaTime, splinePath_t **pSpline)
 		(*deltaTime) -= 1;
 		dist          = (*pSpline)->length * (*deltaTime);
 
-		if (!(*pSpline)->next || !(*pSpline)->next->length)
+		if (!(*pSpline)->next || (*pSpline)->next->length == 0.f)
 		{
 			return qfalse;
 			//Com_Error( ERR_DROP, "Spline path end passed (%s)", (*pSpline)->point.name );
@@ -2521,7 +2606,7 @@ qboolean BG_TraverseSpline(float *deltaTime, splinePath_t **pSpline)
 	{
 		dist = -((*pSpline)->length * (*deltaTime));
 
-		if (!(*pSpline)->prev || !(*pSpline)->prev->length)
+		if (!(*pSpline)->prev || (*pSpline)->prev->length == 0.f)
 		{
 			return qfalse;
 			//Com_Error( ERR_DROP, "Spline path end passed (%s)", (*pSpline)->point.name );
@@ -2534,6 +2619,15 @@ qboolean BG_TraverseSpline(float *deltaTime, splinePath_t **pSpline)
 	return qtrue;
 }
 
+/**
+ * @brief BG_RaySphereIntersection
+ * @param[in] radius
+ * @param[in] origin
+ * @param[in] path
+ * @param[out] t0
+ * @param[out] t1
+ * @return
+ */
 qboolean BG_RaySphereIntersection(float radius, vec3_t origin, splineSegment_t *path, float *t0, float *t1)
 {
 	vec3_t v;
@@ -2557,6 +2651,14 @@ qboolean BG_RaySphereIntersection(float radius, vec3_t origin, splineSegment_t *
 	return qtrue;
 }
 
+/**
+ * @brief BG_LinearPathOrigin2
+ * @param[in] radius
+ * @param[in,out] pSpline
+ * @param[in] deltaTime
+ * @param[out] result
+ * @param[out] backwards - unused
+ */
 void BG_LinearPathOrigin2(float radius, splinePath_t **pSpline, float *deltaTime, vec3_t result, qboolean backwards)
 {
 	qboolean first = qtrue;
@@ -2655,7 +2757,6 @@ void BG_LinearPathOrigin2(float radius, splinePath_t **pSpline, float *deltaTime
 						return;
 					}
 				}
-				found = qfalse;
 			}
 
 			first = qfalse;
@@ -2722,6 +2823,14 @@ void BG_ComputeSegments(splinePath_t *pSpline)
 	}
 }
 
+/**
+ * @brief BG_EvaluateTrajectory
+ * @param[in] tr
+ * @param[in] atTime
+ * @param[out] result
+ * @param[in] isAngle
+ * @param[in] splinePath
+ */
 void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec3_t result, qboolean isAngle, int splinePath)
 {
 	float        deltaTime;
@@ -2740,7 +2849,7 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec3_t result, qb
 		VectorCopy(tr->trBase, result);
 		break;
 	case TR_LINEAR:
-		deltaTime = (atTime - tr->trTime) * 0.001;      // milliseconds to seconds
+		deltaTime = (atTime - tr->trTime) * 0.001f;      // milliseconds to seconds
 		VectorMA(tr->trBase, deltaTime, tr->trDelta, result);
 		break;
 	case TR_SINE:
@@ -2753,7 +2862,7 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec3_t result, qb
 		{
 			atTime = tr->trTime + tr->trDuration;
 		}
-		deltaTime = (atTime - tr->trTime) * 0.001;      // milliseconds to seconds
+		deltaTime = (atTime - tr->trTime) * 0.001f;      // milliseconds to seconds
 		if (deltaTime < 0)
 		{
 			deltaTime = 0;
@@ -2761,19 +2870,19 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec3_t result, qb
 		VectorMA(tr->trBase, deltaTime, tr->trDelta, result);
 		break;
 	case TR_GRAVITY:
-		deltaTime = (atTime - tr->trTime) * 0.001;      // milliseconds to seconds
+		deltaTime = (atTime - tr->trTime) * 0.001f;      // milliseconds to seconds
 		VectorMA(tr->trBase, deltaTime, tr->trDelta, result);
-		result[2] -= 0.5 * DEFAULT_GRAVITY * deltaTime * deltaTime;     // FIXME: local gravity...
+		result[2] -= 0.5f * DEFAULT_GRAVITY * deltaTime * deltaTime;     // FIXME: local gravity...
 		break;
 	case TR_GRAVITY_LOW:
-		deltaTime = (atTime - tr->trTime) * 0.001;      // milliseconds to seconds
+		deltaTime = (atTime - tr->trTime) * 0.001f;      // milliseconds to seconds
 		VectorMA(tr->trBase, deltaTime, tr->trDelta, result);
-		result[2] -= 0.5 * (DEFAULT_GRAVITY * 0.3) * deltaTime * deltaTime;       // FIXME: local gravity...
+		result[2] -= 0.5f * (DEFAULT_GRAVITY * 0.3f) * deltaTime * deltaTime;       // FIXME: local gravity...
 		break;
 	case TR_GRAVITY_FLOAT:
-		deltaTime = (atTime - tr->trTime) * 0.001;      // milliseconds to seconds
+		deltaTime = (atTime - tr->trTime) * 0.001f;      // milliseconds to seconds
 		VectorMA(tr->trBase, deltaTime, tr->trDelta, result);
-		result[2] -= 0.5 * (DEFAULT_GRAVITY * 0.2) * deltaTime;
+		result[2] -= 0.5f * (DEFAULT_GRAVITY * 0.2f) * deltaTime;
 		break;
 	// RF, acceleration
 	case TR_ACCELERATE:     // trDelta is the ultimate speed
@@ -2781,28 +2890,28 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec3_t result, qb
 		{
 			atTime = tr->trTime + tr->trDuration;
 		}
-		deltaTime = (atTime - tr->trTime) * 0.001;      // milliseconds to seconds
+		deltaTime = (atTime - tr->trTime) * 0.001f;      // milliseconds to seconds
 		// phase is the acceleration constant
-		phase = VectorLength(tr->trDelta) / (tr->trDuration * 0.001);
+		phase = VectorLength(tr->trDelta) / (tr->trDuration * 0.001f);
 		// trDelta at least gives us the acceleration direction
 		VectorNormalize2(tr->trDelta, result);
 		// get distance travelled at current time
-		VectorMA(tr->trBase, phase * 0.5 * deltaTime * deltaTime, result, result);
+		VectorMA(tr->trBase, phase * 0.5f * deltaTime * deltaTime, result, result);
 		break;
 	case TR_DECCELERATE:     // trDelta is the starting speed
 		if (atTime > tr->trTime + tr->trDuration)
 		{
 			atTime = tr->trTime + tr->trDuration;
 		}
-		deltaTime = (atTime - tr->trTime) * 0.001;      // milliseconds to seconds
+		deltaTime = (atTime - tr->trTime) * 0.001f;      // milliseconds to seconds
 		// phase is the breaking constant
-		phase = VectorLength(tr->trDelta) / (tr->trDuration * 0.001);
+		phase = VectorLength(tr->trDelta) / (tr->trDuration * 0.001f);
 		// trDelta at least gives us the acceleration direction
 		VectorNormalize2(tr->trDelta, result);
 		// get distance travelled at current time (without breaking)
 		VectorMA(tr->trBase, deltaTime, tr->trDelta, v);
 		// subtract breaking force
-		VectorMA(v, -phase * 0.5 * deltaTime * deltaTime, result, result);
+		VectorMA(v, -phase * 0.5f * deltaTime * deltaTime, result, result);
 		break;
 	case TR_SPLINE:
 		if (!(pSpline = BG_GetSplineData(splinePath, &backwards)))
@@ -2842,7 +2951,7 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec3_t result, qb
 			qboolean dampout = qfalse;
 			float    base1;
 
-			if (tr->trBase[0])
+			if (tr->trBase[0] != 0.f)
 			{
 				vec3_t       result2;
 				splinePath_t *pSp2 = pSpline;
@@ -2909,15 +3018,15 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec3_t result, qb
 
 			if (dampin && dampout)
 			{
-				result[ROLL] = base1 + ((sin(((deltaTime * 2) - 1) * M_PI * 0.5f) + 1) * 0.5f * tr->trBase[2]);
+				result[ROLL] = base1 + ((sin(((deltaTime * 2) - 1) * M_PI * 0.5f) + 1) * 0.5 * tr->trBase[2]);
 			}
 			else if (dampin)
 			{
-				result[ROLL] = base1 + (sin(deltaTime * M_PI * 0.5f) * tr->trBase[2]);
+				result[ROLL] = base1 + (sin(deltaTime * M_PI * 0.5) * tr->trBase[2]);
 			}
 			else if (dampout)
 			{
-				result[ROLL] = base1 + ((1 - sin((1 - deltaTime) * M_PI * 0.5f)) * tr->trBase[2]);
+				result[ROLL] = base1 + ((1 - sin((1 - deltaTime) * M_PI * 0.5)) * tr->trBase[2]);
 			}
 			else
 			{
@@ -2968,7 +3077,7 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec3_t result, qb
 				frac = ((deltaTime * (MAX_SPLINE_SEGMENTS)) - pos) * pSpline->segments[pos].length;
 			}
 
-			if (tr->trBase[0])
+			if (tr->trBase[0] != 0.f)
 			{
 				VectorMA(pSpline->segments[pos].start, frac, pSpline->segments[pos].v_norm, result);
 				VectorCopy(result, v);
@@ -3009,14 +3118,20 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec3_t result, qb
 		}
 
 		break;
+	// TODO : case not handle
+	//case TR_LINEAR_STOP_BACK:
 	default:
 		Com_Error(ERR_DROP, "BG_EvaluateTrajectory: unknown trType: %i", tr->trTime);
-		break;
 	}
 }
 
 /**
  * @brief For determining velocity at a given time
+ * @param[in] tr
+ * @param[in] atTime
+ * @param[out] result
+ * @param[in] isAngle - unused
+ * @param[in] splineData - unused
  */
 void BG_EvaluateTrajectoryDelta(const trajectory_t *tr, int atTime, vec3_t result, qboolean isAngle, int splineData)
 {
@@ -3047,19 +3162,19 @@ void BG_EvaluateTrajectoryDelta(const trajectory_t *tr, int atTime, vec3_t resul
 		VectorCopy(tr->trDelta, result);
 		break;
 	case TR_GRAVITY:
-		deltaTime = (atTime - tr->trTime) * 0.001;      // milliseconds to seconds
+		deltaTime = (atTime - tr->trTime) * 0.001f;      // milliseconds to seconds
 		VectorCopy(tr->trDelta, result);
 		result[2] -= DEFAULT_GRAVITY * deltaTime;       // FIXME: local gravity...
 		break;
 	case TR_GRAVITY_LOW:
-		deltaTime = (atTime - tr->trTime) * 0.001;      // milliseconds to seconds
+		deltaTime = (atTime - tr->trTime) * 0.001f;      // milliseconds to seconds
 		VectorCopy(tr->trDelta, result);
-		result[2] -= (DEFAULT_GRAVITY * 0.3) * deltaTime;         // FIXME: local gravity...
+		result[2] -= (DEFAULT_GRAVITY * 0.3f) * deltaTime;         // FIXME: local gravity...
 		break;
 	case TR_GRAVITY_FLOAT:
-		deltaTime = (atTime - tr->trTime) * 0.001;      // milliseconds to seconds
+		deltaTime = (atTime - tr->trTime) * 0.001f;      // milliseconds to seconds
 		VectorCopy(tr->trDelta, result);
-		result[2] -= (DEFAULT_GRAVITY * 0.2) * deltaTime;
+		result[2] -= (DEFAULT_GRAVITY * 0.2f) * deltaTime;
 		break;
 	// acceleration
 	case TR_ACCELERATE:     // trDelta is eventual speed
@@ -3068,8 +3183,8 @@ void BG_EvaluateTrajectoryDelta(const trajectory_t *tr, int atTime, vec3_t resul
 			VectorClear(result);
 			return;
 		}
-		deltaTime = (atTime - tr->trTime) * 0.001;      // milliseconds to seconds
-		phase     = deltaTime / (float)tr->trDuration;
+		deltaTime = (atTime - tr->trTime) * 0.001f;      // milliseconds to seconds
+		phase     = deltaTime / (float)tr->trDuration;   // FIXME: phase is never read
 		VectorScale(tr->trDelta, deltaTime * deltaTime, result);
 		break;
 	case TR_DECCELERATE:     // trDelta is breaking force
@@ -3078,32 +3193,35 @@ void BG_EvaluateTrajectoryDelta(const trajectory_t *tr, int atTime, vec3_t resul
 			VectorClear(result);
 			return;
 		}
-		deltaTime = (atTime - tr->trTime) * 0.001;      // milliseconds to seconds
+		deltaTime = (atTime - tr->trTime) * 0.001f;      // milliseconds to seconds
 		VectorScale(tr->trDelta, deltaTime, result);
 		break;
 	case TR_SPLINE:
 	case TR_LINEAR_PATH:
 		VectorClear(result);
 		break;
+	// TODO : case not handle
+	//case TR_LINEAR_STOP_BACK:
+	//case TR_GRAVITY_PAUSED:
 	default:
 		Com_Error(ERR_DROP, "BG_EvaluateTrajectoryDelta: unknown trType: %i", tr->trTime);
-		break;
 	}
 }
 
 /**
- * @brief used to find a good directional vector for a mark projection, which will be more likely
+ * @brief Used to find a good directional vector for a mark projection, which will be more likely
  * to wrap around adjacent surfaces
- *
- * dir is the direction of the projectile or trace that has resulted in a surface being hit
+ * @param[in] dir The direction of the projectile or trace that has resulted in a surface being hit
+ * @param[in] normal
+ * @param[out] out
  */
 void BG_GetMarkDir(const vec3_t dir, const vec3_t normal, vec3_t out)
 {
 	vec3_t ndir, lnormal;
-	float  minDot = 0.3;
+	float  minDot = 0.3f;
 	int    x      = 0;
 
-	if (dir[0] < 0.001 && dir[1] < 0.001)
+	if (dir[0] < 0.001f && dir[1] < 0.001f)
 	{
 		VectorCopy(dir, out);
 		return;
@@ -3130,7 +3248,7 @@ void BG_GetMarkDir(const vec3_t dir, const vec3_t normal, vec3_t out)
 	// make sure it makrs the impact surface
 	while (DotProduct(ndir, lnormal) < minDot && x < 10)
 	{
-		VectorMA(ndir, .5, lnormal, ndir);
+		VectorMA(ndir, .5f, lnormal, ndir);
 		VectorNormalize(ndir);
 
 		x++;
@@ -3291,6 +3409,9 @@ void trap_Cvar_VariableStringBuffer(const char *var_name, char *buffer, int bufs
 
 /**
  * @brief Handles the sequence numbers
+ * @param[in] newEvent
+ * @param[in] eventParm
+ * @param[out] ps
  */
 void BG_AddPredictableEventToPlayerstate(int newEvent, int eventParm, playerState_t *ps)
 {
@@ -3298,7 +3419,7 @@ void BG_AddPredictableEventToPlayerstate(int newEvent, int eventParm, playerStat
 	{
 		char buf[256];
 		trap_Cvar_VariableStringBuffer("showevents", buf, sizeof(buf));
-		if (atof(buf) != 0)
+		if (atof(buf) != 0.0)
 		{
 #ifdef QAGAME
 			Com_Printf(" game event svt %5d -> %5d: num = %20s parm %d\n", ps->pmove_framecount /*ps->commandTime*/, ps->eventSequence, newEvent < EV_MAX_EVENTS ? eventnames[newEvent] : "*unknown event*", eventParm);
@@ -3313,7 +3434,7 @@ void BG_AddPredictableEventToPlayerstate(int newEvent, int eventParm, playerStat
 	ps->eventSequence++;
 }
 
-// would like to just inline this but would likely break qvm support
+// NOTE: would like to just inline this but would likely break qvm support
 #define SETUP_MOUNTEDGUN_STATUS(ps)                           \
 	switch (ps->persistant[PERS_HWEAPON_USE]) {                \
 	case 1:                                                 \
@@ -3335,12 +3456,16 @@ void BG_AddPredictableEventToPlayerstate(int newEvent, int eventParm, playerStat
 /**
  * @brief This is done after each set of usercmd_t on the server,
  *        and after local prediction on the client
+ * @param[in] ps
+ * @param[out] s
+ * @param[in] time
+ * @param[in] snap
  */
 void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *s, int time, qboolean snap)
 {
 	int i;
 
-	if (ps->pm_type == PM_INTERMISSION || ps->pm_type == PM_SPECTATOR || ps->stats[STAT_HEALTH] <= GIB_HEALTH)     // || ps->pm_flags & PMF_LIMBO ) { // limbo
+	if (ps->pm_type == PM_INTERMISSION || ps->pm_type == PM_SPECTATOR || ps->pm_type == PM_NOCLIP || ps->stats[STAT_HEALTH] <= GIB_HEALTH)     // || ps->pm_flags & PMF_LIMBO ) { // limbo
 	{
 		s->eType = ET_INVISIBLE;
 	}
@@ -3466,6 +3591,11 @@ void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *s, int time, 
 	}
 }
 
+/**
+ * @brief BG_WeaponForMOD
+ * @param[in] MOD
+ * @return
+ */
 weapon_t BG_WeaponForMOD(int MOD)
 {
 	weapon_t i;
@@ -3478,7 +3608,7 @@ weapon_t BG_WeaponForMOD(int MOD)
 		}
 	}
 
-	return 0;
+	return WP_NONE;
 }
 
 const char *rankSoundNames_Allies[NUM_EXPERIENCE_LEVELS] =
@@ -3551,8 +3681,8 @@ const char *miniRankNames_Axis[NUM_EXPERIENCE_LEVELS] =
 	"Hpt",
 	"Mjr",
 	"Obs",
-	"BGn",
-	"LtG",
+	"GMj",
+	"GLt",
 	"Gen",
 };
 
@@ -3566,11 +3696,16 @@ const char *miniRankNames_Allies[NUM_EXPERIENCE_LEVELS] =
 	"Cpt",
 	"Maj",
 	"Cnl",
-	"GMj",
-	"GLt",
+	"BGn",
+	"LtG",
 	"Gen",
 };
 
+/**
+ * @brief BG_Find_PathCorner
+ * @param[in] match
+ * @return
+ */
 pathCorner_t *BG_Find_PathCorner(const char *match)
 {
 	int i;
@@ -3586,6 +3721,11 @@ pathCorner_t *BG_Find_PathCorner(const char *match)
 	return NULL;
 }
 
+/**
+ * @brief BG_AddPathCorner
+ * @param[in] name
+ * @param[in] origin
+ */
 void BG_AddPathCorner(const char *name, vec3_t origin)
 {
 	if (numPathCorners >= MAX_PATH_CORNERS)
@@ -3594,10 +3734,15 @@ void BG_AddPathCorner(const char *name, vec3_t origin)
 	}
 
 	VectorCopy(origin, pathCorners[numPathCorners].origin);
-	Q_strncpyz(pathCorners[numPathCorners].name, name, 64);
+	Q_strncpyz(pathCorners[numPathCorners].name, name, MAX_QPATH);
 	numPathCorners++;
 }
 
+/**
+ * @brief BG_Find_Spline
+ * @param[in] match
+ * @return
+ */
 splinePath_t *BG_Find_Spline(const char *match)
 {
 	int i;
@@ -3613,6 +3758,13 @@ splinePath_t *BG_Find_Spline(const char *match)
 	return NULL;
 }
 
+/**
+ * @brief BG_AddSplinePath
+ * @param[in] name
+ * @param[in] target
+ * @param[in] origin
+ * @return
+ */
 splinePath_t *BG_AddSplinePath(const char *name, const char *target, vec3_t origin)
 {
 	splinePath_t *spline;
@@ -3628,8 +3780,8 @@ splinePath_t *BG_AddSplinePath(const char *name, const char *target, vec3_t orig
 
 	VectorCopy(origin, spline->point.origin);
 
-	Q_strncpyz(spline->point.name, name, 64);
-	Q_strncpyz(spline->strTarget, target ? target : "", 64);
+	Q_strncpyz(spline->point.name, name, MAX_QPATH);
+	Q_strncpyz(spline->strTarget, target ? target : "", MAX_QPATH);
 
 	spline->numControls = 0;
 
@@ -3638,6 +3790,11 @@ splinePath_t *BG_AddSplinePath(const char *name, const char *target, vec3_t orig
 	return spline;
 }
 
+/**
+ * @brief BG_AddSplineControl
+ * @param[in,out] spline
+ * @param[in] name
+ */
 void BG_AddSplineControl(splinePath_t *spline, const char *name)
 {
 	if (spline->numControls >= MAX_SPLINE_CONTROLS)
@@ -3645,22 +3802,27 @@ void BG_AddSplineControl(splinePath_t *spline, const char *name)
 		Com_Error(ERR_DROP, "MAX SPLINE CONTROLS (%i) hit", MAX_SPLINE_CONTROLS);
 	}
 
-	Q_strncpyz(spline->controls[spline->numControls].name, name, 64);
+	Q_strncpyz(spline->controls[spline->numControls].name, name, MAX_QPATH);
 
 	spline->numControls++;
 }
 
+/**
+ * @brief BG_SplineLength
+ * @param[in] pSpline
+ * @return
+ */
 float BG_SplineLength(splinePath_t *pSpline)
 {
 	float i;
 	float granularity = 0.01f;
-	float dist        = 0;
+	float dist        = 0.f;
 	//float tension;
 	vec3_t vec[2];
 	vec3_t lastPoint = { 0 };
 	vec3_t result;
 
-	for (i = 0; i <= 1.f; i += granularity)
+	for (i = 0.f; i <= 1.f; i += granularity)
 	{
 		/*      if(pSpline->isStart) {
 		            tension = 1 - sin((1 - i) * M_PI * 0.5f);
@@ -3674,7 +3836,7 @@ float BG_SplineLength(splinePath_t *pSpline)
 		VectorSubtract(vec[1], vec[0], result);
 		VectorMA(vec[0], i, result, result);
 
-		if (i != 0)
+		if (i != 0.f)
 		{
 			VectorSubtract(result, lastPoint, vec[0]);
 			dist += VectorLength(vec[0]);
@@ -3686,6 +3848,9 @@ float BG_SplineLength(splinePath_t *pSpline)
 	return dist;
 }
 
+/**
+ * @brief BG_BuildSplinePaths
+ */
 void BG_BuildSplinePaths(void)
 {
 	int          i, j;
@@ -3741,6 +3906,12 @@ void BG_BuildSplinePaths(void)
 	}
 }
 
+/**
+ * @brief BG_GetSplineData
+ * @param[in] number
+ * @param[out] backwards
+ * @return
+ */
 splinePath_t *BG_GetSplineData(int number, qboolean *backwards)
 {
 	if (number < 0)
@@ -3762,6 +3933,12 @@ splinePath_t *BG_GetSplineData(int number, qboolean *backwards)
 	return &splinePaths[number];
 }
 
+/**
+ * @brief BG_MaxAmmoForWeapon
+ * @param[in] weaponNum
+ * @param[in] skill
+ * @return
+ */
 int BG_MaxAmmoForWeapon(weapon_t weaponNum, int *skill)
 {
 	switch (weaponNum)
@@ -3782,7 +3959,6 @@ int BG_MaxAmmoForWeapon(weapon_t weaponNum, int *skill)
 		{
 			return(GetAmmoTableData(weaponNum)->maxammo);
 		}
-		break;
 	case WP_MP40:
 	case WP_THOMPSON:
 		if (skill[SK_FIRST_AID] >= 1 || skill[SK_LIGHT_WEAPONS] >= 1)
@@ -3793,7 +3969,6 @@ int BG_MaxAmmoForWeapon(weapon_t weaponNum, int *skill)
 		{
 			return(GetAmmoTableData(weaponNum)->maxammo);
 		}
-		break;
 	case WP_M7:
 	case WP_GPG40:
 		if (skill[SK_EXPLOSIVES_AND_CONSTRUCTION] >= 1)
@@ -3804,7 +3979,6 @@ int BG_MaxAmmoForWeapon(weapon_t weaponNum, int *skill)
 		{
 			return(GetAmmoTableData(weaponNum)->maxammo);
 		}
-		break;
 	case WP_GRENADE_PINEAPPLE:
 	case WP_GRENADE_LAUNCHER:
 		// FIXME: this is class dependant, not ammo table
@@ -3820,7 +3994,6 @@ int BG_MaxAmmoForWeapon(weapon_t weaponNum, int *skill)
 		{
 			return(GetAmmoTableData(weaponNum)->maxammo);
 		}
-		break;
 	/*case WP_MOBILE_MG42:
 	case WP_MOBILE_BROWNING
 	case WP_PANZERFAUST:
@@ -3830,7 +4003,6 @@ int BG_MaxAmmoForWeapon(weapon_t weaponNum, int *skill)
 	        return( GetAmmoTableData(weaponNum)->maxammo + GetAmmoTableData(weaponNum)->maxclip );
 	    else
 	        return( GetAmmoTableData(weaponNum)->maxammo );
-	    break;
 	case WP_MORTAR:
 	case WP_MORTAR_SET:
 	case WP_MORTAR2:
@@ -3838,8 +4010,7 @@ int BG_MaxAmmoForWeapon(weapon_t weaponNum, int *skill)
 	    if( skill[SK_HEAVY_WEAPONS] >= 1 )
 	        return( GetAmmoTableData(weaponNum)->maxammo + 2 );
 	    else
-	        return( GetAmmoTableData(weaponNum)->maxammo );
-	    break;*/
+	        return( GetAmmoTableData(weaponNum)->maxammo );*/
 	case WP_MEDIC_SYRINGE:
 		if (skill[SK_FIRST_AID] >= 2)
 		{
@@ -3849,7 +4020,6 @@ int BG_MaxAmmoForWeapon(weapon_t weaponNum, int *skill)
 		{
 			return(GetAmmoTableData(weaponNum)->maxammo);
 		}
-		break;
 	case WP_GARAND:
 	case WP_K43:
 	case WP_FG42:
@@ -3861,7 +4031,6 @@ int BG_MaxAmmoForWeapon(weapon_t weaponNum, int *skill)
 		{
 			return(GetAmmoTableData(weaponNum)->maxammo);
 		}
-		break;
 	case WP_GARAND_SCOPE:
 	case WP_K43_SCOPE:
 	case WP_FG42SCOPE:
@@ -3873,12 +4042,19 @@ int BG_MaxAmmoForWeapon(weapon_t weaponNum, int *skill)
 		{
 			return(GetAmmoTableData(weaponNum)->maxammo);
 		}
-		break;
 	default:
 		return(GetAmmoTableData(weaponNum)->maxammo);
 	}
 }
 
+/**
+ * @brief BG_AdjustAAGunMuzzleForBarrel
+ * @param[in,out] origin
+ * @param[in] forward
+ * @param[in] right
+ * @param[in] up
+ * @param[in] barrel
+ */
 void BG_AdjustAAGunMuzzleForBarrel(vec_t *origin, vec_t *forward, vec_t *right, vec_t *up, int barrel)
 {
 	switch (barrel)
@@ -3906,7 +4082,12 @@ void BG_AdjustAAGunMuzzleForBarrel(vec_t *origin, vec_t *forward, vec_t *right, 
 	}
 }
 
-void PC_SourceWarning(int handle, char *format, ...)
+/*
+ * @brief PC_SourceWarning
+ * @param[in] handle
+ * @param[in] format
+ * @note Unused
+void PC_SourceWarning(int handle, const char *format, ...)
 {
 	int         line;
 	char        filename[MAX_QPATH];
@@ -3923,8 +4104,14 @@ void PC_SourceWarning(int handle, char *format, ...)
 
 	Com_Printf(S_COLOR_YELLOW "WARNING: %s, line %d: %s\n", filename, line, string);
 }
+*/
 
-void PC_SourceError(int handle, char *format, ...)
+/**
+ * @brief PC_SourceError
+ * @param[in] handle
+ * @param[in] format
+ */
+void PC_SourceError(int handle, const char *format, ...)
 {
 	int         line;
 	char        filename[MAX_QPATH];
@@ -3946,6 +4133,12 @@ void PC_SourceError(int handle, char *format, ...)
 #endif
 }
 
+/**
+ * @brief PC_Float_Parse
+ * @param[in] handle
+ * @param[out] f
+ * @return
+ */
 qboolean PC_Float_Parse(int handle, float *f)
 {
 	pc_token_t token;
@@ -3979,6 +4172,12 @@ qboolean PC_Float_Parse(int handle, float *f)
 	return qtrue;
 }
 
+/**
+ * @brief PC_Color_Parse
+ * @param[in] handle
+ * @param[out] c
+ * @return
+ */
 qboolean PC_Color_Parse(int handle, vec4_t *c)
 {
 	int   i;
@@ -3995,6 +4194,12 @@ qboolean PC_Color_Parse(int handle, vec4_t *c)
 	return qtrue;
 }
 
+/**
+ * @brief PC_Vec_Parse
+ * @param[in] handle
+ * @param[out] c
+ * @return
+ */
 qboolean PC_Vec_Parse(int handle, vec3_t *c)
 {
 	int   i;
@@ -4011,6 +4216,12 @@ qboolean PC_Vec_Parse(int handle, vec3_t *c)
 	return qtrue;
 }
 
+/**
+ * @brief PC_Int_Parse
+ * @param[in] handle
+ * @param[out] i
+ * @return
+ */
 qboolean PC_Int_Parse(int handle, int *i)
 {
 	pc_token_t token;
@@ -4042,11 +4253,11 @@ qboolean PC_Int_Parse(int handle, int *i)
 }
 
 #ifdef GAMEDLL
-/*
-=================
-PC_String_Parse
-=================
-*/
+/**
+ * @brief PC_String_Parse
+ * @param[in] handle
+ * @return
+ */
 const char *PC_String_Parse(int handle)
 {
 	static char buf[MAX_TOKEN_CHARS];
@@ -4063,6 +4274,12 @@ const char *PC_String_Parse(int handle)
 
 #else
 
+/**
+ * @brief PC_String_Parse
+ * @param[in] handle
+ * @param[out] out
+ * @return
+ */
 qboolean PC_String_Parse(int handle, const char **out)
 {
 	pc_token_t token;
@@ -4079,6 +4296,10 @@ qboolean PC_String_Parse(int handle, const char **out)
 
 /**
  * @brief Same as PC_String_Parse, but uses a static buff and not the string memory pool
+ * @param handle
+ * @param out
+ * @param size
+ * @return
  */
 qboolean PC_String_ParseNoAlloc(int handle, char *out, size_t size)
 {
@@ -4131,7 +4352,7 @@ const voteType_t voteToggles[] =
 int numVotesAvailable = sizeof(voteToggles) / sizeof(voteType_t);
 
 // consts to offset random reinforcement seeds
-const unsigned int aReinfSeeds[MAX_REINFSEEDS] = { 11, 3, 13, 7, 2, 5, 1, 17 };
+const int aReinfSeeds[MAX_REINFSEEDS] = { 11, 3, 13, 7, 2, 5, 1, 17 };
 
 // Weapon full names + headshot capability
 const weap_ws_t aWeaponInfo[WS_MAX] =
@@ -4164,7 +4385,11 @@ const weap_ws_t aWeaponInfo[WS_MAX] =
 	{ qtrue,  "SK43", "Scp.K43"    }   // 25 WS_K43
 };
 
-// Multiview: Convert weaponstate to simpler format
+/**
+ * @brief Multiview: Convert weaponstate to simpler format
+ * @param[in] ws
+ * @return
+ */
 int BG_simpleWeaponState(int ws)
 {
 	switch (ws)
@@ -4188,9 +4413,15 @@ int BG_simpleWeaponState(int ws)
 }
 
 #ifdef FEATURE_MULTIVIEW
-// Multiview: Reduce hint info to 2 bits.  However, we can really
-// have up to 8 values, as some hints will have a 0 value for
-// cursorHintVal
+
+/**
+ * @brief // Multiview: Reduce hint info to 2 bits.  However, we can really
+ * have up to 8 values, as some hints will have a 0 value for
+ * cursorHintVal
+ * @param hint
+ * @param val
+ * @return
+ */
 int BG_simpleHintsCollapse(int hint, int val)
 {
 	switch (hint)
@@ -4198,38 +4429,50 @@ int BG_simpleHintsCollapse(int hint, int val)
 	case HINT_DISARM:
 		if (val > 0)
 		{
-			return(0);
+			return 0;
 		}
+		break;
 	case HINT_BUILD:
-		if (val > 0)
+		if (val >= 0)
 		{
-			return(1);
+			return 1;
 		}
+		break;
 	case HINT_BREAKABLE:
 		if (val == 0)
 		{
-			return(1);
+			return 1;
 		}
+		break;
 	case HINT_DOOR_ROTATING:
 	case HINT_BUTTON:
 	case HINT_MG42:
 		if (val == 0)
 		{
-			return(2);
+			return 2;
 		}
+		break;
 	case HINT_BREAKABLE_DYNAMITE:
 		if (val == 0)
 		{
-			return(3);
+			return 3;
 		}
+		break;
+	default:
+		break;
 	}
 
-	return(0);
+	return 0;
 }
 
-// Multiview: Expand the hints.  Because we map a couple hints
-// into a single value, we can't replicate the proper hint back
-// in all cases.
+/**
+ * @brief Multiview: Expand the hints. Because we map a couple hints
+ * into a single value, we can't replicate the proper hint back
+ * in all cases.
+ * @param[in] hint
+ * @param[in] val
+ * @return
+ */
 int BG_simpleHintsExpand(int hint, int val)
 {
 	switch (hint)
@@ -4242,21 +4485,23 @@ int BG_simpleHintsExpand(int hint, int val)
 		return((val >= 0) ? HINT_BUILD : HINT_MG42);
 	case 3:
 		return((val >= 0) ? HINT_BUILD : HINT_BREAKABLE_DYNAMITE);
+	default:
+		break;
 	}
 
-	return(0);
+	return 0;
 }
 #endif
 
 // Only used locally
 typedef struct
 {
-	char *colorname;
+	const char *colorname;
 	vec4_t *color;
 } colorTable_t;
 
 // Colors for crosshairs
-colorTable_t OSP_Colortable[] =
+const colorTable_t OSP_Colortable[] =
 {
 	{ "white",    &colorWhite    },
 	{ "red",      &colorRed      },
@@ -4281,7 +4526,14 @@ colorTable_t OSP_Colortable[] =
 };
 
 extern void trap_Cvar_Set(const char *var_name, const char *value);
-void BG_setCrosshair(char *colString, float *col, float alpha, char *cvarName)
+/**
+ * @brief BG_setCrosshair
+ * @param[in] colString
+ * @param[in] col
+ * @param[in] alpha
+ * @param[in] cvarName
+ */
+void BG_setCrosshair(char *colString, float *col, float alpha, const char *cvarName)
 {
 	char *s = colString;
 
@@ -4296,9 +4548,9 @@ void BG_setCrosshair(char *colString, float *col, float alpha, char *cvarName)
 		// parse rrggbb
 		if (Q_IsHexColorString(s))
 		{
-			col[0] = ((float)(gethex(*(s)) * 16 + gethex(*(s + 1)))) / 255.00;
-			col[1] = ((float)(gethex(*(s + 2)) * 16 + gethex(*(s + 3)))) / 255.00;
-			col[2] = ((float)(gethex(*(s + 4)) * 16 + gethex(*(s + 5)))) / 255.00;
+			col[0] = ((float)(gethex(*(s)) * 16.f + gethex(*(s + 1)))) / 255.00f;
+			col[1] = ((float)(gethex(*(s + 2)) * 16.f + gethex(*(s + 3)))) / 255.00f;
+			col[2] = ((float)(gethex(*(s + 4)) * 16.f + gethex(*(s + 5)))) / 255.00f;
 			return;
 		}
 	}
@@ -4322,24 +4574,6 @@ void BG_setCrosshair(char *colString, float *col, float alpha, char *cvarName)
 	trap_Cvar_Set(cvarName, "White");
 }
 
-// FIXME: weapon table
-qboolean BG_isLightWeaponSupportingFastReload(int weapon)
-{
-	switch (weapon)
-	{
-	case WP_LUGER:
-	case WP_COLT:
-	case WP_MP40:
-	case WP_THOMPSON:
-	case WP_STEN:
-	case WP_SILENCER:
-	case WP_FG42:
-	case WP_SILENCED_COLT:
-		return qtrue;
-	}
-	return qfalse;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 typedef struct locInfo_s
@@ -4350,6 +4584,11 @@ typedef struct locInfo_s
 
 static locInfo_t locInfo;
 
+/**
+ * @brief BG_InitLocations
+ * @param[in] world_mins
+ * @param[in] world_maxs
+ */
 void BG_InitLocations(vec2_t world_mins, vec2_t world_maxs)
 {
 	// keep this in sync with CG_DrawGrid
@@ -4370,11 +4609,18 @@ void BG_InitLocations(vec2_t world_mins, vec2_t world_maxs)
 	locInfo.gridStartCoord[1] = world_mins[1] - .5f * ((((world_mins[1] - world_maxs[1]) / locInfo.gridStep[1]) - ((int)((world_mins[1] - world_maxs[1]) / locInfo.gridStep[1]))) * locInfo.gridStep[1]);
 }
 
-char *BG_GetLocationString(vec_t *pos)
+static char coord[6];
+
+/**
+ * @brief BG_GetLocationString
+ * @param[in] xpos
+ * @param[in] ypos
+ * @return
+ */
+char *BG_GetLocationString(float xpos, float ypos)
 {
-	static char coord[6];
-	int         x = (pos[0] - locInfo.gridStartCoord[0]) / locInfo.gridStep[0];
-	int         y = (locInfo.gridStartCoord[1] - pos[1]) / locInfo.gridStep[1];
+	int x = (xpos - locInfo.gridStartCoord[0]) / locInfo.gridStep[0];
+	int y = (locInfo.gridStartCoord[1] - ypos) / locInfo.gridStep[1];
 
 	coord[0] = '\0';
 
@@ -4392,6 +4638,14 @@ char *BG_GetLocationString(vec_t *pos)
 	return coord;
 }
 
+/**
+ * @brief BG_BBoxCollision
+ * @param[in] min1
+ * @param[in] max1
+ * @param[in] min2
+ * @param[in] max2
+ * @return
+ */
 qboolean BG_BBoxCollision(vec3_t min1, vec3_t max1, vec3_t min2, vec3_t max2)
 {
 	int i;
@@ -4413,6 +4667,11 @@ qboolean BG_BBoxCollision(vec3_t min1, vec3_t max1, vec3_t min2, vec3_t max2)
 
 /////////////////////////
 
+/**
+ * @brief BG_FootstepForSurface
+ * @param[in] surfaceFlags
+ * @return
+ */
 int BG_FootstepForSurface(int surfaceFlags)
 {
 	if (surfaceFlags & SURF_NOSTEPS)

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  * Copyright (C) 2012 Konrad Mosoń <mosonkonrad@gmail.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
@@ -87,16 +87,19 @@ void Tracker_Send(char *format, ...)
  */
 void Tracker_Init(void)
 {
+	char *tracker;
+
 	if (!(sv_advert->integer & SVA_TRACKER))
 	{
 		Com_Printf("Tracker: Server communication disabled by sv_advert.\n");
 		return;
 	}
 
+	tracker   = Cvar_VariableString("sv_tracker");
 	t         = time(0);
 	expectnum = 0;
 
-	NET_StringToAdr(TRACKER_ADDR, &addr, NA_IP);
+	NET_StringToAdr(tracker, &addr, NA_IP);
 #ifdef TRACKER_DEBUG
 	NET_StringToAdr("127.0.0.1:6066", &local, NA_IP);
 #endif
@@ -238,7 +241,7 @@ void Tracker_TeamSwitch(client_t *cl)
 /**
  * @brief Creates client information for other functions
  * @param clientNum Client ID (from 0 to MAX_CLIENTS)
- * @note Just for sv_trackbase.c internal use
+ * @note Just for internal use
  */
 char *Tracker_createClientInfo(int clientNum)
 {

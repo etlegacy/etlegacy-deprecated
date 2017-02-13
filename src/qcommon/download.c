@@ -1,36 +1,36 @@
 /*
-* Wolfenstein: Enemy Territory GPL Source Code
-* Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
-*
-* ET: Legacy
-* Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
-*
-* This file is part of ET: Legacy - http://www.etlegacy.com
-*
-* ET: Legacy is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* ET: Legacy is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with ET: Legacy. If not, see <http://www.gnu.org/licenses/>.
-*
-* In addition, Wolfenstein: Enemy Territory GPL Source Code is also
-* subject to certain additional terms. You should have received a copy
-* of these additional terms immediately following the terms and conditions
-* of the GNU General Public License which accompanied the source code.
-* If not, please request a copy in writing from id Software at the address below.
-*
-* id Software LLC, c/o ZeniMax Media Inc., Suite 120, Rockville, Maryland 20850 USA.
-*/
+ * Wolfenstein: Enemy Territory GPL Source Code
+ * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
+ *
+ * ET: Legacy
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
+ *
+ * This file is part of ET: Legacy - http://www.etlegacy.com
+ *
+ * ET: Legacy is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * ET: Legacy is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with ET: Legacy. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * In addition, Wolfenstein: Enemy Territory GPL Source Code is also
+ * subject to certain additional terms. You should have received a copy
+ * of these additional terms immediately following the terms and conditions
+ * of the GNU General Public License which accompanied the source code.
+ * If not, please request a copy in writing from id Software at the address below.
+ *
+ * id Software LLC, c/o ZeniMax Media Inc., Suite 120, Rockville, Maryland 20850 USA.
+ */
 /**
-* @file download.c
-*/
+ * @file download.c
+ */
 
 #ifdef DEDICATED
 #include "../server/server.h"
@@ -42,6 +42,9 @@
 #define Com_AddReliableCommand(x) CL_AddReliableCommand(x)
 #endif
 
+/**
+ * @brief Com_ClearDownload
+ */
 void Com_ClearDownload(void)
 {
 	dld.download           = 0;
@@ -57,12 +60,9 @@ void Com_ClearDownload(void)
 	dld.badChecksumList[0] = '\0';
 }
 
-/*
-=====================
-CL_ClearStaticDownload
-Clear download information that we keep in cls (disconnected download support)
-=====================
-*/
+/**
+ * @brief Clear download information that we keep in cls (disconnected download support)
+ */
 void Com_ClearStaticDownload(void)
 {
 	assert(!dld.bWWWDlDisconnected);    // reset before calling
@@ -92,6 +92,7 @@ static void Com_DownloadsComplete(void)
 #ifdef DEDICATED
 		FS_Restart(sv.checksumFeed);
 #else
+		Com_Printf("Client download complete - restarting ...\n");
 		FS_Restart(clc.checksumFeed);    // We possibly downloaded a pak, restart the file system to load it
 
 		if (!dld.bWWWDlDisconnected)
@@ -108,6 +109,12 @@ static void Com_DownloadsComplete(void)
 		// so we don't want to load stuff yet
 		return;
 	}
+#ifndef DEDICATED
+	else
+	{
+		Com_Printf("Client download complete\n");
+	}
+#endif
 
 	// I wonder if that happens - it should not but I suspect it could happen if a download fails in the middle or is aborted
 	assert(!dld.bWWWDlDisconnected);
@@ -117,21 +124,21 @@ static void Com_DownloadsComplete(void)
 #endif
 }
 
-/*
-=================
-Com_BeginDownload
-
-Requests a file to download from the server.  Stores it in the current
-game directory.
-=================
-*/
+/**
+ * @brief Requests a file to download from the server. Stores it in the current
+ * game directory.
+ *
+ * @param[in] localName
+ * @param[in] remoteName
+ */
 void Com_BeginDownload(const char *localName, const char *remoteName)
 {
+	//Com_DPrintf("***** Com_BeginDownload *****\n"
+	//          "Localname: %s\n"
+	//          "Remotename: %s\n"
+	//          "****************************\n", localName, remoteName);
 
-	Com_DPrintf("***** Com_BeginDownload *****\n"
-	            "Localname: %s\n"
-	            "Remotename: %s\n"
-	            "****************************\n", localName, remoteName);
+	Com_Printf("Client downloading: %s\n", remoteName); // localName and remoteName are the same name
 
 	Q_strncpyz(dld.downloadName, localName, sizeof(dld.downloadName));
 	Com_sprintf(dld.downloadTempName, sizeof(dld.downloadTempName), "%s.tmp", localName);
@@ -150,13 +157,9 @@ void Com_BeginDownload(const char *localName, const char *remoteName)
 #endif
 }
 
-/*
-=================
-Com_NextDownload
-
-A download completed or failed
-=================
-*/
+/**
+ * @brief A download completed or failed
+ */
 void Com_NextDownload(void)
 {
 	char *s;
@@ -261,11 +264,9 @@ void Com_InitDownloads(void)
 	Com_DownloadsComplete();
 }
 
-/*
-==================
-Com_WWWDownload
-==================
-*/
+/**
+ * @brief Com_WWWDownload
+ */
 void Com_WWWDownload(void)
 {
 	char            *to_ospath;
@@ -293,8 +294,7 @@ void Com_WWWDownload(void)
 	{
 		return;
 	}
-
-	if (ret == DL_DONE)
+	else if (ret == DL_DONE)
 	{
 		// taken from CL_ParseDownload
 		// we work with OS paths
@@ -365,15 +365,15 @@ void Com_WWWDownload(void)
 	Com_NextDownload();
 }
 
-/*
-==================
-Com_WWWBadChecksum
-
-FS code calls this when doing FS_ComparePaks
-we can detect files that we got from a www dl redirect with a wrong checksum
-this indicates that the redirect setup is broken, and next dl attempt should NOT redirect
-==================
-*/
+/**
+ * @brief FS code calls this when doing FS_ComparePaks
+ * we can detect files that we got from a www dl redirect with a wrong checksum
+ * this indicates that the redirect setup is broken, and next dl attempt should NOT redirect
+ *
+ * @param[in] pakname
+ *
+ * @return
+ */
 qboolean Com_WWWBadChecksum(const char *pakname)
 {
 	if (strstr(dld.redirectedList, va("@%s", pakname)))
@@ -393,6 +393,11 @@ qboolean Com_WWWBadChecksum(const char *pakname)
 	return qfalse;
 }
 
+/**
+ * @brief Com_SetupDownload
+ * @param[in] remote
+ * @param[in] filename
+ */
 static void Com_SetupDownload(const char *remote, const char *filename)
 {
 	dld.bWWWDl             = qtrue;
@@ -411,6 +416,9 @@ static void Com_SetupDownload(const char *remote, const char *filename)
 	}
 }
 
+/**
+ * @brief Com_Download_f
+ */
 void Com_Download_f(void)
 {
 #ifndef DEDICATED

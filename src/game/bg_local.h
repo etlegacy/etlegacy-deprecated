@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -36,22 +36,20 @@
 #ifndef INCLUDE_BG_LOCAL_H
 #define INCLUDE_BG_LOCAL_H
 
-#define MIN_WALK_NORMAL 0.7     // can't walk on very steep slopes
+#define MIN_WALK_NORMAL 0.7f     ///< Can't walk on very steep slopes
 
 #define STEPSIZE        18
 
 #define JUMP_VELOCITY   270
 
-#define TIMER_LAND      130
-#define TIMER_GESTURE   (34 * 66 + 50)
-
-#define DOUBLE_TAP_DELAY    400
-
 #define MAX_MG42_HEAT   1500.f
 
-// all of the locals will be zeroed before each
-// pmove, just to make damn sure we don't have
-// any differences when running on client or server
+/**
+ * @struct pml_s
+ * @brief All of the locals will be zeroed before each
+ * pmove, just to make damn sure we don't have
+ * any differences when running on client or server
+ */
 typedef struct
 {
 	vec3_t forward, right, up;
@@ -102,9 +100,6 @@ void PM_AddEvent(int newEvent);
 
 qboolean PM_SlideMove(qboolean gravity);
 void PM_StepSlideMove(qboolean gravity);
-
-qboolean PM_SlideMoveProne(qboolean gravity);
-void PM_StepSlideMoveProne(qboolean gravity);
 
 void PM_BeginWeaponChange(int oldweapon, int newweapon, qboolean reload);
 

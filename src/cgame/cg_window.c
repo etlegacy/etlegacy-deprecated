@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -34,14 +34,16 @@
  */
 
 #include "cg_local.h"
-#include "../ui/ui_shared.h"
 
-#if FEATURE_MULTIVIEW
+#ifdef FEATURE_MULTIVIEW
 extern pmove_t cg_pmove;        // cg_predict.c
 #endif
 
 vec4_t colorGreen2 = { 0.305f, 0.475f, 0.305f, 0.48f }; // Slightly off from default fill
 
+/**
+ * @brief CG_createStatsWindow
+ */
 void CG_createStatsWindow(void)
 {
 	cg_window_t *sw = CG_windowAlloc(WFX_TEXTSIZING | WFX_FADEIN | /*WFX_SCROLLUP|*/ WFX_TRUETYPE, 110);
@@ -60,6 +62,9 @@ void CG_createStatsWindow(void)
 	sw->y          = (cg.snap->ps.pm_type == PM_INTERMISSION) ? -20 : -100; // Align from bottom minus offset and height
 }
 
+/**
+ * @brief CG_createTopShotsWindow
+ */
 void CG_createTopShotsWindow(void)
 {
 	cg_window_t *sw = CG_windowAlloc(WFX_TEXTSIZING | WFX_FLASH | WFX_FADEIN | WFX_SCROLLUP | WFX_TRUETYPE, 190);
@@ -80,6 +85,9 @@ void CG_createTopShotsWindow(void)
 	memcpy(&sw->colorBackground2, &colorGreen2, sizeof(vec4_t));
 }
 
+/**
+ * @brief CG_createMOTDWindow
+ */
 void CG_createMOTDWindow(void)
 {
 	const char *str = CG_ConfigString(CS_CUSTMOTD + 0);
@@ -111,7 +119,7 @@ void CG_createMOTDWindow(void)
 			str = CG_ConfigString(CS_CUSTMOTD + i);
 			if (str != NULL && *str != 0)
 			{
-				CG_printWindow((char *)str);
+				CG_printWindow(str);
 			}
 			else
 			{
@@ -129,7 +137,10 @@ void CG_createMOTDWindow(void)
 //////////////////////////////////////////////
 //////////////////////////////////////////////
 
-// Windowing system setup
+
+/**
+ * @brief Windowing system setup
+ */
 void CG_windowInit(void)
 {
 	int i;
@@ -146,7 +157,12 @@ void CG_windowInit(void)
 	cg.topshotsWindow     = NULL;
 }
 
-// Window stuct "constructor" with some common defaults
+/**
+ * @brief Window stuct "constructor" with some common defaults
+ * @param[in] w
+ * @param[out] fx
+ * @param[out] startupLength
+ */
 void CG_windowReset(cg_window_t *w, int fx, int startupLength)
 {
 	vec4_t colorGeneralBorder = { 0.5f, 0.35f, 0.25f, 0.5f };
@@ -170,7 +186,12 @@ void CG_windowReset(cg_window_t *w, int fx, int startupLength)
 	memcpy(&w->colorBackground, &colorGeneralFill, sizeof(vec4_t));
 }
 
-// Reserve a window
+/**
+ * @brief Reserve a window
+ * @param[in] fx
+ * @param[in] startupLength
+ * @return
+ */
 cg_window_t *CG_windowAlloc(int fx, int startupLength)
 {
 	int                i;
@@ -197,7 +218,10 @@ cg_window_t *CG_windowAlloc(int fx, int startupLength)
 	return NULL;
 }
 
-// Free up a window reservation
+/**
+ * @brief Free up a window reservation
+ * @param[in,out] w
+ */
 void CG_windowFree(cg_window_t *w)
 {
 	int                i, j;
@@ -240,6 +264,9 @@ void CG_windowFree(cg_window_t *w)
 	}
 }
 
+/**
+ * @brief CG_windowCleanup
+ */
 void CG_windowCleanup(void)
 {
 	int                i;
@@ -257,9 +284,12 @@ void CG_windowCleanup(void)
 	}
 }
 
+/**
+ * @brief CG_demoAviFPSDraw
+ */
 void CG_demoAviFPSDraw(void)
 {
-	qboolean fKeyDown = cgs.fKeyPressed[K_F1] | cgs.fKeyPressed[K_F2] | cgs.fKeyPressed[K_F3] | cgs.fKeyPressed[K_F4] | cgs.fKeyPressed[K_F5];
+	qboolean fKeyDown = (qboolean)(cgs.fKeyPressed[K_F1] | cgs.fKeyPressed[K_F2] | cgs.fKeyPressed[K_F3] | cgs.fKeyPressed[K_F4] | cgs.fKeyPressed[K_F5]);
 
 	if (cg.demoPlayback && fKeyDown && cgs.aviDemoRate >= 0)
 	{
@@ -267,28 +297,37 @@ void CG_demoAviFPSDraw(void)
 	}
 }
 
+/**
+ * @brief CG_demoTimescaleDraw
+ */
 void CG_demoTimescaleDraw(void)
 {
 	if (cg.demoPlayback && cgs.timescaleUpdate > cg.time && demo_drawTimeScale.integer != 0)
 	{
-		char *s = va("^3TimeScale: ^7%.1f", cg_timescale.value);
+		vec4_t bgColor = { 0.0f, 0.0f, 0.0f, 0.6f };
+		vec4_t bdColor = { 0.5f, 0.5f, 0.5f, 0.5f };
+
+		char *s = va("^7Time Scale: ^3%.1fx", (double)cg_timescale.value);
 		int  h  = CG_Text_Height_Ext("A", cg_fontScaleSP.value, 0, &cgs.media.limboFont2);
 		int  w  = CG_Text_Width_Ext(s, cg_fontScaleSP.value, 0, &cgs.media.limboFont2);
+		int  x  = (int)(Ccg_WideX(SCREEN_WIDTH) - w - 108);
 
-		CG_FillRect(42 - 3, 400, w + 7, h * 2.5, colorDkGreen);
-		CG_DrawRect(42 - 3, 400, w + 7, h * 2.5, 1, colorMdYellow);
-		CG_Text_Paint_Ext(42, 411, cg_fontScaleSP.value, cg_fontScaleSP.value, colorWhite, s, 0, 0, 0, &cgs.media.limboFont2);
+		CG_FillRect(x, SCREEN_HEIGHT - 21, w + 7, h * 2.5f, bgColor);
+		CG_DrawRect(x, SCREEN_HEIGHT - 21, w + 7, h * 2.5f, 1, bdColor);
+		CG_Text_Paint_Ext(x + 3, SCREEN_HEIGHT - 10, cg_fontScaleSP.value, cg_fontScaleSP.value, colorWhite, s, 0, 0, 0, &cgs.media.limboFont2);
 	}
 }
 
-// Main window-drawing handler
+/**
+ * @brief Main window-drawing handler
+ */
 void CG_windowDraw(void)
 {
 	int         h, x, y, i, j, milli, t_offset, tmp;
 	cg_window_t *w;
 	qboolean    fCleanup = qfalse;
-#if FEATURE_MULTIVIEW
-	qboolean fAllowMV = (cg.snap != NULL && cg.snap->ps.pm_type != PM_INTERMISSION);
+#ifdef FEATURE_MULTIVIEW
+	qboolean fAllowMV = (qboolean)(cg.snap != NULL && cg.snap->ps.pm_type != PM_INTERMISSION && cgs.mvAllowed);
 #endif
 	vec4_t *bg;
 	vec4_t textColor, borderColor, bgColor;
@@ -304,7 +343,7 @@ void CG_windowDraw(void)
 	milli = trap_Milliseconds();
 	memcpy(textColor, colorWhite, sizeof(vec4_t));
 
-#if FEATURE_MULTIVIEW
+#ifdef FEATURE_MULTIVIEW
 	// Mouse cursor position for MV highlighting (offset for cursor pointer position)
 	// Also allow for swingcam toggling
 	if (cg.mvTotalClients > 0 && fAllowMV)
@@ -323,7 +362,7 @@ void CG_windowDraw(void)
 			continue;
 		}
 
-#if FEATURE_MULTIVIEW
+#ifdef FEATURE_MULTIVIEW
 		// Multiview rendering has its own handling
 		if (w->effects & WFX_MULTIVIEW)
 		{
@@ -343,9 +382,9 @@ void CG_windowDraw(void)
 
 		bg = ((w->effects & WFX_FLASH) && (milli % w->flashPeriod) > w->flashMidpoint) ? &w->colorBackground2 : &w->colorBackground;
 
-		h            = w->h;
-		x            = w->x;
-		y            = w->y;
+		h            = (int)w->h;
+		x            = (int)w->x;
+		y            = (int)w->y;
 		t_offset     = milli - w->time;
 		textColor[3] = 1.0f;
 		memcpy(&borderColor, w->colorBorder, sizeof(vec4_t));
@@ -372,7 +411,7 @@ void CG_windowDraw(void)
 			{
 				if (tmp > 0)
 				{
-					textColor[3] = (float)((float)t_offset / (float)w->targetTime);
+					textColor[3] = ((float)t_offset / (float)w->targetTime);
 				}
 				else
 				{
@@ -387,7 +426,7 @@ void CG_windowDraw(void)
 			{
 				if (tmp > 0)
 				{
-					y = w->curY + (SCREEN_HEIGHT - w->y) * t_offset / w->targetTime;        //(100 * t_offset / w->targetTime) / 100;
+					y = (int)(w->curY + (SCREEN_HEIGHT - w->y) * t_offset / w->targetTime);        //(100 * t_offset / w->targetTime) / 100;
 				}
 				if (tmp < 0 || y >= SCREEN_HEIGHT)
 				{
@@ -400,7 +439,7 @@ void CG_windowDraw(void)
 			{
 				if (tmp > 0)
 				{
-					textColor[3] -= (float)((float)t_offset / (float)w->targetTime);
+					textColor[3] -= ((float)t_offset / (float)w->targetTime);
 				}
 				else
 				{
@@ -423,20 +462,19 @@ void CG_windowDraw(void)
 		{
 			if (w->effects & WFX_TRUETYPE)
 			{
-				CG_Text_Paint_Ext(x, y + h, w->fontScaleX, w->fontScaleY, textColor,
-				                  (char *)w->lineText[j], 0.0f, 0, 0, &cgs.media.limboFont2);
+				CG_Text_Paint_Ext(x, y + h, w->fontScaleX, w->fontScaleY, textColor, w->lineText[j], 0.0f, 0, 0, &cgs.media.limboFont2);
 			}
 
 			h -= (w->lineHeight[j] + 3);
 
 			if (!(w->effects & WFX_TRUETYPE))
 			{
-				CG_Text_Paint_Ext(x, y + h, cg_fontScaleSP.value, cg_fontScaleSP.value, textColor, (char *)w->lineText[j], 0, 0, 0, &cgs.media.limboFont2);
+				CG_Text_Paint_Ext(x, y + h, cg_fontScaleSP.value, cg_fontScaleSP.value, textColor, w->lineText[j], 0, 0, 0, &cgs.media.limboFont2);
 			}
 		}
 	}
 
-#if FEATURE_MULTIVIEW
+#ifdef FEATURE_MULTIVIEW
 	// Wedge in MV info overlay
 	if (cg.mvTotalClients > 0 && fAllowMV)
 	{
@@ -448,7 +486,7 @@ void CG_windowDraw(void)
 	CG_demoAviFPSDraw();
 	CG_demoTimescaleDraw();
 
-#if FEATURE_MULTIVIEW
+#ifdef FEATURE_MULTIVIEW
 	// Mouse cursor lays on top of everything
 	if (cg.mvTotalClients > 0 && cg.time < cgs.cursorUpdate && fAllowMV)
 	{
@@ -462,7 +500,10 @@ void CG_windowDraw(void)
 	}
 }
 
-// Set the window width and height based on the windows text/font parameters
+/**
+ * @brief Set the window width and height based on the windows text/font parameters
+ * @param[in,out] w
+ */
 void CG_windowNormalizeOnText(cg_window_t *w)
 {
 	int i, tmp;
@@ -477,19 +518,19 @@ void CG_windowNormalizeOnText(cg_window_t *w)
 
 	if (!(w->effects & WFX_TRUETYPE))
 	{
-		w->fontWidth  = w->fontScaleX * WINDOW_FONTWIDTH;
-		w->fontHeight = w->fontScaleY * WINDOW_FONTHEIGHT;
+		w->fontWidth  = (int)(w->fontScaleX * WINDOW_FONTWIDTH);
+		w->fontHeight = (int)(w->fontScaleY * WINDOW_FONTHEIGHT);
 	}
 
 	for (i = 0; i < w->lineCount; i++)
 	{
 		if (w->effects & WFX_TRUETYPE)
 		{
-			tmp = CG_Text_Width_Ext((char *)w->lineText[i], w->fontScaleX, 0, &cgs.media.limboFont2);
+			tmp = CG_Text_Width_Ext(w->lineText[i], w->fontScaleX, 0, &cgs.media.limboFont2);
 		}
 		else
 		{
-			tmp = CG_Text_Width_Ext((char *)w->lineText[i], cg_fontScaleSP.value, 0, &cgs.media.limboFont2);
+			tmp = CG_Text_Width_Ext(w->lineText[i], cg_fontScaleSP.value, 0, &cgs.media.limboFont2);
 		}
 
 		if (tmp > w->w)
@@ -502,7 +543,7 @@ void CG_windowNormalizeOnText(cg_window_t *w)
 	{
 		if (w->effects & WFX_TRUETYPE)
 		{
-			w->lineHeight[i] = CG_Text_Height_Ext((char *)w->lineText[i], w->fontScaleY, 0, &cgs.media.limboFont2);
+			w->lineHeight[i] = CG_Text_Height_Ext(w->lineText[i], w->fontScaleY, 0, &cgs.media.limboFont2);
 		}
 		else
 		{
@@ -519,7 +560,7 @@ void CG_windowNormalizeOnText(cg_window_t *w)
 	// Set up bottom alignment
 	if (w->x < 0)
 	{
-		w->x += SCREEN_WIDTH - w->w;
+		w->x += Ccg_WideX(SCREEN_WIDTH) - w->w;
 	}
 	if (w->y < 0)
 	{
@@ -527,7 +568,11 @@ void CG_windowNormalizeOnText(cg_window_t *w)
 	}
 }
 
-void CG_printWindow(char *str)
+/**
+ * @brief CG_printWindow
+ * @param[in] str
+ */
+void CG_printWindow(const char *str)
 {
 	int         pos = 0, pos2 = 0;
 	char        buf[MAX_STRING_CHARS];
@@ -571,7 +616,9 @@ void CG_printWindow(char *str)
 	}
 }
 
-// String buffer handling
+/**
+ * @brief String buffer handling
+ */
 void CG_initStrings(void)
 {
 	int i;
@@ -583,7 +630,13 @@ void CG_initStrings(void)
 	}
 }
 
-qboolean CG_addString(cg_window_t *w, char *buf)
+/**
+ * @brief CG_addString
+ * @param[in,out] w
+ * @param[in] buf
+ * @return
+ */
+qboolean CG_addString(cg_window_t *w, const char *buf)
 {
 	int i;
 
@@ -601,7 +654,7 @@ qboolean CG_addString(cg_window_t *w, char *buf)
 			{
 				w->lineCount++;
 				cg.aStringPool[i].fActive = qtrue;
-				strcpy(cg.aStringPool[i].str, buf);
+				Q_strncpyz(cg.aStringPool[i].str, buf, sizeof(cg.aStringPool[0].str));
 
 				return qtrue;
 			}
@@ -613,7 +666,7 @@ qboolean CG_addString(cg_window_t *w, char *buf)
 		if (!cg.aStringPool[i].fActive)
 		{
 			cg.aStringPool[i].fActive = qtrue;
-			strcpy(cg.aStringPool[i].str, buf);
+			Q_strncpyz(cg.aStringPool[i].str, buf, sizeof(cg.aStringPool[0].str));
 			w->lineText[w->lineCount++] = (char *)&cg.aStringPool[i].str;
 
 			return qtrue;
@@ -623,6 +676,10 @@ qboolean CG_addString(cg_window_t *w, char *buf)
 	return qfalse;
 }
 
+/**
+ * @brief CG_removeStrings
+ * @param[in,out] w
+ */
 void CG_removeStrings(cg_window_t *w)
 {
 	int i, j;
@@ -652,13 +709,18 @@ void CG_removeStrings(cg_window_t *w)
 
 // cgame cursor handling
 
-#if FEATURE_MULTIVIEW
-// Mouse overlay for controlling multiview windows
+#ifdef FEATURE_MULTIVIEW
+/**
+ * @brief Mouse overlay for controlling multiview windows
+ */
 void CG_cursorUpdate(void)
 {
 	int                i, x;
-	float              nx, ny;
 	int                nSelectedWindow = -1;
+	float              nx, ny;
+	float              fontScale  = cg_fontScaleSP.value;
+	int                charHeight = CG_Text_Height_Ext("A", fontScale, 0, &cgs.media.limboFont2);
+	int                charWidth  = CG_Text_Width_Ext("A", fontScale, 0, &cgs.media.limboFont2);
 	cg_window_t        *w;
 	cg_windowHandler_t *wh    = &cg.winHandler;
 	qboolean           fFound = qfalse, fUpdateOverlay = qfalse;
@@ -713,9 +775,9 @@ void CG_cursorUpdate(void)
 						if (fResize)
 						{
 							w->w += nx - w->m_x;
-							if (w->x + w->w > SCREEN_WIDTH - 2)
+							if (w->x + w->w > Ccg_WideX(SCREEN_WIDTH) - 2)
 							{
-								w->w = SCREEN_WIDTH - 2 - w->x;
+								w->w = Ccg_WideX(SCREEN_WIDTH) - 2 - w->x;
 							}
 							if (w->w < 64)
 							{
@@ -735,9 +797,9 @@ void CG_cursorUpdate(void)
 						else
 						{
 							w->x += nx - w->m_x;
-							if (w->x + w->w > SCREEN_WIDTH - 2)
+							if (w->x + w->w > Ccg_WideX(SCREEN_WIDTH) - 2)
 							{
-								w->x = SCREEN_WIDTH - 2 - w->w;
+								w->x = Ccg_WideX(SCREEN_WIDTH) - 2 - w->w;
 							}
 							if (w->x < 2)
 							{
@@ -780,8 +842,8 @@ void CG_cursorUpdate(void)
 		}
 	}
 
-	nx = (float)(MVINFO_RIGHT - (MVINFO_TEXTSIZE * 3));
-	ny = (float)(MVINFO_TOP + (MVINFO_TEXTSIZE + 1));
+	nx = (float)(MVINFO_RIGHT - charWidth * 12.0f);
+	ny = (float)(MVINFO_TOP + charHeight * 2.0f);
 
 	// Highlight corresponding active window's overlay element
 	if (fFound)
@@ -799,29 +861,32 @@ void CG_cursorUpdate(void)
 	// General boundary check
 	else
 	{
-		// Ugh, have to loop through BOTH team lists
-		int vOffset = 0;
+		// display on two columns
+		int hOffset = 32;
+		int xOffset = (int)(MVINFO_RIGHT - hOffset);
 
+		// Ugh, have to loop through BOTH team lists
 		for (i = TEAM_AXIS; i <= TEAM_ALLIES; i++)
 		{
 			if (cg.mvTotalTeam[i] == 0)
 			{
 				continue;
 			}
-			if (cgs.cursorX >= nx && cgs.cursorY >= ny && cgs.cursorX < MVINFO_RIGHT &&
-			    cgs.cursorY < ny + (cg.mvTotalTeam[i] * (MVINFO_TEXTSIZE + 1)))
+
+			if (cgs.cursorX >= nx && cgs.cursorY >= ny && cgs.cursorX < xOffset &&
+			    cgs.cursorY < ny + (cg.mvTotalTeam[i] * charHeight * 2.0f))
 			{
-				int pos = (int)(cgs.cursorY - ny) / (MVINFO_TEXTSIZE + 1);
+				int pos = (int)((cgs.cursorY - ny) / (charHeight * 2.0f));
 
 				if (pos < cg.mvTotalTeam[i])
 				{
-					int x = MVINFO_RIGHT - cg.mvOverlay[(cg.mvTeamList[i][pos])].width;
-					int y = MVINFO_TOP + vOffset + ((pos + 1) * (MVINFO_TEXTSIZE + 1));
+					int x = xOffset - cg.mvOverlay[(cg.mvTeamList[i][pos])].width;
+					int y = (int)(MVINFO_TOP + ((pos + 1) * charHeight * 2.0f));
 
 					// See if we're really over something
 					if (cgs.cursorX >= x && cgs.cursorY >= y &&
-					    cgs.cursorX <= MVINFO_RIGHT &&
-					    cgs.cursorY <= y + MVINFO_TEXTSIZE)
+					    cgs.cursorX <= xOffset &&
+					    cgs.cursorY <= y + charHeight * 2.0f)
 					{
 						// Perform any other window handling here for MV
 						// views based on element selection
@@ -854,8 +919,8 @@ void CG_cursorUpdate(void)
 					}
 				}
 			}
-			vOffset += (cg.mvTotalTeam[i] + 2) * (MVINFO_TEXTSIZE + 1);
-			ny      += vOffset;
+			xOffset += hOffset;
+			nx      += hOffset;
 		}
 	}
 

@@ -4,7 +4,7 @@
  * Copyright (C) 2010-2011 Robert Beckebans <trebor_7@users.sourceforge.net>
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -37,6 +37,11 @@
 #include "tr_local.h"
 #include "tr_model_skel.h"
 
+/**
+ * @brief GetChunkHeader
+ * @param[in] s
+ * @param[out] chunkHeader
+ */
 static void GetChunkHeader(memStream_t *s, axChunkHeader_t *chunkHeader)
 {
 	int i;
@@ -51,6 +56,10 @@ static void GetChunkHeader(memStream_t *s, axChunkHeader_t *chunkHeader)
 	chunkHeader->numData  = MemStreamGetLong(s);
 }
 
+/**
+ * @brief PrintChunkHeader
+ * @param[in] chunkHeader
+ */
 static void PrintChunkHeader(axChunkHeader_t *chunkHeader)
 {
 #if 0
@@ -62,6 +71,11 @@ static void PrintChunkHeader(axChunkHeader_t *chunkHeader)
 #endif
 }
 
+/**
+ * @brief GetBone
+ * @param[in] s
+ * @param[out] bone
+ */
 static void GetBone(memStream_t *s, axBone_t *bone)
 {
 	int i;
@@ -83,6 +97,12 @@ static void GetBone(memStream_t *s, axBone_t *bone)
 	bone->zSize = MemStreamGetFloat(s);
 }
 
+/**
+ * @brief CompareTrianglesByMaterialIndex
+ * @param[in] a
+ * @param[in] b
+ * @return
+ */
 static int CompareTrianglesByMaterialIndex(const void *a, const void *b)
 {
 	axTriangle_t *t1, *t2;
@@ -103,6 +123,14 @@ static int CompareTrianglesByMaterialIndex(const void *a, const void *b)
 	return 0;
 }
 
+/**
+ * @brief R_LoadPSK
+ * @param[in,out] mod
+ * @param[in,out] buffer
+ * @param[in] bufferSize
+ * @param[in] modName
+ * @return
+ */
 qboolean R_LoadPSK(model_t *mod, void *buffer, int bufferSize, const char *modName)
 {
 	int         i, j, k;
@@ -141,7 +169,7 @@ qboolean R_LoadPSK(model_t *mod, void *buffer, int bufferSize, const char *modNa
 
 	vec3_t boneOrigin;
 	quat_t boneQuat;
-	//matrix_t        boneMat;
+	//mat4_t        boneMat;
 
 	int materialIndex, oldMaterialIndex;
 
@@ -155,7 +183,7 @@ qboolean R_LoadPSK(model_t *mod, void *buffer, int bufferSize, const char *modNa
 	int numBoneReferences;
 	int boneReferences[MAX_BONES];
 
-	matrix_t unrealToQuake;
+	mat4_t unrealToQuake;
 
 #define DeallocAll() Com_Dealloc(materials); \
 	Com_Dealloc(points); \
@@ -166,9 +194,16 @@ qboolean R_LoadPSK(model_t *mod, void *buffer, int bufferSize, const char *modNa
 	FreeMemStream(stream);
 
 	//MatrixSetupScale(unrealToQuake, 1, -1, 1);
-	MatrixFromAngles(unrealToQuake, 0, 90, 0);
+	mat4_from_angles(unrealToQuake, 0, 90, 0);
 
 	stream = AllocMemStream(buffer, bufferSize);
+
+	if (stream == NULL)
+	{
+		Ren_Warning("R_LoadPSK: can't allocate memory\n");
+		return qfalse;
+	}
+
 	GetChunkHeader(stream, &chunkHeader);
 
 	// check indent again
@@ -403,7 +438,7 @@ qboolean R_LoadPSK(model_t *mod, void *buffer, int bufferSize, const char *modNa
 
 	for (i = 0, vertex = vertexes; i < numVertexes; i++, vertex++)
 	{
-		if (vertex->materialIndex < 0 || vertex->materialIndex >= numMaterials)
+		if (vertex->materialIndex >= numMaterials)
 		{
 			Ren_Warning("R_LoadPSK: '%s' has vertex with material index out of range (%i while max %i)\n", modName, vertex->materialIndex, numMaterials);
 			DeallocAll();
@@ -413,7 +448,7 @@ qboolean R_LoadPSK(model_t *mod, void *buffer, int bufferSize, const char *modNa
 
 	for (i = 0, triangle = triangles; i < numTriangles; i++, triangle++)
 	{
-		if (triangle->materialIndex < 0 || triangle->materialIndex >= numMaterials)
+		if (triangle->materialIndex >= numMaterials)
 		{
 			Ren_Warning("R_LoadPSK: '%s' has triangle with material index out of range (%i while max %i)\n", modName, triangle->materialIndex, numMaterials);
 			DeallocAll();
@@ -605,7 +640,7 @@ qboolean R_LoadPSK(model_t *mod, void *buffer, int bufferSize, const char *modNa
 		VectorCopy(boneOrigin, md5Bone->origin);
 		//MatrixTransformPoint(unrealToQuake, boneOrigin, md5Bone->origin);
 
-		QuatCopy(boneQuat, md5Bone->rotation);
+		quat_copy(boneQuat, md5Bone->rotation);
 
 		//QuatClear(md5Bone->rotation);
 
@@ -637,11 +672,11 @@ qboolean R_LoadPSK(model_t *mod, void *buffer, int bufferSize, const char *modNa
 			VectorAdd(parent->origin, rotated, md5Bone->origin);
 
 			QuatMultiply1(parent->rotation, md5Bone->rotation, quat);
-			QuatCopy(quat, md5Bone->rotation);
+			quat_copy(quat, md5Bone->rotation);
 		}
 
 		MatrixSetupTransformFromQuat(md5Bone->inverseTransform, md5Bone->rotation, md5Bone->origin);
-		MatrixInverse(md5Bone->inverseTransform);
+		mat4_inverse_self(md5Bone->inverseTransform);
 
 #if 0
 		Ren_Print("R_LoadPSK: md5Bone_t(%i):\n"
@@ -755,7 +790,7 @@ qboolean R_LoadPSK(model_t *mod, void *buffer, int bufferSize, const char *modNa
 		md5Vertex_t *v0, *v1, *v2;
 		const float *p0, *p1, *p2;
 		const float *t0, *t1, *t2;
-		vec3_t      tangent;
+		vec3_t      tangent = { 0, 0, 0 };
 		vec3_t      binormal;
 		vec3_t      normal;
 
@@ -1038,11 +1073,7 @@ qboolean R_LoadPSK(model_t *mod, void *buffer, int bufferSize, const char *modNa
 
 	Com_DestroyGrowList(&vboSurfaces);
 
-	FreeMemStream(stream);
-	Com_Dealloc(points);
-	Com_Dealloc(vertexes);
-	Com_Dealloc(triangles);
-	Com_Dealloc(materials);
+	DeallocAll();
 
 	Ren_Developer("%i VBO surfaces created for PSK model '%s'\n", md5->numVBOSurfaces, modName);
 

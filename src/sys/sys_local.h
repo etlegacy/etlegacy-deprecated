@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -44,6 +44,16 @@ void IN_Frame(void);
 void IN_Shutdown(void);
 void IN_Restart(void);
 
+//SDL Window system
+void *GLimp_MainWindow(void);
+void GLimp_Minimize(void);
+
+//Export to renderer
+void GLimp_Init(glconfig_t *glConfig, windowContext_t *context);
+void GLimp_Shutdown(void);
+void GLimp_EndFrame(void);
+void GLimp_SetGamma(unsigned char red[256], unsigned char green[256], unsigned char blue[256]);
+
 // Console
 void CON_Shutdown(void);
 void CON_Init(void);
@@ -65,7 +75,7 @@ void *Sys_LoadDll(const char *name, qboolean useSystemLib);
 void *Sys_LoadGameDll(const char *name, qboolean extract, intptr_t(**entryPoint) (int, ...), intptr_t (*systemcalls)(intptr_t, ...));
 void Sys_UnloadDll(void *dllHandle);
 void Sys_ParseArgs(int argc, char **argv);
-void Sys_BuildCommandLine(int argc, char **argv, char *commandLine, int bufferSize);
+void Sys_BuildCommandLine(int argc, char **argv, char *commandLine, size_t bufferSize);
 
 #ifdef USE_WINDOWS_CONSOLE
 void Conbuf_AppendText(const char *msg);
@@ -73,7 +83,7 @@ void Sys_DestroyConsole(void);
 #endif
 
 void Sys_SetUpConsoleAndSignals(void);
-void Sys_GameLoop(void);
+void Sys_GameLoop(void) __attribute__((noreturn));
 
 #ifdef __APPLE__
 const char *OSX_ApplicationSupportPath(void);

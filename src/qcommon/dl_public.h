@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -48,7 +48,10 @@ dlStatus_t DL_DownloadLoop(void);
 
 void DL_Shutdown(void);
 
-// bitmask
+/**
+ * @enum dlFlags_t
+ * @brief bitmask
+ */
 typedef enum
 {
 	DL_FLAG_DISCON = 0,

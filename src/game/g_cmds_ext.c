@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -38,7 +38,7 @@
 
 int iWeap = WS_MAX;
 
-char *lock_status[2] = { "unlock", "lock" };
+const char *lock_status[2] = { "unlock", "lock" };
 
 // Update info:
 //  1. Add line to aCommandInfo w/appropriate info
@@ -64,10 +64,6 @@ static const cmd_reference_t aCommandInfo[] =
 	{ "autoscreenshot", qtrue,  qtrue,  NULL,                  ":^7 Creates a screenshot with a consistent naming scheme"                                   },
 	{ "bottomshots",    qtrue,  qfalse, G_weaponRankings_cmd,  ":^7 Shows WORST player for each weapon. Add ^3<weapon_ID>^7 to show all stats for a weapon" },
 	{ "callvote",       qtrue,  qfalse, (void (*)(gentity_t *, unsigned int, qboolean))Cmd_CallVote_f, " <params>:^7 Calls a vote"                          },
-//  { "coach",          qtrue,  qtrue,  NULL, ":^7 Accepts coach invitation/restarts coach view" },
-//  { "coachdecline",   qtrue,  qtrue,  NULL, ":^7 Declines coach invitation or resigns coach status" },
-//  { "coachinvite",    qtrue,  qtrue,  NULL, " <player_ID>:^7 Invites a player to coach team" },
-//  { "coachkick",      qtrue,  qtrue,  NULL, " <player_ID>:^7 Kicks active coach from team" },
 	{ "commands",       qtrue,  qtrue,  G_commands_cmd,        ":^7 Gives a list of commands"                                                               },
 	{ "currenttime",    qtrue,  qtrue,  NULL,                  ":^7 Displays current local time"                                                            },
 	{ "follow",         qfalse, qtrue,  Cmd_Follow_f,          " <player_ID|allies|axis>:^7 Spectates a particular player or team"                          },
@@ -97,24 +93,24 @@ static const cmd_reference_t aCommandInfo[] =
 	{ "unpause",        qfalse, qfalse, G_pause_cmd,           ":^7 Unpauses a match (if initiated by the issuing team)"                                    },
 	{ "unready",        qtrue,  qfalse, G_ready_cmd,           ":^7 Sets your status to ^5not ready^7 to start a match"                                     },
 	{ "weaponstats",    qtrue,  qfalse, G_weaponStats_cmd,     " [player_ID]:^7 Shows weapon accuracy stats for a player"                                   },
-//  { "viewcam",        qfalse, qtrue,  NULL, ":^7 Switches to cinematic camera mode" },
-//  { "vc_follow",      qfalse, qtrue,  NULL, " [player_ID]:^7 Puts viewcam in follow mode.  Can optionally to follow a specific player" },
-//  { "vc_free",        qfalse, qtrue,  NULL, ":^7 Toggle viewcam between manual/automatic change" },
-//  { "vc_view",        qfalse, qtrue,  NULL, ":^7 Toggle ViewCam between static/dynamic views" },
-//  { "viewadd",        qfalse, qtrue,  NULL, " <player_ID>:^7 Adds a player to multi-screen view" },
-//  { "viewall",        qfalse, qtrue,  NULL, ":^7 Adds all active players to a multi-screen view" },
-//  { "viewallies",     qfalse, qtrue,  NULL, ": ^7 Views entire allies/axis team" },
-//  { "viewaxis",       qfalse, qtrue,  NULL, ": ^7 Views entire allies/axis team" },
-//  { "viewcyclenext",  qfalse, qtrue,  NULL, ":^7 Cycles through players in current view" },
-//  { "viewfollow",     qfalse, qtrue,  NULL, ":^7 Follows current highlighted view" },
-//  { "viewnext",       qfalse, qtrue,  NULL, ":^7 Moves through active screen in a multi-screen display" },
-//  { "viewnone",       qfalse, qtrue,  NULL, ":^7 Disables multiview mode and goes back to spectator mode" },
-//  { "viewremove",     qfalse, qtrue,  NULL, " [player_ID]:^7 Removes current selected or specific player from multi-screen view" },
+#ifdef FEATURE_MULTIVIEW
+	{ "mvwadd",         qfalse, qtrue,  NULL,                  " <player_ID>:^7 Adds a player to multi-screen view"                                         },
+	{ "mvallies",       qfalse, qtrue,  NULL,                  ": ^7 Views entire allies/axis team"                                                         },
+	{ "mvaxis",         qfalse, qtrue,  NULL,                  ": ^7 Views entire allies/axis team"                                                         },
+	{ "mvnone",         qfalse, qtrue,  NULL,                  ":^7 Disables multiview mode and goes back to spectator mode"                                },
+	{ "mvdel",          qfalse, qtrue,  NULL,                  " [player_ID]:^7 Removes current selected or specific player from multi-screen view"         },
+#endif
 	{ 0,                qfalse, qtrue,  NULL,                  0                                                                                            }
 };
 
-// Commands
-qboolean G_commandCheck(gentity_t *ent, char *cmd, qboolean fDoAnytime)
+/**
+ * @brief G_commandCheck
+ * @param[in] ent
+ * @param[in] cmd
+ * @param[in] fDoAnytime
+ * @return
+ */
+qboolean G_commandCheck(gentity_t *ent, const char *cmd, qboolean fDoAnytime)
 {
 	unsigned int          i, cCommands = sizeof(aCommandInfo) / sizeof(aCommandInfo[0]);
 	const cmd_reference_t *pCR;
@@ -139,8 +135,14 @@ qboolean G_commandCheck(gentity_t *ent, char *cmd, qboolean fDoAnytime)
 #endif
 }
 
-// Prints specific command help info.
-qboolean G_commandHelp(gentity_t *ent, char *pszCommand, unsigned int dwCommand)
+/**
+ * @brief Prints specific command help info.
+ * @param[in] ent
+ * @param[in] pszCommand
+ * @param[in] dwCommand
+ * @return
+ */
+qboolean G_commandHelp(gentity_t *ent, const char *pszCommand, unsigned int dwCommand)
 {
 	char arg[MAX_TOKEN_CHARS];
 
@@ -158,12 +160,17 @@ qboolean G_commandHelp(gentity_t *ent, char *pszCommand, unsigned int dwCommand)
 	return qfalse;
 }
 
-// Debounces cmd request as necessary.
+/**
+ * @brief Debounces cmd request as necessary.
+ * @param[in,out] ent
+ * @param[in] pszCommandName
+ * @return
+ */
 qboolean G_cmdDebounce(gentity_t *ent, const char *pszCommandName)
 {
 	if (ent->client->pers.cmd_debounce > level.time)
 	{
-		CP(va("print \"Wait another %.1fs to issue ^3%s\n\"", 1.0 * (float)(ent->client->pers.cmd_debounce - level.time) / 1000.0,
+		CP(va("print \"Wait another %.1fs to issue ^3%s\n\"", (double)(1.0f * (float)(ent->client->pers.cmd_debounce - level.time) / 1000.0f),
 		      pszCommandName));
 		return qfalse;
 	}
@@ -172,6 +179,10 @@ qboolean G_cmdDebounce(gentity_t *ent, const char *pszCommandName)
 	return qtrue ;
 }
 
+/**
+ * @brief G_noTeamControls
+ * @param ent - unused
+ */
 void G_noTeamControls(gentity_t *ent)
 {
 	CP("cpm \"Team commands not enabled on this server.\n\"");
@@ -183,9 +194,12 @@ void G_noTeamControls(gentity_t *ent)
 /////
 /////
 
-// ************** COMMANDS / ?
-//
-// Lists server commands.
+/**
+ * @brief Lists server commands.
+ * @param ent - unused
+ * @param dwCommand - unused
+ * @param fValue - unused
+ */
 void G_commands_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
 {
 	int i, rows, num_cmds = sizeof(aCommandInfo) / sizeof(aCommandInfo[0]) - 1;
@@ -229,11 +243,14 @@ void G_commands_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
 	CP("print \"\nType: ^3\\command_name ?^7 for more information\n\"");
 }
 
-// Locks/unlocks a player's team.
+/**
+ * @brief Locks/unlocks a player's team.
+ * @param[in] ent
+ * @param[in] dwCommand
+ * @param[in] fLock
+ */
 void G_lock_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fLock)
 {
-	int tteam;
-
 	if (team_nocontrols.integer)
 	{
 		G_noTeamControls(ent);
@@ -244,17 +261,19 @@ void G_lock_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fLock)
 		return;
 	}
 
-	tteam = G_teamID(ent);
-	if (tteam == TEAM_AXIS || tteam == TEAM_ALLIES)
+	if (ent->client->sess.sessionTeam == TEAM_AXIS || ent->client->sess.sessionTeam == TEAM_ALLIES)
 	{
-		if (teamInfo[tteam].team_lock == fLock)
+		if (teamInfo[ent->client->sess.sessionTeam].team_lock == fLock)
 		{
 			CP(va("print \"^3Your team is already %sed!\n\"", lock_status[fLock]));
 		}
 		else
 		{
-			char *info = va("\"The %s team is now %sed!\n\"", aTeams[tteam], lock_status[fLock]);
-			teamInfo[tteam].team_lock = fLock;
+			char *info;
+
+			info = va("\"The %s team is now %sed!\n\"", aTeams[ent->client->sess.sessionTeam], lock_status[fLock]);
+
+			teamInfo[ent->client->sess.sessionTeam].team_lock = fLock;
 			AP(va("print %s", info));
 			AP(va("cp %s", info));
 		}
@@ -265,7 +284,12 @@ void G_lock_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fLock)
 	}
 }
 
-// Pause/unpause a match.
+/**
+ * @brief Pause/unpause a match.
+ * @param[in] ent
+ * @param[in] dwCommand
+ * @param[in] fPause
+ */
 void G_pause_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fPause)
 {
 	char *status[2] = { "^5UN", "^1" };
@@ -296,7 +320,7 @@ void G_pause_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fPause)
 	}
 	else
 	{
-		int tteam = G_teamID(ent);
+		int tteam = ent->client->sess.sessionTeam;
 
 		if (!G_cmdDebounce(ent, aCommandInfo[dwCommand].pszCommandName))
 		{
@@ -338,15 +362,20 @@ void G_pause_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fPause)
 	}
 }
 
-// Show client info
+/**
+ * @brief Show client info
+ * @param[in] ent
+ * @param dwCommand - unused
+ * @param fValue - unused
+ */
 void G_players_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
 {
-	int       i, idnum, max_rate, cnt = 0, tteam;
+	int       i, idnum, max_rate, cnt = 0;
 	int       user_rate, user_snaps;
 	gclient_t *cl;
 	gentity_t *cl_ent;
-	char      n2[MAX_NETNAME], ready[16], ref[8], rate[256];
-	char      *s, *tc, *coach, *ign, *muted, userinfo[MAX_INFO_STRING];
+	char      n2[MAX_NETNAME], ready[16], ref[8], rate[32];
+	char      *s, *tc, *ign, *muted, userinfo[MAX_INFO_STRING];
 
 	if (g_gamestate.integer == GS_PLAYING)
 	{
@@ -391,11 +420,11 @@ void G_players_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
 		// Rate info
 		if (cl_ent->r.svFlags & SVF_BOT)
 		{
-			strcpy(rate, va("%s%s%s%s", "[BOT]", " -----", "       --", "     --"));
+			Q_strncpyz(rate, va("%s%s%s%s", "[BOT]", " -----", "       --", "     --"), sizeof(rate));
 		}
 		else if (cl->pers.connected == CON_CONNECTING)
 		{
-			strcpy(rate, va("%s", "^3>>> CONNECTING <<<^7"));
+			Q_strncpyz(rate, va("%s", "^3>>> CONNECTING <<<^7"), sizeof(rate));
 		}
 		else
 		{
@@ -405,7 +434,7 @@ void G_players_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
 			s          = Info_ValueForKey(userinfo, "snaps");
 			user_snaps = atoi(s);
 
-			strcpy(rate, va("%5d%6d%9d%7d", cl->pers.clientTimeNudge, user_rate, cl->pers.clientMaxPackets, user_snaps));
+			Q_strncpyz(rate, va("%5d%6d%9d%7d", cl->pers.clientTimeNudge, user_rate, cl->pers.clientMaxPackets, user_snaps), sizeof(rate));
 		}
 
 		if (g_gamestate.integer != GS_PLAYING)
@@ -447,37 +476,34 @@ void G_players_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
 			muted = "";
 		}
 
-		if (cl->sess.coach_team)
-		{
-			tteam = cl->sess.coach_team;
-			coach = (ent) ? "^3C^7" : "C";
-		}
-		else
-		{
-			tteam = cl->sess.sessionTeam;
-			coach = " ";
-		}
-
 		tc = (ent) ? "^7 " : " ";
 		if (g_gametype.integer >= GT_WOLF)
 		{
-			if (tteam == TEAM_AXIS)
+			if (cl->sess.sessionTeam == TEAM_AXIS)
 			{
 				tc = (ent) ? "^1X^7" : "X";
 			}
-			if (tteam == TEAM_ALLIES)
+			else if (cl->sess.sessionTeam == TEAM_ALLIES)
 			{
 				tc = (ent) ? "^4L^7" : "L";
+			}
+			else if (cl->sess.sessionTeam == TEAM_SPECTATOR)
+			{
+				tc = (ent) ? "^2S^7" : "S";
+			}
+			else // unknown
+			{
+				tc = (ent) ? "^2U^7" : "U";
 			}
 		}
 
 		if (ent)
 		{
-			CP(va("print \"%s%s%2d%s:%s %-26s^7%s  ^3%s%s%s^7\n\"", ready, tc, idnum, coach, ((ref[0]) ? "^3" : "^7"), n2, rate, ref, ign, muted));
+			CP(va("print \"%s%s%2d:%s %-26s^7%s  ^3%s%s%s^7\n\"", ready, tc, idnum, ((ref[0]) ? "^3" : "^7"), n2, rate, ref, ign, muted));
 		}
 		else
 		{
-			G_Printf("%s%s%2d%s: %-26s%s  %s%s\n", ready, tc, idnum, coach, n2, rate, ref, muted);
+			G_Printf("%s%s%2d: %-26s%s  %s%s\n", ready, tc, idnum, n2, rate, ref, muted);
 		}
 
 		cnt++;
@@ -512,7 +538,12 @@ void G_players_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
 	}
 }
 
-// Sets a player's "ready" status.
+/**
+ * @brief Sets a player's "ready" status.
+ * @param[in,out] ent
+ * @param[in] dwCommand
+ * @param[in] state
+ */
 void G_ready_cmd(gentity_t *ent, unsigned int dwCommand, qboolean state)
 {
 	char *status[2] = { " NOT", "" };
@@ -574,22 +605,36 @@ void G_ready_cmd(gentity_t *ent, unsigned int dwCommand, qboolean state)
 	G_readyMatchState();
 }
 
-// Team chat w/no location info
+/**
+ * @brief Team chat w/no location info
+ * @param[in] ent
+ * @param dwCommand - unused
+ * @param fValue - unused
+ */
 void G_say_teamnl_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
 {
 	Cmd_Say_f(ent, SAY_TEAMNL, qfalse);
 }
 
-// Shows match stats to the requesting client.
+/**
+ * @brief Shows match stats to the requesting client.
+ * @param[in] ent
+ * @param dwCommand - unused
+ * @param fValue - unused
+ */
 void G_scores_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
 {
 	G_printMatchInfo(ent);
 }
 
-// Sends an invitation to a player to spectate a team.
+/**
+ * @brief Sends an invitation to a player to spectate a team.
+ * @param[in] ent
+ * @param[in] dwCommand
+ * @param fLock - unused
+ */
 void G_specinvite_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fLock)
 {
-	int       tteam;
 	gentity_t *player;
 	char      arg[MAX_TOKEN_CHARS];
 
@@ -603,12 +648,11 @@ void G_specinvite_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fLock)
 		return;
 	}
 
-	tteam = G_teamID(ent);
-	if (tteam == TEAM_AXIS || tteam == TEAM_ALLIES)
+	if (ent->client->sess.sessionTeam == TEAM_AXIS || ent->client->sess.sessionTeam == TEAM_ALLIES)
 	{
 		int pid;
 
-		if (!teamInfo[tteam].spec_lock)
+		if (!teamInfo[ent->client->sess.sessionTeam].spec_lock)
 		{
 			CP("cpm \"Your team isn't locked from spectators!\n\"");
 			return;
@@ -637,11 +681,11 @@ void G_specinvite_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fLock)
 			return;
 		}
 
-		player->client->sess.spec_invite |= tteam;
+		player->client->sess.spec_invite |= ent->client->sess.sessionTeam;
 
 		// Notify sender/recipient
 		CP(va("print \"%s^7 has been sent a spectator invitation.\n\"", player->client->pers.netname));
-		G_printFull(va("*** You've been invited to spectate the %s team!", aTeams[tteam]), player);
+		G_printFull(va("*** You've been invited to spectate the %s team!", aTeams[ent->client->sess.sessionTeam]), player);
 
 	}
 	else
@@ -650,11 +694,14 @@ void G_specinvite_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fLock)
 	}
 }
 
-// Locks/unlocks a player's team from spectators.
+/**
+ * @brief Locks/unlocks a player's team from spectators.
+ * @param[in] ent
+ * @param[in] dwCommand
+ * @param[in] fLock
+ */
 void G_speclock_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fLock)
 {
-	int tteam;
-
 	if (team_nocontrols.integer)
 	{
 		G_noTeamControls(ent);
@@ -666,17 +713,16 @@ void G_speclock_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fLock)
 		return;
 	}
 
-	tteam = G_teamID(ent);
-	if (tteam == TEAM_AXIS || tteam == TEAM_ALLIES)
+	if (ent->client->sess.sessionTeam == TEAM_AXIS || ent->client->sess.sessionTeam == TEAM_ALLIES)
 	{
-		if (teamInfo[tteam].spec_lock == fLock)
+		if (teamInfo[ent->client->sess.sessionTeam].spec_lock == fLock)
 		{
 			CP(va("print \"\n^3Your team is already %sed from spectators!\n\n\"", lock_status[fLock]));
 		}
 		else
 		{
-			G_printFull(va("The %s team is now %sed from spectators", aTeams[tteam], lock_status[fLock]), NULL);
-			G_updateSpecLock(tteam, fLock);
+			G_printFull(va("The %s team is now %sed from spectators", aTeams[ent->client->sess.sessionTeam], lock_status[fLock]), NULL);
+			G_updateSpecLock(ent->client->sess.sessionTeam, fLock);
 			if (fLock)
 			{
 				CP("cpm \"Use ^3specinvite^7 to invite people to spectate.\n\"");
@@ -689,13 +735,23 @@ void G_speclock_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fLock)
 	}
 }
 
-// Shows a player's stats to the requesting client.
+/**
+ * @brief Shows a player's stats to the requesting client.
+ * @param[in] ent
+ * @param dwCommand - unused
+ * @param fDump - unused
+ */
 void G_weaponStats_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fDump)
 {
 	G_statsPrint(ent, 0);
 }
 
-// Shows all players' stats to the requesting client.
+/**
+ * @brief Shows all players' stats to the requesting client.
+ * @param ent
+ * @param dwCommand - unused
+ * @param fDump - unused
+ */
 void G_statsall_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fDump)
 {
 	int       i;
@@ -712,10 +768,15 @@ void G_statsall_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fDump)
 	}
 }
 
-// Sets a player's team "ready" status.
+/**
+ * @brief Sets a player's team "ready" status.
+ * @param[in] ent
+ * @param[in] dwCommand
+ * @param state - unused
+ */
 void G_teamready_cmd(gentity_t *ent, unsigned int dwCommand, qboolean state)
 {
-	int       i, tteam = G_teamID(ent);
+	int       i;
 	gclient_t *cl;
 
 	if (g_gamestate.integer == GS_PLAYING || g_gamestate.integer == GS_INTERMISSION)
@@ -746,7 +807,7 @@ void G_teamready_cmd(gentity_t *ent, unsigned int dwCommand, qboolean state)
 	for (i = 0; i < level.numPlayingClients; i++)
 	{
 		cl = level.clients + level.sortedClients[i];
-		if (cl->sess.sessionTeam == tteam)
+		if (cl->sess.sessionTeam == ent->client->sess.sessionTeam)
 		{
 			cl->pers.ready = qtrue;
 
@@ -754,11 +815,13 @@ void G_teamready_cmd(gentity_t *ent, unsigned int dwCommand, qboolean state)
 		}
 	}
 
-	G_printFull(va("The %s team is ready!", aTeams[tteam]), NULL);
+	G_printFull(va("The %s team is ready!", aTeams[ent->client->sess.sessionTeam]), NULL);
 	G_readyMatchState();
 }
 
-// These map to WS_* weapon indexes
+/**
+  * @var These map to WS_* weapon indexes
+  */
 const unsigned int cQualifyingShots[WS_MAX] =
 {
 	10,     // 0  WS_KNIFE
@@ -789,7 +852,12 @@ const unsigned int cQualifyingShots[WS_MAX] =
 	30,     // 25 WS_K43
 };
 
-// Gives back overall or specific weapon rankings
+/**
+ * @brief Gives back overall or specific weapon rankings
+ * @param[in] a
+ * @param[in] b
+ * @return
+ */
 int QDECL SortStats(const void *a, const void *b)
 {
 	gclient_t *ca, *cb;
@@ -837,7 +905,12 @@ int QDECL SortStats(const void *a, const void *b)
 	return 1;
 }
 
-// Shows the most accurate players for each weapon to the requesting client
+/**
+ * @brief Shows the most accurate players for each weapon to the requesting client
+ * @param ent - unused
+ * @param[in] doTop
+ * @param[in] doWindow
+ */
 void G_weaponStatsLeaders_cmd(gentity_t *ent, qboolean doTop, qboolean doWindow)
 {
 	int             i, iWeap, wBestAcc, cClients, cPlaces;
@@ -867,7 +940,7 @@ void G_weaponStatsLeaders_cmd(gentity_t *ent, qboolean doTop, qboolean doWindow)
 			shots = cl->sess.aWeaponStats[iWeap].atts;
 			if (shots >= cQualifyingShots[iWeap])
 			{
-				acc                  = (float)((cl->sess.aWeaponStats[iWeap].hits) * 100.0) / (float)shots;
+				acc                  = (float)((cl->sess.aWeaponStats[iWeap].hits) * 100.0f) / (float)shots;
 				aClients[cClients++] = level.sortedClients[i];
 				if (((doTop) ? acc : (float)wBestAcc) > ((doTop) ? wBestAcc : acc))
 				{
@@ -885,9 +958,9 @@ void G_weaponStatsLeaders_cmd(gentity_t *ent, qboolean doTop, qboolean doWindow)
 		for (i = 0; i < cClients; i++)
 		{
 			cl  = &level.clients[aClients[i]];
-			acc = (float)(cl->sess.aWeaponStats[iWeap].hits * 100.0) / (float)(cl->sess.aWeaponStats[iWeap].atts);
+			acc = (float)(cl->sess.aWeaponStats[iWeap].hits * 100.0f) / (float)(cl->sess.aWeaponStats[iWeap].atts);
 
-			if (((doTop) ? acc : (float)wBestAcc + 0.999) >= ((doTop) ? wBestAcc : acc))
+			if (((doTop) ? acc : (float)wBestAcc + 0.999f) >= ((doTop) ? wBestAcc : acc))
 			{
 				Q_strcat(z, sizeof(z), va(" %d %d %d %d %d %d", iWeap + 1, aClients[i],
 				                          cl->sess.aWeaponStats[iWeap].hits,
@@ -900,8 +973,12 @@ void G_weaponStatsLeaders_cmd(gentity_t *ent, qboolean doTop, qboolean doWindow)
 	CP(va("%sbstats%s %s 0", ((doWindow) ? "w" : ""), ((doTop) ? "" : "b"), z));
 }
 
-// Shows best/worst accuracy for all weapons, or sorted
-// accuracies for a single weapon.
+/**
+ * @brief Shows best/worst accuracy for all weapons, or sorted accuracies for a single weapon
+ * @param[in] ent
+ * @param[in] dwCommand
+ * @param[in] state
+ */
 void G_weaponRankings_cmd(gentity_t *ent, unsigned int dwCommand, qboolean state)
 {
 	gclient_t *cl;
@@ -959,7 +1036,7 @@ void G_weaponRankings_cmd(gentity_t *ent, unsigned int dwCommand, qboolean state
 		shots = cl->sess.aWeaponStats[iWeap].atts;
 		if (shots >= cQualifyingShots[iWeap])
 		{
-			float acc = (float)(cl->sess.aWeaponStats[iWeap].hits * 100.0) / (float)shots;
+			float acc = (float)(cl->sess.aWeaponStats[iWeap].hits * 100.0f) / (float)shots;
 
 			c++;
 			wBestAcc = (((state) ? acc : wBestAcc) > ((state) ? wBestAcc : acc)) ? (int)acc : wBestAcc;

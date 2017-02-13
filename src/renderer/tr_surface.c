@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -46,11 +46,11 @@
 #include <altivec.h>
 #endif
 
-/*
-==============
-RB_CheckOverflow
-==============
-*/
+/**
+ * @brief RB_CheckOverflow
+ * @param[in] verts
+ * @param[in] indexes
+ */
 void RB_CheckOverflow(int verts, int indexes)
 {
 	if (tess.numVertexes + verts < tess.maxShaderVerts && tess.numIndexes + indexes < tess.maxShaderIndicies)
@@ -72,104 +72,119 @@ void RB_CheckOverflow(int verts, int indexes)
 	RB_BeginSurface(tess.shader, tess.fogNum);
 }
 
-/**
+/*
  * @brief Creates a sprite with the center at colors[3] alpha, and the corners all 0 alpha
+ * @param[in] origin
+ * @param[in] left
+ * @param[in] up
+ * @param[in] color
+ * @param[in] s1
+ * @param[in] t1
+ * @param[in] s2
+ * @param[in] t2
+ *
  * @note Unused.
- */
 void RB_AddQuadStampFadingCornersExt(vec3_t origin, vec3_t left, vec3_t up, byte *color, float s1, float t1, float s2, float t2)
 {
-	vec3_t normal;
-	int    ndx;
-	byte   lColor[4];
+    vec3_t normal;
+    int    ndx;
+    byte   lColor[4];
 
-	RB_CHECKOVERFLOW(5, 12);
+    RB_CHECKOVERFLOW(5, 12);
 
-	ndx = tess.numVertexes;
+    ndx = tess.numVertexes;
 
-	// triangle indexes for a simple quad
-	tess.indexes[tess.numIndexes + 0] = ndx + 0;
-	tess.indexes[tess.numIndexes + 1] = ndx + 1;
-	tess.indexes[tess.numIndexes + 2] = ndx + 4;
+    // triangle indexes for a simple quad
+    tess.indexes[tess.numIndexes + 0] = ndx + 0;
+    tess.indexes[tess.numIndexes + 1] = ndx + 1;
+    tess.indexes[tess.numIndexes + 2] = ndx + 4;
 
-	tess.indexes[tess.numIndexes + 3] = ndx + 1;
-	tess.indexes[tess.numIndexes + 4] = ndx + 2;
-	tess.indexes[tess.numIndexes + 5] = ndx + 4;
+    tess.indexes[tess.numIndexes + 3] = ndx + 1;
+    tess.indexes[tess.numIndexes + 4] = ndx + 2;
+    tess.indexes[tess.numIndexes + 5] = ndx + 4;
 
-	tess.indexes[tess.numIndexes + 6] = ndx + 2;
-	tess.indexes[tess.numIndexes + 7] = ndx + 3;
-	tess.indexes[tess.numIndexes + 8] = ndx + 4;
+    tess.indexes[tess.numIndexes + 6] = ndx + 2;
+    tess.indexes[tess.numIndexes + 7] = ndx + 3;
+    tess.indexes[tess.numIndexes + 8] = ndx + 4;
 
-	tess.indexes[tess.numIndexes + 9]  = ndx + 3;
-	tess.indexes[tess.numIndexes + 10] = ndx + 0;
-	tess.indexes[tess.numIndexes + 11] = ndx + 4;
+    tess.indexes[tess.numIndexes + 9]  = ndx + 3;
+    tess.indexes[tess.numIndexes + 10] = ndx + 0;
+    tess.indexes[tess.numIndexes + 11] = ndx + 4;
 
-	tess.xyz[ndx].v[0] = origin[0] + left[0] + up[0];
-	tess.xyz[ndx].v[1] = origin[1] + left[1] + up[1];
-	tess.xyz[ndx].v[2] = origin[2] + left[2] + up[2];
+    tess.xyz[ndx].v[0] = origin[0] + left[0] + up[0];
+    tess.xyz[ndx].v[1] = origin[1] + left[1] + up[1];
+    tess.xyz[ndx].v[2] = origin[2] + left[2] + up[2];
 
-	tess.xyz[ndx + 1].v[0] = origin[0] - left[0] + up[0];
-	tess.xyz[ndx + 1].v[1] = origin[1] - left[1] + up[1];
-	tess.xyz[ndx + 1].v[2] = origin[2] - left[2] + up[2];
+    tess.xyz[ndx + 1].v[0] = origin[0] - left[0] + up[0];
+    tess.xyz[ndx + 1].v[1] = origin[1] - left[1] + up[1];
+    tess.xyz[ndx + 1].v[2] = origin[2] - left[2] + up[2];
 
-	tess.xyz[ndx + 2].v[0] = origin[0] - left[0] - up[0];
-	tess.xyz[ndx + 2].v[1] = origin[1] - left[1] - up[1];
-	tess.xyz[ndx + 2].v[2] = origin[2] - left[2] - up[2];
+    tess.xyz[ndx + 2].v[0] = origin[0] - left[0] - up[0];
+    tess.xyz[ndx + 2].v[1] = origin[1] - left[1] - up[1];
+    tess.xyz[ndx + 2].v[2] = origin[2] - left[2] - up[2];
 
-	tess.xyz[ndx + 3].v[0] = origin[0] + left[0] - up[0];
-	tess.xyz[ndx + 3].v[1] = origin[1] + left[1] - up[1];
-	tess.xyz[ndx + 3].v[2] = origin[2] + left[2] - up[2];
+    tess.xyz[ndx + 3].v[0] = origin[0] + left[0] - up[0];
+    tess.xyz[ndx + 3].v[1] = origin[1] + left[1] - up[1];
+    tess.xyz[ndx + 3].v[2] = origin[2] + left[2] - up[2];
 
-	tess.xyz[ndx + 4].v[0] = origin[0];
-	tess.xyz[ndx + 4].v[1] = origin[1];
-	tess.xyz[ndx + 4].v[2] = origin[2];
-
-
-	// constant normal all the way around
-	VectorSubtract(vec3_origin, backEnd.viewParms.orientation.axis[0], normal);
-
-	tess.normal[ndx].v[0] = tess.normal[ndx + 1].v[0] = tess.normal[ndx + 2].v[0] = tess.normal[ndx + 3].v[0] = tess.normal[ndx + 4].v[0] = normal[0];
-	tess.normal[ndx].v[1] = tess.normal[ndx + 1].v[1] = tess.normal[ndx + 2].v[1] = tess.normal[ndx + 3].v[1] = tess.normal[ndx + 4].v[1] = normal[1];
-	tess.normal[ndx].v[2] = tess.normal[ndx + 1].v[2] = tess.normal[ndx + 2].v[2] = tess.normal[ndx + 3].v[2] = tess.normal[ndx + 4].v[2] = normal[2];
-
-	// standard square texture coordinates
-	tess.texCoords0[ndx].v[0] = tess.texCoords1[ndx].v[0] = s1;
-	tess.texCoords0[ndx].v[1] = tess.texCoords1[ndx].v[1] = t1;
-
-	tess.texCoords0[ndx + 1].v[0] = tess.texCoords1[ndx + 1].v[0] = s2;
-	tess.texCoords0[ndx + 1].v[1] = tess.texCoords1[ndx + 1].v[1] = t1;
-
-	tess.texCoords0[ndx + 2].v[0] = tess.texCoords1[ndx + 2].v[0] = s2;
-	tess.texCoords0[ndx + 2].v[1] = tess.texCoords1[ndx + 2].v[1] = t2;
-
-	tess.texCoords0[ndx + 3].v[0] = tess.texCoords1[ndx + 3].v[0] = s1;
-	tess.texCoords0[ndx + 3].v[1] = tess.texCoords1[ndx + 3].v[1] = t2;
-
-	tess.texCoords0[ndx + 4].v[0] = tess.texCoords1[ndx + 4].v[0] = (s1 + s2) / 2.0;
-	tess.texCoords0[ndx + 4].v[1] = tess.texCoords1[ndx + 4].v[1] = (t1 + t2) / 2.0;
-
-	// center uses full alpha
-	*( unsigned int * ) &tess.vertexColors[ndx + 4].v =
-	    *( unsigned int * )color;
-
-	// fade around edges
-	memcpy(lColor, color, sizeof(byte) * 4);
-	lColor[3]                                                     = 0;
-	*( unsigned int * ) &tess.vertexColors[ndx].v                 =
-	    *( unsigned int * ) &tess.vertexColors[ndx + 1].v         =
-	        *( unsigned int * ) &tess.vertexColors[ndx + 2].v     =
-	            *( unsigned int * ) &tess.vertexColors[ndx + 3].v =
-	                *( unsigned int * )lColor;
+    tess.xyz[ndx + 4].v[0] = origin[0];
+    tess.xyz[ndx + 4].v[1] = origin[1];
+    tess.xyz[ndx + 4].v[2] = origin[2];
 
 
-	tess.numVertexes += 5;
-	tess.numIndexes  += 12;
+    // constant normal all the way around
+    VectorSubtract(vec3_origin, backEnd.viewParms.orientation.axis[0], normal);
+
+    tess.normal[ndx].v[0] = tess.normal[ndx + 1].v[0] = tess.normal[ndx + 2].v[0] = tess.normal[ndx + 3].v[0] = tess.normal[ndx + 4].v[0] = normal[0];
+    tess.normal[ndx].v[1] = tess.normal[ndx + 1].v[1] = tess.normal[ndx + 2].v[1] = tess.normal[ndx + 3].v[1] = tess.normal[ndx + 4].v[1] = normal[1];
+    tess.normal[ndx].v[2] = tess.normal[ndx + 1].v[2] = tess.normal[ndx + 2].v[2] = tess.normal[ndx + 3].v[2] = tess.normal[ndx + 4].v[2] = normal[2];
+
+    // standard square texture coordinates
+    tess.texCoords0[ndx].v[0] = tess.texCoords1[ndx].v[0] = s1;
+    tess.texCoords0[ndx].v[1] = tess.texCoords1[ndx].v[1] = t1;
+
+    tess.texCoords0[ndx + 1].v[0] = tess.texCoords1[ndx + 1].v[0] = s2;
+    tess.texCoords0[ndx + 1].v[1] = tess.texCoords1[ndx + 1].v[1] = t1;
+
+    tess.texCoords0[ndx + 2].v[0] = tess.texCoords1[ndx + 2].v[0] = s2;
+    tess.texCoords0[ndx + 2].v[1] = tess.texCoords1[ndx + 2].v[1] = t2;
+
+    tess.texCoords0[ndx + 3].v[0] = tess.texCoords1[ndx + 3].v[0] = s1;
+    tess.texCoords0[ndx + 3].v[1] = tess.texCoords1[ndx + 3].v[1] = t2;
+
+    tess.texCoords0[ndx + 4].v[0] = tess.texCoords1[ndx + 4].v[0] = (s1 + s2) / 2.0;
+    tess.texCoords0[ndx + 4].v[1] = tess.texCoords1[ndx + 4].v[1] = (t1 + t2) / 2.0;
+
+    // center uses full alpha
+    *( unsigned int * ) &tess.vertexColors[ndx + 4].v =
+        *( unsigned int * )color;
+
+    // fade around edges
+    memcpy(lColor, color, sizeof(byte) * 4);
+    lColor[3]                                                     = 0;
+    *( unsigned int * ) &tess.vertexColors[ndx].v                 =
+        *( unsigned int * ) &tess.vertexColors[ndx + 1].v         =
+            *( unsigned int * ) &tess.vertexColors[ndx + 2].v     =
+                *( unsigned int * ) &tess.vertexColors[ndx + 3].v =
+                    *( unsigned int * )lColor;
+
+
+    tess.numVertexes += 5;
+    tess.numIndexes  += 12;
 }
-
-/*
-==============
-RB_AddQuadStampExt
-==============
 */
+
+/**
+ * @brief RB_AddQuadStampExt
+ * @param[in] origin
+ * @param[in] left
+ * @param[in] up
+ * @param[in] color
+ * @param[in] s1
+ * @param[in] t1
+ * @param[in] s2
+ * @param[in] t2
+ */
 void RB_AddQuadStampExt(vec3_t origin, vec3_t left, vec3_t up, byte *color, float s1, float t1, float s2, float t2)
 {
 	vec3_t normal;
@@ -237,21 +252,21 @@ void RB_AddQuadStampExt(vec3_t origin, vec3_t left, vec3_t up, byte *color, floa
 	tess.numIndexes  += 6;
 }
 
-/*
-==============
-RB_AddQuadStamp
-==============
-*/
+/**
+ * @brief RB_AddQuadStamp
+ * @param[in] origin
+ * @param[in] left
+ * @param[in] up
+ * @param[in] color
+ */
 void RB_AddQuadStamp(vec3_t origin, vec3_t left, vec3_t up, byte *color)
 {
 	RB_AddQuadStampExt(origin, left, up, color, 0, 0, 1, 1);
 }
 
-/*
-==============
-RB_SurfaceSplash
-==============
-*/
+/**
+ * @brief RB_SurfaceSplash
+ */
 static void RB_SurfaceSplash(void)
 {
 	vec3_t left, up;
@@ -269,11 +284,9 @@ static void RB_SurfaceSplash(void)
 	RB_AddQuadStamp(backEnd.currentEntity->e.origin, left, up, backEnd.currentEntity->e.shaderRGBA);
 }
 
-/*
-==============
-RB_SurfaceSprite
-==============
-*/
+/**
+ * @brief RB_SurfaceSprite
+ */
 static void RB_SurfaceSprite(void)
 {
 	vec3_t left, up;
@@ -281,7 +294,7 @@ static void RB_SurfaceSprite(void)
 
 	// calculate the xyz locations for the four corners
 
-	if (backEnd.currentEntity->e.rotation == 0)
+	if (backEnd.currentEntity->e.rotation == 0.f)
 	{
 		VectorScale(backEnd.viewParms.orientation.axis[1], radius, left);
 		VectorScale(backEnd.viewParms.orientation.axis[2], radius, up);
@@ -306,11 +319,10 @@ static void RB_SurfaceSprite(void)
 	RB_AddQuadStamp(backEnd.currentEntity->e.origin, left, up, backEnd.currentEntity->e.shaderRGBA);
 }
 
-/*
-=============
-RB_SurfacePolychain
-=============
-*/
+/**
+ * @brief RB_SurfacePolychain
+ * @param[in] p
+ */
 void RB_SurfacePolychain(srfPoly_t *p)
 {
 	int i;
@@ -342,11 +354,10 @@ void RB_SurfacePolychain(srfPoly_t *p)
 	tess.numVertexes = numv;
 }
 
-/*
-=============
-RB_SurfaceTriangles
-=============
-*/
+/**
+ * @brief RB_SurfaceTriangles
+ * @param[in] srf
+ */
 void RB_SurfaceTriangles(srfTriangles_t *srf)
 {
 	int        i;
@@ -420,17 +431,16 @@ void RB_SurfaceTriangles(srfTriangles_t *srf)
 	tess.numVertexes += srf->numVerts;
 }
 
-/*
-=============
-RB_SurfaceFoliage
-=============
-*/
+/**
+ * @brief RB_SurfaceFoliage
+ * @param[in] srf
+ */
 void RB_SurfaceFoliage(srfFoliage_t *srf)
 {
 	int               o, i, a;
 	int               numVerts = srf->numVerts, numIndexes = srf->numIndexes;   // basic setup
 	vec4_t            distanceCull, distanceVector;
-	float             alpha, z, dist, fovScale = backEnd.viewParms.fovX * (1.0 / 90.0);
+	float             alpha, z, dist, fovScale = backEnd.viewParms.fovX * (1.0f / 90.0f);
 	vec3_t            local;
 	vec_t             *xyz;
 	int               srcColor, *color;
@@ -445,8 +455,8 @@ void RB_SurfaceFoliage(srfFoliage_t *srf)
 	distanceVector[3] = DotProduct(local, backEnd.viewParms.orientation.axis[0]);
 
 	// attempt distance cull
-	VectorCopy(tess.shader->distanceCull, distanceCull);
-	distanceCull[3] = tess.shader->distanceCull[3];
+	Vector4Copy(tess.shader->distanceCull, distanceCull);
+
 	if (distanceCull[1] > 0)
 	{
 		z     = fovScale * (DotProduct(srf->origin, distanceVector) + distanceVector[3] - srf->radius);
@@ -479,7 +489,7 @@ void RB_SurfaceFoliage(srfFoliage_t *srf)
 			for (i = 0; i < 5; i++)
 			{
 				dist = DotProduct(instance->origin, backEnd.viewParms.frustum[i].normal) - backEnd.viewParms.frustum[i].dist;
-				if (dist < -64.0)
+				if (dist < -64)
 				{
 					break;
 				}
@@ -507,7 +517,7 @@ void RB_SurfaceFoliage(srfFoliage_t *srf)
 			}
 
 			// set color
-			a        = alpha > 1.0f ? 255 : alpha * 255;
+			a        = alpha > 1.0f ? 255 : (int)(alpha * 255);
 			srcColor = (*((int *) instance->color) & 0xFFFFFF) | (a << 24);
 		}
 		else
@@ -525,7 +535,9 @@ void RB_SurfaceFoliage(srfFoliage_t *srf)
 		// copy indexes
 		memcpy(&tess.indexes[tess.numIndexes], srf->indexes, numIndexes * sizeof(srf->indexes[0]));
 		for (i = 0; i < numIndexes; i++)
+		{
 			tess.indexes[tess.numIndexes + i] += tess.numVertexes;
+		}
 
 		// copy xyz, normal and st
 		xyz = tess.xyz[tess.numVertexes].v;
@@ -539,12 +551,16 @@ void RB_SurfaceFoliage(srfFoliage_t *srf)
 
 		// offset xyz
 		for (i = 0; i < numVerts; i++, xyz += 4)
+		{
 			VectorAdd(xyz, instance->origin, xyz);
+		}
 
 		// copy color
 		color = (int *) tess.vertexColors[tess.numVertexes].v;
 		for (i = 0; i < numVerts; i++)
+		{
 			color[i] = srcColor;
+		}
 
 		// increment
 		tess.numIndexes  += numIndexes;
@@ -554,11 +570,9 @@ void RB_SurfaceFoliage(srfFoliage_t *srf)
 	// RB_DrawBounds( srf->bounds[ 0 ], srf->bounds[ 1 ] );
 }
 
-/*
-==============
-RB_SurfaceBeam
-==============
-*/
+/**
+ * @brief RB_SurfaceBeam
+ */
 void RB_SurfaceBeam(void)
 {
 #define NUM_BEAM_SEGS 6
@@ -581,7 +595,7 @@ void RB_SurfaceBeam(void)
 	normalized_direction[1] = direction[1] = oldorigin[1] - origin[1];
 	normalized_direction[2] = direction[2] = oldorigin[2] - origin[2];
 
-	if (VectorNormalize(normalized_direction) == 0)
+	if (VectorNormalize(normalized_direction) == 0.f)
 	{
 		return;
 	}
@@ -592,7 +606,7 @@ void RB_SurfaceBeam(void)
 
 	for (i = 0; i < NUM_BEAM_SEGS ; i++)
 	{
-		RotatePointAroundVector(start_points[i], normalized_direction, perpvec, (360.0 / NUM_BEAM_SEGS) * i);
+		RotatePointAroundVector(start_points[i], normalized_direction, perpvec, (360.0f / NUM_BEAM_SEGS) * i);
 		VectorAdd(start_points[i], direction, end_points[i]);
 	}
 
@@ -613,6 +627,14 @@ void RB_SurfaceBeam(void)
 
 //================================================================================
 
+/**
+ * @brief DoRailCore
+ * @param[in] start
+ * @param[in] end
+ * @param[in] up
+ * @param[in] len
+ * @param[in] spanWidth
+ */
 static void DoRailCore(const vec3_t start, const vec3_t end, const vec3_t up, float len, float spanWidth)
 {
 	float spanWidth2;
@@ -678,6 +700,14 @@ static void DoRailCore(const vec3_t start, const vec3_t end, const vec3_t up, fl
 	tess.indexes[tess.numIndexes++] = vbase + 3;
 }
 
+/**
+ * @brief DoRailDiscs
+ * @param[in] numSegs
+ * @param[in] start
+ * @param[in] dir
+ * @param[in] right
+ * @param[in] up
+ */
 static void DoRailDiscs(int numSegs, const vec3_t start, const vec3_t dir, const vec3_t right, const vec3_t up)
 {
 	int    i, j;
@@ -740,9 +770,9 @@ static void DoRailDiscs(int numSegs, const vec3_t start, const vec3_t dir, const
 	}
 }
 
-/*
-RB_SurfaceRailRinges
-*/
+/**
+ * @brief RB_SurfaceRailRings
+ */
 void RB_SurfaceRailRings(void)
 {
 	refEntity_t *e = &backEnd.currentEntity->e;
@@ -770,9 +800,9 @@ void RB_SurfaceRailRings(void)
 	DoRailDiscs(numSegs, start, vec, right, up);
 }
 
-/*
-RB_SurfaceRailCore
-*/
+/**
+ * @brief RB_SurfaceRailCore
+ */
 void RB_SurfaceRailCore(void)
 {
 	refEntity_t *e = &backEnd.currentEntity->e;
@@ -799,9 +829,9 @@ void RB_SurfaceRailCore(void)
 	DoRailCore(start, end, right, len, e->frame > 0 ? e->frame : 1);
 }
 
-/*
-RB_SurfaceLightningBolt
-*/
+/**
+ * @brief RB_SurfaceLightningBolt
+ */
 void RB_SurfaceLightningBolt(void)
 {
 	refEntity_t *e = &backEnd.currentEntity->e;
@@ -836,10 +866,12 @@ void RB_SurfaceLightningBolt(void)
 	}
 }
 
-/*
-LerpMeshVertexes
-*/
 #if idppc_altivec
+/**
+ * @brief LerpMeshVertexes_altivec
+ * @param[in] surf
+ * @param[in] backlerp
+ */
 static void LerpMeshVertexes_altivec(md3Surface_t *surf, float backlerp)
 {
 	short *oldXyz, *newXyz, *oldNormals, *newNormals;
@@ -986,6 +1018,11 @@ static void LerpMeshVertexes_altivec(md3Surface_t *surf, float backlerp)
 }
 #endif
 
+/**
+ * @brief LerpMeshVertexes_scalar
+ * @param[in] surf
+ * @param[in] backlerp
+ */
 static void LerpMeshVertexes_scalar(md3Surface_t *surf, float backlerp)
 {
 	float    *outXyz    = tess.xyz[tess.numVertexes].v;
@@ -1001,11 +1038,11 @@ static void LerpMeshVertexes_scalar(md3Surface_t *surf, float backlerp)
 	newNormals = newXyz + 3;
 
 	newXyzScale    = MD3_XYZ_SCALE * (1.0 - backlerp);
-	newNormalScale = 1.0 - backlerp;
+	newNormalScale = 1.0f - backlerp;
 
 	numVerts = surf->numVerts;
 
-	if (backlerp == 0)
+	if (backlerp == 0.f)
 	{
 		// just copy the vertexes
 		for (vertNum = 0 ; vertNum < numVerts ; vertNum++,
@@ -1094,6 +1131,11 @@ static void LerpMeshVertexes_scalar(md3Surface_t *surf, float backlerp)
 	}
 }
 
+/**
+ * @brief LerpMeshVertexes
+ * @param[in] surf
+ * @param[in] backlerp
+ */
 static void LerpMeshVertexes(md3Surface_t *surf, float backlerp)
 {
 #if idppc_altivec
@@ -1107,11 +1149,10 @@ static void LerpMeshVertexes(md3Surface_t *surf, float backlerp)
 	LerpMeshVertexes_scalar(surf, backlerp);
 }
 
-/*
-=============
-RB_SurfaceMesh
-=============
-*/
+/**
+ * @brief RB_SurfaceMesh
+ * @param[in] surface
+ */
 void RB_SurfaceMesh(md3Surface_t *surface)
 {
 	int   j;
@@ -1167,9 +1208,11 @@ void RB_SurfaceMesh(md3Surface_t *surface)
 	tess.numVertexes += surface->numVerts;
 }
 
-/*
-R_LatLongToNormal
-*/
+/**
+ * @brief R_LatLongToNormal
+ * @param[in] outNormal
+ * @param[in] latLong
+ */
 void R_LatLongToNormal(vec3_t outNormal, short latLong)
 {
 	unsigned lat = (latLong >> 8) & 0xff;
@@ -1187,9 +1230,11 @@ void R_LatLongToNormal(vec3_t outNormal, short latLong)
 	outNormal[2] = tr.sinTable[(lng + (FUNCTABLE_SIZE / 4)) & FUNCTABLE_MASK];
 }
 
-/*
-LerpCMeshVertexes
-*/
+/**
+ * @brief LerpCMeshVertexes
+ * @param[in] surf
+ * @param[in] backlerp
+ */
 static void LerpCMeshVertexes(mdcSurface_t *surf, float backlerp)
 {
 	vec3_t             oldOfsVec, newOfsVec;
@@ -1225,11 +1270,11 @@ static void LerpCMeshVertexes(mdcSurface_t *surf, float backlerp)
 	}
 
 	newXyzScale    = MD3_XYZ_SCALE * (1.0 - backlerp);
-	newNormalScale = 1.0 - backlerp;
+	newNormalScale = 1.0f - backlerp;
 
 	numVerts = surf->numVerts;
 
-	if (backlerp == 0)
+	if (backlerp == 0.f)
 	{
 		// just copy the vertexes
 		for (vertNum = 0 ; vertNum < numVerts ; vertNum++,
@@ -1302,7 +1347,7 @@ static void LerpCMeshVertexes(mdcSurface_t *surf, float backlerp)
 			{
 				R_MDC_DecodeXyzCompressed(newXyzComp->ofsVec, newOfsVec, uncompressedNewNormal);
 				newXyzComp++;
-				VectorMA(outXyz, 1.0 - backlerp, newOfsVec, outXyz);
+				VectorMA(outXyz, 1.0f - backlerp, newOfsVec, outXyz);
 			}
 			else
 			{
@@ -1345,11 +1390,10 @@ static void LerpCMeshVertexes(mdcSurface_t *surf, float backlerp)
 	}
 }
 
-/*
-=============
-RB_SurfaceCMesh
-=============
-*/
+/**
+ * @brief RB_SurfaceCMesh
+ * @param[in] surface
+ */
 void RB_SurfaceCMesh(mdcSurface_t *surface)
 {
 	int   j;
@@ -1405,11 +1449,10 @@ void RB_SurfaceCMesh(mdcSurface_t *surface)
 	tess.numVertexes += surface->numVerts;
 }
 
-/*
-==============
-RB_SurfaceFace
-==============
-*/
+/**
+ * @brief RB_SurfaceFace
+ * @param[in] surf
+ */
 void RB_SurfaceFace(srfSurfaceFace_t *surf)
 {
 	int      i;
@@ -1461,6 +1504,12 @@ void RB_SurfaceFace(srfSurfaceFace_t *surf)
 	tess.numVertexes += surf->numPoints;
 }
 
+/**
+ * @brief LodErrorForVolume
+ * @param[in] local
+ * @param[in] radius
+ * @return
+ */
 static float LodErrorForVolume(vec3_t local, float radius)
 {
 	vec3_t world;
@@ -1495,13 +1544,10 @@ static float LodErrorForVolume(vec3_t local, float radius)
 	return r_lodCurveError->value / d;
 }
 
-/*
-=============
-RB_SurfaceGrid
-
-Just copy the grid of points and triangulate
-=============
-*/
+/**
+ * @brief Just copy the grid of points and triangulate
+ * @param[in] cv
+ */
 void RB_SurfaceGrid(srfGridMesh_t *cv)
 {
 	int           i, j;
@@ -1669,13 +1715,9 @@ NULL MODEL
 ===========================================================================
 */
 
-/*
-===================
-RB_SurfaceAxis
-
-Draws x/y/z lines from the origin for orientation debugging
-===================
-*/
+/**
+ * @brief Draws x/y/z lines from the origin for orientation debugging
+ */
 void RB_SurfaceAxis(void)
 {
 	GL_Bind(tr.whiteImage);
@@ -1697,13 +1739,10 @@ void RB_SurfaceAxis(void)
 
 //===========================================================================
 
-/*
-====================
-RB_SurfaceEntity
-
-Entities that have a single procedurally generated surface
-====================
-*/
+/**
+ * @brief Entities that have a single procedurally generated surface
+ * @param surfType - unused
+ */
 void RB_SurfaceEntity(surfaceType_t *surfType)
 {
 	switch (backEnd.currentEntity->e.reType)
@@ -1732,12 +1771,23 @@ void RB_SurfaceEntity(surfaceType_t *surfType)
 	}
 }
 
+/**
+ * @brief RB_SurfaceBad
+ * @param surfType - unused
+ *
+ * @todo better impl ?
+ */
 void RB_SurfaceBad(surfaceType_t *surfType)
 {
 	Ren_Print("Bad surface tesselated.\n");
 }
 
 #if 0
+
+/**
+ * @brief RB_SurfaceFlare
+ * @param[in] surf
+ */
 void RB_SurfaceFlare(srfFlare_t *surf)
 {
 	vec3_t left, up;
@@ -1778,6 +1828,10 @@ void RB_SurfaceFlare(srfFlare_t *surf)
 }
 
 #else
+/**
+ * @brief RB_SurfaceFlare
+ * @param[in] surf
+ */
 void RB_SurfaceFlare(srfFlare_t *surf)
 {
 #if 0
@@ -1801,6 +1855,10 @@ void RB_SurfaceFlare(srfFlare_t *surf)
 }
 #endif
 
+/**
+ * @brief RB_SurfaceDisplayList
+ * @param[in] surf
+ */
 void RB_SurfaceDisplayList(srfDisplayList_t *surf)
 {
 	// all apropriate state must be set in RB_BeginSurface
@@ -1808,6 +1866,10 @@ void RB_SurfaceDisplayList(srfDisplayList_t *surf)
 	qglCallList(surf->listNum);
 }
 
+/**
+ * @brief RB_SurfacePolyBuffer
+ * @param[in] surf
+ */
 void RB_SurfacePolyBuffer(srfPolyBuffer_t *surf)
 {
 	vec4hack_t     *oldXYZ;
@@ -1851,7 +1913,10 @@ void RB_SurfacePolyBuffer(srfPolyBuffer_t *surf)
 	tess.vertexColors      = oldColor;
 }
 
-// decal surfaces
+/**
+ * @brief RB_SurfaceDecal
+ * @param[in] srf
+ */
 void RB_SurfaceDecal(srfDecal_t *srf)
 {
 	int i;
@@ -1882,6 +1947,10 @@ void RB_SurfaceDecal(srfDecal_t *srf)
 	tess.numVertexes = numv;
 }
 
+/**
+ * @brief RB_SurfaceSkip
+ * @param surf - unused
+ */
 void RB_SurfaceSkip(void *surf)
 {
 	return;

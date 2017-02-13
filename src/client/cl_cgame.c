@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -41,31 +41,30 @@ extern botlib_export_t *botlib_export;
 void Key_GetBindingBuf(int keynum, char *buf, int buflen);
 void Key_KeynumToStringBuf(int keynum, char *buf, int buflen);
 
-/*
-====================
-CL_GetGameState
-====================
-*/
+/**
+ * @brief CL_GetGameState
+ * @param[out] gs
+ */
 void CL_GetGameState(gameState_t *gs)
 {
 	*gs = cl.gameState;
 }
 
-/*
-====================
-CL_GetGlconfig
-====================
-*/
+/**
+ * @brief CL_GetGlconfig
+ * @param[out] glconfig
+ */
 void CL_GetGlconfig(glconfig_t *glconfig)
 {
 	*glconfig = cls.glconfig;
 }
 
-/*
-====================
-CL_GetUserCmd
-====================
-*/
+/**
+ * @brief CL_GetUserCmd
+ * @param[in] cmdNumber
+ * @param[out] ucmd
+ * @return
+ */
 qboolean CL_GetUserCmd(int cmdNumber, usercmd_t *ucmd)
 {
 	// cmds[cmdNumber] is the last properly generated command
@@ -88,53 +87,59 @@ qboolean CL_GetUserCmd(int cmdNumber, usercmd_t *ucmd)
 	return qtrue;
 }
 
+/**
+ * @brief CL_GetCurrentCmdNumber
+ * @return
+ */
 int CL_GetCurrentCmdNumber(void)
 {
 	return cl.cmdNumber;
 }
 
 /*
-====================
-CL_GetParseEntityState
-
-@note Unused
-====================
-*/
+ * @brief CL_GetParseEntityState
+ * @param[in] parseEntityNumber
+ * @param[out] state
+ * @return
+ *
+ * @note Unused
 qboolean CL_GetParseEntityState(int parseEntityNumber, entityState_t *state)
 {
-	// can't return anything that hasn't been parsed yet
-	if (parseEntityNumber >= cl.parseEntitiesNum)
-	{
-		Com_Error(ERR_DROP, "CL_GetParseEntityState: %i >= %i",
-		          parseEntityNumber, cl.parseEntitiesNum);
-	}
+    // can't return anything that hasn't been parsed yet
+    if (parseEntityNumber >= cl.parseEntitiesNum)
+    {
+        Com_Error(ERR_DROP, "CL_GetParseEntityState: %i >= %i",
+                  parseEntityNumber, cl.parseEntitiesNum);
+    }
 
-	// can't return anything that has been overwritten in the circular buffer
-	if (parseEntityNumber <= cl.parseEntitiesNum - MAX_PARSE_ENTITIES)
-	{
-		return qfalse;
-	}
+    // can't return anything that has been overwritten in the circular buffer
+    if (parseEntityNumber <= cl.parseEntitiesNum - MAX_PARSE_ENTITIES)
+    {
+        return qfalse;
+    }
 
-	*state = cl.parseEntities[parseEntityNumber & (MAX_PARSE_ENTITIES - 1)];
-	return qtrue;
+    *state = cl.parseEntities[parseEntityNumber & (MAX_PARSE_ENTITIES - 1)];
+    return qtrue;
 }
-
-/*
-====================
-CL_GetCurrentSnapshotNumber
-====================
 */
+
+/**
+ * @brief CL_GetCurrentSnapshotNumber
+ * @param[out] snapshotNumber
+ * @param[out] serverTime
+ */
 void CL_GetCurrentSnapshotNumber(int *snapshotNumber, int *serverTime)
 {
 	*snapshotNumber = cl.snap.messageNum;
 	*serverTime     = cl.snap.serverTime;
 }
 
-/*
-====================
-CL_GetSnapshot
-====================
-*/
+/**
+ * @brief CL_GetSnapshot
+ * @param[in] snapshotNumber
+ * @param[out] snapshot
+ * @return
+ */
 qboolean CL_GetSnapshot(int snapshotNumber, snapshot_t *snapshot)
 {
 	clSnapshot_t *clSnap;
@@ -182,7 +187,7 @@ qboolean CL_GetSnapshot(int snapshotNumber, snapshot_t *snapshot)
 	for (i = 0 ; i < count ; i++)
 	{
 		snapshot->entities[i] =
-		    cl.parseEntities[(clSnap->parseEntitiesNum + i) & (MAX_PARSE_ENTITIES - 1)];
+			cl.parseEntities[(clSnap->parseEntitiesNum + i) & (MAX_PARSE_ENTITIES - 1)];
 	}
 
 	// FIXME: configstring changes and server commands!!!
@@ -190,11 +195,13 @@ qboolean CL_GetSnapshot(int snapshotNumber, snapshot_t *snapshot)
 	return qtrue;
 }
 
-/*
-==============
-CL_SetUserCmdValue
-==============
-*/
+/**
+ * @brief CL_SetUserCmdValue
+ * @param[in] userCmdValue
+ * @param[in] flags
+ * @param[in] sensitivityScale
+ * @param[in] mpIdentClient
+ */
 void CL_SetUserCmdValue(int userCmdValue, int flags, float sensitivityScale, int mpIdentClient)
 {
 	cl.cgameUserCmdValue  = userCmdValue;
@@ -203,11 +210,12 @@ void CL_SetUserCmdValue(int userCmdValue, int flags, float sensitivityScale, int
 	cl.cgameMpIdentClient = mpIdentClient;
 }
 
-/*
-==================
-CL_SetClientLerpOrigin
-==================
-*/
+/**
+ * @brief CL_SetClientLerpOrigin
+ * @param[in] x
+ * @param[in] y
+ * @param[in] z
+ */
 void CL_SetClientLerpOrigin(float x, float y, float z)
 {
 	cl.cgameClientLerpOrigin[0] = x;
@@ -215,21 +223,16 @@ void CL_SetClientLerpOrigin(float x, float y, float z)
 	cl.cgameClientLerpOrigin[2] = z;
 }
 
-/*
-==============
-CL_AddCgameCommand
-==============
-*/
-void CL_AddCgameCommand(const char *cmdName)
-{
-	Cmd_AddCommand(cmdName, NULL);
-}
-
+/**
+ * @brief CL_CGameCheckKeyExec
+ * @param[in] key
+ * @return
+ */
 qboolean CL_CGameCheckKeyExec(int key)
 {
 	if (cgvm)
 	{
-		return VM_Call(cgvm, CG_CHECKEXECKEY, key);
+		return (qboolean)(VM_Call(cgvm, CG_CHECKEXECKEY, key));
 	}
 	else
 	{
@@ -237,11 +240,9 @@ qboolean CL_CGameCheckKeyExec(int key)
 	}
 }
 
-/*
-=====================
-CL_ConfigstringModified
-=====================
-*/
+/**
+ * @brief CL_ConfigstringModified
+ */
 void CL_ConfigstringModified(void)
 {
 	char        *old, *s;
@@ -253,7 +254,7 @@ void CL_ConfigstringModified(void)
 	index = atoi(Cmd_Argv(1));
 	if (index < 0 || index >= MAX_CONFIGSTRINGS)
 	{
-		Com_Error(ERR_DROP, "configstring > MAX_CONFIGSTRINGS");
+		Com_Error(ERR_DROP, "configstring < 0 or configstring >= MAX_CONFIGSTRINGS");
 	}
 	// get everything after "cs <num>"
 	s = Cmd_ArgsFrom(2);
@@ -307,13 +308,11 @@ void CL_ConfigstringModified(void)
 	}
 }
 
-/*
-===================
-CL_GetServerCommand
-
-Set up argc/argv for the given command
-===================
-*/
+/**
+ * @brief Set up argc/argv for the given command
+ * @param[in] serverCommandNumber
+ * @return
+ */
 qboolean CL_GetServerCommand(int serverCommandNumber)
 {
 	char        *s;
@@ -443,14 +442,13 @@ rescan:
 	return qtrue;
 }
 
-// Copied from server to here
-/*
-====================
-CL_SetExpectedHunkUsage
-
-  Sets com_expectedhunkusage, so the client knows how to draw the percentage bar
-====================
-*/
+/**
+ * @brief Sets com_expectedhunkusage, so the client knows how to draw the percentage bar
+ *
+ * @param[in] mapname
+ *
+ * @see SV_SetExpectedHunkUsage (Copied from server to here)
+ */
 void CL_SetExpectedHunkUsage(const char *mapname)
 {
 	int  handle;
@@ -477,7 +475,7 @@ void CL_SetExpectedHunkUsage(const char *mapname)
 			{
 				// found a match
 				token = COM_Parse(&buftrav);    // read the size
-				if (token && *token)
+				if (token && token[0])
 				{
 					// this is the usage
 					com_expectedhunkusage = atoi(token);
@@ -493,29 +491,30 @@ void CL_SetExpectedHunkUsage(const char *mapname)
 	com_expectedhunkusage = -1;
 }
 
-/*
-====================
-CL_SendBinaryMessage
-====================
-*/
-static void CL_SendBinaryMessage(const char *buf, int buflen)
+/**
+ * @brief CL_SendBinaryMessage
+ * @param[in] buf
+ * @param[in] buflen
+ * @return
+ */
+static int CL_SendBinaryMessage(const char *buf, int buflen)
 {
 	if (buflen < 0 || buflen > MAX_BINARY_MESSAGE)
 	{
-		Com_Error(ERR_DROP, "CL_SendBinaryMessage: bad length %i", buflen);
+		Com_Printf("CL_SendBinaryMessage: bad length %i", buflen);
 		clc.binaryMessageLength = 0;
-		return;
+		return 0;
 	}
 
 	clc.binaryMessageLength = buflen;
 	Com_Memcpy(clc.binaryMessage, buf, buflen);
+	return 1;
 }
 
-/*
-====================
-CL_BinaryMessageStatus
-====================
-*/
+/**
+ * @brief CL_BinaryMessageStatus
+ * @return
+ */
 static int CL_BinaryMessageStatus(void)
 {
 	if (clc.binaryMessageLength == 0)
@@ -531,11 +530,12 @@ static int CL_BinaryMessageStatus(void)
 	return MESSAGE_WAITING;
 }
 
-/*
-====================
-CL_CGameBinaryMessageReceived
-====================
-*/
+/**
+ * @brief CL_CGameBinaryMessageReceived
+ * @param[in] buf
+ * @param[in] buflen
+ * @param[in] serverTime
+ */
 void CL_CGameBinaryMessageReceived(const byte *buf, int buflen, int serverTime)
 {
 	// This should not happen, but someone may spice up the server to cause peoples clients to shutdown.
@@ -551,16 +551,13 @@ void CL_CGameBinaryMessageReceived(const byte *buf, int buflen, int serverTime)
 	}
 }
 
-/*
-====================
-CL_CM_LoadMap
-
-Just adds default parameters that cgame doesn't need to know about
-====================
-*/
+/**
+ * @brief Just adds default parameters that cgame doesn't need to know about
+ * @param[in] mapname
+ */
 void CL_CM_LoadMap(const char *mapname)
 {
-	int checksum;
+	unsigned int checksum;
 
 	// If we are not running the server, then set expected usage here
 	if (!com_sv_running->integer)
@@ -576,11 +573,9 @@ void CL_CM_LoadMap(const char *mapname)
 	CM_LoadMap(mapname, qtrue, &checksum);
 }
 
-/*
-====================
-CL_ShutdonwCGame
-====================
-*/
+/**
+ * @brief CL_ShutdownCGame
+ */
 void CL_ShutdownCGame(void)
 {
 	Key_SetCatcher(Key_GetCatcher() & ~KEYCATCH_CGAME);
@@ -602,14 +597,11 @@ static int FloatAsInt(float f)
 	return fi.i;
 }
 
-/*
-====================
-CL_CgameSystemCalls
-
-The cgame module is making a system call
-====================
-*/
-
+/**
+ * @brief The cgame module is making a system call
+ * @param[in] args
+ * @return
+ */
 intptr_t CL_CgameSystemCalls(intptr_t *args)
 {
 	switch (args[0])
@@ -619,7 +611,6 @@ intptr_t CL_CgameSystemCalls(intptr_t *args)
 		return 0;
 	case CG_ERROR:
 		Com_Error(ERR_DROP, "%s", (char *)VMA(1));
-		return 0;
 	case CG_MILLISECONDS:
 		return Sys_Milliseconds();
 	case CG_CVAR_REGISTER:
@@ -663,7 +654,7 @@ intptr_t CL_CgameSystemCalls(intptr_t *args)
 		Cbuf_AddText(VMA(1));
 		return 0;
 	case CG_ADDCOMMAND:
-		CL_AddCgameCommand(VMA(1));
+		Cmd_AddCommand(VMA(1));
 		return 0;
 	case CG_REMOVECOMMAND:
 		Cmd_RemoveCommandSafe(VMA(1));
@@ -1003,8 +994,7 @@ intptr_t CL_CgameSystemCalls(intptr_t *args)
 
 	// binary channel
 	case CG_SENDMESSAGE:
-		CL_SendBinaryMessage(VMA(1), args[2]);
-		return 0;
+		return CL_SendBinaryMessage(VMA(1), args[2]);
 	case CG_MESSAGESTATUS:
 		return CL_BinaryMessageStatus();
 	case CG_R_LOADDYNAMICSHADER:
@@ -1038,19 +1028,15 @@ intptr_t CL_CgameSystemCalls(intptr_t *args)
 	return 0;
 }
 
-/*
-====================
-CL_UpdateLevelHunkUsage
-
-  This updates the "hunkusage.dat" file with the current map and it's hunk usage count
-
-  This is used for level loading, so we can show a percentage bar dependant on the amount
-  of hunk memory allocated so far
-
-  This will be slightly inaccurate if some settings like sound quality are changed, but these
-  things should only account for a small variation (hopefully)
-====================
-*/
+/**
+ * @brief This updates the "hunkusage.dat" file with the current map and it's hunk usage count
+ *
+ * This is used for level loading, so we can show a percentage bar dependant on the amount
+ * of hunk memory allocated so far
+ *
+ * This will be slightly inaccurate if some settings like sound quality are changed, but these
+ * things should only account for a small variation (hopefully)
+ */
 void CL_UpdateLevelHunkUsage(void)
 {
 	int  handle;
@@ -1135,7 +1121,7 @@ void CL_UpdateLevelHunkUsage(void)
 		Com_Error(ERR_DROP, "cannot write to hunkusage.dat, check disk full");
 	}
 	Com_sprintf(outstr, sizeof(outstr), "%s %i\n", cl.mapname, memusage);
-	FS_Write(outstr, strlen(outstr), handle);
+	(void) FS_Write(outstr, strlen(outstr), handle);
 	FS_FCloseFile(handle);
 
 	// now just open it and close it, so it gets copied to the pak dir
@@ -1146,13 +1132,9 @@ void CL_UpdateLevelHunkUsage(void)
 	}
 }
 
-/*
-====================
-CL_InitCGame
-
-Should only be called by CL_StartHunkUsers
-====================
-*/
+/**
+ * @brief Should only be called by CL_StartHunkUsers
+ */
 void CL_InitCGame(void)
 {
 	const char *info;
@@ -1211,13 +1193,10 @@ void CL_InitCGame(void)
 	CL_UpdateLevelHunkUsage();
 }
 
-/*
-====================
-CL_GameCommand
-
-See if the current console command is claimed by the cgame
-====================
-*/
+/**
+ * @brief See if the current console command is claimed by the cgame
+ * @return
+ */
 qboolean CL_GameCommand(void)
 {
 	if (!cgvm)
@@ -1225,42 +1204,36 @@ qboolean CL_GameCommand(void)
 		return qfalse;
 	}
 
-	return VM_Call(cgvm, CG_CONSOLE_COMMAND);
+	return (qboolean)(VM_Call(cgvm, CG_CONSOLE_COMMAND));
 }
 
-/*
-=====================
-CL_CGameRendering
-=====================
-*/
-void CL_CGameRendering(stereoFrame_t stereo)
+/**
+ * @brief CL_CGameRendering
+ */
+void CL_CGameRendering()
 {
-	VM_Call(cgvm, CG_DRAW_ACTIVE_FRAME, cl.serverTime, stereo, clc.demoplaying);
+	VM_Call(cgvm, CG_DRAW_ACTIVE_FRAME, cl.serverTime, 0, clc.demoplaying);
 	VM_Debug(0);
 }
 
-/*
-=================
-CL_AdjustTimeDelta
-
-Adjust the clients view of server time.
-
-We attempt to have cl.serverTime exactly equal the server's view
-of time plus the timeNudge, but with variable latencies over
-the internet it will often need to drift a bit to match conditions.
-
-Our ideal time would be to have the adjusted time approach, but not pass,
-the very latest snapshot.
-
-Adjustments are only made when a new snapshot arrives with a rational
-latency, which keeps the adjustment process framerate independent and
-prevents massive overadjustment during times of significant packet loss
-or bursted delayed packets.
-=================
-*/
-
 #define RESET_TIME  500
 
+/**
+ * @brief Adjust the clients view of server time.
+ *
+ * @details We attempt to have cl.serverTime exactly equal the server's view
+ * of time plus the timeNudge, but with variable latencies over
+ * the internet it will often need to drift a bit to match conditions.
+ *
+ * Our ideal time would be to have the adjusted time approach, but not pass,
+ * the very latest snapshot.
+ *
+ * Adjustments are only made when a new snapshot arrives with a rational
+ * latency, which keeps the adjustment process framerate independent and
+ * prevents massive overadjustment during times of significant packet loss
+ * or bursted delayed packets.
+ *
+ */
 void CL_AdjustTimeDelta(void)
 {
 	int newDelta;
@@ -1303,7 +1276,7 @@ void CL_AdjustTimeDelta(void)
 		// if any of the frames between this and the previous snapshot
 		// had to be extrapolated, nudge our sense of time back a little
 		// the granularity of +1 / -2 is too high for timescale modified frametimes
-		if (com_timescale->value == 0 || com_timescale->value == 1)
+		if (com_timescale->value == 0.f || com_timescale->value == 1.f)
 		{
 			if (cl.extrapolatedSnapshot)
 			{
@@ -1324,11 +1297,9 @@ void CL_AdjustTimeDelta(void)
 	}
 }
 
-/*
-==================
-CL_FirstSnapshot
-==================
-*/
+/**
+ * @brief CL_FirstSnapshot
+ */
 void CL_FirstSnapshot(void)
 {
 	// ignore snapshots that don't have entities
@@ -1356,11 +1327,9 @@ void CL_FirstSnapshot(void)
 	}
 }
 
-/*
-==================
-CL_SetCGameTime
-==================
-*/
+/**
+ * @brief CL_SetCGameTime
+ */
 void CL_SetCGameTime(void)
 {
 	// getting a valid frame message ends the connection process
@@ -1476,16 +1445,20 @@ void CL_SetCGameTime(void)
 }
 
 /*
-====================
-CL_GetTag
-====================
-*/
+ * @brief CL_GetTag
+ * @param[in] clientNum
+ * @param[in] tagname
+ * @param[in] orientation
+ * @return
+ *
+ * @note Unused
 qboolean CL_GetTag(int clientNum, char *tagname, orientation_t *orientation)
 {
-	if (!cgvm)
-	{
-		return qfalse;
-	}
+    if (!cgvm)
+    {
+        return qfalse;
+    }
 
-	return VM_Call(cgvm, CG_GET_TAG, clientNum, tagname, orientation);
+    return VM_Call(cgvm, CG_GET_TAG, clientNum, tagname, orientation);
 }
+*/

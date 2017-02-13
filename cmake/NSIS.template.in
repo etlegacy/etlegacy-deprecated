@@ -1,14 +1,11 @@
 ; ------------------------
 ; ET:L NSIS installer
 ; ------------------------
-; Before running NSIS, ensure to add in the current folder:
+; Before running NSIS, ensure to add in the misc\wininstaller folder:
 ; - the NSIS zip plug-in             (http://nsis.sourceforge.net/ZipDLL_plug-in)
 ; - the NSIS md5 plug-in (ANSI)      (http://nsis.sourceforge.net/MD5_plugin)
 ; - the NSIS simple firewall plug-in (http://nsis.sourceforge.net/NSIS_Simple_Firewall_Plugin)
-; - the ET: Legacy binary files in a "etlegacy-windows-${VERSION}" subfolder without Omni-bot files.
-; Change the version number below. You don't need to change anything else.
 
-;!define VERSION "2.71rc4"
 !define VERSION "@CPACK_PACKAGE_VERSION@"
 !define RESOURCE_PATH "@SOURCE_DIR@\misc\"
 
@@ -22,7 +19,6 @@ RequestExecutionLevel admin
 
 ; Variables
 Name "ET: Legacy ${VERSION}"
-;OutFile "etlegacy-windows-${VERSION}-full-installer.exe"
 OutFile "@CPACK_PACKAGE_FILE_NAME@.exe"
 BrandingText "ET: Legacy ${VERSION} | http://www.etlegacy.com"
 !define PRODUCT_DIR_REGKEY "SOFTWARE\Enemy Territory - Legacy"
@@ -125,40 +121,40 @@ VIProductVersion "@FILE_VERSION@"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "Enemy Territory Legacy Installer"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "Comments" "ETL game installer"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "Legacy Team"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalTrademarks" "© 2011-2015 Legacy Team"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "© 2011-2015 Legacy Team"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalTrademarks" "� 2012-2017 ET:Legacy Team"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "� 2012-2017 ET:Legacy Team"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "ETL Installer"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "@FILE_VERSION@"
 
 ; Polish
-LangString DESC_Section1 ${LANG_POLISH} "ET: Legacy ${VERSION} zostało zainstalowane na twoim komputerze.$\n$\n\
-ETKEY, folder profilu i wszystkie ściągnięte pliki znajdziesz w katalogu $DOCUMENTS\ETLegacy."
-LangString DESC_Section2 ${LANG_POLISH} "Błąd Pobierania: Nie udało się ściągnąć Instalatora."
-LangString DESC_Section3 ${LANG_POLISH} "Błąd Integrarności: Zła suma kontrolna MD5 Instalatora."
-LangString DESC_Section4 ${LANG_POLISH} "Podczas wypakowywania plików W:ET ekran stanie się czarny na kilka sekund."
-LangString DESC_Section5 ${LANG_POLISH} "Błąd Krytyczny: Wypakowywanie Instalatora nie powiodło się."
-LangString DESC_Section6 ${LANG_POLISH} "Błąd Krytyczny: Kopiowanie nie powiodło się (pak0.pk3)."
-LangString DESC_Section7 ${LANG_POLISH} "Błąd Pobierania: Nie udało się ściągnąć Łatki."
-LangString DESC_Section8 ${LANG_POLISH} "Błąd Integrarności: Zła suma kontrolna MD5 Łatki."
-LangString DESC_Section9 ${LANG_POLISH} "Błąd Krytyczny: Wypakowywanie Łatki nie powiodło się."
-LangString DESC_Section10 ${LANG_POLISH} "Błąd Krytyczny: Kopiowanie nie powiodło się (pak1.pk3)."
-LangString DESC_Section11 ${LANG_POLISH} "Błąd Krytyczny: Kopiowanie nie powiodło się (pak2.pk3)."
-LangString DESC_Section12 ${LANG_POLISH} "Pamiętaj, aby skopiować główne pliki W:ET (pak0.pk3, pak1.pk3, pak2.pk3) do $INSTDIR\etmain przed uruchomieniem ET: Legacy."
-LangString DESC_Section13 ${LANG_POLISH} "Błąd Pobierania: Nie udało się ściągnąć plików Omni-bot."
-LangString DESC_Section14 ${LANG_POLISH} "Błąd Krytyczny: Wypakowywanie Omni-bot nie powiodło się."
-LangString DESC_Section15 ${LANG_POLISH} "Nie znaleziono ETKEY-a. ET: Legacy stworzy nowy ETKEY na starcie. Jeśli masz kopię zapasową swojego własnego ETKEY-a, skopiuj go do $DOCUMENTS\ETLegacy\etmain."
+LangString DESC_Section1 ${LANG_POLISH} "ET: Legacy ${VERSION} zostalo zainstalowane na twoim komputerze.$\n$\n\
+ETKEY, folder profilu i wszystkie sciagniete pliki znajdziesz w katalogu $DOCUMENTS\ETLegacy."
+LangString DESC_Section2 ${LANG_POLISH} "Blad Pobierania: Nie udalo sie sciagnac Instalatora."
+LangString DESC_Section3 ${LANG_POLISH} "Blad Integrarnosci: Zla suma kontrolna MD5 Instalatora."
+LangString DESC_Section4 ${LANG_POLISH} "Podczas wypakowywania plikow W:ET ekran stanie sie czarny na kilka sekund."
+LangString DESC_Section5 ${LANG_POLISH} "Blad Krytyczny: Wypakowywanie Instalatora nie powiodlo sie."
+LangString DESC_Section6 ${LANG_POLISH} "Blad Krytyczny: Kopiowanie nie powiodlo sie (pak0.pk3)."
+LangString DESC_Section7 ${LANG_POLISH} "Blad Pobierania: Nie udalo sie sciagnac Latki."
+LangString DESC_Section8 ${LANG_POLISH} "Blad Integrarnosci: Zla suma kontrolna MD5 Latki."
+LangString DESC_Section9 ${LANG_POLISH} "Blad Krytyczny: Wypakowywanie Latki nie powiodlo sie."
+LangString DESC_Section10 ${LANG_POLISH} "Blad Krytyczny: Kopiowanie nie powiodlo sie (pak1.pk3)."
+LangString DESC_Section11 ${LANG_POLISH} "Blad Krytyczny: Kopiowanie nie powiodlo sie (pak2.pk3)."
+LangString DESC_Section12 ${LANG_POLISH} "Pamietaj, aby skopiowac glowne pliki W:ET (pak0.pk3, pak1.pk3, pak2.pk3) do $INSTDIR\etmain przed uruchomieniem ET: Legacy."
+LangString DESC_Section13 ${LANG_POLISH} "Blad Pobierania: Nie udalo sie sciagnac plikow Omni-bot."
+LangString DESC_Section14 ${LANG_POLISH} "Blad Krytyczny: Wypakowywanie Omni-bot nie powiodlo sie."
+LangString DESC_Section15 ${LANG_POLISH} "Nie znaleziono ETKEY-a. ET: Legacy stworzy nowy ETKEY na starcie. Jesli masz kopie zapasowa swojego wlasnego ETKEY-a, skopiuj go do $DOCUMENTS\ETLegacy\etmain."
 LangString DESC_Section16 ${LANG_POLISH} "Zainstaluj pliki Enemy Territory: Legacy."
-LangString DESC_Section17 ${LANG_POLISH} "Skopiuj główne pliki .pk3 Wolfenstein: Enemy Territory. W przypadku nieznalezienia na dysku twardym zostaną one ściągnięte."
+LangString DESC_Section17 ${LANG_POLISH} "Skopiuj glowne pliki .pk3 Wolfenstein: Enemy Territory. W przypadku nieznalezienia na dysku twardym zostana one sciagniete."
 LangString DESC_Section18 ${LANG_POLISH} "Zainstaluj pliki Omni-bot dla twojego serwera lub treningu offline. Pobrana zostanie najnowsza wersja."
 LangString DESC_Section19 ${LANG_POLISH} "Odinstaluj Enemy Territory: Legacy i pliki Omni-bot."
-LangString DESC_Section20 ${LANG_POLISH} "Usuń główne pliki .pk3 Wolfenstein: Enemy Territory (pak0.pk3, pak1.pk3, pak2.pk3)."
-LangString DESC_Section21 ${LANG_POLISH} "Usuń ETKEY i wszystkie inne pliki z folderu $DOCUMENTS\ETLegacy."
-LangString DESC_Section22 ${LANG_POLISH} "ET: Legacy wymaga MS VC++ 2013 Redistributable, czy chcesz to zaintalować?"
+LangString DESC_Section20 ${LANG_POLISH} "Usun glowne pliki .pk3 Wolfenstein: Enemy Territory (pak0.pk3, pak1.pk3, pak2.pk3)."
+LangString DESC_Section21 ${LANG_POLISH} "Usun ETKEY i wszystkie inne pliki z folderu $DOCUMENTS\ETLegacy."
+LangString DESC_Section22 ${LANG_POLISH} "ET: Legacy wymaga MS VC++ 2013 Redistributable, czy chcesz to zaintalowac?"
 VIAddVersionKey /LANG=${LANG_POLISH} "ProductName" "Instalator Enemy Territory Legacy"
 VIAddVersionKey /LANG=${LANG_POLISH} "Comments" "Instalator gry ETL"
 VIAddVersionKey /LANG=${LANG_POLISH} "CompanyName" "Legacy Team"
-VIAddVersionKey /LANG=${LANG_POLISH} "LegalTrademarks" "© 2011-2015 Legacy Team"
-VIAddVersionKey /LANG=${LANG_POLISH} "LegalCopyright" "© 2011-2015 Legacy Team"
+VIAddVersionKey /LANG=${LANG_POLISH} "LegalTrademarks" "� 2012-2017 ET:Legacy Team"
+VIAddVersionKey /LANG=${LANG_POLISH} "LegalCopyright" "� 2012-2017 ET:Legacy Team"
 VIAddVersionKey /LANG=${LANG_POLISH} "FileDescription" "Instalator ETL"
 VIAddVersionKey /LANG=${LANG_POLISH} "FileVersion" "@FILE_VERSION@"
 
@@ -171,16 +167,9 @@ Section "Enemy Territory: Legacy" FILES
     SectionIn RO
     SetOverwrite ifnewer
     SetOutPath $INSTDIR
-    ; File /r "${RESOURCE_PATH}\*.*"
-    File /r "@CPACK_PACKAGE_FILE_NAME@\bin\*.*"
-    File "@BINARY_DIR@\SDL2.dll"
-    File "${RESOURCE_PATH}\wininstaller\COPYING.txt"
-
-    SetOutPath "$INSTDIR\etmain"
-    File /r "@CPACK_PACKAGE_FILE_NAME@\lib\etlegacy\etmain\*.*"
-
-    SetOutPath "$INSTDIR\legacy"
-    File "@CPACK_PACKAGE_FILE_NAME@\lib\etlegacy\legacy\*.*"
+    File /r /x omni-bot "@CPACK_PACKAGE_FILE_NAME@\*"
+    ; We include SDL2.dll with the install phase now
+    ;File "@BINARY_DIR@\SDL2.dll"
 
     SimpleFC::AddApplication "ET: Legacy" "$INSTDIR\etl.exe" 0 2 "" 1
     SimpleFC::AddApplication "ET: Legacy server" "$INSTDIR\etlded.exe" 0 2 "" 1
@@ -305,14 +294,14 @@ Section "Omni-bot" OMNIBOT
     GOTO GET_BOT
 
     GET_BOT:
-        IfFileExists "$TEMP\omnibot-windows-latest.zip" UNPACK_BOT
-        NSISdl::download "http://mirror.etlegacy.com/omnibot/omnibot-windows-latest.zip" omnibot-windows-latest.zip
-        IfFileExists "$TEMP\omnibot-windows-latest.zip" UNPACK_BOT
+        IfFileExists "$TEMP\@OMNIBOT_ARCHIVE@" UNPACK_BOT
+        NSISdl::download "@OMNIBOT_ARCHIVE_URL@" @OMNIBOT_ARCHIVE@
+        IfFileExists "$TEMP\@OMNIBOT_ARCHIVE@" UNPACK_BOT
         MessageBox MB_RETRYCANCEL|MB_ICONEXCLAMATION $(DESC_Section13) \
         IDCANCEL END IDRETRY GET_BOT
 
     UNPACK_BOT:
-        ZipDLL::extractall "$TEMP\omnibot-windows-latest.zip" "$INSTDIR\legacy"
+        ZipDLL::extractall "$TEMP\@OMNIBOT_ARCHIVE@" "$INSTDIR\legacy"
         IfFileExists "$INSTDIR\legacy\omni-bot\*.*" END
         MessageBox MB_ICONEXCLAMATION|MB_OK $(DESC_Section14)
 

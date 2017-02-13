@@ -6,7 +6,7 @@
  * Copyright (C) 2012 Unvanquished Developers
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -52,19 +52,19 @@ extern "C"
 #include <stdlib.h>
 #include <map>
 
-#include "../tinygettext/po_parser.hpp"
-#include "../tinygettext/tinygettext.hpp"
-#include "../tinygettext/log.hpp"
-#include "../tinygettext/file_system.hpp"
+#include "../tinygettext/tinygettext/po_parser.hpp"
+#include "../tinygettext/tinygettext/tinygettext.hpp"
+#include "../tinygettext/tinygettext/log.hpp"
+#include "../tinygettext/tinygettext/file_system.hpp"
 
 tinygettext::DictionaryManager dictionary;
 tinygettext::DictionaryManager dictionary_mod;
 
-cvar_t      *cl_language;
-cvar_t      *cl_languageDebug;
-static char cl_language_last[3];
+cvar_t      *cl_lang;
+cvar_t      *cl_langDebug;
+static char cl_lang_last[3];
 
-qboolean doTranslate = qfalse;   // we don't translate english in general
+qboolean doTranslate    = qfalse; // we don't translate english in general
 qboolean doTranslateMod = qtrue; // translate legacy mod only
 
 std::map <std::string, std::string> strings; // original text / translated text
@@ -188,7 +188,7 @@ public:
 };
 
 /**
- * @brief Attempts to detect the system language unless cl_language was already set.
+ * @brief Attempts to detect the system language unless cl_lang was already set.
  * Then loads the PO file containing translated strings.
  */
 void I18N_Init(void)
@@ -197,8 +197,8 @@ void I18N_Init(void)
 	std::set<tinygettext::Language> languages;
 	std::set<tinygettext::Language> languages_mod;
 
-	cl_language      = Cvar_Get("cl_lang", "en", CVAR_ARCHIVE);
-	cl_languageDebug = Cvar_Get("cl_langDebug", "0", CVAR_ARCHIVE);
+	cl_lang      = Cvar_Get("cl_lang", "en", CVAR_ARCHIVE | CVAR_LATCH);
+	cl_langDebug = Cvar_Get("cl_langDebug", "0", CVAR_ARCHIVE);
 
 	tinygettext::Log::set_log_error_callback(&Tinygettext_Error);
 	tinygettext::Log::set_log_info_callback(&Tinygettext_Info);
@@ -207,7 +207,7 @@ void I18N_Init(void)
 	FL_FindLocale(&locale);
 
 	// Do not change the language if it is already set
-	if (cl_language && !cl_language->string[0])
+	if (!cl_lang->string[0])
 	{
 		// locale->country is also supported for 'en_US' format
 		if (locale->lang && locale->lang[0])
@@ -243,12 +243,13 @@ void I18N_Init(void)
 	}
 	Com_Printf("\n");
 
-	I18N_SetLanguage(cl_language->string);
+	I18N_SetLanguage(cl_lang->string);
 	FL_FreeLocale(&locale);
 }
 
 /**
  * @brief Loads a localization file
+ * @param[in] language
  */
 void I18N_SetLanguage(const char *language)
 {
@@ -257,9 +258,9 @@ void I18N_SetLanguage(const char *language)
 	dictionary_mod.set_language(tinygettext::Language::from_env(std::string(language)));
 
 	Com_Printf("Language set to %s\n", dictionary.get_language().get_name().c_str());
-	Com_sprintf(cl_language_last, sizeof(cl_language_last), "%s", language);
+	Com_sprintf(cl_lang_last, sizeof(cl_lang_last), "%s", language);
 
-	if (!Q_stricmp(cl_language->string, "en"))
+	if (!Q_stricmp(cl_lang->string, "en"))
 	{
 		doTranslate = qfalse;
 	}
@@ -267,7 +268,7 @@ void I18N_SetLanguage(const char *language)
 	{
 		doTranslate = qtrue;
 	}
-	
+
 	strings.clear();
 }
 
@@ -278,15 +279,16 @@ void I18N_SetLanguage(const char *language)
  * attempt to read them from the po file at each call and would endlessly
  * spam the console with warnings if the requested translation did not exist.
  *
- * @param msgid original string in English
- * @param dict dictionary to use (client / mod)
+ * @param[in] msgid original string in English
+ * @param[in] dict dictionary to use (client / mod)
+ *
  * @return translated string or English text if dictionary was not found
  */
 static const char *_I18N_Translate(const char *msgid, tinygettext::DictionaryManager &dict)
 {
-	if (Q_stricmp(cl_language->string, cl_language_last))
+	if (Q_stricmp(cl_lang->string, cl_lang_last))
 	{
-		I18N_SetLanguage(cl_language->string);
+		I18N_SetLanguage(cl_lang->string);
 	}
 
 	if (!doTranslate)
@@ -300,7 +302,7 @@ static const char *_I18N_Translate(const char *msgid, tinygettext::DictionaryMan
 		strings.insert(std::make_pair(msgid, dict.get_dictionary().translate(msgid)));
 	}
 
-	if (cl_languageDebug->integer)
+	if (cl_langDebug->integer)
 	{
 		if (!Q_stricmp(strings.find(msgid)->second.c_str(), msgid))
 		{
@@ -311,14 +313,24 @@ static const char *_I18N_Translate(const char *msgid, tinygettext::DictionaryMan
 	return strings.find(msgid)->second.c_str();
 }
 
+/**
+ * @brief I18N_Translate
+ * @param[in] msgid
+ * @return
+ */
 const char *I18N_Translate(const char *msgid)
 {
 	return _I18N_Translate(msgid, dictionary);
 }
 
+/**
+ * @brief I18N_TranslateMod
+ * @param[in] msgid
+ * @return
+ */
 const char *I18N_TranslateMod(const char *msgid)
 {
-	if(doTranslateMod)
+	if (doTranslateMod)
 	{
 		return _I18N_Translate(msgid, dictionary_mod);
 	}
@@ -332,8 +344,9 @@ const char *I18N_TranslateMod(const char *msgid)
 
 /**
  * @brief A dumb function which saves missing strings for the current language and mod
- * passed to it
- * @param msgid original text
+ * passed to it.
+ *
+ * @param[in] msgid original text
  */
 static void TranslationMissing(const char *msgid)
 {
@@ -349,22 +362,34 @@ static void TranslationMissing(const char *msgid)
  * Logging functions which override the default ones from Tinygettext
  */
 
+/**
+ * @brief Tinygettext_Error
+ * @param[in] str
+ */
 static void Tinygettext_Error(const std::string& str)
 {
 	Com_Printf("^1%s^7", str.c_str());
 }
 
+/**
+ * @brief Tinygettext_Warning
+ * @param[in] str
+ */
 static void Tinygettext_Warning(const std::string& str)
 {
-	if (cl_languageDebug->integer)
+	if (cl_langDebug->integer)
 	{
 		Com_Printf("^3%s^7", str.c_str());
 	}
 }
 
+/**
+ * @brief Tinygettext_Info
+ * @param[in] str
+ */
 static void Tinygettext_Info(const std::string& str)
 {
-	if (cl_languageDebug->integer)
+	if (cl_langDebug->integer)
 	{
 		Com_Printf("%s", str.c_str());
 	}

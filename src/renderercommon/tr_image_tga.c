@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -30,17 +30,10 @@
  */
 /**
  * @file tr_image_tga.c
+ * @brief TGA files are used for 24/32 bit images
  */
 
 #include "tr_common.h"
-
-/*
-========================================================================
-
-TGA files are used for 24/32 bit images
-
-========================================================================
-*/
 
 typedef struct _TargaHeader
 {
@@ -51,13 +44,21 @@ typedef struct _TargaHeader
 	unsigned char pixel_size, attributes;
 } TargaHeader;
 
+/**
+ * @brief R_LoadTGA
+ * @param[in,out] name
+ * @param[out] pic
+ * @param[out] width
+ * @param[out] height
+ * @param[in] alphaByte
+ */
 void R_LoadTGA(const char *name, byte **pic, int *width, int *height, byte alphaByte)
 {
-	unsigned columns, rows, numPixels;
-	byte     *pixbuf;
-	int      row, column;
-	byte     *buf_p;
-	byte     *end;
+	unsigned     columns, rows, numPixels;
+	byte         *pixbuf;
+	unsigned int row, column;
+	byte         *buf_p;
+	byte         *end;
 	union
 	{
 		byte *b;
@@ -81,14 +82,15 @@ void R_LoadTGA(const char *name, byte **pic, int *width, int *height, byte alpha
 	//
 	// load the file
 	//
-	length = ri.FS_ReadFile(( char * ) name, &buffer.v);
-	if (!buffer.b || length < 0)
+	length = ri.FS_ReadFile(name, &buffer.v);
+	if (!buffer.b || length <= 0)
 	{
 		return;
 	}
 
 	if (length < 18)
 	{
+		ri.FS_FreeFile(buffer.v);
 		Ren_Drop("LoadTGA: header too short (%s)\n", name);
 	}
 
@@ -154,6 +156,8 @@ void R_LoadTGA(const char *name, byte **pic, int *width, int *height, byte alpha
 	{
 		if (buf_p + targa_header.id_length > end)
 		{
+			ri.Free(targa_rgba);
+			ri.FS_FreeFile(buffer.v);
 			Ren_Drop("LoadTGA: header too short (%s)\n", name);
 		}
 
@@ -164,11 +168,13 @@ void R_LoadTGA(const char *name, byte **pic, int *width, int *height, byte alpha
 	{
 		if (buf_p + columns * rows * targa_header.pixel_size / 8 > end)
 		{
+			ri.Free(targa_rgba);
+			ri.FS_FreeFile(buffer.v);
 			Ren_Drop("LoadTGA: file truncated (%s)\n", name);
 		}
 
 		// Uncompressed RGB or gray scale image
-		for (row = rows - 1; row >= 0; row--)
+		for (row = rows - 1; row != UINT_MAX; row--)
 		{
 			pixbuf = targa_rgba + row * columns * 4;
 			for (column = 0; column < columns; column++)
@@ -176,7 +182,6 @@ void R_LoadTGA(const char *name, byte **pic, int *width, int *height, byte alpha
 				unsigned char red, green, blue, alpha;
 				switch (targa_header.pixel_size)
 				{
-
 				case 8:
 					blue      = *buf_p++;
 					green     = blue;
@@ -186,7 +191,6 @@ void R_LoadTGA(const char *name, byte **pic, int *width, int *height, byte alpha
 					*pixbuf++ = blue;
 					*pixbuf++ = alphaByte;
 					break;
-
 				case 24:
 					blue      = *buf_p++;
 					green     = *buf_p++;
@@ -210,7 +214,6 @@ void R_LoadTGA(const char *name, byte **pic, int *width, int *height, byte alpha
 					ri.Free(targa_rgba);
 					ri.FS_FreeFile(buffer.v);
 					Ren_Drop("LoadTGA: illegal pixel_size '%d' in file '%s'\n", targa_header.pixel_size, name);
-					break;
 				}
 			}
 		}
@@ -224,7 +227,7 @@ void R_LoadTGA(const char *name, byte **pic, int *width, int *height, byte alpha
 		blue  = 0;
 		alpha = alphaByte;
 
-		for (row = rows - 1; row >= 0; row--)
+		for (row = rows - 1; row != UINT_MAX; row--)
 		{
 			pixbuf = targa_rgba + row * columns * 4;
 			for (column = 0; column < columns; )
@@ -259,7 +262,6 @@ void R_LoadTGA(const char *name, byte **pic, int *width, int *height, byte alpha
 						ri.Free(targa_rgba);
 						ri.FS_FreeFile(buffer.v);
 						Ren_Drop("LoadTGA: illegal pixel_size '%d' in file '%s'\n", targa_header.pixel_size, name);
-						break;
 					}
 
 					for (j = 0; j < packetSize; j++)
@@ -319,7 +321,6 @@ void R_LoadTGA(const char *name, byte **pic, int *width, int *height, byte alpha
 							ri.Free(targa_rgba);
 							ri.FS_FreeFile(buffer.v);
 							Ren_Drop("LoadTGA: illegal pixel_size '%d' in file '%s'\n", targa_header.pixel_size, name);
-							break;
 						}
 						column++;
 						if (column == columns)   // pixel packet run spans across rows
@@ -338,7 +339,7 @@ void R_LoadTGA(const char *name, byte **pic, int *width, int *height, byte alpha
 					}
 				}
 			}
-breakOut:;
+breakOut:   ;
 		}
 	}
 
@@ -353,7 +354,7 @@ breakOut:;
 
 		//Ren_Warning( "WARNING: '%s' TGA file header declares top-down image, flipping\n", name);
 
-		flip = (unsigned char *)malloc(columns * 4);
+		flip = (unsigned char *)ri.Hunk_AllocateTempMemory(columns * 4);
 		for (row = 0; row < rows / 2; row++)
 		{
 			src = targa_rgba + row * 4 * columns;
@@ -363,7 +364,7 @@ breakOut:;
 			memcpy(src, dst, columns * 4);
 			memcpy(dst, flip, columns * 4);
 		}
-		free(flip);
+		ri.Hunk_FreeTempMemory(flip);
 	}
 #else
 	// instead we just print a warning

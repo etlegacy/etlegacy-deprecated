@@ -1,16 +1,16 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR Jan Simek
-# This file is distributed under the same license as the PACKAGE package.
-# 
+# Translation pot file for the ET: Legacy mod
+# Copyright (C) 2012-2015 ET: Legacy Team
+# This file is distributed under the same license as the ET:Legacy package.
 # Translators:
-# Artem Vorotnikov <artem@vorotnikov.me>, 2014-2015
+# Artem Vorotnikov <artem@vorotnikov.me>, 2014-2017
+# Simple88, 2016
 msgid ""
 msgstr ""
 "Project-Id-Version: ET:Legacy\n"
 "Report-Msgid-Bugs-To: mail@etlegacy.com\n"
 "POT-Creation-Date: 2015-01-10 20:22+0100\n"
-"PO-Revision-Date: 2015-08-04 21:11+0000\n"
-"Last-Translator: Rafał Pawlak <rafal1137@yahoo.pl>\n"
+"PO-Revision-Date: 2017-01-22 16:51+0000\n"
+"Last-Translator: Artem Vorotnikov <artem@vorotnikov.me>\n"
 "Language-Team: Russian (http://www.transifex.com/etlegacy/etlegacy/language/ru/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -165,11 +165,11 @@ msgstr "ОЗВУЧКА"
 
 #: etmain/ui/credits_additional.menu:203
 msgid "Voice of Allied / Axis soldiers"
-msgstr "Озвучка солдат союзников / нацистов"
+msgstr ""
 
 #: etmain/ui/credits_additional.menu:205
 msgid "Voice of Axis Commander"
-msgstr "Озвучка командира нацистов"
+msgstr "Озвучка командира фашистов"
 
 #: etmain/ui/credits_additional.menu:207
 msgid "Voice of Allied Commander"
@@ -684,11 +684,11 @@ msgstr "Заменить время респа союзников по умол�
 
 #: etmain/ui/hostgame_advanced.menu:55
 msgid "Axis Spawn Time:"
-msgstr "Время респа нацистов:"
+msgstr "Время респа фашистов:"
 
 #: etmain/ui/hostgame_advanced.menu:55
 msgid "Override the default Axis spawn time"
-msgstr "Заменить время респа нацистов по умолчанию"
+msgstr "Заменить время респа фашистов по умолчанию"
 
 #: etmain/ui/hostgame_advanced.menu:56
 msgid "Allied Max Lives:"
@@ -700,11 +700,11 @@ msgstr "Указать число жизней у союзников в игре
 
 #: etmain/ui/hostgame_advanced.menu:57
 msgid "Axis Max Lives:"
-msgstr "Максимум жизней у нацистов:"
+msgstr "Макс. жизней у фашистов:"
 
 #: etmain/ui/hostgame_advanced.menu:57
 msgid "Specify the number of Axis lives in a max lives game"
-msgstr "Указать число жизней у нацистов в игре с ограниченным числом жизней"
+msgstr "Указать число жизней у фашистов в игре с ограниченным числом жизней"
 
 #: etmain/ui/hostgame_advanced.menu:58
 msgid "Stopwatch Round-Type:"
@@ -1073,9 +1073,12 @@ msgid "Enable Country Flags on the server"
 msgstr "Включить флаги стран на сервере"
 
 #: etmain/ui/hostgame_extended.menu:36 etmain/ui/hostgame.menu:195
-#: etmain/ui/options_graphics.menu:52
 msgid "ADVANCED"
 msgstr "ДОПОЛНИТЕЛЬНО"
+
+#: etmain/ui/options_system.menu:54
+msgid "ADVANCED GRAPHICS"
+msgstr "ГРАФИКА - ДОПОЛНИТЕЛЬНО"
 
 #: etmain/ui/hostgame.menu:31 etmain/ui/main.menu:106
 msgid "HOST GAME"
@@ -1338,7 +1341,7 @@ msgstr "В ИЗБРАННОЕ"
 
 #: etmain/ui/ingame_tapoutlms.menu:49 etmain/ui/ingame_tapout.menu:49
 msgid "RESPAWNING"
-msgstr "ВОЗРОДИТЬСЯ"
+msgstr "ВОЗРОЖДЕНИЕ"
 
 #: etmain/ui/ingame_tapoutlms.menu:50
 msgid ""
@@ -1370,7 +1373,7 @@ msgstr "УБРАТЬ БОТОВ"
 
 #: etmain/ui/ingame_vote_bot.menu:55
 msgid "AXIS BOTS"
-msgstr "БОТЫ ЗА НАЦИСТОВ"
+msgstr "БОТЫ-ФАШИСТЫ"
 
 #: etmain/ui/ingame_vote_bot.menu:56
 msgid "ALLIED BOTS"
@@ -1483,12 +1486,12 @@ msgstr "РАЗГЛУШИТЬ ЗРИТЕЛЕЙ"
 #: etmain/ui/ingame_vote_misc.menu:53
 #: etmain/ui/ingame_vote_misc_refrcon.menu:52
 msgid "FRIENDLY FIRE ON"
-msgstr "ДРУЖ. ОГОНЬ ВКЛ"
+msgstr ""
 
 #: etmain/ui/ingame_vote_misc.menu:54
 #: etmain/ui/ingame_vote_misc_refrcon.menu:53
 msgid "FRIENDLY FIRE OFF"
-msgstr "ДРУЖ. ОГОНЬ ВЫКЛ"
+msgstr ""
 
 #: etmain/ui/ingame_vote_misc.menu:55
 #: etmain/ui/ingame_vote_misc_refrcon.menu:54
@@ -1604,7 +1607,7 @@ msgstr "СНЯТЬ СУДЕЙСТВО"
 
 #: etmain/ui/ingame_vote_players.menu:66
 msgid "MAKE AXIS"
-msgstr "СДЕЛАТЬ НАЦИСТОМ"
+msgstr "СДЕЛАТЬ ФАШИСТОМ"
 
 #: etmain/ui/ingame_vote_players.menu:67
 msgid "MAKE ALLIED"
@@ -1721,14 +1724,14 @@ msgid "This will delete all unnecessary files from you fs_homepath."
 msgstr "Удалит все лишние файлы из Вашего fs_homepath"
 
 #: etmain/ui/options_clean.menu:36
-msgid "A simple clean will remove tmp- and custom pk3 files."
-msgstr "Простая чистка удалит tmp- и пользовательские pk3-файлы"
+msgid "A simple clean will remove tmp and custom pk3 files."
+msgstr "Простая чистка удалит временные и пользовательские pk3-файлы."
 
 #: etmain/ui/options_clean.menu:37
 msgid ""
-"A full clean will remove all downloaded files like map-,\n"
-" campaign- and custom pk3 files."
-msgstr "Полная чистка удалит все загруженные файлы напр.\n карты, кампании и пользовательские pk3."
+"A full clean will remove all downloaded files like maps,\n"
+" campaigns and custom pk3 files."
+msgstr "Полная чистка удалит все загруженные файлы типа\n карт, кампаний и пользовательских pk3."
 
 #: etmain/ui/options_clean.menu:38
 msgid "^1WARNING: Use at your own risk!"
@@ -1742,17 +1745,29 @@ msgstr "Документация на нашей вики."
 msgid "Press '^7ABORT^9' if you don't know what you are doing here."
 msgstr "Если не уверены, то нажмите '^7ОТМЕНА^9'."
 
-#: etmain/ui/options_clean.menu:43
+#: etmain/ui/options_clean.menu:42
 msgid "ABORT"
 msgstr "ОТМЕНА"
 
-#: etmain/ui/options_clean.menu:44
+#: etmain/ui/options_clean.menu:42
+msgid "Abort operation"
+msgstr "Отменить операцию"
+
+#: etmain/ui/options_clean.menu:43
 msgid "SIMPLE CLEAN"
 msgstr "ПРОСТАЯ ЧИСТКА"
 
-#: etmain/ui/options_clean.menu:45
+#: etmain/ui/options_clean.menu:43
+msgid "Remove tmp and custom pk3 files"
+msgstr "Удалить временные и пользовательские pk3-файлы"
+
+#: etmain/ui/options_clean.menu:44
 msgid "FULL CLEAN"
 msgstr "ПОЛНАЯ ЧИСТКА"
+
+#: etmain/ui/options_clean.menu:44
+msgid "Remove all maps and campaigns files"
+msgstr "Удалить все карты и кампании"
 
 #: etmain/ui/options_controls_default.menu:52
 msgid "DEFAULT CONTROLS"
@@ -2423,11 +2438,6 @@ msgstr "Показывать подсказки:"
 #: etmain/ui/options_customise_game.menu:82
 msgid "Display Tool Tips in the UI"
 msgstr "Показывать подсказки в UI"
-
-#: etmain/ui/options_customise_game.menu:1
-#: etmain/ui/wm_ftquickmessageAlt.menu:1
-msgid "ui/menudef.h"
-msgstr "ui/menudef.h"
 
 #: etmain/ui/options_customise_hud.menu:28 etmain/ui/options.menu:33
 #: etmain/ui/viewreplay.menu:62
@@ -3328,6 +3338,7 @@ msgid "Anisotropic Filter:"
 msgstr "Анизотропия:"
 
 #: etmain/ui/options_graphics.menu:64 etmain/ui/options_graphics.menu:71
+#: etmain/ui/options_system.menu:48
 msgid "Disabled"
 msgstr "Выключено"
 
@@ -3411,7 +3422,7 @@ msgstr "УСТАНОВИТЬ РЕКОМЕНДУЕМЫЕ"
 msgid "APPLY"
 msgstr "ПРИМЕНИТЬ"
 
-#: etmain/ui/options.menu:35 etmain/ui/options_system.menu:35
+#: etmain/ui/options.menu:35 etmain/ui/options_system.menu:36
 msgid "SYSTEM"
 msgstr "СИСТЕМА"
 
@@ -3455,7 +3466,7 @@ msgstr "44 кГц (оч. выс.)"
 msgid "Set the sound quality"
 msgstr "Установить качество звука"
 
-#: etmain/ui/options_system.menu:45
+#: etmain/ui/options_system.menu:85
 msgid "Doppler FX:"
 msgstr "Допплер-эффекты:"
 
@@ -3479,8 +3490,8 @@ msgstr "Глушить если не в фокусе:"
 msgid "Enables or disables sound when window is unfocused"
 msgstr "Включить или выключить звук когда окно без фокуса"
 
-#: etmain/ui/options_system.menu:51
-msgid "NETWORKING"
+#: etmain/ui/options_system.menu:92
+msgid "NETWORK"
 msgstr "СЕТЬ"
 
 #: etmain/ui/options_system.menu:52
@@ -3517,17 +3528,29 @@ msgstr "Проверять обновления при запуске:"
 msgid "Automatically check for updates?"
 msgstr "Автоматически проверять обновления?"
 
-#: etmain/ui/options_system.menu:61
-msgid "Get Missing Files from Server:"
-msgstr "Загрузка файлов с сервера:"
+#: etmain/ui/options_system.menu:99
+msgid "Get Missing Files:"
+msgstr "Загружать файлы:"
 
-#: etmain/ui/options_system.menu:61
-msgid "Download missing files when available?"
-msgstr "Загружать файлы по необходимости?"
+#: etmain/ui/options_system.menu:99
+msgid "Download missing files when available"
+msgstr "Загружать файлы по необходимости"
 
 #: etmain/ui/options_system.menu:62
 msgid "Use HTTP/FTP Downloads:"
 msgstr "Загружать через HTTP/FTP:"
+
+#: etmain/ui/options_system.menu:106
+msgid "UPDATES"
+msgstr "ОБНОВЛЕНИЯ"
+
+#: etmain/ui/options_system.menu:107
+msgid "Start-Up Updates Check:"
+msgstr "Проверка обновлений при запуске:"
+
+#: etmain/ui/options_system.menu:107
+msgid "Automatically check for updates"
+msgstr "Автоматически проверять наличие обновлений"
 
 #: etmain/ui/options_system.menu:62
 msgid "Enables or disables http/ftp downloads"
@@ -4452,7 +4475,7 @@ msgstr "Нельзя использовать личный голосовой ч
 #: src/cgame/cg_consolecmds.c:1143 src/cgame/cg_popupmessages.c:733
 #: src/cgame/cg_popupmessages.c:735
 msgid "Axis"
-msgstr "Нацисты"
+msgstr "Фашисты"
 
 #: src/cgame/cg_consolecmds.c:1147 src/cgame/cg_popupmessages.c:733
 #: src/cgame/cg_popupmessages.c:735
@@ -4532,7 +4555,7 @@ msgstr "СОЮЗНИКИ ПОБЕДИЛИ!"
 
 #: src/cgame/cg_debriefing.c:3177
 msgid "AXIS WIN!"
-msgstr "НАЦИСТЫ ПОБЕДИЛИ!"
+msgstr "ФАШИСТЫ ПОБЕДИЛИ!"
 
 #: src/cgame/cg_debriefing.c:3179
 msgid "IT'S A TIE!"
@@ -4548,11 +4571,11 @@ msgstr "СОЮЗНИКИ НЕ УСПЕЛИ ВОВРЕМЯ!"
 
 #: src/cgame/cg_debriefing.c:3222
 msgid "AXIS SUCCESSFULLY BEAT THE CLOCK!"
-msgstr "НАЦИСТЫ УСПЕЛИ ВОВРЕМЯ!"
+msgstr "ФАШИСТЫ УЛОЖИЛИСЬ ВО ВРЕМЯ!"
 
 #: src/cgame/cg_debriefing.c:3226
 msgid "AXIS COULDN'T BEAT THE CLOCK!"
-msgstr "НАЦИСТЫ НЕ УСПЕЛИ ВОВРЕМЯ!"
+msgstr "ФАШИСТЫ ОПОЗДАЛИ!"
 
 #: src/cgame/cg_debriefing.c:3236
 #, c-format
@@ -4562,6 +4585,10 @@ msgstr "СОСТОЯНИЕ КАМПАНИИ: %s"
 #: src/cgame/cg_debriefing.c:3245
 msgid "SECS TO NEXT MAP"
 msgstr "СЕКУНД ДО СЛЕДУЮЩЕЙ КАРТЫ"
+
+#: src/cgame/cg_debriefing.c:2905
+msgid "SEC TO NEXT MAP"
+msgstr ""
 
 #: src/cgame/cg_debriefing.c:3371
 #, c-format
@@ -4625,26 +4652,31 @@ msgstr "Сделать звено закрытым?"
 msgid "Create a Fireteam?"
 msgstr "Создать звено?"
 
-#: src/cgame/cg_draw.c:1896
+#: src/cgame/cg_draw.c:1898
 #, c-format
 msgid "VOTE(%i): %s"
 msgstr "ГОЛОСОВАТЬ(%i): %s"
 
-#: src/cgame/cg_draw.c:1902
-msgid "Cannot vote as Spectator"
+#: src/cgame/cg_draw.c:1905
+#, c-format
+msgid "YES:%i, NO:%i"
+msgstr "ДА:%i, НЕТ:%i"
+
+#: src/cgame/cg_draw.c:1909
+msgid "Can't vote as Spectator"
 msgstr "Зритель не может голосовать"
 
-#: src/cgame/cg_draw.c:1906
+#: src/cgame/cg_draw.c:1913
 #, c-format
 msgid "YES(%s):%i, NO(%s):%i"
 msgstr "ДА(%s):%i, НЕТ(%s):%i"
 
-#: src/cgame/cg_draw.c:1913
+#: src/cgame/cg_draw.c:1920
 #, c-format
 msgid "YOU VOTED ON: %s"
 msgstr "ВЫ ПРОГОЛОСОВАЛИ ЗА: %s"
 
-#: src/cgame/cg_draw.c:1918
+#: src/cgame/cg_draw.c:1925
 #, c-format
 msgid "Y:%i, N:%i"
 msgstr "Д:%i, Н:%i"
@@ -4818,8 +4850,8 @@ msgid "Press ^3%s^7 to start"
 msgstr "Нажмите ^3%s^7 чтобы начать"
 
 #: src/cgame/cg_draw.c:2470
-msgid "^3WARMUP:^7 Match begins in:"
-msgstr "^3РАЗМИНКА:^7 Начало матча через:"
+msgid "^3WARMUP:^7 Match begins in"
+msgstr "^3РАЗМИНКА:^7 Начало матча через"
 
 #: src/cgame/cg_draw.c:2481
 msgid "^3PREPARE TO FIGHT!\n"
@@ -5064,13 +5096,13 @@ msgstr "%s уничтожен."
 
 #: src/cgame/cg_popupmessages.c:722
 #, c-format
-msgid "%sSpotted by ^7%s%s at %s"
-msgstr "%sЗамечен ^7%s%s у %s"
+msgid "Spotted by %s^7 at %s"
+msgstr "Замечен %s^7 у %s"
 
 #: src/cgame/cg_popupmessages.c:726
 #, c-format
-msgid "%sSpotted by ^7%s"
-msgstr "%sЗамечен ^7%s"
+msgid "Spotted by %s"
+msgstr "Замечен %s"
 
 #: src/cgame/cg_popupmessages.c:733
 #, c-format
@@ -5146,7 +5178,7 @@ msgstr "^3ЗРИТЕЛЬ"
 
 #: src/cgame/cg_scoreboard.c:811 src/cgame/cg_scoreboard.c:828
 msgid "AXIS"
-msgstr "НАЦИСТЫ"
+msgstr "ФАШИСТЫ"
 
 #: src/cgame/cg_scoreboard.c:812 src/cgame/cg_scoreboard.c:819
 msgid "FIRST BLOOD"
@@ -5183,22 +5215,27 @@ msgstr "Авто выбор"
 #: src/cgame/cg_servercmds.c:1875
 #, c-format
 msgid "Damage Given: %6d      Team Damage Given: %6d"
-msgstr ""
+msgstr "Нанесено урона: %6d  Нанесено урона своим: %6d"
 
 #: src/cgame/cg_servercmds.c:1876
 #, c-format
 msgid "Damage Recvd: %6d      Team Damage Recvd: %6d"
-msgstr ""
+msgstr "Получено урона: %6d  Получ урона от своих: %6d"
 
 #: src/cgame/cg_servercmds.c:1878
 #, c-format
 msgid "Kills:  %3d    Team Kills: %3d    Accuracy:  %5.1f%%"
+msgstr "Убийств: %3d Убийств своих: %3d Точность: %5.1f%%"
+
+#: src/cgame/cg_servercmds.c:1941
+#, c-format
+msgid "Gibs:   %3d    Team Gibs:  %3d"
 msgstr ""
 
 #: src/cgame/cg_servercmds.c:1879
 #, c-format
 msgid "Deaths: %3d    Self Kills: %3d    Headshots: %5.1f%%"
-msgstr ""
+msgstr "Смертей: %3d Самоубийств: %3d Попаданий в голову: %5.1f%%"
 
 #: src/cgame/cg_servercmds.c:2035
 msgid "^7Weapon     Acrcy Hits/Atts Kills Deaths Headshots\n"
@@ -5367,7 +5404,7 @@ msgid "You are near"
 msgstr "Вы рядом с"
 
 msgid "joined the Axis team\n"
-msgstr "присоединился к команде нацистов\n"
+msgstr "присоединился к фашистам\n"
 
 msgid "joined the Allies team\n"
 msgstr "присоединился к команде союзников\n"
@@ -5543,7 +5580,7 @@ msgid "^1THE TEAM"
 msgstr "^1КОМАНДА"
 
 msgid "Axis team"
-msgstr "Нацисты"
+msgstr "Фашисты"
 
 msgid "Allied team"
 msgstr "Союзники"
@@ -5554,8 +5591,8 @@ msgstr "Зрители"
 msgid "You must be a player or following a player to use +stats\n"
 msgstr "Вы должны быть или следовать за игроком чтобы использовать +stats\n"
 
-msgid "^9You must be alive to use ^3/kill."
-msgstr "^9Только живой может использовать ^3/kill."
+msgid "You must be alive to use ^3/kill^7."
+msgstr ""
 
 msgid "No vote in progress.\n"
 msgstr "Сейчас нет голосования.\n"
@@ -5579,7 +5616,7 @@ msgid "The Allies have too many players.\n"
 msgstr "У союзников слишком много игроков.\n"
 
 msgid "The Axis has too many players.\n"
-msgstr "У нацистов слишком много игроков.\n"
+msgstr "У фашистов слишком много игроков.\n"
 
 msgid "Attack!"
 msgstr "Атакуем!"
@@ -5635,247 +5672,247 @@ msgid "We need an engineer!"
 msgstr "Инженера!"
 
 msgid "Cover me!"
-msgstr ""
+msgstr "Прикройте меня!"
 
 msgid "Hold your fire!"
-msgstr ""
+msgstr "Не стреляй!"
 
 msgid "Where to?"
-msgstr ""
+msgstr "Куда?"
 
 msgid "We need Covert Ops!"
-msgstr ""
+msgstr "Нужен разведчик!"
 
 msgid "Follow me!"
-msgstr ""
+msgstr "Следуйте за мной!"
 
 msgid "Let's go!"
-msgstr ""
+msgstr "Пошли!"
 
 msgid "Move!"
-msgstr ""
+msgstr "Двигайтесь!"
 
 msgid "Clear the path!"
-msgstr ""
+msgstr "Зачистите путь!"
 
 msgid "Defend our objective!"
-msgstr ""
+msgstr "Защищайте нашу цель!"
 
 msgid "Disarm the dynamite!"
-msgstr ""
+msgstr "Обезвредьте динамит!"
 
 msgid "Clear the mines!"
-msgstr ""
+msgstr "Обезвредьте мины!"
 
 msgid "Reinforce the offense!"
-msgstr ""
+msgstr "Поддержите наступление!"
 
 msgid "Reinforce the defense!"
-msgstr ""
+msgstr "Поддержите оборону!"
 
 msgid "Affirmative!"
-msgstr ""
+msgstr "Так точно!"
 
 msgid "No!"
-msgstr ""
+msgstr "Нет!"
 
 msgid "Thank you!"
-msgstr ""
+msgstr "Спасибо!"
 
 msgid "You're welcome."
-msgstr ""
+msgstr "Пожалуйста."
 
 msgid "Bitte sehr."
-msgstr ""
+msgstr "Пожалуйста."
 
 msgid "Ja!"
-msgstr ""
+msgstr "Да!"
 
 msgid "Nein!"
-msgstr ""
+msgstr "Нет!"
 
 msgid "Kein problem."
-msgstr ""
+msgstr "Пожалуйста."
 
 msgid "Sorry!"
-msgstr ""
+msgstr "Извини!"
 
 msgid "Oops!"
-msgstr ""
+msgstr "Ой!"
 
 msgid "Yes!"
-msgstr ""
+msgstr "Да!"
 
 msgid "Jawohl!"
-msgstr ""
+msgstr "Так точно!"
 
 msgid "Negative!"
-msgstr ""
+msgstr "Никак нет!"
 
 msgid "Hi!"
-msgstr ""
+msgstr "Привет!"
 
 msgid "Hello!"
-msgstr ""
+msgstr "Привет!"
 
 msgid "Hallo!"
-msgstr ""
+msgstr "Привет!"
 
 msgid "Good bye."
-msgstr ""
+msgstr "Пока."
 
 msgid "Auf wiedersehen."
-msgstr ""
+msgstr "До свидания."
 
 msgid "Bye."
-msgstr ""
+msgstr "Пока."
 
 msgid "Great shot!"
-msgstr ""
+msgstr "Отличный выстрел!"
 
 msgid "You got it, man!"
-msgstr ""
+msgstr "Классно сделано, мужик!"
 
 msgid "Yeah!"
-msgstr ""
+msgstr "Дааа!"
 
 msgid "Yoohoo!"
-msgstr ""
+msgstr "Ура!"
 
 msgid "Hahaa!"
-msgstr ""
+msgstr "Хаха!"
 
 msgid "Alright!"
-msgstr ""
+msgstr "Отлично!"
 
 msgid "Woo!"
-msgstr ""
+msgstr "Йей!"
 
 msgid "Yeehaa!"
-msgstr ""
+msgstr "Даааа!"
 
 msgid "'Atta way, baby!"
-msgstr ""
+msgstr "Вот так, детка!"
 
 msgid "Jahaa!"
-msgstr ""
+msgstr "Даааа!"
 
 msgid "Wunderbar!"
-msgstr ""
+msgstr "Вундербар!"
 
 msgid "Excellent!"
-msgstr ""
+msgstr "Отлично!"
 
 msgid "Oh yes!"
-msgstr ""
+msgstr "О да!"
 
 msgid "Sehr gut!"
-msgstr ""
+msgstr "Зер гут!"
 
 msgid "Thanks!"
-msgstr ""
+msgstr "Спасибо!"
 
 msgid "Danke!"
-msgstr ""
+msgstr "Данке!"
 
 msgid "Danke sehr!"
-msgstr ""
+msgstr "Данке зер!"
 
 msgid "No problem."
-msgstr ""
+msgstr "Пожалуйста."
 
 msgid "Good game!"
-msgstr ""
+msgstr "Отличная игра!"
 
 msgid "Command acknowledged!"
-msgstr ""
+msgstr "Приказ принят!"
 
 msgid "Command declined!"
-msgstr ""
+msgstr "Приказ отклонён!"
 
 msgid "Command completed!"
-msgstr ""
+msgstr "Приказ выполнен!"
 
 msgid "Destroy primary objective!"
-msgstr ""
+msgstr "Уничтожьте основную цель!"
 
 msgid "Destroy secondary objective!"
-msgstr ""
+msgstr "Уничтожьте вторичную цель!"
 
 msgid "Destroy construction!"
-msgstr ""
+msgstr "Уничтожьте строение!"
 
 msgid "I'm constructing!"
-msgstr ""
+msgstr "Я сооружаю!"
 
 msgid "Repair the vehicle!"
-msgstr ""
+msgstr "Почините транспорт!"
 
 msgid "Disable the vehicle!"
-msgstr ""
+msgstr "Остановите транспорт!"
 
 msgid "Escort the vehicle!"
-msgstr ""
+msgstr "Охраняйте транспорт!"
 
 msgid "Covering fire!"
 msgstr ""
 
 msgid "I'm a soldier."
-msgstr ""
+msgstr "Я солдат."
 
 msgid "I'm an engineer."
-msgstr ""
+msgstr "Я инженер."
 
 msgid "I'm a medic."
-msgstr ""
+msgstr "Я врач."
 
 msgid "I'm a field ops."
-msgstr ""
+msgstr "Я полевой."
 
 msgid "I'm a covert ops."
-msgstr ""
+msgstr "Я разведчик."
 
 msgid "unknown cmd"
-msgstr ""
+msgstr "неизвестная команда"
 
 msgid "Server:"
-msgstr ""
+msgstr "Сервер:"
 
 msgid "changed to"
-msgstr ""
+msgstr "изменён на"
 
 msgid "Arming landmine..."
-msgstr ""
+msgstr "Закладка мины..."
 
-msgid "Landmine armed..."
-msgstr ""
+msgid "Landmine armed"
+msgstr "Мина заложена"
 
 msgid "Dynamite is set, but NOT armed!"
-msgstr ""
+msgstr "Динамит выброшен, но НЕ заряжен!"
 
 msgid "Arming dynamite..."
-msgstr ""
+msgstr "Динамит заряжается..."
 
 msgid "Dynamite is now armed with a 30 second timer!"
-msgstr ""
+msgstr "Динамит заряжен с 30-секундным таймером!"
 
-msgid "Defusing landmine"
-msgstr ""
+msgid "Defusing landmine..."
+msgstr "Обезвреживание мины..."
 
-msgid "Landmine defused..."
-msgstr ""
+msgid "Landmine defused"
+msgstr "Мина обезврежена"
 
 msgid "Defusing dynamite..."
-msgstr ""
+msgstr "Обезвреживание динамита..."
 
 msgid "Affirmative!!"
-msgstr ""
+msgstr "Так точно!!"
 
 msgid "^1Spam Protection^7: VoiceChat ignored"
 msgstr ""
 
 msgid "Mines have been reported in this area."
-msgstr ""
+msgstr "Здесь мины."
 
 msgid "'s Landmine"
 msgstr ""
@@ -5896,49 +5933,49 @@ msgid "'s crew-served MG"
 msgstr ""
 
 msgid "was thrown to his doom by"
-msgstr ""
+msgstr "был выброшен вниз игроком"
 
 msgid "You have been revived by "
-msgstr ""
+msgstr "Вас оживил"
 
 msgid "Constructing..."
-msgstr ""
+msgstr "Сооружаю..."
 
 msgid "Allied Command Post constructed. Charge speed increased!"
-msgstr ""
+msgstr "Союзники построили командный пост. Зарядка ускорена!"
 
 msgid "Axis Command Post constructed. Charge speed increased!"
-msgstr ""
+msgstr "Фашисты построили командный пост. Зарядка ускорена!"
 
 msgid ""
 "^3All players ready!^7\n"
 "Match starting...\n"
-msgstr ""
+msgstr "^3Все игроки готовы!^7\nМатч начинается...\n"
 
 msgid "You are on the Allied team"
-msgstr ""
+msgstr "Вы в команде союзников"
 
 msgid "^1*** Match Reset! ***\n"
-msgstr ""
+msgstr "^1*** Перезапуск матча! ***\n"
 
 msgid "You are on the Axis team"
-msgstr ""
+msgstr "Вы в команде фашистов"
 
 msgid "Warning, leave the construction area..."
-msgstr ""
+msgstr "Покиньте зону строительства..."
 
 msgid "got caught in"
-msgstr ""
+msgstr "оказался на пути строительного сумасшествия"
 
 msgid "'s construction madness"
 msgstr ""
 
 #: src/qcommon/download.c:244
 msgid "Need paks: %s\n"
-msgstr ""
+msgstr "Требуемые паки: %s\n"
 
 msgid "Not enough players to start match!\n"
-msgstr ""
+msgstr "Недостаточно игроков для начала матча!\n"
 
 msgid "'s flamethrower"
 msgstr ""
@@ -5947,7 +5984,7 @@ msgid "'s Satchel Charge"
 msgstr ""
 
 msgid "You cannot arm dynamite near a friendly objective!"
-msgstr ""
+msgstr "Нельзя заложить динамит рядом с дружественной целью!"
 
 msgid "'s tank-mounted MG42"
 msgstr ""
@@ -5956,10 +5993,10 @@ msgid "'s dynamite"
 msgstr ""
 
 msgid "Timelimit hit.\n"
-msgstr ""
+msgstr "Время истекло.\n"
 
 msgid "Landmine revealed"
-msgstr ""
+msgstr "Обнаружена мина"
 
 msgid "'s tank-mounted browning 30cal"
 msgstr ""
@@ -5968,46 +6005,46 @@ msgid "'s grenade"
 msgstr ""
 
 msgid "Competition Settings Loaded!\n"
-msgstr ""
+msgstr "Настройки соревнования загружены!\n"
 
 msgid "Public Settings Loaded!\n"
-msgstr ""
+msgstr "Общие настройки загружены!\n"
 
-msgid "Landmine cannot be armed here..."
-msgstr ""
+msgid "Landmine cannot be armed here"
+msgstr "Мину нельзя здесь заложить"
 
 msgid "Your team has too many landmines placed..."
-msgstr ""
+msgstr "У Вашей команды уже заложено слишком много мин..."
 
 msgid "You cannot arm dynamite near a friendly construction!"
-msgstr ""
+msgstr "Нельзя заложить динамит рядом с дружественной постройкой!"
 
 msgid "Countdown started.... ^3notready^7 ignored!\n"
-msgstr ""
+msgstr "Отсчёт пошёл.... игнорирование ^3не готовых^7!\n"
 
 msgid "No complaint filed against you.\n"
-msgstr ""
+msgstr "На Вас не подана жалоба.\n"
 
 msgid "You are not the leader of a fireteam\n"
-msgstr ""
+msgstr "Вы не руководитель звена\n"
 
 msgid "You have been warned by your Fireteam Commander\n"
-msgstr ""
+msgstr "Предупреждение от командира звена\n"
 
 msgid "You have been kicked from the fireteam"
-msgstr ""
+msgstr "Вас исключили из звена"
 
 msgid "You are now the leader of your fireteam"
-msgstr ""
+msgstr "Вы стали руководителем звена"
 
 msgid "The fireteam you are on has been disbanded"
-msgstr ""
+msgstr "Ваше звено расформировано"
 
 msgid "You have been given fireteam admin rights"
-msgstr ""
+msgstr "Вы теперь администратор звена"
 
 msgid "Too many players already on this Fireteam"
-msgstr ""
+msgstr "Звено переполнено"
 
 msgid "The leader has now left the Fireteam you applied to"
 msgstr ""
@@ -6025,28 +6062,28 @@ msgid "Invalid client selected"
 msgstr ""
 
 msgid "usage: fireteam admin <clientname|clientnumber>"
-msgstr ""
+msgstr "использование: fireteam admin <имяклиента|номерклиента>"
 
 msgid "usage: fireteam propose <clientname|clientnumber>"
-msgstr ""
+msgstr "использование: fireteam propose <имяклиента|номерклиента>"
 
 msgid "usage: fireteam kick <clientname|clientnumber>"
-msgstr ""
+msgstr "использование: fireteam kick <имяклиента|номерклиента>"
 
 msgid "usage: fireteam warn <clientname|clientnumber>"
-msgstr ""
+msgstr "использование: fireteam warn <имяклиента|номерклиента>"
 
 msgid "usage: fireteam invite <clientname|clientnumber>"
-msgstr ""
+msgstr "использование: fireteam invite <имяклиента|номерклиента>"
 
 msgid "usage: fireteam apply <fireteamname|fireteamnumber>"
-msgstr ""
+msgstr "использование: fireteam apply <имязвена|номерзвена>"
 
 msgid "usage: fireteam <create|leave|apply|invite>"
-msgstr ""
+msgstr "использование: fireteam <create|leave|apply|invite>"
 
 msgid "You are already on a fireteam, leave it first"
-msgstr ""
+msgstr "Сначала покиньте текущее звено"
 
 msgid ""
 "The other player must be on the same fireteam for you to give admin rights "
@@ -6065,18 +6102,18 @@ msgstr ""
 msgid ""
 "^3Referee commands:^7\n"
 "------------------------------------------\n"
-msgstr ""
+msgstr "^3Команды судьи:^7\n------------------------------------------\n"
 
 msgid ""
 "Usage: ^3\\ref <cmd> [params]\n"
 "\n"
-msgstr ""
+msgstr "использование: ^3\\ref <команда> [параметры].\n\n"
 
 msgid "^5pause speclock warmup ^7[value]\n"
 msgstr ""
 
 msgid "Sorry, referee status disabled on this server.\n"
-msgstr ""
+msgstr "Позиция судьи отключена на этом сервере.\n"
 
 msgid "Referee has ^3LOCKED^7 teams\n"
 msgstr ""
@@ -6115,19 +6152,19 @@ msgid "Bad client slot: "
 msgstr ""
 
 msgid "Client"
-msgstr ""
+msgstr "Клиент"
 
 msgid "is not active\n"
-msgstr ""
+msgstr "не активен\n"
 
 msgid "You can only remove people in the game!\n"
 msgstr ""
 
 msgid "User "
-msgstr ""
+msgstr "Пользователь"
 
 msgid "is not on the server\n"
-msgstr ""
+msgstr "не на сервере\n"
 
 msgid "^5You've been removed from the ^4Allies^7 team\n"
 msgstr ""
@@ -6247,10 +6284,10 @@ msgid "The ^1Axis^7 team is ready!\n"
 msgstr ""
 
 msgid "A vote is already in progress.\n"
-msgstr ""
+msgstr "Голосование в процессе.\n"
 
 msgid "called a vote.\n"
-msgstr ""
+msgstr "начал голосование.\n"
 
 msgid "^5Vote passed!\n"
 msgstr ""
@@ -6259,27 +6296,30 @@ msgid "Spectator team\n"
 msgstr ""
 
 msgid "Allies team\n"
-msgstr ""
+msgstr "Команда союзников\n"
 
 msgid "Axis team\n"
-msgstr ""
+msgstr "Фашисты\n"
 
 msgid "Sorry, "
-msgstr ""
+msgstr "Извините,"
 
 msgid "voting has been disabled"
-msgstr ""
+msgstr "голосования отключены"
 
-msgid "Not allowed to call a vote as a spectator.\n"
-msgstr ""
+msgid "Not allowed to call a vote as a spectator."
+msgstr "Зритель не может начинать голосования."
 
 msgid "called a vote."
-msgstr ""
+msgstr "начал голосование."
 
 msgid "Vote cast.\n"
 msgstr ""
 
 msgid "'s KA-BAR"
+msgstr ""
+
+msgid "'s knife arts"
 msgstr ""
 
 msgid "'s .45ACP 1911"
@@ -6319,22 +6359,22 @@ msgid "'s Akimbo .45ACP 1911s"
 msgstr ""
 
 msgid "Server disconnected"
-msgstr ""
+msgstr "Отключён от сервера"
 
 msgid "Server connection timed out."
-msgstr ""
+msgstr "Тайм-аут соединения с сервером."
 
 msgid "Server disconnected for unknown reason"
-msgstr ""
+msgstr "Отключён от сервера по неизвестной причине"
 
 msgid "'s Akimbo Luger 9mms"
 msgstr ""
 
 msgid "Cheats are not enabled on this server.\n"
-msgstr ""
+msgstr "Читы отключены на этом сервере.\n"
 
 msgid "team: class is not available\n"
-msgstr ""
+msgstr "команда: класс недоступен\n"
 
 msgid "^1Soldier^7 is not available! Choose another class!\n"
 msgstr ""
@@ -6439,6 +6479,9 @@ msgid "was killed by"
 msgstr ""
 
 msgid "was stabbed by"
+msgstr ""
+
+msgid "was backstabbed by"
 msgstr ""
 
 msgid "was blasted by"
@@ -6690,66 +6733,6 @@ msgid ""
 "it has been updated to the latest version."
 msgstr ""
 
-msgid "Private"
-msgstr ""
-
-msgid "Private 1st Class"
-msgstr ""
-
-msgid "Corporal"
-msgstr ""
-
-msgid "Sergeant"
-msgstr ""
-
-msgid "Lieutenant"
-msgstr ""
-
-msgid "Captain"
-msgstr ""
-
-msgid "Major"
-msgstr ""
-
-msgid "Colonel"
-msgstr ""
-
-msgid "Brigadier General"
-msgstr ""
-
-msgid "Lieutenant General"
-msgstr ""
-
-msgid "General"
-msgstr ""
-
-msgid "Schutze"
-msgstr ""
-
-msgid "Oberschutze"
-msgstr ""
-
-msgid "Gefreiter"
-msgstr ""
-
-msgid "Feldwebel"
-msgstr ""
-
-msgid "Leutnant"
-msgstr ""
-
-msgid "Hauptmann"
-msgstr ""
-
-msgid "Oberst"
-msgstr ""
-
-msgid "Generalmajor"
-msgstr ""
-
-msgid "Generalleutnant"
-msgstr ""
-
 msgid "Battle Sense"
 msgstr ""
 
@@ -6774,14 +6757,408 @@ msgstr ""
 msgid "Fire Mission: ^3Firing for effect!"
 msgstr ""
 
-msgid "Fire Mission: Insufficient fire support."
+msgid "Fire Mission: ^3Insufficient fire support."
 msgstr ""
 
-msgid "Fire Mission: Aborting, can't see target."
+msgid "Fire Mission: ^3Aborting, can't see target."
 msgstr ""
 
 msgid "I need a Medic!"
 msgstr ""
 
 msgid "New version available. Do you want to update now?"
+msgstr ""
+
+msgid "20 Med Health"
+msgstr ""
+
+msgid "Pilot: ^3Aborting, can't see target."
+msgstr ""
+
+msgid "Pilot: ^3Affirmative, on my way!"
+msgstr ""
+
+msgid "HQ: ^3All available planes are already en-route."
+msgstr ""
+
+#: src/cgame/cg_draw.c:1830
+msgid "Join a Fireteam?"
+msgstr ""
+
+msgid "Apply"
+msgstr ""
+
+msgid "Create"
+msgstr ""
+
+msgid "Attack"
+msgstr ""
+
+msgid "Fall Back"
+msgstr ""
+
+msgid "Disband"
+msgstr ""
+
+msgid "Leave"
+msgstr ""
+
+msgid "Invite"
+msgstr ""
+
+msgid "Change privacy"
+msgstr ""
+
+msgid "Kick"
+msgstr ""
+
+msgid "Warn"
+msgstr ""
+
+msgid "Change admin"
+msgstr ""
+
+msgid "Highest Fragger"
+msgstr ""
+
+msgid "Highest Experience Points"
+msgstr ""
+
+msgid "Highest Ranking Officer"
+msgstr ""
+
+msgid "Most Highly Decorated"
+msgstr ""
+
+msgid "Highest Battle Sense"
+msgstr ""
+
+msgid "Best Engineer"
+msgstr ""
+
+msgid "Best Medic"
+msgstr ""
+
+msgid "Best Field Ops"
+msgstr ""
+
+msgid "Highest Light Weapons"
+msgstr ""
+
+msgid "Best Soldier"
+msgstr ""
+
+msgid "Best Covert Ops"
+msgstr ""
+
+msgid "Highest Accuracy"
+msgstr ""
+
+msgid "I Ain't Got No Friends Award"
+msgstr ""
+
+msgid "Welcome Newbie! Award"
+msgstr ""
+
+msgid "Highest Headshots Percentage"
+msgstr ""
+
+msgid "Best Survivor"
+msgstr ""
+
+msgid "Most Gibs"
+msgstr ""
+
+msgid "Most Selfkills"
+msgstr ""
+
+msgid "Most Deaths"
+msgstr ""
+
+msgid ""
+"\n"
+"ET: Legacy with OpenGL 3.x renderer can not run on this machine since it is missing one or more required OpenGL extensions. Please update your video card drivers and try again.\n"
+msgstr ""
+
+msgid "Gib command not allowed during intermission.\n"
+msgstr ""
+
+msgid "^3%d^7 players gibbed."
+msgstr ""
+
+msgid "There is no player to gib."
+msgstr ""
+
+msgid "Error - can't gib - %s."
+msgstr ""
+
+msgid "Player must be on a team to be gibbed.\n"
+msgstr ""
+
+msgid "^7%s^7 was gibbed."
+msgstr ""
+
+msgid "Die command not allowed during intermission.\n"
+msgstr ""
+
+msgid "^3%d^7 players died."
+msgstr ""
+
+msgid "There is no player to die.\n"
+msgstr ""
+
+msgid "Error - can't execute die command - %s.\n"
+msgstr ""
+
+msgid "Player must be on a team to die.\n"
+msgstr ""
+
+msgid "^7%s^7 died."
+msgstr ""
+
+msgid "Freeze command not allowed during intermission.\n"
+msgstr ""
+
+msgid "^3%d^7 players are frozen."
+msgstr ""
+
+msgid "No players in team or they are already frozen.\n"
+msgstr ""
+
+msgid "Error - can't freeze - %s.\n"
+msgstr ""
+
+msgid "Player must be on a team to be frozen.\n"
+msgstr ""
+
+msgid "^7%s^7 is frozen."
+msgstr ""
+
+msgid "^3%d^7 players are unfrozen."
+msgstr ""
+
+msgid "No players in team or they are already unfrozen.\n"
+msgstr ""
+
+msgid "Error - can't unfreeze - %s.\n"
+msgstr ""
+
+msgid "Player must be on a team to be unfrozen.\n"
+msgstr ""
+
+msgid "^7%s^7 is unfrozen."
+msgstr ""
+
+msgid "Burn command not allowed during intermission.\n"
+msgstr ""
+
+msgid "^3%d^7 players burned."
+msgstr ""
+
+msgid "No players in team or they are already burned.\n"
+msgstr ""
+
+msgid "Error - can't burn - %s.\n"
+msgstr ""
+
+msgid "Player must be on a team to be burned.\n"
+msgstr ""
+
+msgid "^7%s^7 is burned."
+msgstr ""
+
+msgid "Pip command not allowed during intermission.\n"
+msgstr ""
+
+msgid "^3%d^7 players pipped."
+msgstr ""
+
+msgid "No players in team or they are already pipped.\n"
+msgstr ""
+
+msgid "Error - can't pip - %s.\n"
+msgstr ""
+
+msgid "Player must be on a team to be pipped.\n"
+msgstr ""
+
+msgid "^7%s^7 is pipped."
+msgstr ""
+
+msgid "%s command not allowed during intermission.\n"
+msgstr ""
+
+msgid "^3%d^7 players %s."
+msgstr ""
+
+msgid "No players in team or they are already %s.\n"
+msgstr ""
+
+msgid "Player must be on a team to be %s.\n"
+msgstr ""
+
+msgid "^7%s^7 was %s."
+msgstr ""
+
+#: etmain/ui/options_system.menu:48
+msgid "System Sound Control:"
+msgstr ""
+
+#: etmain/ui/options_system.menu:48
+msgid "Base"
+msgstr ""
+
+#: etmain/ui/options_system.menu:48
+msgid "OpenAL"
+msgstr ""
+
+#: etmain/ui/options_system.menu:48
+msgid "Set the system sound control"
+msgstr ""
+
+msgid "No can do!"
+msgstr ""
+
+msgid "Right away!"
+msgstr ""
+
+#: src/cgame/cg_draw.c:2505
+msgid "^3WARMUP:^7 Match begins now!"
+msgstr ""
+
+#: src/cgame/cg_scoreboard.c:211
+msgid "MATCH BEGINS NOW!"
+msgstr "МАТЧ НАЧИНАЕТСЯ СЕЙЧАС!"
+
+msgid "Mute Players:"
+msgstr ""
+
+msgid "Allow players to vote for muting players"
+msgstr ""
+
+msgid "Surrender:"
+msgstr ""
+
+msgid "Allow players to vote for surrender"
+msgstr ""
+
+msgid "XP Shuffle No Rstrt:"
+msgstr ""
+
+msgid "Allow players to vote for teams to be shuffled without a restart"
+msgstr ""
+
+msgid "Restart Campaign:"
+msgstr ""
+
+msgid "Allow players to vote for restarting campaign"
+msgstr ""
+
+msgid "Next Campaign:"
+msgstr ""
+
+msgid "Allow players to vote for next campaign"
+msgstr ""
+
+msgid "CHANGE SYSTEM SETTINGS"
+msgstr "ИЗМЕНИТЬ СИСТЕМНЫЕ НАСТРОЙКИ"
+
+msgid "RESTART CAMPAIGN"
+msgstr "ПЕРЕЗАПУСК КАМПАНИИ"
+
+msgid "SURRENDER"
+msgstr "СДАТЬСЯ"
+
+msgid "NO XP SHUFFLE"
+msgstr "НЕ ТАСОВАТЬ ПО ОПЫТУ"
+
+msgid "Multiview:"
+msgstr ""
+
+msgid "Poll:"
+msgstr ""
+
+msgid "Allow players to vote for custom votes"
+msgstr ""
+
+msgid "Log File:"
+msgstr ""
+
+msgid "Sets the name of the log file or if empty logging is disabled"
+msgstr ""
+
+msgid "^7BACKSPACE ^3help on/off"
+msgstr ""
+
+msgid "^7BACKSPACE ^mgo  back"
+msgstr ""
+
+msgid "CURRENT PROFILE"
+msgstr "ТЕКУЩИЙ ПРОФИЛЬ"
+
+#: src/cgame/cg_draw.c:1504
+msgid "%s^7's dynamite"
+msgstr ""
+
+#: src/cgame/cg_draw.c:1516
+msgid "%s^7's mine"
+msgstr ""
+
+msgid "You are frozen - ^3/kill^7 is disabled."
+msgstr ""
+
+msgid "Renderer:"
+msgstr ""
+
+msgid "Set your desired renderer (does a video restart)"
+msgstr ""
+
+msgid "Custom Width:"
+msgstr ""
+
+msgid ""
+"Specifies custom resolution width - requires custom resolution set. *Use on "
+"your own risk!"
+msgstr ""
+
+msgid "Custom Height:"
+msgstr ""
+
+msgid ""
+"Specifies custom resolution height - requires custom resolution set .*Use on"
+" your own risk!"
+msgstr ""
+
+msgid "Max. Frames Per Second:"
+msgstr ""
+
+msgid ""
+"Sets the limit of frames per second - keep the values between 20 and 333"
+msgstr ""
+
+msgid "JOYSTICK"
+msgstr "ДЖОЙСТИК"
+
+msgid "Enable Joysticks:"
+msgstr ""
+
+msgid "General joystick initialization. Requires vid_restart."
+msgstr ""
+
+msgid "Use Joystick#:"
+msgstr ""
+
+msgid "Specifies active joystick"
+msgstr ""
+
+msgid "Analog Joystick:"
+msgstr ""
+
+msgid "Use analog joystick?"
+msgstr ""
+
+msgid "Joystick Threshold:"
+msgstr ""
+
+msgid "Sets joystick threshold sensitivity"
 msgstr ""

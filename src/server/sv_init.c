@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -42,11 +42,11 @@
 // we even log attacks when the server is waiting for rcon and doesn't run a map
 int attHandle = 0; // server attack log file handle
 
-/*
-===============
-SV_SetConfigstring
-===============
-*/
+/**
+ * @brief SV_SetConfigstringNoUpdate
+ * @param[in] index
+ * @param[in] val
+ */
 void SV_SetConfigstringNoUpdate(int index, const char *val)
 {
 	if (index < 0 || index >= MAX_CONFIGSTRINGS)
@@ -70,6 +70,11 @@ void SV_SetConfigstringNoUpdate(int index, const char *val)
 	sv.configstrings[index] = CopyString(val);
 }
 
+/**
+ * @brief SV_SetConfigstring
+ * @param[in] index
+ * @param[in] val
+ */
 void SV_SetConfigstring(int index, const char *val)
 {
 	if (index < 0 || index >= MAX_CONFIGSTRINGS)
@@ -102,15 +107,15 @@ void SV_SetConfigstring(int index, const char *val)
 
 /**
  * @brief Updates the configstring
- * @note it's nice to know this function sends several server commands when a configstring is greater than 1000 usually BIG_INFO_STRINGs
+ * @note It's nice to know this function sends several server commands when a configstring is greater than 1000 usually BIG_INFO_STRINGs
  */
 void SV_UpdateConfigStrings(void)
 {
-	client_t *client;
-	int      len, i, index, sent, remaining, cstotal = 0;
-	int      maxChunkSize = MAX_STRING_CHARS - 24;
-	char     *cmd;
-	char     buf[MAX_STRING_CHARS];
+	client_t   *client;
+	int        len, i, index, sent, remaining, cstotal = 0;
+	int        maxChunkSize = MAX_STRING_CHARS - 24;
+	const char *cmd;
+	char       buf[MAX_STRING_CHARS];
 
 	for (index = 0; index < MAX_CONFIGSTRINGS; index++)
 	{
@@ -199,16 +204,17 @@ void SV_UpdateConfigStrings(void)
 	}
 }
 
-/*
-===============
-SV_GetConfigstring
-===============
-*/
-void SV_GetConfigstring(int index, char *buffer, int bufferSize)
+/**
+ * @brief SV_GetConfigstring
+ * @param[in] index
+ * @param[out] buffer
+ * @param[in] bufferSize
+ */
+void SV_GetConfigstring(int index, char *buffer, unsigned int bufferSize)
 {
 	if (bufferSize < 1)
 	{
-		Com_Error(ERR_DROP, "SV_GetConfigstring: bufferSize == %i", bufferSize);
+		Com_Error(ERR_DROP, "SV_GetConfigstring: bufferSize == %u", bufferSize);
 	}
 	if (index < 0 || index >= MAX_CONFIGSTRINGS)
 	{
@@ -223,11 +229,11 @@ void SV_GetConfigstring(int index, char *buffer, int bufferSize)
 	Q_strncpyz(buffer, sv.configstrings[index], bufferSize);
 }
 
-/*
-===============
-SV_SetUserinfo
-===============
-*/
+/**
+ * @brief SV_SetUserinfo
+ * @param[in] index
+ * @param[in] val
+ */
 void SV_SetUserinfo(int index, const char *val)
 {
 	if (index < 0 || index >= sv_maxclients->integer)
@@ -242,18 +248,25 @@ void SV_SetUserinfo(int index, const char *val)
 
 	Q_strncpyz(svs.clients[index].userinfo, val, sizeof(svs.clients[index].userinfo));
 	Q_strncpyz(svs.clients[index].name, Info_ValueForKey(val, "name"), sizeof(svs.clients[index].name));
+
+	// Save userinfo changes to demo (also in SV_UpdateUserinfo_f() in sv_client.c)
+	if (sv.demoState == DS_RECORDING)
+	{
+		SV_DemoWriteClientUserinfo(&svs.clients[index], val);
+	}
 }
 
-/*
-===============
-SV_GetUserinfo
-===============
-*/
-void SV_GetUserinfo(int index, char *buffer, int bufferSize)
+/**
+ * @brief SV_GetUserinfo
+ * @param[in] index
+ * @param[out] buffer
+ * @param[in] bufferSize
+ */
+void SV_GetUserinfo(int index, char *buffer, unsigned int bufferSize)
 {
 	if (bufferSize < 1)
 	{
-		Com_Error(ERR_DROP, "SV_GetUserinfo: bufferSize == %i", bufferSize);
+		Com_Error(ERR_DROP, "SV_GetUserinfo: bufferSize == %u", bufferSize);
 	}
 	if (index < 0 || index >= sv_maxclients->integer)
 	{
@@ -261,23 +274,13 @@ void SV_GetUserinfo(int index, char *buffer, int bufferSize)
 	}
 
 	Q_strncpyz(buffer, svs.clients[index].userinfo, bufferSize);
-
-	// Save userinfo changes to demo (also in SV_UpdateUserinfo_f() in sv_client.c)
-	if (sv.demoState == DS_RECORDING)
-	{
-		SV_DemoWriteClientUserinfo(&svs.clients[index], buffer);
-	}
 }
 
-/*
-================
-SV_CreateBaseline
-
-Entity baselines are used to compress non-delta messages
-to the clients -- only the fields that differ from the
-baseline will be transmitted
-================
-*/
+/**
+ * @brief Entity baselines are used to compress non-delta messages
+ * to the clients -- only the fields that differ from the
+ * baseline will be transmitted
+ */
 void SV_CreateBaseline(void)
 {
 	sharedEntity_t *svent;
@@ -298,11 +301,10 @@ void SV_CreateBaseline(void)
 	}
 }
 
-/*
-===============
-SV_BoundMaxClients
-===============
-*/
+/**
+ * @brief SV_BoundMaxClients
+ * @param[in] minimum
+ */
 void SV_BoundMaxClients(int minimum)
 {
 	// get the current maxclients value
@@ -320,16 +322,12 @@ void SV_BoundMaxClients(int minimum)
 	}
 }
 
-/*
-===============
-SV_Startup
-
-Called when a host starts a map when it wasn't running
-one before.  Successive map or map_restart commands will
-NOT cause this to be called, unless the game is exited to
-the menu system first.
-===============
-*/
+/**
+ * @brief Called when a host starts a map when it wasn't running
+ * one before.  Successive map or map_restart commands will
+ * NOT cause this to be called, unless the game is exited to
+ * the menu system first.
+ */
 void SV_Startup(void)
 {
 	if (svs.initialized)
@@ -363,11 +361,9 @@ void SV_Startup(void)
 #endif
 }
 
-/*
-==================
-SV_ChangeMaxClients
-==================
-*/
+/**
+ * @brief SV_ChangeMaxClients
+ */
 void SV_ChangeMaxClients(void)
 {
 	int      oldMaxClients;
@@ -451,17 +447,17 @@ void SV_ChangeMaxClients(void)
 
 /**
  * @brief Sets com_expectedhunkusage, so the client knows how to draw the percentage bar
+ * @param[in] mapname
  */
-void SV_SetExpectedHunkUsage(char *mapname)
+void SV_SetExpectedHunkUsage(const char *mapname)
 {
 	int  handle;
-	char *memlistfile = "hunkusage.dat";
 	char *buf;
 	char *buftrav;
 	char *token;
 	int  len;
 
-	len = FS_FOpenFileByMode(memlistfile, &handle, FS_READ);
+	len = FS_FOpenFileByMode("hunkusage.dat", &handle, FS_READ);
 	if (len >= 0)     // the file exists, so read it in, strip out the current entry for this map, and save it out, so we can append the new value
 	{
 		buf = (char *)Z_Malloc(len + 1);
@@ -495,12 +491,9 @@ void SV_SetExpectedHunkUsage(char *mapname)
 	com_expectedhunkusage = -1;
 }
 
-/*
-==================
-SV_DemoChangeMaxClients
-change sv_maxclients and move real clients slots when a demo is playing or stopped
-==================
-*/
+/**
+ * @brief Change sv_maxclients and move real clients slots when a demo is playing or stopped
+ */
 void SV_DemoChangeMaxClients(void)
 {
 	int      oldMaxClients, oldDemoClients;
@@ -621,11 +614,9 @@ void SV_DemoChangeMaxClients(void)
 	}
 }
 
-/*
-================
-SV_ClearServer
-================
-*/
+/**
+ * @brief SV_ClearServer
+ */
 static void SV_ClearServer(void)
 {
 	int i;
@@ -667,13 +658,14 @@ void SV_TouchCGameDLL(void)
  * @brief Change the server to a new map, taking all connected
  * clients along with it.
  * This is NOT called for map_restart
+ * @param[in] server
  */
-void SV_SpawnServer(char *server)
+void SV_SpawnServer(const char *server)
 {
-	int        i;
-	int        checksum;
-	qboolean   isBot;
-	const char *p;
+	int          i;
+	unsigned int checksum;
+	qboolean     isBot;
+	const char   *p;
 
 	// broadcast a level change to all connected clients
 	if (svs.clients && !com_errorEntered)
@@ -758,7 +750,7 @@ void SV_SpawnServer(char *server)
 
 	// get a new checksum feed and restart the file system
 	srand(Sys_Milliseconds());
-	sv.checksumFeed = (((int) rand() << 16) ^ rand()) ^ Sys_Milliseconds();
+	sv.checksumFeed = ((rand() << 16) ^ rand()) ^ Sys_Milliseconds();
 
 	// only comment out when you need a new pure checksum string and it's associated random feed
 	// Com_DPrintf("SV_SpawnServer checksum feed: %p\n", sv.checksumFeed);
@@ -925,6 +917,10 @@ void SV_SpawnServer(char *server)
 	}
 }
 
+/**
+ * @brief SV_WriteAttackLog
+ * @param[in] log
+ */
 void SV_WriteAttackLog(const char *log)
 {
 	if (attHandle > 0)
@@ -934,7 +930,7 @@ void SV_WriteAttackLog(const char *log)
 
 		Com_RealTime(&time);
 		Com_sprintf(string, sizeof(string), "%i/%i/%i %i:%i:%i %s", 1900 + time.tm_year, time.tm_mday, time.tm_mon + 1, time.tm_hour, time.tm_min, time.tm_sec, log);
-		FS_Write(string, strlen(string), attHandle);
+		(void) FS_Write(string, strlen(string), attHandle);
 	}
 
 	if (sv_protect->integer & SVP_CONSOLE)
@@ -943,6 +939,9 @@ void SV_WriteAttackLog(const char *log)
 	}
 }
 
+/**
+ * @brief SV_InitAttackLog
+ */
 void SV_InitAttackLog()
 {
 	if (sv_protectLog->string[0] == '\0')
@@ -968,6 +967,9 @@ void SV_InitAttackLog()
 	}
 }
 
+/**
+ * @brief SV_CloseAttackLog
+ */
 void SV_CloseAttackLog()
 {
 	if (attHandle > 0)
@@ -988,6 +990,9 @@ void SV_CloseAttackLog()
  */
 void SV_BotInitBotLib(void);
 
+/**
+ * @brief SV_Init
+ */
 void SV_Init(void)
 {
 	SV_UptimeReset();
@@ -1070,8 +1075,8 @@ void SV_Init(void)
 	sv_rconPassword    = Cvar_Get("rconPassword", "", CVAR_TEMP);
 	sv_privatePassword = Cvar_Get("sv_privatePassword", "", CVAR_TEMP);
 	sv_fps             = Cvar_Get("sv_fps", "20", CVAR_TEMP);
-	sv_timeout         = Cvar_Get("sv_timeout", "40", CVAR_TEMP); // used in game (also vid_restart)
-	sv_dl_timeout      = Cvar_Get("sv_dl_timeout", "240", CVAR_TEMP);
+	sv_timeout         = Cvar_Get("sv_timeout", "60", CVAR_TEMP); // used in game (also vid_restart)
+	sv_dl_timeout      = Cvar_Get("sv_dl_timeout", "300", CVAR_TEMP); // in between this time a client should download the biggest custom pk3
 	sv_zombietime      = Cvar_Get("sv_zombietime", "2", CVAR_TEMP);
 	Cvar_Get("nextmap", "", CVAR_TEMP);
 
@@ -1080,6 +1085,11 @@ void SV_Init(void)
 	// master servers
 	Cvar_Get("sv_master1", "etmaster.idsoftware.com", CVAR_PROTECTED);
 	Cvar_Get("sv_master2", "master.etlegacy.com", CVAR_PROTECTED);
+
+#ifdef FEATURE_TRACKER
+	// tracker server
+	Cvar_Get("sv_tracker", "et-tracker.trackbase.net:4444", CVAR_PROTECTED);
+#endif
 
 	sv_reconnectlimit = Cvar_Get("sv_reconnectlimit", "3", 0);
 	sv_tempbanmessage = Cvar_Get("sv_tempbanmessage", "You have been kicked and are temporarily banned from joining this server.", 0);
@@ -1146,22 +1156,24 @@ void SV_Init(void)
 
 	svs.serverLoad = -1;
 
+#if defined(FEATURE_IRC_SERVER) && defined(DEDICATED)
+	IRC_Init();
+#endif
+
 #ifdef FEATURE_TRACKER
 	Tracker_Init();
 #endif
 }
 
-/*
-==================
-SV_FinalCommand
-
-Used by SV_Shutdown to send a final message to all
-connected clients before the server goes down.  The messages are sent immediately,
-not just stuck on the outgoing message list, because the server is going
-to totally exit after returning from this function.
-==================
-*/
-void SV_FinalCommand(char *cmd, qboolean disconnect)
+/**
+ * @brief Used by SV_Shutdown to send a final message to all
+ * connected clients before the server goes down.  The messages are sent immediately,
+ * not just stuck on the outgoing message list, because the server is going
+ * to totally exit after returning from this function.
+ * @param[in] cmd
+ * @param[in] disconnect
+ */
+void SV_FinalCommand(const char *cmd, qboolean disconnect)
 {
 	int      i, j;
 	client_t *cl;
@@ -1196,9 +1208,14 @@ void SV_FinalCommand(char *cmd, qboolean disconnect)
 
 /**
  * @brief Called when each game quits, before Sys_Quit or Sys_Error
+ * @param[in] finalmsg
  */
-void SV_Shutdown(char *finalmsg)
+void SV_Shutdown(const char *finalmsg)
 {
+#if defined(FEATURE_IRC_SERVER) && defined(DEDICATED)
+	IRC_InitiateShutdown();
+#endif
+
 	// close attack log
 	SV_CloseAttackLog();
 
@@ -1206,6 +1223,14 @@ void SV_Shutdown(char *finalmsg)
 	{
 		return;
 	}
+
+#if defined(FEATURE_IRC_SERVER) && defined(DEDICATED)
+	Cmd_RemoveCommand("irc_connect");
+	Cmd_RemoveCommand("irc_disconnect");
+	Cmd_RemoveCommand("irc_say");
+
+	IRC_WaitShutdown();
+#endif
 
 	Com_Printf("----- Server Shutdown -----\n");
 

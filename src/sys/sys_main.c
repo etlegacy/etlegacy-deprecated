@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -66,41 +66,37 @@ static qboolean nocurses = qfalse;
 void CON_Init_tty(void);
 #endif
 
-/*
-=================
-Sys_SetBinaryPath
-=================
-*/
+/**
+ * @brief Sys_SetBinaryPath
+ * @param[in] path
+ */
 void Sys_SetBinaryPath(const char *path)
 {
 	Q_strncpyz(binaryPath, path, sizeof(binaryPath));
 }
 
-/*
-=================
-Sys_BinaryPath
-=================
-*/
+/**
+ * @brief Sys_BinaryPath
+ * @return
+ */
 char *Sys_BinaryPath(void)
 {
 	return binaryPath;
 }
 
-/*
-=================
-Sys_SetDefaultInstallPath
-=================
-*/
+/**
+ * @brief Sys_SetDefaultInstallPath
+ * @param[in] path
+ */
 void Sys_SetDefaultInstallPath(const char *path)
 {
 	Q_strncpyz(installPath, path, sizeof(installPath));
 }
 
-/*
-=================
-Sys_DefaultInstallPath
-=================
-*/
+/**
+ * @brief Sys_DefaultInstallPath
+ * @return
+ */
 char *Sys_DefaultInstallPath(void)
 {
 	if (*installPath)
@@ -114,17 +110,17 @@ char *Sys_DefaultInstallPath(void)
 }
 
 /**
- * @brief Restart the input subsystem
+ * @brief Sys_In_Restart_f
  */
 void Sys_In_Restart_f(void)
 {
 	IN_Restart();
 }
 
+#ifndef USE_WINDOWS_CONSOLE
 /**
  * @brief Handle new console input
  */
-#ifndef USE_WINDOWS_CONSOLE
 char *Sys_ConsoleInput(void)
 {
 	return CON_Input();
@@ -133,8 +129,8 @@ char *Sys_ConsoleInput(void)
 
 /**
  * @brief Writes pid to profile or to the homepath root if running a server
- * @retval qtrue  if pid file successfully created
- * @retval qfalse if it wasn't possible to create a new pid file
+ * @return qtrue  if pid file successfully created
+ *         otherwise qfalse if it wasn't possible to create a new pid file
  */
 qboolean Sys_WritePIDFile(void)
 {
@@ -182,6 +178,7 @@ qboolean Sys_WritePIDFile(void)
 
 /**
  * @brief Single exit point (regular exit or in case of error)
+ * @param[in] exitCode
  */
 static __attribute__ ((noreturn)) void Sys_Exit(int exitCode)
 {
@@ -239,11 +236,9 @@ static __attribute__ ((noreturn)) void Sys_Exit(int exitCode)
 }
 
 
-/*
-=================
-Sys_Quit
-=================
-*/
+/**
+ * @brief Sys_Quit
+ */
 void Sys_Quit(void)
 {
 	Sys_Exit(0);
@@ -252,15 +247,13 @@ void Sys_Quit(void)
 #endif
 }
 
-/*
-=================
-Sys_Init
-=================
-*/
 #ifdef USE_WINDOWS_CONSOLE
 extern void Sys_ClearViewlog_f(void);
 #endif
 
+/**
+ * @brief Sys_Init
+ */
 void Sys_Init(void)
 {
 	Cmd_AddCommand("in_restart", Sys_In_Restart_f);
@@ -274,6 +267,7 @@ void Sys_Init(void)
 
 /**
  * @brief Transform Q3 colour codes to ANSI escape sequences
+ * @param[in] msg
  */
 void Sys_AnsiColorPrint(const char *msg)
 {
@@ -413,11 +407,10 @@ void Sys_AnsiColorPrint(const char *msg)
 	}
 }
 
-/*
-=================
-Sys_Print
-=================
-*/
+/**
+ * @brief Sys_Print
+ * @param msg
+ */
 void Sys_Print(const char *msg)
 {
 #ifdef USE_WINDOWS_CONSOLE
@@ -432,11 +425,10 @@ void Sys_Print(const char *msg)
 #endif
 }
 
-/*
-=================
-Sys_Error
-=================
-*/
+/**
+ * @brief Sys_Error
+ * @param[in] error
+ */
 void Sys_Error(const char *error, ...)
 {
 	va_list argptr;
@@ -482,13 +474,11 @@ void Sys_Error(const char *error, ...)
 	Sys_Exit(3);
 }
 
-/*
-============
-Sys_FileTime
-
-returns -1 if not present
-============
-*/
+/**
+ * @brief Sys_FileTime
+ * @param[in] path
+ * @return -1 if not present
+ */
 int Sys_FileTime(char *path)
 {
 	struct stat buf;
@@ -501,11 +491,10 @@ int Sys_FileTime(char *path)
 	return buf.st_mtime;
 }
 
-/*
-=================
-Sys_UnloadDll
-=================
-*/
+/**
+ * @brief Sys_UnloadDll
+ * @param[in] dllHandle
+ */
 void Sys_UnloadDll(void *dllHandle)
 {
 	if (!dllHandle)
@@ -517,15 +506,13 @@ void Sys_UnloadDll(void *dllHandle)
 	Sys_UnloadLibrary(dllHandle);
 }
 
-/*
-=================
-Sys_LoadDll
-
-First try to load library name from system library path,
-from executable path, then fs_basepath.
-=================
-*/
-
+/**
+ * @brief First try to load library name from system library path,
+ * from executable path, then fs_basepath.
+ * @param[in] name
+ * @param[in] useSystemLib
+ * @return
+ */
 void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 {
 	void *dllhandle;
@@ -578,6 +565,11 @@ void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 
 /**
  * @brief Used by Sys_LoadGameDll to get handle on a mod library
+ *
+ * @param[in] base
+ * @param[in] gamedir
+ * @param[in] fname
+ *
  * @return Handle to a mod library
  */
 static void *Sys_TryLibraryLoad(const char *base, const char *gamedir, const char *fname)
@@ -623,7 +615,7 @@ static void *Sys_TryLibraryLoad(const char *base, const char *gamedir, const cha
 		}
 		else
 		{
-			Com_Printf("failed. (Not a zip).\n");
+			Com_Printf("failed. (Not a valid zip).\n");
 		}
 	}
 
@@ -690,6 +682,13 @@ static void *Sys_TryLibraryLoad(const char *base, const char *gamedir, const cha
  * #1 look in fs_homepath
  * #2 look in fs_basepath
  * #3 try to revert to the default mod library
+ *
+ * @param[in] name
+ * @param[in] extract
+ * @param entryPoint
+ * @param systemcalls
+ *
+ * @return libHandle or NULL
  */
 void *Sys_LoadGameDll(const char *name, qboolean extract,
                       intptr_t(**entryPoint) (int, ...),
@@ -746,8 +745,16 @@ void *Sys_LoadGameDll(const char *name, qboolean extract,
 #ifndef DEDICATED
 	if (LIB_DO_UNPACK && extract)
 	{
-		Com_Printf("Sys_LoadGameDll -> FS_CL_ExtractFromPakFile(%s, %s, %s)\n", homepath, gamedir, fname);
-		FS_CL_ExtractFromPakFile(homepath, gamedir, fname);
+
+		if (!FS_CL_ExtractFromPakFile(homepath, gamedir, fname))
+		{
+			// no drama, we still check SEARCHPATH2
+			Com_Printf("Sys_LoadDll(%s/%s) failed to extract library from fs_homepath\n", gamedir, name);
+		}
+		else
+		{
+			Com_Printf("Sys_LoadGameDll -> FS_CL_ExtractFromPakFile(%s, %s, %s)\n", homepath, gamedir, fname);
+		}
 	}
 #endif
 
@@ -761,55 +768,45 @@ void *Sys_LoadGameDll(const char *name, qboolean extract,
 #ifndef DEDICATED
 	if (!libHandle && !LIB_DO_UNPACK && extract)
 	{
+		if (!FS_CL_ExtractFromPakFile(homepath, gamedir, fname))
+		{
+			Com_Printf("Sys_LoadDll(%s/%s) failed to extract library\n", gamedir, name);
+			return NULL;
+		}
+
 		Com_Printf("Sys_LoadGameDll -> FS_CL_ExtractFromPakFile(%s, %s, %s)\n", homepath, gamedir, fname);
-		FS_CL_ExtractFromPakFile(homepath, gamedir, fname);
 		libHandle = Sys_TryLibraryLoad(homepath, gamedir, fname);
 	}
 #endif
 
-	// HACK: sometimes a library is loaded from the mod dir when it shouldn't. Why?
-	if (!libHandle && strcmp(gamedir, DEFAULT_MODGAME))
-	{
-		Com_Printf("Sys_LoadDll: failed to load the mod library. Trying to revert to the default one.\n");
-#ifndef DEDICATED
-		// Try to use the legacy mod
-		libHandle = Sys_TryLibraryLoad(homepath, DEFAULT_MODGAME, fname);
-
-		if (!libHandle)
-#endif
-		{
-			libHandle = Sys_TryLibraryLoad(basepath, DEFAULT_MODGAME, fname);
-		}
-	}
-
 	if (!libHandle)
 	{
-		Com_Printf("Sys_LoadDll(%s) failed to load library\n", name);
+		Com_Printf("Sys_LoadDll(%s/%s) failed to load library\n", gamedir, name);
 		return NULL;
 	}
 
-	dllEntry    = (void (QDECL *)(intptr_t (QDECL *)(intptr_t, ...)))Sys_LoadFunction(libHandle, "dllEntry");
-	*entryPoint = (intptr_t (QDECL *)(int, ...))Sys_LoadFunction(libHandle, "vmMain");
+	dllEntry    = (void(QDECL *)(intptr_t(QDECL *)(intptr_t, ...)))Sys_LoadFunction(libHandle, "dllEntry");
+	*entryPoint = (intptr_t(QDECL *)(int, ...))Sys_LoadFunction(libHandle, "vmMain");
 
 	if (!*entryPoint || !dllEntry)
 	{
-		Com_Printf("Sys_LoadDll(%s) failed to find vmMain function:\n\"%s\" !\n", name, Sys_LibraryError());
+		Com_Printf("Sys_LoadDll(%s/%s) failed to find vmMain function:\n\"%s\" !\n", gamedir, name, Sys_LibraryError());
 		Sys_UnloadLibrary(libHandle);
 
 		return NULL;
 	}
 
-	Com_Printf("Sys_LoadDll(%s) found vmMain function at %p\n", name, *entryPoint);
+	Com_Printf("Sys_LoadDll(%s/%s) found vmMain function at %p\n", gamedir, name, *entryPoint);
 	dllEntry(systemcalls);
 
 	return libHandle;
 }
 
-/*
-=================
-Sys_ParseArgs
-=================
-*/
+/**
+ * @brief Sys_ParseArgs
+ * @param[in] argc
+ * @param[in] argv
+ */
 void Sys_ParseArgs(int argc, char **argv)
 {
 #ifdef FEATURE_CURSES
@@ -843,7 +840,14 @@ void Sys_ParseArgs(int argc, char **argv)
 #endif
 }
 
-void Sys_BuildCommandLine(int argc, char **argv, char *buffer, int bufferSize)
+/**
+ * @brief Sys_BuildCommandLine
+ * @param[in] argc
+ * @param[in] argv
+ * @param[out] buffer
+ * @param[in] bufferSize
+ */
+void Sys_BuildCommandLine(int argc, char **argv, char *buffer, size_t bufferSize)
 {
 	int i = 0;
 	// Concatenate the command line for passing to Com_Init
@@ -877,11 +881,10 @@ void Sys_BuildCommandLine(int argc, char **argv, char *buffer, int bufferSize)
 #       define DEFAULT_BASEDIR Sys_BinaryPath()
 #endif
 
-/*
-=================
-Sys_SigHandler
-=================
-*/
+/**
+ * @brief Sys_SigHandler
+ * @param[in] signal
+ */
 void Sys_SigHandler(int signal)
 {
 	static qboolean signalcaught = qfalse;
@@ -910,6 +913,9 @@ void Sys_SigHandler(int signal)
 	}
 }
 
+/**
+ * @brief Sys_SetUpConsoleAndSignals
+ */
 void Sys_SetUpConsoleAndSignals(void)
 {
 #ifndef USE_WINDOWS_CONSOLE
@@ -934,12 +940,9 @@ void Sys_SetUpConsoleAndSignals(void)
 	signal(SIGINT, Sys_SigHandler);
 }
 
-/*
-=================
-Sys_GameLoop
-Main game loop
-=================
-*/
+/**
+ * @brief Main game loop
+ */
 void Sys_GameLoop(void)
 {
 #ifdef LEGACY_DEBUG
@@ -961,7 +964,8 @@ void Sys_GameLoop(void)
 		startTime = Sys_Milliseconds();
 #endif
 
-		IN_Frame();
+		// Improve input responsiveness by moving sampling to other side of framerate limiter - moved to Com_Frame()
+		//IN_Frame();
 		Com_Frame();
 
 #ifdef LEGACY_DEBUG
@@ -977,11 +981,12 @@ void Sys_GameLoop(void)
 	}
 }
 
-/*
-=================
-main
-=================
-*/
+/**
+ * @brief SDL_main
+ * @param[in] argc
+ * @param[in] argv
+ * @return
+ */
 int main(int argc, char **argv)
 {
 	char commandLine[MAX_STRING_CHARS] = { 0 };
@@ -1011,14 +1016,14 @@ int main(int argc, char **argv)
 		if (!url)
 		{
 			Sys_Dialog(DT_ERROR, "A CFURL for the app bundle could not be found.", "Can't set Sys_SetBinaryPath");
-			Sys_Exit(1);
+			Sys_Exit(EXIT_FAILURE);
 		}
 
 		CFURLRef url2 = CFURLCreateCopyDeletingLastPathComponent(0, url);
 		if (!url2 || !CFURLGetFileSystemRepresentation(url2, 1, (UInt8 *)parentdir, 1024))
 		{
 			Sys_Dialog(DT_ERROR, "CFURLGetFileSystemRepresentation returned an error when finding the app bundle's parent directory.", "Can't set Sys_SetBinaryPath");
-			Sys_Exit(1);
+			Sys_Exit(EXIT_FAILURE);
 		}
 
 		Sys_SetBinaryPath(parentdir);
@@ -1040,7 +1045,35 @@ int main(int argc, char **argv)
 
 	Sys_SetUpConsoleAndSignals();
 
+#ifdef _WIN32
+
+#ifndef DEDICATED
+	if (com_viewlog->integer)
+	{
+		Sys_ShowConsoleWindow(1, qfalse);
+	}
+#endif
+
+	Sys_Splash(qfalse);
+
+	{
+		char cwd[MAX_OSPATH];
+		_getcwd(cwd, sizeof(cwd));
+		Com_Printf("Working directory: %s\n", cwd);
+	}
+
+	// hide the early console since we've reached the point where we
+	// have a working graphics subsystems
+#ifndef LEGACY_DEBUG
+	if (!com_dedicated->integer && !com_viewlog->integer)
+	{
+		Sys_ShowConsoleWindow(0, qfalse);
+	}
+#endif
+
+#endif
+
 	Sys_GameLoop();
 
-	return 0;
+	return EXIT_SUCCESS;
 }

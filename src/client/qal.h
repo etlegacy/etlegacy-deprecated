@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -42,21 +42,16 @@
 #ifdef FEATURE_OPENAL_DLOPEN
 #define AL_NO_PROTOTYPES
 #define ALC_NO_PROTOTYPES
-#endif
-
-#ifdef _MSC_VER
-// MSVC users must install the OpenAL SDK which doesn't use the AL/*.h scheme.
-  #include <al.h>
-  #include <alc.h>
-#elif __APPLE__
-  #include <OpenAL/al.h>
-  #include <OpenAL/alc.h>
 #else
-  #include <AL/al.h>
-  #include <AL/alc.h>
+#define AL_ALEXT_PROTOTYPES
 #endif
 
-/* Hack to enable compiling both on OpenAL SDK and OpenAL-soft. */
+#include <AL/al.h>
+#include <AL/alc.h>
+#include <AL/alext.h>
+#include <AL/efx.h>
+
+// Hack to enable compiling both on OpenAL SDK and OpenAL-soft.
 #ifndef ALC_ENUMERATE_ALL_EXT
 #  define ALC_ENUMERATE_ALL_EXT 1
 #  define ALC_DEFAULT_ALL_DEVICES_SPECIFIER        0x1012
@@ -158,6 +153,12 @@ extern LPALCCAPTURECLOSEDEVICE qalcCaptureCloseDevice;
 extern LPALCCAPTURESTART       qalcCaptureStart;
 extern LPALCCAPTURESTOP        qalcCaptureStop;
 extern LPALCCAPTURESAMPLES     qalcCaptureSamples;
+
+extern LPALGENEFFECTS              qalGenEffects;
+extern LPALEFFECTI                 qalEffecti;
+extern LPALEFFECTF                 qalEffectf;
+extern LPALGENAUXILIARYEFFECTSLOTS qalGenAuxiliaryEffectSlots;
+extern LPALAUXILIARYEFFECTSLOTI    qalAuxiliaryEffectSloti;
 #else
 #define qalEnable alEnable
 #define qalDisable alDisable
@@ -253,6 +254,12 @@ extern LPALCCAPTURESAMPLES     qalcCaptureSamples;
 #define qalcCaptureStart alcCaptureStart
 #define qalcCaptureStop alcCaptureStop
 #define qalcCaptureSamples alcCaptureSamples
+
+#define qalGenEffects alGenEffects
+#define qalEffecti alEffecti
+#define qalEffectf alEffectf
+#define qalGenAuxiliaryEffectSlots alGenAuxiliaryEffectSlots
+#define qalAuxiliaryEffectSloti alAuxiliaryEffectSloti
 #endif
 
 qboolean QAL_Init(const char *libname);

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -38,7 +38,6 @@
 glconfig_t glConfig;
 qboolean   textureFilterAnisotropic = qfalse;
 int        maxAnisotropy            = 0;
-float      displayAspect            = 0.0f;
 
 glstate_t glState;
 
@@ -62,16 +61,11 @@ cvar_t *r_detailTextures;
 
 cvar_t *r_znear;
 cvar_t *r_zfar;
-// FIXME #176
-//cvar_t *r_stereoSeparation;
 
 cvar_t *r_skipBackEnd;
 
-cvar_t *r_stereoEnabled;
-
 cvar_t *r_greyscale;
 
-cvar_t *r_ignorehwgamma;
 cvar_t *r_measureOverdraw;
 
 cvar_t *r_fastsky;
@@ -105,12 +99,8 @@ cvar_t *r_ext_max_anisotropy;
 cvar_t *r_ignoreGLErrors;
 cvar_t *r_logFile;
 
-cvar_t *r_stencilbits;
-cvar_t *r_depthbits;
-cvar_t *r_colorbits;
 cvar_t *r_primitives;
 cvar_t *r_texturebits;
-cvar_t *r_ext_multisample;
 
 cvar_t *r_drawBuffer;
 cvar_t *r_lightmap;
@@ -118,8 +108,6 @@ cvar_t *r_uiFullScreen;
 cvar_t *r_shadows;
 cvar_t *r_portalsky;
 cvar_t *r_flares;
-cvar_t *r_mode;
-cvar_t *r_oldMode;
 cvar_t *r_nobind;
 cvar_t *r_singleShader;
 cvar_t *r_roundImagesDown;
@@ -133,7 +121,6 @@ cvar_t *r_normallength;
 //cvar_t *r_showmodelbounds; // see RB_MDM_SurfaceAnim()
 cvar_t *r_finish;
 cvar_t *r_clear;
-cvar_t *r_swapInterval;
 cvar_t *r_textureMode;
 cvar_t *r_offsetFactor;
 cvar_t *r_offsetUnits;
@@ -145,14 +132,6 @@ cvar_t *r_portalOnly;
 
 cvar_t *r_subdivisions;
 cvar_t *r_lodCurveError;
-
-cvar_t *r_fullscreen;
-cvar_t *r_oldFullscreen;
-cvar_t *r_noborder;
-
-cvar_t *r_customwidth;
-cvar_t *r_customheight;
-cvar_t *r_customaspect;
 
 cvar_t *r_overBrightBits;
 cvar_t *r_mapOverBrightBits;
@@ -217,7 +196,8 @@ static void InitOpenGL(void)
 		char  renderer_buffer[1024];
 		GLint temp;
 
-		GLimp_Init();
+		Com_Memset(&glConfig, 0, sizeof(glConfig));
+		ri.GLimp_Init(&glConfig, NULL);
 
 		strcpy(renderer_buffer, glConfig.renderer_string);
 		Q_strlwr(renderer_buffer);
@@ -240,15 +220,13 @@ static void InitOpenGL(void)
 	GL_SetDefaultState();
 }
 
-/*
-==================
-GL_CheckErrors
-==================
-*/
+/**
+ * @brief GL_CheckErrors
+ */
 void GL_CheckErrors(void)
 {
-	int  err;
-	char s[64];
+	unsigned int err;
+	char         s[64];
 
 	err = qglGetError();
 	if (err == GL_NO_ERROR)
@@ -305,22 +283,26 @@ void GL_CheckErrors(void)
  * ==============================================================================
  */
 
-/*
-==================
-RB_ReadPixels
-
-Reads an image but takes care of alignment issues for reading RGB images.
-
-Reads a minimum offset for where the RGB data starts in the image from
-integer stored at pointer offset. When the function has returned the actual
-offset was written back to address offset. This address will always have an
-alignment of packAlign to ensure efficient copying.
-
-Stores the length of padding after a line of pixels to address padlen
-
-Return value must be freed with ri.Hunk_FreeTempMemory()
-==================
-*/
+/**
+ * @brief Reads an image but takes care of alignment issues for reading RGB images.
+ *
+ * @details Reads a minimum offset for where the RGB data starts in the image from
+ * integer stored at pointer offset. When the function has returned the actual
+ * offset was written back to address offset. This address will always have an
+ * alignment of packAlign to ensure efficient copying.
+ *
+ * Stores the length of padding after a line of pixels to address padlen
+ *
+ * Return value must be freed with ri.Hunk_FreeTempMemory()
+ *
+ * @param[in] x
+ * @param[in] y
+ * @param[in] width
+ * @param[in] height
+ * @param[in,out] offset
+ * @param[in,out] padlen
+ * @return
+ */
 byte *RB_ReadPixels(int x, int y, int width, int height, size_t *offset, int *padlen)
 {
 	byte  *buffer, *bufstart;
@@ -344,6 +326,15 @@ byte *RB_ReadPixels(int x, int y, int width, int height, size_t *offset, int *pa
 	return buffer;
 }
 
+/**
+ * @brief RB_ReadZBuffer
+ * @param[in] x
+ * @param[in] y
+ * @param[in] width
+ * @param[in,out] height
+ * @param[in,out] padlen
+ * @return
+ */
 byte *RB_ReadZBuffer(int x, int y, int width, int height, int *padlen)
 {
 	byte  *buffer, *bufstart;
@@ -367,65 +358,74 @@ byte *RB_ReadZBuffer(int x, int y, int width, int height, int *padlen)
 	return buffer;
 }
 
-/**
- * @brief zbuffer writer for the future implementation of the Depth of field effect
- * @note Unused.
- */
-void RB_TakeDepthshot(int x, int y, int width, int height, char *fileName)
-{
-	byte   *allbuf, *buffer;
-	byte   *srcptr, *destptr;
-	byte   *endline, *endmem;
-	int    linelen, padlen;
-	size_t offset = 18, memcount;
-
-	allbuf = RB_ReadZBuffer(x, y, width, height, &padlen);
-	buffer = ri.Hunk_AllocateTempMemory(width * height * 3 + offset);
-
-	Com_Memset(buffer, 0, 18);
-	buffer[2]  = 2;         // uncompressed type
-	buffer[12] = width & 255;
-	buffer[13] = width >> 8;
-	buffer[14] = height & 255;
-	buffer[15] = height >> 8;
-	buffer[16] = 24;        // pixel size
-
-	linelen = width;
-
-	srcptr  = allbuf;
-	destptr = buffer + offset;
-	endmem  = srcptr + (linelen + padlen) * height;
-	while (srcptr < endmem)
-	{
-		endline = srcptr + linelen;
-
-		while (srcptr < endline)
-		{
-			*destptr++ = srcptr[0];
-			*destptr++ = srcptr[0];
-			*destptr++ = srcptr[0];
-
-			srcptr++;
-		}
-
-		// Skip the pad
-		srcptr += padlen;
-	}
-
-	memcount = linelen * 3 * height + offset;
-
-	ri.FS_WriteFile(fileName, buffer, memcount);
-
-	ri.Hunk_FreeTempMemory(allbuf);
-	ri.Hunk_FreeTempMemory(buffer);
-}
-
 /*
-==================
-RB_TakeScreenshot
-==================
+ * @brief zbuffer writer for the future implementation of the Depth of field effect
+ * @param[in] x
+ * @param[in] y
+ * @param[in] width
+ * @param[in] height
+ * @param[in] fileName
+ *
+ * @note Unused.
+void RB_TakeDepthshot(int x, int y, int width, int height, const char *fileName)
+{
+    byte   *allbuf, *buffer;
+    byte   *srcptr, *destptr;
+    byte   *endline, *endmem;
+    int    linelen, padlen;
+    size_t offset = 18, memcount;
+
+    allbuf = RB_ReadZBuffer(x, y, width, height, &padlen);
+    buffer = ri.Hunk_AllocateTempMemory(width * height * 3 + offset);
+
+    Com_Memset(buffer, 0, 18);
+    buffer[2]  = 2;         // uncompressed type
+    buffer[12] = width & 255;
+    buffer[13] = width >> 8;
+    buffer[14] = height & 255;
+    buffer[15] = height >> 8;
+    buffer[16] = 24;        // pixel size
+
+    linelen = width;
+
+    srcptr  = allbuf;
+    destptr = buffer + offset;
+    endmem  = srcptr + (linelen + padlen) * height;
+    while (srcptr < endmem)
+    {
+        endline = srcptr + linelen;
+
+        while (srcptr < endline)
+        {
+            *destptr++ = srcptr[0];
+            *destptr++ = srcptr[0];
+            *destptr++ = srcptr[0];
+
+            srcptr++;
+        }
+
+        // Skip the pad
+        srcptr += padlen;
+    }
+
+    memcount = linelen * 3 * height + offset;
+
+    ri.FS_WriteFile(fileName, buffer, memcount);
+
+    ri.Hunk_FreeTempMemory(allbuf);
+    ri.Hunk_FreeTempMemory(buffer);
+}
 */
-void RB_TakeScreenshot(int x, int y, int width, int height, char *fileName)
+
+/**
+ * @brief RB_TakeScreenshot
+ * @param[in] x
+ * @param[in] y
+ * @param[in] width
+ * @param[in] height
+ * @param[in] fileName
+ */
+void RB_TakeScreenshot(int x, int y, int width, int height, const char *fileName)
 {
 	byte   *allbuf, *buffer;
 	byte   *srcptr, *destptr;
@@ -482,10 +482,13 @@ void RB_TakeScreenshot(int x, int y, int width, int height, char *fileName)
 	ri.Hunk_FreeTempMemory(allbuf);
 }
 
-/*
-==================
-RB_TakeScreenshotJPEG
-==================
+/**
+ * @brief RB_TakeScreenshotJPEG
+ * @param[in] x
+ * @param[in] y
+ * @param[in] width
+ * @param[in] height
+ * @param[in] fileName
  */
 void RB_TakeScreenshotJPEG(int x, int y, int width, int height, char *fileName)
 {
@@ -506,11 +509,11 @@ void RB_TakeScreenshotJPEG(int x, int y, int width, int height, char *fileName)
 	ri.Hunk_FreeTempMemory(buffer);
 }
 
-/*
-==================
-RB_TakeScreenshotCmd
-==================
-*/
+/**
+ * @brief RB_TakeScreenshotCmd
+ * @param[in] data
+ * @return
+ */
 const void *RB_TakeScreenshotCmd(const void *data)
 {
 	const screenshotCommand_t *cmd = ( const screenshotCommand_t * ) data;
@@ -527,12 +530,16 @@ const void *RB_TakeScreenshotCmd(const void *data)
 	return ( const void * ) (cmd + 1);
 }
 
-/*
-==================
-R_TakeScreenshot
-==================
+/**
+ * @brief R_TakeScreenshot
+ * @param[in] x
+ * @param[in] y
+ * @param[in] width
+ * @param[in] height
+ * @param[in] name
+ * @param[in] jpeg
  */
-void R_TakeScreenshot(int x, int y, int width, int height, char *name, qboolean jpeg)
+void R_TakeScreenshot(int x, int y, int width, int height, const char *name, qboolean jpeg)
 {
 	static char         fileName[MAX_OSPATH]; // bad things if two screenshots per frame?
 	screenshotCommand_t *cmd;
@@ -553,11 +560,11 @@ void R_TakeScreenshot(int x, int y, int width, int height, char *name, qboolean 
 	cmd->jpeg     = jpeg;
 }
 
-/*
-==================
-R_ScreenshotFilename
-==================
-*/
+/**
+ * @brief R_ScreenshotFilename
+ * @param[in] lastNumber
+ * @param[out] fileName
+ */
 void R_ScreenshotFilename(int lastNumber, char *fileName)
 {
 	int a, b, c, d;
@@ -580,11 +587,11 @@ void R_ScreenshotFilename(int lastNumber, char *fileName)
 	            , a, b, c, d);
 }
 
-/*
-==================
-R_ScreenshotFilename
-==================
-*/
+/**
+ * @brief R_ScreenshotFilenameJPEG
+ * @param[in] lastNumber
+ * @param[out] fileName
+ */
 void R_ScreenshotFilenameJPEG(int lastNumber, char *fileName)
 {
 	int a, b, c, d;
@@ -607,11 +614,11 @@ void R_ScreenshotFilenameJPEG(int lastNumber, char *fileName)
 	            , a, b, c, d);
 }
 
-/*
-==================
-RB_TakeVideoFrameCmd
-==================
-*/
+/**
+ * @brief RB_TakeVideoFrameCmd
+ * @param[in] data
+ * @return
+ */
 const void *RB_TakeVideoFrameCmd(const void *data)
 {
 	const videoFrameCommand_t *cmd;
@@ -692,14 +699,10 @@ const void *RB_TakeVideoFrameCmd(const void *data)
 	return (const void *)(cmd + 1);
 }
 
-/*
-====================
-R_LevelShot
-
-levelshots are specialized 128*128 thumbnails for
-the menu system, sampled down from full screen distorted images
-====================
-*/
+/**
+ * @brief Levelshots are specialized 128*128 thumbnails for
+ * the menu system, sampled down from full screen distorted images
+ */
 void R_LevelShot(void)
 {
 	char   checkname[MAX_OSPATH];
@@ -745,9 +748,9 @@ void R_LevelShot(void)
 				}
 			}
 			dst    = buffer + 18 + 3 * (y * 128 + x);
-			dst[0] = b / 12;
-			dst[1] = g / 12;
-			dst[2] = r / 12;
+			dst[0] = (byte)(b / 12);
+			dst[1] = (byte)(g / 12);
+			dst[2] = (byte)(r / 12);
 		}
 	}
 
@@ -765,18 +768,16 @@ void R_LevelShot(void)
 	Ren_Print("Wrote %s\n", checkname);
 }
 
-/*
-==================
-R_ScreenShot_f
-
-screenshot
-screenshot [silent]
-screenshot [levelshot]
-screenshot [filename]
-
-Doesn't print the pacifier message if there is a second arg
-==================
-*/
+/**
+ * @brief R_ScreenShot_f
+ *
+ * @note Doesn't print the pacifier message if there is a second arg
+ *
+ * screenshot
+ * screenshot [silent]
+ * screenshot [levelshot]
+ * screenshot [filename]
+ */
 void R_ScreenShot_f(void)
 {
 	char       checkname[MAX_OSPATH];
@@ -842,6 +843,9 @@ void R_ScreenShot_f(void)
 	}
 }
 
+/**
+ * @brief R_ScreenShotJPEG_f
+ */
 void R_ScreenShotJPEG_f(void)
 {
 	char       checkname[MAX_OSPATH];
@@ -909,14 +913,12 @@ void R_ScreenShotJPEG_f(void)
 
 //============================================================================
 
-/*
-==================
-GL_SetDefaultState
-==================
-*/
+/**
+ * @brief GL_SetDefaultState
+ */
 void GL_SetDefaultState(void)
 {
-	qglClearDepth(1.0f);
+	qglClearDepth(1.0);
 
 	qglCullFace(GL_FRONT);
 
@@ -955,13 +957,10 @@ void GL_SetDefaultState(void)
 	qglDisable(GL_BLEND);
 }
 
-/*
-================
-R_PrintLongString
-
-Workaround for ri.Printf's 1024 characters buffer limit.
-================
-*/
+/**
+ * @brief Workaround for ri.Printf's 1024 characters buffer limit.
+ * @param[in] string
+ */
 void R_PrintLongString(const char *string)
 {
 	char       buffer[1024];
@@ -977,11 +976,9 @@ void R_PrintLongString(const char *string)
 	}
 }
 
-/*
-================
-GfxInfo_f
-================
-*/
+/**
+ * @brief GfxInfo_f
+ */
 void GfxInfo_f(void)
 {
 	const char *enablestrings[] =
@@ -1007,7 +1004,7 @@ void GfxInfo_f(void)
 	Ren_Print("GL_MAX_TEXTURE_SIZE: %d\n", glConfig.maxTextureSize);
 	Ren_Print("GL_MAX_ACTIVE_TEXTURES_ARB: %d\n", glConfig.maxActiveTextures);
 	Ren_Print("PIXELFORMAT: color(%d-bits) Z(%d-bit) stencil(%d-bits)\n", glConfig.colorBits, glConfig.depthBits, glConfig.stencilBits);
-	Ren_Print("MODE: %d, SCREEN: %d x %d %s (ratio %.4f) Hz:", r_mode->integer, glConfig.vidWidth, glConfig.vidHeight, fsstrings[r_fullscreen->integer == 1], glConfig.windowAspect);
+	Ren_Print("MODE: %d, SCREEN: %d x %d %s (ratio %.4f) Hz:", ri.Cvar_VariableIntegerValue("r_mode"), glConfig.vidWidth, glConfig.vidHeight, fsstrings[ri.Cvar_VariableIntegerValue("r_fullscreen") == 1], glConfig.windowAspect);
 
 	if (glConfig.displayFrequency)
 	{
@@ -1077,11 +1074,9 @@ void GfxInfo_f(void)
 	}
 }
 
-/*
-===============
-R_Register
-===============
-*/
+/**
+ * @brief R_Register
+ */
 void R_Register(void)
 {
 #ifdef USE_RENDERER_DLOPEN
@@ -1104,35 +1099,18 @@ void R_Register(void)
 	r_colorMipLevels = ri.Cvar_Get("r_colorMipLevels", "0", CVAR_LATCH);
 	r_detailTextures = ri.Cvar_Get("r_detailtextures", "1", CVAR_ARCHIVE | CVAR_LATCH);
 	r_texturebits    = ri.Cvar_Get("r_texturebits", "0", CVAR_ARCHIVE | CVAR_LATCH | CVAR_UNSAFE);
-	r_colorbits      = ri.Cvar_Get("r_colorbits", "0", CVAR_ARCHIVE | CVAR_LATCH | CVAR_UNSAFE);
-	r_stencilbits    = ri.Cvar_Get("r_stencilbits", "0", CVAR_ARCHIVE | CVAR_LATCH | CVAR_UNSAFE);
 
-	r_depthbits = ri.Cvar_Get("r_depthbits", "0", CVAR_ARCHIVE | CVAR_LATCH | CVAR_UNSAFE);
-
-	r_ext_multisample = ri.Cvar_Get("r_ext_multisample", "0", CVAR_ARCHIVE | CVAR_LATCH);
-	ri.Cvar_AssertCvarRange(r_ext_multisample, 0, 4, qtrue);
 	r_overBrightBits = ri.Cvar_Get("r_overBrightBits", "0", CVAR_ARCHIVE | CVAR_LATCH);        // disable overbrightbits by default
 	ri.Cvar_AssertCvarRange(r_overBrightBits, 0, 1, qtrue);                                    // limit to overbrightbits 1 (sorry 1337 players)
-	r_ignorehwgamma = ri.Cvar_Get("r_ignorehwgamma", "0", CVAR_ARCHIVE | CVAR_LATCH);          // use hw gamma by default
-	r_mode          = ri.Cvar_Get("r_mode", "-2", CVAR_ARCHIVE | CVAR_LATCH | CVAR_UNSAFE);
-	r_oldMode       = ri.Cvar_Get("r_oldMode", "", CVAR_ARCHIVE);                              // previous "good" video mode
-	r_fullscreen    = ri.Cvar_Get("r_fullscreen", "1", CVAR_ARCHIVE | CVAR_LATCH);
-	r_oldFullscreen = ri.Cvar_Get("r_oldFullscreen", "", CVAR_ARCHIVE);
-	r_noborder      = ri.Cvar_Get("r_noborder", "0", CVAR_ARCHIVE | CVAR_LATCH);
-	r_customwidth   = ri.Cvar_Get("r_customwidth", "1600", CVAR_ARCHIVE | CVAR_LATCH);
-	r_customheight  = ri.Cvar_Get("r_customheight", "1024", CVAR_ARCHIVE | CVAR_LATCH);
-	r_customaspect  = ri.Cvar_Get("r_customaspect", "1", CVAR_ARCHIVE | CVAR_LATCH);
 	r_simpleMipMaps = ri.Cvar_Get("r_simpleMipMaps", "1", CVAR_ARCHIVE | CVAR_LATCH);
 	r_uiFullScreen  = ri.Cvar_Get("r_uifullscreen", "0", 0);
 
 	r_subdivisions = ri.Cvar_Get("r_subdivisions", "4", CVAR_ARCHIVE | CVAR_LATCH);
 
-	r_stereoEnabled  = ri.Cvar_Get("r_stereoEnabled", "0", CVAR_ARCHIVE | CVAR_LATCH);
 	r_ignoreFastPath = ri.Cvar_Get("r_ignoreFastPath", "0", CVAR_ARCHIVE | CVAR_LATCH);    // use fast path by default
 	r_greyscale      = ri.Cvar_Get("r_greyscale", "0", CVAR_ARCHIVE | CVAR_LATCH);
 
 	// temporary latched variables that can only change over a restart
-	ri.Cvar_AssertCvarRange(ri.Cvar_Get("r_displayRefresh", "0", CVAR_LATCH), 0, 200, qtrue);
 	r_mapOverBrightBits = ri.Cvar_Get("r_mapOverBrightBits", "2", CVAR_LATCH);
 	ri.Cvar_AssertCvarRange(r_mapOverBrightBits, 0, 3, qtrue);
 	r_intensity = ri.Cvar_Get("r_intensity", "1", CVAR_LATCH);
@@ -1154,7 +1132,6 @@ void R_Register(void)
 	r_dynamiclight = ri.Cvar_Get("r_dynamiclight", "1", CVAR_ARCHIVE);
 	r_finish       = ri.Cvar_Get("r_finish", "0", CVAR_ARCHIVE);
 	r_textureMode  = ri.Cvar_Get("r_textureMode", "GL_LINEAR_MIPMAP_NEAREST", CVAR_ARCHIVE);
-	r_swapInterval = ri.Cvar_Get("r_swapInterval", "0", CVAR_ARCHIVE);
 	r_gamma        = ri.Cvar_Get("r_gamma", "1.3", CVAR_ARCHIVE);
 
 	r_facePlaneCull = ri.Cvar_Get("r_facePlaneCull", "1", CVAR_ARCHIVE);
@@ -1178,7 +1155,6 @@ void R_Register(void)
 	r_printShaders = ri.Cvar_Get("r_printShaders", "0", 0);
 	//r_saveFontData = ri.Cvar_Get("r_saveFontData", "0", 0); // used to generate texture font file
 
-	// with r_cache enabled, non-win32 OSes were leaking 24Mb per R_Init..
 	r_cache        = ri.Cvar_Get("r_cache", "1", CVAR_LATCH); // leaving it as this for backwards compability. but it caches models and shaders also
 	r_cacheShaders = ri.Cvar_Get("r_cacheShaders", "1", CVAR_LATCH);
 
@@ -1243,23 +1219,19 @@ void R_Register(void)
 
 	// make sure all the commands added here are also
 	// removed in R_Shutdown
-	ri.Cmd_AddCommand("imagelist", R_ImageList_f);
-	ri.Cmd_AddCommand("shaderlist", R_ShaderList_f);
-	ri.Cmd_AddCommand("skinlist", R_SkinList_f);
-	ri.Cmd_AddCommand("modellist", R_Modellist_f);
-	ri.Cmd_AddCommand("modelist", R_ModeList_f);
-	ri.Cmd_AddCommand("screenshot", R_ScreenShot_f);
-	ri.Cmd_AddCommand("screenshotJPEG", R_ScreenShotJPEG_f);
-	ri.Cmd_AddCommand("gfxinfo", GfxInfo_f);
-	ri.Cmd_AddCommand("taginfo", R_TagInfo_f);
-	ri.Cmd_AddCommand("minimize", GLimp_Minimize);
+	ri.Cmd_AddSystemCommand("imagelist", R_ImageList_f, "Print out the list of images loaded", NULL);
+	ri.Cmd_AddSystemCommand("shaderlist", R_ShaderList_f, "Print out the list of shaders loaded", NULL);
+	ri.Cmd_AddSystemCommand("skinlist", R_SkinList_f, "Print out the list of skins", NULL);
+	ri.Cmd_AddSystemCommand("modellist", R_Modellist_f, "Print out the list of loaded models", NULL);
+	ri.Cmd_AddSystemCommand("screenshot", R_ScreenShot_f, "Take a screenshot of current frame", NULL);
+	ri.Cmd_AddSystemCommand("screenshotJPEG", R_ScreenShotJPEG_f, "Take a JPEG screenshot of current frame", NULL);
+	ri.Cmd_AddSystemCommand("gfxinfo", GfxInfo_f, "GFX info of current system", NULL);
+	ri.Cmd_AddSystemCommand("taginfo", R_TagInfo_f, "Print the list of loaded tags", NULL);
 }
 
-/*
-===============
-R_Init
-===============
-*/
+/**
+ * @brief R_Init
+ */
 void R_Init(void)
 {
 	int  err;
@@ -1341,10 +1313,12 @@ void R_Init(void)
 
 	R_InitFreeType();
 
+	R_InitGamma();
+
 	err = qglGetError();
 	if (err != GL_NO_ERROR)
 	{
-		Ren_Print("glGetError() = 0x%x\n", err);
+		Ren_Print("R_Init: glGetError() = 0x%x\n", err);
 	}
 
 	Ren_Print("----- finished R_Init -----\n");
@@ -1357,25 +1331,24 @@ void R_PurgeCache(void)
 	R_PurgeModels(9999999);
 }
 
-/*
-===============
-RE_Shutdown
-===============
-*/
+/**
+ * @brief RE_Shutdown
+ * @param[in] destroyWindow
+ */
 void RE_Shutdown(qboolean destroyWindow)
 {
 	Ren_Print("RE_Shutdown( %i )\n", destroyWindow);
 
-	ri.Cmd_RemoveCommand("imagelist");
-	ri.Cmd_RemoveCommand("shaderlist");
-	ri.Cmd_RemoveCommand("skinlist");
-	ri.Cmd_RemoveCommand("modellist");
-	ri.Cmd_RemoveCommand("modelist");
-	ri.Cmd_RemoveCommand("screenshot");
-	ri.Cmd_RemoveCommand("screenshotJPEG");
-	ri.Cmd_RemoveCommand("gfxinfo");
-	ri.Cmd_RemoveCommand("minimize");
-	ri.Cmd_RemoveCommand("taginfo");
+	ri.Cmd_RemoveSystemCommand("imagelist");
+	ri.Cmd_RemoveSystemCommand("shaderlist");
+	ri.Cmd_RemoveSystemCommand("skinlist");
+	ri.Cmd_RemoveSystemCommand("modellist");
+	ri.Cmd_RemoveSystemCommand("modelist");
+	ri.Cmd_RemoveSystemCommand("screenshot");
+	ri.Cmd_RemoveSystemCommand("screenshotJPEG");
+	ri.Cmd_RemoveSystemCommand("gfxinfo");
+	ri.Cmd_RemoveSystemCommand("minimize");
+	ri.Cmd_RemoveSystemCommand("taginfo");
 
 	// keep a backup of the current images if possible
 	// clean out any remaining unused media from the last backup
@@ -1407,10 +1380,12 @@ void RE_Shutdown(qboolean destroyWindow)
 
 	R_DoneFreeType();
 
+	R_ShutdownGamma();
+
 	// shut down platform specific OpenGL stuff
 	if (destroyWindow)
 	{
-		GLimp_Shutdown();
+		R_DoGLimpShutdown();
 
 		// release the virtual memory
 		R_Hunk_End();
@@ -1438,12 +1413,13 @@ void RE_EndRegistration(void)
 
 void R_DebugPolygon(int color, int numPoints, float *points);
 
-/*
-==================
-GetRefAPI
-==================
-*/
 #ifdef USE_RENDERER_DLOPEN
+/**
+ * @brief GetRefAPI
+ * @param[in] apiVersion
+ * @param[in] rimp
+ * @return
+ */
 Q_EXPORT refexport_t * QDECL GetRefAPI(int apiVersion, refimport_t *rimp)
 #else
 refexport_t * GetRefAPI(int apiVersion, refimport_t * rimp)
@@ -1463,8 +1439,7 @@ refexport_t * GetRefAPI(int apiVersion, refimport_t * rimp)
 
 	// the RE_ functions are Renderer Entry points
 
-	re.Shutdown   = RE_Shutdown;
-	re.MainWindow = GLimp_MainWindow;
+	re.Shutdown = RE_Shutdown;
 
 	re.BeginRegistration = RE_BeginRegistration;
 	re.RegisterModel     = RE_RegisterModel;
@@ -1528,8 +1503,10 @@ refexport_t * GetRefAPI(int apiVersion, refimport_t * rimp)
 
 	re.RenderToTexture = RE_RenderToTexture;
 
-	re.Finish         = RE_Finish;
-	re.TakeVideoFrame = RE_TakeVideoFrame;
+	re.Finish              = RE_Finish;
+	re.TakeVideoFrame      = RE_TakeVideoFrame;
+	re.InitOpenGL          = RE_InitOpenGl;
+	re.InitOpenGLSubSystem = RE_InitOpenGlSubsystems;
 
 	return &re;
 }

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -36,18 +36,18 @@
 #ifndef INCLUDE_L_SCRIPT_H
 #define INCLUDE_L_SCRIPT_H
 
-// undef if binary numbers of the form 0b... or 0B... are not allowed
+/// undef if binary numbers of the form 0b... or 0B... are not allowed
 #define BINARYNUMBERS
-// undef if not using the token.intvalue and token.floatvalue
+/// undef if not using the token.intvalue and token.floatvalue
 #define NUMBERVALUE
-// use dollar sign also as punctuation
+/// use dollar sign also as punctuation
 #define DOLLAR
 
-// maximum token length
+/// maximum token length
 #define MAX_TOKEN               1024
-// maximum path length
+/// maximum path length
 #ifndef _MAX_PATH
-// used to be MAX_QPATH, which is the game filesystem max len, and not the OS max len
+/// used to be MAX_QPATH, which is the game filesystem max len, and not the OS max len
 #define _MAX_PATH               1024
 #endif
 
@@ -57,15 +57,15 @@
 #define SCFL_NOSTRINGWHITESPACES    0x0004
 #define SCFL_NOSTRINGESCAPECHARS    0x0008
 #define SCFL_PRIMITIVE              0x0010
-#define SCFL_NOBINARYNUMBERS        0x0020
-#define SCFL_NONUMBERVALUES         0x0040
+#define SCFL_NOBINARYNUMBERS        0x0020 ///< unused
+#define SCFL_NONUMBERVALUES         0x0040 ///< unused
 
 // token types
-#define TT_STRING                   1           // string
-#define TT_LITERAL                  2           // literal
-#define TT_NUMBER                   3           // number
-#define TT_NAME                     4           // name
-#define TT_PUNCTUATION              5           // punctuation
+#define TT_STRING                   1      ///< string
+#define TT_LITERAL                  2      ///< literal
+#define TT_NUMBER                   3      ///< number
+#define TT_NAME                     4      ///< name
+#define TT_PUNCTUATION              5      ///< punctuation
 
 //string sub type
 //---------------
@@ -75,16 +75,16 @@
 //      the ASCII code of the literal
 //number sub type
 //---------------
-#define TT_DECIMAL                  0x0008  // decimal number
-#define TT_HEX                      0x0100  // hexadecimal number
-#define TT_OCTAL                    0x0200  // octal number
+#define TT_DECIMAL                  0x0008  ///< decimal number
+#define TT_HEX                      0x0100  ///< hexadecimal number
+#define TT_OCTAL                    0x0200  ///< octal number
 #ifdef BINARYNUMBERS
-#define TT_BINARY                   0x0400  // binary number
+#define TT_BINARY                   0x0400  ///< binary number
 #endif //BINARYNUMBERS
-#define TT_FLOAT                    0x0800  // floating point number
-#define TT_INTEGER                  0x1000  // integer number
-#define TT_LONG                     0x2000  // long number
-#define TT_UNSIGNED                 0x4000  // unsigned number
+#define TT_FLOAT                    0x0800  ///< floating point number
+#define TT_INTEGER                  0x1000  ///< integer number
+#define TT_LONG                     0x2000  ///< long number
+#define TT_UNSIGNED                 0x4000  ///< unsigned number
 // punctuation sub type
 //--------------------
 #define P_RSHIFT_ASSIGN             1
@@ -152,86 +152,98 @@
 //-------------
 //      the length of the name
 
-// punctuation
+/**
+ * @struct punctuation_s
+ * @typedef punctuation_t
+ * @brief Punctuation
+ */
 typedef struct punctuation_s
 {
-	char *p;                        // punctuation character(s)
-	int n;                          // punctuation indication
-	struct punctuation_s *next;     // next punctuation
+	char *p;                            ///< punctuation character(s)
+	int n;                              ///< punctuation indication
+	struct punctuation_s *next;         ///< next punctuation
 } punctuation_t;
 
-// token
+/**
+ * @struct token_s
+ * @typedef token_t
+ * @brief Token
+ */
 typedef struct token_s
 {
-	char string[MAX_TOKEN];         // available token
-	int type;                       // last read token type
-	int subtype;                    // last read token sub type
+	char string[MAX_TOKEN];             ///< available token
+	int type;                           ///< last read token type
+	int subtype;                        ///< last read token sub type
 #ifdef NUMBERVALUE
-	unsigned long int intvalue; // integer value
-	long double floatvalue;         // floating point value
+	unsigned long int intvalue;         ///< integer value
+	long double floatvalue;             ///< floating point value
 #endif //NUMBERVALUE
-	char *whitespace_p;             // start of white space before token
-	char *endwhitespace_p;          // start of white space before token
-	int line;                       // line the token was on
-	int linescrossed;               // lines crossed in white space
-	struct token_s *next;           // next token in chain
+	char *whitespace_p;                 ///< start of white space before token
+	char *endwhitespace_p;              ///< start of white space before token
+	int line;                           ///< line the token was on
+	int linescrossed;                   ///< lines crossed in white space
+	struct token_s *next;               ///< next token in chain
 } token_t;
 
-//script file
+/**
+ * @struct script_s
+ * @typedef script_t
+ * @brief Script file
+ */
 typedef struct script_s
 {
-	char filename[_MAX_PATH];       //file name of the script
-	char *buffer;                   //buffer containing the script
-	char *script_p;                 // current pointer in the script
-	char *end_p;                    // pointer to the end of the script
-	char *lastscript_p;             // script pointer before reading token
-	char *whitespace_p;             // begin of the white space
-	char *endwhitespace_p;          // end of the white space
-	int length;                     // length of the script in bytes
-	int line;                       // current line in script
-	int lastline;                   // line before reading token
-	int tokenavailable;             // set by UnreadLastToken
-	int flags;                      // several script flags
-	punctuation_t *punctuations;    // the punctuations used in the script
+	char filename[_MAX_PATH];           ///< file name of the script
+	char *buffer;                       ///< buffer containing the script
+	char *script_p;                     ///< current pointer in the script
+	char *end_p;                        ///< pointer to the end of the script
+	char *lastscript_p;                 ///< script pointer before reading token
+	char *whitespace_p;                 ///< begin of the white space
+	char *endwhitespace_p;              ///< end of the white space
+	int length;                         ///< length of the script in bytes
+	int line;                           ///< current line in script
+	int lastline;                       ///< line before reading token
+	int tokenavailable;                 ///< set by UnreadLastToken
+	int flags;                          ///< several script flags
+	punctuation_t *punctuations;        ///< the punctuations used in the script
 	punctuation_t **punctuationtable;
-	token_t token;                  // available token
-	struct script_s *next;          // next script in a chain
+	token_t token;                      ///< available token
+	struct script_s *next;              ///< next script in a chain
 } script_t;
 
 // read a token from the script
 int PS_ReadToken(script_t *script, token_t *token);
 // expect a certain token
-int PS_ExpectTokenString(script_t *script, char *string);
+//int PS_ExpectTokenString(script_t *script, const char *string);
 // expect a certain token type
 int PS_ExpectTokenType(script_t *script, int type, int subtype, token_t *token);
 // expect a token
 int PS_ExpectAnyToken(script_t *script, token_t *token);
 // returns true when the token is available
-int PS_CheckTokenString(script_t *script, char *string);
-// returns true an reads the token when a token with the given type is available
-int PS_CheckTokenType(script_t *script, int type, int subtype, token_t *token);
+//int PS_CheckTokenString(script_t *script, char *string);
+// returns true and reads the token when a token with the given type is available
+//int PS_CheckTokenType(script_t *script, int type, int subtype, token_t *token);
 // skip tokens until the given token string is read
-int PS_SkipUntilString(script_t *script, char *string);
+//int PS_SkipUntilString(script_t *script, const char *string);
 // unread the last token read from the script
-void PS_UnreadLastToken(script_t *script);
+//void PS_UnreadLastToken(script_t *script);
 // unread the given token
-void PS_UnreadToken(script_t *script, token_t *token);
+//void PS_UnreadToken(script_t *script, token_t *token);
 // returns the next character of the read white space, returns NULL if none
-char PS_NextWhiteSpaceChar(script_t *script);
+//char PS_NextWhiteSpaceChar(script_t *script);
 // remove any leading and trailing double quotes from the token
 void StripDoubleQuotes(char *string);
 // remove any leading and trailing single quotes from the token
-void StripSingleQuotes(char *string);
+//void StripSingleQuotes(char *string);
 // read a possible signed integer
-signed long int ReadSignedInt(script_t *script);
+//signed long int ReadSignedInt(script_t *script);
 // read a possible signed floating point number
-long double ReadSignedFloat(script_t *script);
+//long double ReadSignedFloat(script_t *script);
 // set an array with punctuations, NULL restores default C/C++ set
 void SetScriptPunctuations(script_t *script, punctuation_t *p);
 // set script flags
-void SetScriptFlags(script_t *script, int flags);
+//void SetScriptFlags(script_t *script, int flags);
 // get script flags
-int GetScriptFlags(script_t *script);
+//int GetScriptFlags(script_t *script);
 // reset a script
 void ResetScript(script_t *script);
 // returns true if at the end of the script
@@ -241,14 +253,14 @@ char *PunctuationFromNum(script_t *script, int num);
 // load a script from the given file at the given offset with the given length
 script_t *LoadScriptFile(const char *filename);
 // load a script from the given memory with the given length
-script_t *LoadScriptMemory(char *ptr, int length, char *name);
+script_t *LoadScriptMemory(const char *ptr, int length, const char *name);
 // free a script
 void FreeScript(script_t *script);
 // set the base folder to load files from
-void PS_SetBaseFolder(char *path);
+void PS_SetBaseFolder(const char *path);
 // print a script error with filename and line number
-void QDECL ScriptError(script_t *script, char *str, ...) __attribute__ ((format(printf, 2, 3)));
+void QDECL ScriptError(script_t *script, const char *str, ...) __attribute__ ((format(printf, 2, 3)));
 // print a script warning with filename and line number
-void QDECL ScriptWarning(script_t *script, char *str, ...) __attribute__ ((format(printf, 2, 3)));
+void QDECL ScriptWarning(script_t *script, const char *str, ...) __attribute__ ((format(printf, 2, 3)));
 
 #endif // #ifndef INCLUDE_L_SCRIPT_H

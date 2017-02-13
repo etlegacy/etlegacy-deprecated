@@ -4,7 +4,7 @@
  * Copyright (C) 2010-2011 Robert Beckebans <trebor_7@users.sourceforge.net>
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -35,6 +35,11 @@
 
 #include "tr_local.h"
 
+/**
+ * @brief R_CheckFBO
+ * @param[in] fbo
+ * @return
+ */
 qboolean R_CheckFBO(const FBO_t *fbo)
 {
 	int code;
@@ -87,9 +92,16 @@ qboolean R_CheckFBO(const FBO_t *fbo)
 	return qfalse;
 }
 
+/**
+ * @brief R_CreateFBO
+ * @param[in] name
+ * @param[in] width
+ * @param[in] height
+ * @return
+ */
 FBO_t *R_CreateFBO(const char *name, int width, int height)
 {
-	int i = 0;
+	int   i = 0;
 	FBO_t *fbo;
 
 	if (strlen(name) >= MAX_QPATH)
@@ -118,12 +130,12 @@ FBO_t *R_CreateFBO(const char *name, int width, int height)
 	fbo->width  = width;
 	fbo->height = height;
 
-	for(; i < 16; i++)
+	for (; i < 16; i++)
 	{
 		fbo->colorBuffers[i].buffer = 0;
 	}
-	fbo->depthBuffer.buffer = 0;
-	fbo->stencilBuffer.buffer = 0;
+	fbo->depthBuffer.buffer              = 0;
+	fbo->stencilBuffer.buffer            = 0;
 	fbo->packedDepthStencilBuffer.buffer = 0;
 
 	glGenFramebuffers(1, &fbo->frameBuffer);
@@ -131,16 +143,15 @@ FBO_t *R_CreateFBO(const char *name, int width, int height)
 	return fbo;
 }
 
-/*
-================
-R_CreateFBOColorBuffer
-
-Framebuffer must be bound
-================
-*/
+/**
+ * @brief Framebuffer must be bound
+ * @param[in,out] fbo
+ * @param[in] format
+ * @param[in] index
+ */
 void R_CreateFBOColorBuffer(FBO_t *fbo, int format, int index)
 {
-	qboolean absent;
+	qboolean      absent;
 	BufferImage_t *bufferImage;
 
 	if (index < 0 || index >= glConfig2.maxColorAttachments)
@@ -179,9 +190,14 @@ void R_CreateFBOColorBuffer(FBO_t *fbo, int format, int index)
 	GL_CheckErrors();
 }
 
+/**
+ * @brief R_CreateFBODepthBuffer
+ * @param[in,out] fbo
+ * @param[in] format
+ */
 void R_CreateFBODepthBuffer(FBO_t *fbo, int format)
 {
-	qboolean absent;
+	qboolean      absent;
 	BufferImage_t *bufferImage;
 
 	if (format != GL_DEPTH_COMPONENT &&
@@ -212,9 +228,14 @@ void R_CreateFBODepthBuffer(FBO_t *fbo, int format)
 	GL_CheckErrors();
 }
 
+/**
+ * @brief R_CreateFBOStencilBuffer
+ * @param[in,out] fbo
+ * @param[in] format
+ */
 void R_CreateFBOStencilBuffer(FBO_t *fbo, int format)
 {
-	qboolean absent;
+	qboolean      absent;
 	BufferImage_t *bufferImage;
 
 	if (format != GL_STENCIL_INDEX &&
@@ -226,7 +247,7 @@ void R_CreateFBOStencilBuffer(FBO_t *fbo, int format)
 		return;
 	}
 
-	bufferImage = &fbo->stencilBuffer;
+	bufferImage         = &fbo->stencilBuffer;
 	bufferImage->format = format;
 
 	absent = bufferImage->buffer == 0;
@@ -247,9 +268,14 @@ void R_CreateFBOStencilBuffer(FBO_t *fbo, int format)
 	GL_CheckErrors();
 }
 
+/**
+ * @brief R_CreateFBOPackedDepthStencilBuffer
+ * @param[in,out] fbo
+ * @param[in] format
+ */
 void R_CreateFBOPackedDepthStencilBuffer(FBO_t *fbo, int format)
 {
-	qboolean absent;
+	qboolean      absent;
 	BufferImage_t *bufferImage;
 
 	if (format != GL_DEPTH_STENCIL && format != GL_DEPTH24_STENCIL8)
@@ -258,7 +284,7 @@ void R_CreateFBOPackedDepthStencilBuffer(FBO_t *fbo, int format)
 		return;
 	}
 
-	bufferImage = &fbo->packedDepthStencilBuffer;
+	bufferImage         = &fbo->packedDepthStencilBuffer;
 	bufferImage->format = format;
 
 	absent = bufferImage->buffer == 0;
@@ -280,6 +306,11 @@ void R_CreateFBOPackedDepthStencilBuffer(FBO_t *fbo, int format)
 	GL_CheckErrors();
 }
 
+/**
+ * @brief R_AttachFBOTexture1D
+ * @param[in] texId
+ * @param[in] index
+ */
 void R_AttachFBOTexture1D(int texId, int index)
 {
 	if (index < 0 || index >= glConfig2.maxColorAttachments)
@@ -291,6 +322,12 @@ void R_AttachFBOTexture1D(int texId, int index)
 	glFramebufferTexture1D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, GL_TEXTURE_1D, texId, 0);
 }
 
+/**
+ * @brief R_AttachFBOTexture2D
+ * @param[in] target
+ * @param[in] texId
+ * @param[in] index
+ */
 void R_AttachFBOTexture2D(int target, int texId, int index)
 {
 	if (target != GL_TEXTURE_2D && (target < GL_TEXTURE_CUBE_MAP_POSITIVE_X || target > GL_TEXTURE_CUBE_MAP_NEGATIVE_Z))
@@ -308,6 +345,12 @@ void R_AttachFBOTexture2D(int target, int texId, int index)
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, target, texId, 0);
 }
 
+/**
+ * @brief R_AttachFBOTexture3D
+ * @param[in] texId
+ * @param[in] index
+ * @param[in] zOffset
+ */
 void R_AttachFBOTexture3D(int texId, int index, int zOffset)
 {
 	if (index < 0 || index >= glConfig2.maxColorAttachments)
@@ -319,17 +362,32 @@ void R_AttachFBOTexture3D(int texId, int index, int zOffset)
 	glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, GL_TEXTURE_3D, texId, 0, zOffset);
 }
 
+/**
+ * @brief R_AttachFBOTextureDepth
+ * @param[in] texId
+ */
 void R_AttachFBOTextureDepth(int texId)
 {
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texId, 0);
 }
 
+/**
+ * @brief R_AttachFBOTexturePackedDepthStencil
+ * @param[in] texId
+ */
 void R_AttachFBOTexturePackedDepthStencil(int texId)
 {
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texId, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texId, 0);
 }
 
+/**
+ * @brief R_CopyToFBO
+ * @param[in] from
+ * @param[in] to
+ * @param[in] mask
+ * @param[in] filter
+ */
 void R_CopyToFBO(FBO_t *from, FBO_t *to, GLuint mask, GLuint filter)
 {
 	if (glConfig2.framebufferBlitAvailable)
@@ -362,6 +420,10 @@ void R_CopyToFBO(FBO_t *from, FBO_t *to, GLuint mask, GLuint filter)
 	}
 }
 
+/**
+ * @brief R_BindFBO
+ * @param[in] fbo
+ */
 void R_BindFBO(FBO_t *fbo)
 {
 	if (!fbo)
@@ -395,6 +457,9 @@ void R_BindFBO(FBO_t *fbo)
 	}
 }
 
+/**
+ * @brief R_BindNullFBO
+ */
 void R_BindNullFBO(void)
 {
 	Ren_LogComment("--- R_BindNullFBO ---\n");
@@ -407,6 +472,9 @@ void R_BindNullFBO(void)
 	}
 }
 
+/**
+ * @brief R_SetDefaultFBO
+ */
 void R_SetDefaultFBO(void)
 {
 	if (glConfig2.framebufferObjectAvailable)
@@ -417,6 +485,9 @@ void R_SetDefaultFBO(void)
 	}
 }
 
+/**
+ * @brief R_CheckDefaultBuffer
+ */
 static void R_CheckDefaultBuffer()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -439,6 +510,14 @@ static void R_CheckDefaultBuffer()
 	}
 }
 
+/**
+ * @brief R_AttachColorBufferToFBO
+ * @param[in,out] fbo
+ * @param[in] format
+ * @param[in] target
+ * @param[in] texture
+ * @param[in] index
+ */
 void R_AttachColorBufferToFBO(FBO_t *fbo, int format, int target, image_t *texture, int index)
 {
 	R_CreateFBOColorBuffer(fbo, format, index);
@@ -446,9 +525,15 @@ void R_AttachColorBufferToFBO(FBO_t *fbo, int format, int target, image_t *textu
 	fbo->colorBuffers[index].texture = texture;
 }
 
+/**
+ * @brief R_CreateReadyFBO
+ * @param[in] name
+ * @param[in] size
+ * @return
+ */
 FBO_t *R_CreateReadyFBO(const char *name, float size)
 {
-	int width, height;
+	int   width, height;
 	FBO_t *tmp;
 
 	if (glConfig2.textureNPOTAvailable)
@@ -469,6 +554,9 @@ FBO_t *R_CreateReadyFBO(const char *name, float size)
 	return tmp;
 }
 
+/**
+ * @brief R_InitFBOs
+ */
 void R_InitFBOs(void)
 {
 	int i;
@@ -490,65 +578,8 @@ void R_InitFBOs(void)
 	// make sure the render thread is stopped
 	R_IssuePendingRenderCommands();
 
-	if (DS_STANDARD_ENABLED())
-	{
-		// geometricRender FBO as G-Buffer for deferred shading
-		Ren_Developer("Deferred Shading enabled\n");
-
-		if (glConfig2.textureNPOTAvailable)
-		{
-			width  = glConfig.vidWidth;
-			height = glConfig.vidHeight;
-		}
-		else
-		{
-			width  = NearestPowerOfTwo(glConfig.vidWidth);
-			height = NearestPowerOfTwo(glConfig.vidHeight);
-		}
-
-
-		tr.geometricRenderFBO = R_CreateFBO("_geometricRender", width, height);
-		R_BindFBO(tr.geometricRenderFBO);
-
-		#if 0
-		if (glConfig2.framebufferPackedDepthStencilAvailable)
-		{
-			R_CreateFBOPackedDepthStencilBuffer(tr.geometricRenderFBO, GL_DEPTH24_STENCIL8);
-			R_AttachFBOTexturePackedDepthStencil(tr.depthRenderImage->texnum);
-		}
-		else if (glConfig.hardwareType == GLHW_ATI || glConfig.hardwareType == GLHW_ATI_DX10) // || glConfig.hardwareType == GLHW_NV_DX10)
-		{
-			R_CreateFBODepthBuffer(tr.geometricRenderFBO, GL_DEPTH_COMPONENT16_ARB);
-			R_AttachFBOTextureDepth(tr.depthRenderImage->texnum);
-		}
-		else
-		#endif
-		{
-			R_CreateFBODepthBuffer(tr.geometricRenderFBO, GL_DEPTH_COMPONENT24_ARB);
-			R_AttachFBOTextureDepth(tr.depthRenderImage->texnum);
-		}
-
-		// enable all attachments as draw buffers
-		//glDrawBuffersARB(4, geometricRenderTargets);
-
-		R_CreateFBOColorBuffer(tr.geometricRenderFBO, GL_RGBA, 0);
-		R_AttachFBOTexture2D(GL_TEXTURE_2D, tr.deferredRenderFBOImage->texnum, 0);
-
-		R_CreateFBOColorBuffer(tr.geometricRenderFBO, GL_RGBA, 1);
-		R_AttachFBOTexture2D(GL_TEXTURE_2D, tr.deferredDiffuseFBOImage->texnum, 1);
-
-		R_CreateFBOColorBuffer(tr.geometricRenderFBO, GL_RGBA, 2);
-		R_AttachFBOTexture2D(GL_TEXTURE_2D, tr.deferredNormalFBOImage->texnum, 2);
-
-		R_CreateFBOColorBuffer(tr.geometricRenderFBO, GL_RGBA, 3);
-		R_AttachFBOTexture2D(GL_TEXTURE_2D, tr.deferredSpecularFBOImage->texnum, 3);
-
-		R_CheckFBO(tr.geometricRenderFBO);
-	}
-	else
 	{
 		// forward shading
-
 		if (glConfig2.textureNPOTAvailable)
 		{
 			width  = glConfig.vidWidth;
@@ -574,23 +605,9 @@ void R_InitFBOs(void)
 		}
 		R_AttachFBOTexture2D(GL_TEXTURE_2D, tr.deferredRenderFBOImage->texnum, 0);
 
-#if 0
-		if (glConfig2.framebufferPackedDepthStencilAvailable)
-		{
-			R_CreateFBOPackedDepthStencilBuffer(tr.deferredRenderFBO, GL_DEPTH24_STENCIL8);
-			R_AttachFBOTexturePackedDepthStencil(tr.depthRenderImage->texnum);
-		}
-		else if (glConfig.hardwareType == GLHW_ATI || glConfig.hardwareType == GLHW_ATI_DX10) // || glConfig.hardwareType == GLHW_NV_DX10)
-		{
-			R_CreateFBODepthBuffer(tr.deferredRenderFBO, GL_DEPTH_COMPONENT16_ARB);
-			R_AttachFBOTextureDepth(tr.depthRenderImage->texnum);
-		}
-		else
-#endif
-		{
-			R_CreateFBODepthBuffer(tr.deferredRenderFBO, GL_DEPTH_COMPONENT24_ARB);
-			R_AttachFBOTextureDepth(tr.depthRenderImage->texnum);
-		}
+		R_CreateFBODepthBuffer(tr.deferredRenderFBO, GL_DEPTH_COMPONENT24_ARB);
+		R_AttachFBOTextureDepth(tr.depthRenderImage->texnum);
+
 		R_CheckFBO(tr.deferredRenderFBO);
 	}
 
@@ -610,17 +627,8 @@ void R_InitFBOs(void)
 		tr.occlusionRenderFBO = R_CreateFBO("_occlusionRender", width, height);
 		R_BindFBO(tr.occlusionRenderFBO);
 
-		if (glConfig.hardwareType == GLHW_ATI_DX10)
-		{
-			//R_CreateFBOColorBuffer(tr.occlusionRenderFBO, GL_ALPHA16F_ARB, 0);
-			R_CreateFBODepthBuffer(tr.occlusionRenderFBO, GL_DEPTH_COMPONENT16_ARB);
-		}
-		else if (glConfig.hardwareType == GLHW_NV_DX10)
-		{
-			//R_CreateFBOColorBuffer(tr.occlusionRenderFBO, GL_ALPHA32F_ARB, 0);
-			R_CreateFBODepthBuffer(tr.occlusionRenderFBO, GL_DEPTH_COMPONENT24_ARB);
-		}
-		else if (glConfig2.framebufferPackedDepthStencilAvailable)
+#if 0
+		if (glConfig2.framebufferPackedDepthStencilAvailable)
 		{
 			//R_CreateFBOColorBuffer(tr.occlusionRenderFBO, GL_ALPHA32F_ARB, 0);
 			R_CreateFBOPackedDepthStencilBuffer(tr.occlusionRenderFBO, GL_DEPTH24_STENCIL8);
@@ -628,8 +636,11 @@ void R_InitFBOs(void)
 		else
 		{
 			//R_CreateFBOColorBuffer(tr.occlusionRenderFBO, GL_RGBA, 0);
-			R_CreateFBODepthBuffer(tr.occlusionRenderFBO, GL_DEPTH_COMPONENT24_ARB);
+			R_CreateFBODepthBuffer(tr.occlusionRenderFBO, GL_DEPTH_COMPONENT24);
 		}
+#else
+		R_CreateFBODepthBuffer(tr.occlusionRenderFBO, GL_DEPTH_COMPONENT24);
+#endif
 
 		R_CreateFBOColorBuffer(tr.occlusionRenderFBO, GL_RGBA, 0);
 		R_AttachFBOTexture2D(GL_TEXTURE_2D, tr.occlusionRenderFBOImage->texnum, 0);
@@ -648,46 +659,28 @@ void R_InitFBOs(void)
 			R_BindFBO(tr.shadowMapFBO[i]);
 
 
-			if ((glConfig.driverType == GLDRV_OPENGL3) || (glConfig.hardwareType == GLHW_NV_DX10 || glConfig.hardwareType == GLHW_ATI_DX10))
+			if (r_shadows->integer == SHADOWING_ESM32)
 			{
-				if (r_shadows->integer == SHADOWING_ESM32)
+				R_CreateFBOColorBuffer(tr.shadowMapFBO[i], GL_ALPHA32F_ARB, 0);
+			}
+			else if (r_shadows->integer == SHADOWING_VSM32)
+			{
+				R_CreateFBOColorBuffer(tr.shadowMapFBO[i], GL_LUMINANCE_ALPHA32F_ARB, 0);
+			}
+			else if (r_shadows->integer == SHADOWING_EVSM32)
+			{
+				if (r_evsmPostProcess->integer)
 				{
 					R_CreateFBOColorBuffer(tr.shadowMapFBO[i], GL_ALPHA32F_ARB, 0);
 				}
-				else if (r_shadows->integer == SHADOWING_VSM32)
-				{
-					R_CreateFBOColorBuffer(tr.shadowMapFBO[i], GL_LUMINANCE_ALPHA32F_ARB, 0);
-				}
-				else if (r_shadows->integer == SHADOWING_EVSM32)
-				{
-					if (r_evsmPostProcess->integer)
-					{
-						R_CreateFBOColorBuffer(tr.shadowMapFBO[i], GL_ALPHA32F_ARB, 0);
-					}
-					else
-					{
-						R_CreateFBOColorBuffer(tr.shadowMapFBO[i], GL_RGBA32F_ARB, 0);
-					}
-				}
 				else
 				{
-					R_CreateFBOColorBuffer(tr.shadowMapFBO[i], GL_RGBA16F_ARB, 0);
+					R_CreateFBOColorBuffer(tr.shadowMapFBO[i], GL_RGBA32F_ARB, 0);
 				}
 			}
 			else
 			{
-				if (r_shadows->integer == SHADOWING_ESM16)
-				{
-					R_CreateFBOColorBuffer(tr.shadowMapFBO[i], GL_ALPHA16F_ARB, 0);
-				}
-				else if (r_shadows->integer == SHADOWING_VSM16)
-				{
-					R_CreateFBOColorBuffer(tr.shadowMapFBO[i], GL_LUMINANCE_ALPHA16F_ARB, 0);
-				}
-				else
-				{
-					R_CreateFBOColorBuffer(tr.shadowMapFBO[i], GL_RGBA16F_ARB, 0);
-				}
+				R_CreateFBOColorBuffer(tr.shadowMapFBO[i], GL_RGBA16F_ARB, 0);
 			}
 
 			R_CreateFBODepthBuffer(tr.shadowMapFBO[i], GL_DEPTH_COMPONENT24_ARB);
@@ -703,42 +696,24 @@ void R_InitFBOs(void)
 			tr.sunShadowMapFBO[i] = R_CreateFBO(va("_sunShadowMap%d", i), width, height);
 			R_BindFBO(tr.sunShadowMapFBO[i]);
 
-			if ((glConfig.driverType == GLDRV_OPENGL3) || (glConfig.hardwareType == GLHW_NV_DX10 || glConfig.hardwareType == GLHW_ATI_DX10))
+			if (r_shadows->integer == SHADOWING_ESM32)
 			{
-				if (r_shadows->integer == SHADOWING_ESM32)
+				R_CreateFBOColorBuffer(tr.sunShadowMapFBO[i], GL_ALPHA32F_ARB, 0);
+			}
+			else if (r_shadows->integer == SHADOWING_VSM32)
+			{
+				R_CreateFBOColorBuffer(tr.sunShadowMapFBO[i], GL_LUMINANCE_ALPHA32F_ARB, 0);
+			}
+			else if (r_shadows->integer == SHADOWING_EVSM32)
+			{
+				if (!r_evsmPostProcess->integer)
 				{
-					R_CreateFBOColorBuffer(tr.sunShadowMapFBO[i], GL_ALPHA32F_ARB, 0);
-				}
-				else if (r_shadows->integer == SHADOWING_VSM32)
-				{
-					R_CreateFBOColorBuffer(tr.sunShadowMapFBO[i], GL_LUMINANCE_ALPHA32F_ARB, 0);
-				}
-				else if (r_shadows->integer == SHADOWING_EVSM32)
-				{
-					if (!r_evsmPostProcess->integer)
-					{
-						R_CreateFBOColorBuffer(tr.sunShadowMapFBO[i], GL_RGBA32F_ARB, 0);
-					}
-				}
-				else
-				{
-					R_CreateFBOColorBuffer(tr.sunShadowMapFBO[i], GL_RGBA16F_ARB, 0);
+					R_CreateFBOColorBuffer(tr.sunShadowMapFBO[i], GL_RGBA32F_ARB, 0);
 				}
 			}
 			else
 			{
-				if (r_shadows->integer == SHADOWING_ESM16)
-				{
-					R_CreateFBOColorBuffer(tr.sunShadowMapFBO[i], GL_ALPHA16F_ARB, 0);
-				}
-				else if (r_shadows->integer == SHADOWING_VSM16)
-				{
-					R_CreateFBOColorBuffer(tr.sunShadowMapFBO[i], GL_LUMINANCE_ALPHA16F_ARB, 0);
-				}
-				else
-				{
-					R_CreateFBOColorBuffer(tr.sunShadowMapFBO[i], GL_RGBA16F_ARB, 0);
-				}
+				R_CreateFBOColorBuffer(tr.sunShadowMapFBO[i], GL_RGBA16F_ARB, 0);
 			}
 
 			R_CreateFBODepthBuffer(tr.sunShadowMapFBO[i], GL_DEPTH_COMPONENT24_ARB);
@@ -923,6 +898,9 @@ void R_InitFBOs(void)
 	R_BindNullFBO();
 }
 
+/**
+ * @brief R_ShutdownFBOs
+ */
 void R_ShutdownFBOs(void)
 {
 	int   i, j;
@@ -966,6 +944,9 @@ void R_ShutdownFBOs(void)
 	}
 }
 
+/**
+ * @brief R_FBOList_f
+ */
 void R_FBOList_f(void)
 {
 	int   i;

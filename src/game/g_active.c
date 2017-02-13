@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -43,17 +43,18 @@
 #endif
 
 /**
- * @param[in,out] player Player Entity
+ * @brief Called just before a snapshot is sent to the given player.
  *
- * Called just before a snapshot is sent to the given player.
- * Totals up all damage and generates both the player_state_t
+ * @details Totals up all damage and generates both the player_state_t
  * damage values to that client for pain blends and kicks, and
  * global pain sound events for all clients.
+ *
+ * @param[in,out] player Player Entity
  */
 void P_DamageFeedback(gentity_t *player)
 {
 	gclient_t *client = player->client;
-	float     count;
+	int       count;
 
 	if (client->ps.pm_type == PM_DEAD)
 	{
@@ -88,8 +89,8 @@ void P_DamageFeedback(gentity_t *player)
 		vec3_t angles;
 
 		vectoangles(client->damage_from, angles);
-		client->ps.damagePitch = angles[PITCH] / 360.0 * 256;
-		client->ps.damageYaw   = angles[YAW] / 360.0 * 256;
+		client->ps.damagePitch = angles[PITCH] / 360.0f * 256;
+		client->ps.damageYaw   = angles[YAW] / 360.0f * 256;
 	}
 
 	// play an apropriate pain sound
@@ -225,19 +226,26 @@ void G_SetClientSound(gentity_t *ent)
 }
 
 #ifdef FEATURE_OMNIBOT
+/**
+ * @brief PushBot
+ * @param[in] ent
+ * @param[in] other
+ */
 void PushBot(gentity_t *ent, gentity_t *other)
 {
 	vec3_t dir, ang, f, r;
 	float  oldspeed;
 	float  s;
 
-	// dont push when mounted in certain stationary weapons or scripted not to be pushed
-	if (other->client)
+	if (!other->client)
 	{
-		if (Bot_Util_AllowPush(other->client->ps.weapon) == qfalse || !other->client->sess.botPush)
-		{
-			return;
-		}
+		return;
+	}
+
+	// dont push when mounted in certain stationary weapons or scripted not to be pushed
+	if (Bot_Util_AllowPush(other->client->ps.weapon) == qfalse || !other->client->sess.botPush)
+	{
+		return;
 	}
 
 	oldspeed = VectorLength(other->client->ps.velocity);
@@ -254,7 +262,7 @@ void PushBot(gentity_t *ent, gentity_t *other)
 	r[2] = 0;
 
 	VectorMA(other->client->ps.velocity, 200, f, other->client->ps.velocity);
-	s = 100 * ((level.time + (ent->s.number * 1000)) % 4000 < 2000 ? 1.0 : -1.0);
+	s = 100 * ((level.time + (ent->s.number * 1000)) % 4000 < 2000 ? 1.0f : -1.0f);
 	VectorMA(other->client->ps.velocity, s, r, other->client->ps.velocity);
 
 	if (VectorLengthSquared(other->client->ps.velocity) > Square(oldspeed))
@@ -347,6 +355,8 @@ qboolean ReadyToConstruct(gentity_t *ent, gentity_t *constructible, qboolean upd
 //==============================================================
 
 /**
+ * @brief ClientImpacts
+ *
  * @param[in] ent Entity
  * @param[in] pm  Player Move
  */
@@ -492,13 +502,11 @@ void G_TouchTriggers(gentity_t *ent)
 	}
 }
 
-/*
-=================
-G_SpectatorAttackFollow
-
-returns true if a player was found to follow
-=================
-*/
+/**
+ * @brief G_SpectatorAttackFollow
+ * @param ent
+ * @return true if a player was found to follow, otherwise false
+ */
 qboolean G_SpectatorAttackFollow(gentity_t *ent)
 {
 	trace_t       tr;
@@ -536,6 +544,11 @@ qboolean G_SpectatorAttackFollow(gentity_t *ent)
 	return qfalse;
 }
 
+/**
+ * @brief SpectatorThink
+ * @param[in,out] ent
+ * @param[in] ucmd
+ */
 void SpectatorThink(gentity_t *ent, usercmd_t *ucmd)
 {
 	gclient_t *client       = ent->client;
@@ -684,13 +697,14 @@ void SpectatorThink(gentity_t *ent, usercmd_t *ucmd)
 }
 
 /**
- * @return Returns qfalse if the client is dropped
- * @param client Client
- *
  * @brief
  * g_inactivity and g_spectatorinactivity :
  * Values have to be higher then 10 seconds, that is the time after the warn message is sent.
  * (if it's lower than that value, it will not work at all)
+ *
+ * @param[in,out] client Client
+ *
+ * @return Returns qfalse if the client is dropped
  */
 qboolean ClientInactivityTimer(gclient_t *client)
 {
@@ -718,7 +732,7 @@ qboolean ClientInactivityTimer(gclient_t *client)
 	if (client->pers.cmd.forwardmove || client->pers.cmd.rightmove || client->pers.cmd.upmove ||
 	    (client->pers.cmd.wbuttons & (WBUTTON_ATTACK2 | WBUTTON_LEANLEFT | WBUTTON_LEANRIGHT))  ||
 	    (client->pers.cmd.buttons & BUTTON_ATTACK) ||
-	    (client->ps.eFlags & (EF_MOUNTEDTANK | EF_MG42_ACTIVE)) ||
+	    (client->ps.eFlags & (EF_MOUNTEDTANK | EF_MG42_ACTIVE | EF_AAGUN_ACTIVE)) ||
 	    (client->ps.pm_type == PM_DEAD /*&& !(client->ps.eFlags & EF_PLAYDEAD)*/))     // playdead sets PM_DEAD, so check if playing dead ...
 	{
 		client->inactivityWarning = qfalse;
@@ -915,6 +929,7 @@ void ClientTimerActions(gentity_t *ent, int msec)
 }
 
 /**
+ * @brief ClientIntermissionThink
  * @param[in,out] client Client
  */
 void ClientIntermissionThink(gclient_t *client)
@@ -932,6 +947,11 @@ void ClientIntermissionThink(gclient_t *client)
 	client->wbuttons    = client->pers.cmd.wbuttons;
 }
 
+/**
+ * @brief G_FallDamage
+ * @param[in,out] ent
+ * @param[in] event
+ */
 void G_FallDamage(gentity_t *ent, int event)
 {
 	int damage;
@@ -986,11 +1006,11 @@ void G_FallDamage(gentity_t *ent, int event)
 }
 
 /**
+ * @brief Events will be passed on to the clients for presentation,
+ * but any server game effects are handled here
+ *
  * @param[in] ent              Pointer to Entity
  * @param     oldEventSequence Old event sequence number
- *
- * Events will be passed on to the clients for presentation,
- * but any server game effects are handled here
  */
 void ClientEvents(gentity_t *ent, int oldEventSequence)
 {
@@ -1022,6 +1042,13 @@ void ClientEvents(gentity_t *ent, int oldEventSequence)
 		case EV_FIRE_WEAPON_MG42:
 			// reset player disguise on firing mounted mg
 			ent->client->ps.powerups[PW_OPS_DISGUISED] = 0;
+			ent->client->disguiseClientNum             = -1;
+
+			if (g_misc.integer & G_MISC_LOOSE_SPAWN_PROTECTION)
+			{
+				ent->client->ps.powerups[PW_INVULNERABLE] = 0;
+			}
+
 			mg42_fire(ent);
 
 			// Only 1 stats bin for mg42
@@ -1038,8 +1065,15 @@ void ClientEvents(gentity_t *ent, int oldEventSequence)
 
 			// reset player disguise on firing tank mg
 			ent->client->ps.powerups[PW_OPS_DISGUISED] = 0;
+			ent->client->disguiseClientNum             = -1;
+
+			if (g_misc.integer & G_MISC_LOOSE_SPAWN_PROTECTION)
+			{
+				ent->client->ps.powerups[PW_INVULNERABLE] = 0;
+			}
 
 			mountedmg42_fire(ent);
+
 			// Only 1 stats bin for mg42
 #ifndef DEBUG_STATS
 			if (g_gamestate.integer == GS_PLAYING)
@@ -1058,12 +1092,23 @@ void ClientEvents(gentity_t *ent, int oldEventSequence)
 		case EV_FIRE_WEAPON_AAGUN:
 			// reset player disguise on firing aagun
 			ent->client->ps.powerups[PW_OPS_DISGUISED] = 0;
+			ent->client->disguiseClientNum             = -1;
+
+			if (g_misc.integer & G_MISC_LOOSE_SPAWN_PROTECTION)
+			{
+				ent->client->ps.powerups[PW_INVULNERABLE] = 0;
+			}
 
 			aagun_fire(ent);
 			break;
 		case EV_FIRE_WEAPON:
 		case EV_FIRE_WEAPONB:
 		case EV_FIRE_WEAPON_LASTSHOT:
+			if (g_misc.integer & G_MISC_LOOSE_SPAWN_PROTECTION)
+			{
+				ent->client->ps.powerups[PW_INVULNERABLE] = 0;
+			}
+
 			FireWeapon(ent);
 			break;
 		default:
@@ -1073,6 +1118,7 @@ void ClientEvents(gentity_t *ent, int oldEventSequence)
 }
 
 /**
+ * @brief WolfFindMedic
  * @param[in,out] self Current Player Entity
  */
 void WolfFindMedic(gentity_t *self)
@@ -1130,7 +1176,7 @@ void WolfFindMedic(gentity_t *self)
 		end[2] += cl->ps.viewheight;
 
 		trap_Trace(&tr, start, NULL, NULL, end, self->s.number, CONTENTS_SOLID);
-		if (tr.fraction < 0.95)
+		if (tr.fraction < 0.95f)
 		{
 			continue;
 		}
@@ -1153,13 +1199,13 @@ void WolfFindMedic(gentity_t *self)
 }
 
 /**
- * @param[in,out] ent Entity
- *
- * This will be called once for each client frame, which will
+ * @brief This will be called once for each client frame, which will
  * usually be a couple times for each server frame on fast clients.
  *
  * If "g_synchronousClients 1" is set, this will be called exactly
  * once for each server frame, which makes for smooth demo recording.
+ *
+ * @param[in,out] ent Entity
  */
 void ClientThink_real(gentity_t *ent)
 {
@@ -1179,12 +1225,6 @@ void ClientThink_real(gentity_t *ent)
 		client->pmext.centerangles[YAW]   = ent->tagParent->r.currentAngles[YAW];
 		client->pmext.centerangles[PITCH] = ent->tagParent->r.currentAngles[PITCH];
 	}
-
-	/*if (client->cameraPortal) {
-	    G_SetOrigin( client->cameraPortal, client->ps.origin );
-	    trap_LinkEntity(client->cameraPortal);
-	    VectorCopy( client->cameraOrigin, client->cameraPortal->s.origin2);
-	}*/
 
 	client->ps.ammo[WP_ARTY] = 0;
 	if (!G_AvailableAirstrikes(ent))
@@ -1284,7 +1324,7 @@ void ClientThink_real(gentity_t *ent)
 		return;
 	}
 
-	if (!(ent->r.svFlags & SVF_BOT) && level.time - client->pers.lastCCPulseTime > 2000)
+	if (!(ent->r.svFlags & SVF_BOT) && level.time - client->pers.lastCCPulseTime > 1000)
 	{
 		G_SendMapEntityInfo(ent);
 		client->pers.lastCCPulseTime = level.time;
@@ -1364,7 +1404,7 @@ void ClientThink_real(gentity_t *ent)
 	// set up for pmove
 	oldEventSequence = client->ps.eventSequence;
 
-	client->currentAimSpreadScale = (float)client->ps.aimSpreadScale / 255.0;
+	client->currentAimSpreadScale = client->ps.aimSpreadScale / 255.0f;
 
 	memset(&pm, 0, sizeof(pm));
 
@@ -1609,38 +1649,18 @@ void ClientThink_real(gentity_t *ent)
 	}
 
 	// debug hitboxes
-	if (g_debugHitboxes.integer == 2)
+	if (g_debugPlayerHitboxes.integer & 2)
 	{
-		gentity_t    *bboxEnt, *head;
-		vec3_t       b1, b2;
+		gentity_t    *head;
 		vec3_t       maxs;
 		grefEntity_t refent;
 
-		VectorCopy(ent->r.currentOrigin, b1);
-		VectorCopy(ent->r.currentOrigin, b2);
-		VectorAdd(b1, ent->r.mins, b1);
 		VectorCopy(ent->r.maxs, maxs);
 		maxs[2] = ClientHitboxMaxZ(ent);
-		VectorAdd(b2, maxs, b2);
-		bboxEnt = G_TempEntity(b1, EV_RAILTRAIL);
-		VectorCopy(b2, bboxEnt->s.origin2);
-		bboxEnt->s.dmgFlags  = 1;
-		bboxEnt->s.angles[0] = 0;
-		bboxEnt->s.angles[1] = 255;
-		bboxEnt->s.angles[2] = 0;
+		G_RailBox(ent->r.currentOrigin, ent->r.mins, maxs, tv(0.f, 0.f, 1.f), ent->s.number);
 
 		head = G_BuildHead(ent, &refent, qtrue);
-		VectorCopy(head->r.currentOrigin, b1);
-		VectorCopy(head->r.currentOrigin, b2);
-		VectorAdd(b1, head->r.mins, b1);
-		VectorAdd(b2, head->r.maxs, b2);
-		bboxEnt = G_TempEntity(b1, EV_RAILTRAIL);
-		VectorCopy(b2, bboxEnt->s.origin2);
-		bboxEnt->s.dmgFlags  = 1;
-		bboxEnt->s.angles[0] = 0;
-		bboxEnt->s.angles[1] = 0;
-		bboxEnt->s.angles[2] = 255;
-
+		G_RailBox(head->r.currentOrigin, head->r.mins, head->r.maxs, tv(0.f, 0.f, 1.f), head->s.number | HITBOXBIT_HEAD);
 		G_FreeEntity(head);
 	}
 
@@ -1666,7 +1686,7 @@ void ClientThink_cmd(gentity_t *ent, usercmd_t *cmd)
 
 /**
  * @brief A new command has arrived from the client
- * @param clientNum Client Number from 0 to MAX_CLIENTS
+ * @param[in] clientNum Client Number from 0 to MAX_CLIENTS
  */
 void ClientThink(int clientNum)
 {
@@ -1693,6 +1713,7 @@ void ClientThink(int clientNum)
 }
 
 /**
+ * @brief G_RunClient
  * @param[in,out] ent Entity
  */
 void G_RunClient(gentity_t *ent)
@@ -1727,6 +1748,7 @@ void G_RunClient(gentity_t *ent)
 }
 
 /**
+ * @brief SpectatorClientEndFrame
  * @param[in,out] ent Spectator Entity
  */
 void SpectatorClientEndFrame(gentity_t *ent)
@@ -1757,7 +1779,6 @@ void SpectatorClientEndFrame(gentity_t *ent)
 		ent->client->ps.stats[STAT_XP]          = ent->client->ps.stats[STAT_XP] & 0x7FFF;
 	}
 
-
 	// if we are doing a chase cam or a remote view, grab the latest info
 	if ((ent->client->sess.spectatorState == SPECTATOR_FOLLOW) || (ent->client->ps.pm_flags & PMF_LIMBO))
 	{
@@ -1784,7 +1805,7 @@ void SpectatorClientEndFrame(gentity_t *ent)
 			ent->client->pers.lastReinforceTime = testtime;
 		}
 
-		if (g_gametype.integer != GT_WOLF_LMS)
+		if (g_gametype.integer != GT_WOLF_LMS && g_gamestate.integer == GS_PLAYING)
 		{
 			if ((g_maxlives.integer > 0 || g_alliedmaxlives.integer > 0 || g_axismaxlives.integer > 0)
 			    && ent->client->ps.persistant[PERS_RESPAWNS_LEFT] == 0)
@@ -1883,7 +1904,7 @@ void SpectatorClientEndFrame(gentity_t *ent)
 				else
 				{
 					int savedScore = ent->client->ps.persistant[PERS_SCORE];
-					
+
 					ent->client->ps                        = cl->ps;
 					ent->client->ps.pm_flags              |= PMF_FOLLOW;
 					ent->client->ps.persistant[PERS_SCORE] = savedScore;
@@ -1925,7 +1946,9 @@ void SpectatorClientEndFrame(gentity_t *ent)
 // to be safe to return them to PLAYERSOLID
 
 /**
+ * @brief StuckInClient
  * @param[in,out] self Current Player Entity
+ * @return
  */
 qboolean StuckInClient(gentity_t *self)
 {
@@ -1983,6 +2006,11 @@ qboolean StuckInClient(gentity_t *self)
 extern vec3_t playerMins, playerMaxs;
 #define WR_PUSHAMOUNT 25
 
+/**
+ * @brief WolfRevivePushEnt
+ * @param[in,out] self
+ * @param[in,out] other
+ */
 void WolfRevivePushEnt(gentity_t *self, gentity_t *other)
 {
 	vec3_t dir, push;
@@ -2012,8 +2040,10 @@ void WolfRevivePushEnt(gentity_t *self, gentity_t *other)
 }
 
 /**
+ * @brief WolfReviveBbox
  * @param[in,out] self Current Player Entity
- * @note completely revived for capsules
+ *
+ * @note Completely revived for capsules
  */
 void WolfReviveBbox(gentity_t *self)
 {
@@ -2080,17 +2110,17 @@ void WolfReviveBbox(gentity_t *self)
 }
 
 /**
- * @param[in,out] ent Entity
- *
- * Called at the end of each server frame for each connected client
+ * @brief Called at the end of each server frame for each connected client
  * A fast client will have multiple ClientThink for each ClientEndFrame,
  * while a slow client may have multiple ClientEndFrame between ClientThink.
+ *
+ * @param[in,out] ent Entity
  */
 void ClientEndFrame(gentity_t *ent)
 {
 	int i, frames;
 
-	// don't count skulled player time
+	// count player time
 	if (g_gamestate.integer == GS_PLAYING && !(ent->client->ps.persistant[PERS_RESPAWNS_LEFT] == 0 && (ent->client->ps.pm_flags & PMF_LIMBO)))
 	{
 		if (ent->client->sess.sessionTeam == TEAM_AXIS)
@@ -2103,6 +2133,20 @@ void ClientEndFrame(gentity_t *ent)
 		}
 	}
 
+	// don't count skulled player time
+	if (g_gamestate.integer == GS_PLAYING && !(ent->client->sess.sessionTeam == TEAM_SPECTATOR || ent->client->ps.pm_flags & PMF_LIMBO || ent->client->ps.stats[STAT_HEALTH] <= 0))
+	{
+		ent->client->sess.time_played += level.time - level.previousTime;
+	}
+
+#ifdef FEATURE_RATING
+	if (g_skillRating.integer && !(level.time % 2000))
+	{
+		level.axisProb   = G_CalculateWinProbability(TEAM_AXIS);
+		level.alliesProb = 1.0f - level.axisProb;
+	}
+#endif
+
 	// used for informing of speclocked teams.
 	// Zero out here and set only for certain specs
 	ent->client->ps.powerups[PW_BLACKOUT] = 0;
@@ -2113,28 +2157,37 @@ void ClientEndFrame(gentity_t *ent)
 		return;
 	}
 
-	// turn off any expired powerups
+	// turn off any expired powerups (we do this for PW_INVULNERABLE and PW_ADRENALINE only !!!))
 	// range changed for MV
-	for (i = 0 ; i < PW_NUM_POWERUPS ; i++)
+	for (i = 1 ; i < PW_NUM_POWERUPS ; i++)  // start st PW_NONE + 1, PW_NONE is unused
 	{
-		// FIXME: do a switch
-		// these aren't dependant on level.time
-		if (i == PW_NOFATIGUE ||
-		    ent->client->ps.powerups[i] == 0
-		    || i == PW_OPS_CLASS_1
-		    || i == PW_OPS_CLASS_2
-		    || i == PW_OPS_CLASS_3
-		    || i == PW_OPS_DISGUISED
-		    //|| i == PW_REDFLAG // FIXME - not dependant to level time?
-		    //|| i == PW_BLUEFLAG
-		    )
+		// this isn't dependant on level.time
+		if (ent->client->ps.powerups[i] == 0)
 		{
 			continue;
 		}
+
+		// these aren't dependant on level.time
+		switch (i)
+		{
+		case PW_NOFATIGUE:
+		case PW_OPS_CLASS_1:
+		case PW_OPS_CLASS_2:
+		case PW_OPS_CLASS_3:
+		case PW_OPS_DISGUISED:
+		case PW_REDFLAG:
+		case PW_BLUEFLAG:
+#ifdef FEATURE_MULTIVIEW
+		case PW_MVCLIENTLIST: // client list never expires
+#endif
+			continue;
+		default:
+			break;
+		}
+
 		// If we're paused, update powerup timers accordingly.
 		// Make sure we dont let stuff like CTF flags expire.
-		if (level.match_pause != PAUSE_NONE &&
-		    ent->client->ps.powerups[i] != INT_MAX)
+		if (level.match_pause != PAUSE_NONE && ent->client->ps.powerups[i] != INT_MAX)
 		{
 			ent->client->ps.powerups[i] += level.time - level.previousTime;
 		}
@@ -2196,9 +2249,6 @@ void ClientEndFrame(gentity_t *ent)
 	// apply all the damage taken this frame
 	P_DamageFeedback(ent);
 
-	// mark as not missing updates initially
-	ent->client->ps.eFlags &= ~EF_CONNECTION;
-
 	ent->client->ps.stats[STAT_HEALTH] = ent->health;
 
 	G_SetClientSound(ent);
@@ -2241,6 +2291,7 @@ void ClientEndFrame(gentity_t *ent)
 
 	// mark as not missing updates initially
 	ent->client->ps.eFlags &= ~EF_CONNECTION;
+	ent->s.eFlags          &= ~EF_CONNECTION;
 
 	// see how many frames the client has missed
 	frames = level.framenum - ent->client->lastUpdateFrame - 1;
@@ -2272,38 +2323,18 @@ void ClientEndFrame(gentity_t *ent)
 #endif
 
 	// debug hitboxes
-	if (g_debugHitboxes.integer == 1)
+	if (g_debugPlayerHitboxes.integer & 1)
 	{
-		gentity_t    *bboxEnt, *head;
-		vec3_t       b1, b2;
+		gentity_t    *head;
 		vec3_t       maxs;
 		grefEntity_t refent;
 
-		VectorCopy(ent->r.currentOrigin, b1);
-		VectorCopy(ent->r.currentOrigin, b2);
-		VectorAdd(b1, ent->r.mins, b1);
 		VectorCopy(ent->r.maxs, maxs);
 		maxs[2] = ClientHitboxMaxZ(ent);
-		VectorAdd(b2, maxs, b2);
-		bboxEnt = G_TempEntity(b1, EV_RAILTRAIL);
-		VectorCopy(b2, bboxEnt->s.origin2);
-		bboxEnt->s.dmgFlags  = 1;
-		bboxEnt->s.angles[0] = 0;
-		bboxEnt->s.angles[1] = 0;
-		bboxEnt->s.angles[2] = 255;
+		G_RailBox(ent->r.currentOrigin, ent->r.mins, maxs, tv(0.f, 1.f, 0.f), ent->s.number);
 
 		head = G_BuildHead(ent, &refent, qtrue);
-		VectorCopy(head->r.currentOrigin, b1);
-		VectorCopy(head->r.currentOrigin, b2);
-		VectorAdd(b1, head->r.mins, b1);
-		VectorAdd(b2, head->r.maxs, b2);
-		bboxEnt = G_TempEntity(b1, EV_RAILTRAIL);
-		VectorCopy(b2, bboxEnt->s.origin2);
-		bboxEnt->s.dmgFlags  = 1;
-		bboxEnt->s.angles[0] = 0;
-		bboxEnt->s.angles[1] = 255;
-		bboxEnt->s.angles[2] = 0;
-
+		G_RailBox(head->r.currentOrigin, head->r.mins, head->r.maxs, tv(0.f, 1.f, 0.f), ent->s.number | HITBOXBIT_HEAD);
 		G_FreeEntity(head);
 	}
 

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -35,12 +35,13 @@
 
 #include "g_local.h"
 
-/*
-=============
-G_ConfigParse
-=============
-*/
-static qboolean G_ConfigError(int handle, char *format, ...)
+/**
+ * @brief G_ConfigError
+ * @param[in] handle
+ * @param[in] format
+ * @return
+ */
+static qboolean G_ConfigError(int handle, const char *format, ...)
 {
 	int         line = 0;
 	char        filename[MAX_QPATH];
@@ -62,6 +63,10 @@ static qboolean G_ConfigError(int handle, char *format, ...)
 	return qfalse;
 }
 
+/**
+ * @brief G_PrintConfigs
+ * @param[in] ent
+ */
 void G_PrintConfigs(gentity_t *ent)
 {
 	char configNames[8192];
@@ -74,7 +79,8 @@ void G_PrintConfigs(gentity_t *ent)
 	for (i = 0; i < numconfigs; i++, configPointer += namelen + 1)
 	{
 		namelen = strlen(configPointer);
-		strcpy(filename, Q_StrReplace(configPointer, ".config", ""));
+		Q_strncpyz(filename, Q_StrReplace(configPointer, ".config", ""), sizeof(filename));
+
 		if (!Q_stricmp(filename, g_customConfig.string))
 		{
 			G_refPrintf(ent, "^7Config: ^3%s ^2- in use", filename);
@@ -84,9 +90,48 @@ void G_PrintConfigs(gentity_t *ent)
 			G_refPrintf(ent, "^7Config: ^3%s", filename);
 		}
 	}
-	G_Printf("Config list done\n");
+	G_Printf("Config list done.\n");
 }
 
+/**
+ * @brief Checks if config file is in paths (used before initiating a vote for configs)
+ *
+ * @param[in] ent
+ * @param[in] configname
+ */
+qboolean G_isValidConfig(gentity_t *ent, const char *configname)
+{
+	fileHandle_t f;
+	char         filename[MAX_QPATH];
+
+	if (configname[0])
+	{
+		Q_strncpyz(filename, configname, sizeof(filename));
+	}
+	else
+	{
+		G_refPrintf(ent, "^7No config set.");
+		return qfalse;
+	}
+
+	if (!trap_FS_FOpenFile(va("configs/%s.config", filename), &f, FS_READ))
+	{
+		G_refPrintf(ent, "^3Warning: No config with filename '%s' found\n", filename);
+		return qfalse;
+	}
+
+	trap_FS_FCloseFile(f);
+
+	return qtrue;
+}
+
+/**
+ * @brief G_ParseSettings
+ * @param[in] handle
+ * @param[in] setvars
+ * @param[in] config
+ * @return
+ */
 qboolean G_ParseSettings(int handle, qboolean setvars, config_t *config)
 {
 	pc_token_t token;
@@ -219,6 +264,12 @@ qboolean G_ParseSettings(int handle, qboolean setvars, config_t *config)
 	return qtrue;
 }
 
+/**
+ * @brief G_ParseMapSettings
+ * @param[in] handle
+ * @param[in] config
+ * @return
+ */
 qboolean G_ParseMapSettings(int handle, config_t *config)
 {
 	pc_token_t token;
@@ -245,7 +296,7 @@ qboolean G_ParseMapSettings(int handle, config_t *config)
 	{
 		fileHandle_t f;
 		char         *code, *signature;
-		qboolean     res = qfalse;
+		qboolean     res;
 
 		G_Printf("Setting rules for map: %s\n", token.string);
 		res = G_ParseSettings(handle, qtrue, config);
@@ -290,6 +341,10 @@ qboolean G_ParseMapSettings(int handle, config_t *config)
 	}
 }
 
+/**
+ * @brief G_configLoadAndSet
+ * @param[in] name
+ */
 void G_configLoadAndSet(const char *name)
 {
 	pc_token_t token;
@@ -401,10 +456,15 @@ void G_configLoadAndSet(const char *name)
 	G_UpdateCvars();
 }
 
-// Force settings to predefined state.
+/**
+ * @brief Force settings to predefined state.
+ * @param[in] configname
+ * @return
+ */
 qboolean G_configSet(const char *configname)
 {
-	char filename[MAX_QPATH];
+	fileHandle_t f;
+	char         filename[MAX_QPATH];
 
 	if (configname[0])
 	{
@@ -420,13 +480,15 @@ qboolean G_configSet(const char *configname)
 	}
 
 	G_Printf("Will try to load config: \"configs/%s.config\"\n", filename);
-	if (!trap_FS_FOpenFile(va("configs/%s.config", filename), NULL, FS_READ))
+	if (!trap_FS_FOpenFile(va("configs/%s.config", filename), &f, FS_READ))
 	{
 		G_Printf("^3Warning: No config with filename '%s' found\n", filename);
 		return qfalse;
 	}
 
 	G_configLoadAndSet(filename);
+
+	trap_FS_FCloseFile(f);
 
 	//TODO: handle the mapscript hash and run the map script
 	// the current map script will be on 'level.scriptEntity'
@@ -438,7 +500,7 @@ qboolean G_configSet(const char *configname)
 
 	if (!level.config.publicConfig && g_gamestate.integer == GS_WARMUP_COUNTDOWN)
 	{
-		level.lastRestartTime = level.time;
+		level.lastRestartTime = (qboolean)level.time;
 		trap_SendConsoleCommand(EXEC_APPEND, va("map_restart 0 %i\n", GS_WARMUP));
 	}
 	else
@@ -449,6 +511,9 @@ qboolean G_configSet(const char *configname)
 	return qtrue;
 }
 
+/**
+ * @brief G_ConfigCheckLocked
+ */
 void G_ConfigCheckLocked()
 {
 	int      i;

@@ -1,19 +1,22 @@
 #!/usr/bin/env bash
 # encoding: utf-8
 
-# Made by the Legacy team!
+# Made by the ET Legacy team!
 # script checks for needed applications
-# and builds et legacy
+# and builds ET Legacy
 
-# mandatory variables
+# Mandatory variables
 _SRC=`pwd`
 BUILDDIR="${_SRC}/build"
 SOURCEDIR="${_SRC}/src"
 PROJECTDIR="${_SRC}/project"
 LEGACYETMAIN="${HOME}/.etlegacy/etmain"
 LEGACY_MIRROR="http://mirror.etlegacy.com/etmain/"
+LEGACY_VERSION=`git describe 2>/dev/null`
 
-# Command that can be run, first array has the cmd names which can be given, the second array holds the functions which match the cmd names
+# Command that can be run
+# first array has the cmd names which can be given
+# second array holds the functions which match the cmd names
 easy_keys=(clean build package install download crust release project help)
 easy_cmd=(run_clean run_build run_package run_install run_download run_uncrustify run_release run_project print_help)
 easy_count=`expr ${#easy_keys[*]} - 1`
@@ -132,7 +135,7 @@ print_startup() {
 	ehead "ET Legacy Easy Builder"
 	ehead "==============================="
 	ehead "This script will check for binaries needed to compile ET Legacy"
-	ehead "Then it'll build ET Legacy into ${BUILDDIR}/ directory"
+	ehead "Then it will build ET Legacy into ${BUILDDIR}/ directory"
 	echo
 
 	einfo "Checking for needed apps to compile..."
@@ -164,7 +167,7 @@ parse_commandline() {
 	for var in "$@"
 	do
 		if [ "$var" = "-64" ]; then
-			einfo "Disabling Crosscompile"
+			einfo "Will disable crosscompile"
 			CROSS_COMPILE32=0
 		elif [ "$var" = "-clang" ]; then
 			einfo "Will use clang"
@@ -173,12 +176,16 @@ parse_commandline() {
 		elif [ "$var" = "-debug" ]; then
 			einfo "Will enable debug build"
 			RELEASE_TYPE="Debug"
-		elif [ "$var" = "-r2" ]; then
-			einfo "Will enable renderer2"
-			FEATURE_RENDERER2=1
-		elif [ "$var" = "-dynamic" ]; then
-			einfo "Will enable dynamic renderer build"
-			RENDERER_DYNAMIC=1
+		elif [ "$var" = "-nodb" ]; then
+			einfo "Will disable database"
+			FEATURE_DBMS=0
+			BUNDLED_SQLITE3=0
+		elif [ "$var" = "-nor2" ]; then
+			einfo "Will disable renderer2"
+			FEATURE_RENDERER2=0
+		elif [ "$var" = "-nodynamic" ]; then
+			einfo "Will disable dynamic renderer build"
+			RENDERER_DYNAMIC=0
 		elif [ "$var" = "-jpeg-turbo" ]; then
 			einfo "Will enable system jpeg turbo"
 			BUNDLED_JPEG=0
@@ -186,10 +193,78 @@ parse_commandline() {
 			einfo "Will disable bundled libraries"
 			BUNDLED_LIBS=0
 			BUNDLED_SDL=0
+			BUNDLED_ZLIB=0
+			BUNDLED_MINIZIP=0
+			BUNDLED_CURL=0
 			BUNDLED_JPEG=0
 			BUNDLED_LUA=0
-			BUNDLED_OGG=0
+			BUNDLED_OGG_VORBIS=0
+			BUNDLED_THEORA=0
+			BUNDLED_OPENAL=0
+			BUNDLED_GLEW=0
+			BUNDLED_FREETYPE=0
+			BUNDLED_JANSSON=0
+			BUNDLED_SQLITE3=0
+		elif [ "$var" = "-noob" ]; then
+			einfo "Will disable omni-bot installation"
+			INSTALL_OMNIBOT=0
+		elif [ "$var" = "-noupdate" ]; then
+			einfo "Will disable autoupdate"
+			FEATURE_AUTOUPDATE=0
+		elif [ "$var" = "-norating" ]; then
+			einfo "Will disable skill rating"
+			FEATURE_RATING=0
+		elif [ "$var" = "-RPI" ]; then
+			einfo "Will enable Raspberry PI build ..."
+			ARM=1
+			CROSS_COMPILE32=0
+			FEATURE_RENDERER_GLES=1
+			FEATURE_RENDERER2=0
+			FEATURE_JANSSON=0
+			BUNDLED_JANSSON=0
+			# FIXME: ogg doesn't compile
+			BUNDLED_OGG_VORBIS=0
+			FEATURE_OGG_VORBIS=0
+			# FIXME
+			FEATURE_THEORA=0
+			BUNDLED_THEORA=0
+			# not required
+			BUNDLED_GLEW=0
+			# FIXME: needs -PIC
+			FEATURE_FREETYPE=0
+			BUNDLED_FREETYPE=0
+			#FEATURE_DBMS=0
+			#BUNDLED_SQLITE3=0
+			FEATURE_LUASQL=1
+			FEATURE_OMNIBOT=1
+			INSTALL_OMNIBOT=0
+		elif [ "$var" = "-mod" ]; then
+			einfo "Will only build the mod"
+			BUILD_CLIENT=0
+			BUILD_SERVER=0
+			FEATURE_RENDERER2=0
+			FEATURE_RENDERER_GLES=0
+			RENDERER_DYNAMIC=0
+
+			FEATURE_CURL=0
+			FEATURE_OGG_VORBIS=0
+			FEATURE_THEORA=0
+			FEATURE_OPENAL=0
+			FEATURE_FREETYPE=0
+			FEATURE_JANSSON=0
+
+			BUNDLED_SDL=0
+			# FIXME: this needs to be fixed in cmake, we do not want zlib or minizip if we are not building the client or server
+			BUNDLED_ZLIB=1
+			BUNDLED_MINIZIP=1
+			BUNDLED_JPEG=0
+			BUNDLED_OGG_VORBIS=0
+			BUNDLED_THEORA=0
+			BUNDLED_GLEW=0
+			BUNDLED_FREETYPE=0
+			BUNDLED_JANSSON=0
 			BUNDLED_CURL=0
+			BUNDLED_OPENAL=0
 		else
 			# drop the script commands from the result
 			for index in ${!easy_keys[*]}
@@ -210,78 +285,122 @@ parse_commandline() {
 }
 
 generate_configuration() {
-	# cmake variables
-	[ ! "${RELEASE_TYPE}" ]    && RELEASE_TYPE="Release"
-	[ ! "${CROSS_COMPILE32}" ] && CROSS_COMPILE32=1
-	[ ! "${RENDERER_DYNAMIC}" ] && RENDERER_DYNAMIC=0
-	[ ! "${BUILD_CLIENT}" ] && BUILD_CLIENT=1
-	[ ! "${BUNDLED_LIBS}" ] && BUNDLED_LIBS=1
-	[ ! "${BUNDLED_SDL}" ]  && BUNDLED_SDL=1
-	[ ! "${BUNDLED_JPEG}" ] && BUNDLED_JPEG=1
-	[ ! "${BUNDLED_LUA}" ]  && BUNDLED_LUA=1
-	[ ! "${BUNDLED_OGG}" ]  && BUNDLED_OGG=1
+	#cmake variables
+	RELEASE_TYPE=${RELEASE_TYPE:-Release}
+	CROSS_COMPILE32=${CROSS_COMPILE32:-1}
+	BUILD_SERVER=${BUILD_SERVER:-1}
+	BUILD_CLIENT=${BUILD_CLIENT:-1}
+	BUILD_MOD=${BUILD_MOD:-1}
+	BUILD_MOD_PK3=${BUILD_MOD_PK3:-1}
+	BUILD_PAK_PK3=${BUILD_PAK_PK3:-1}
+	BUNDLED_LIBS=${BUNDLED_LIBS:-1}
+	BUNDLED_SDL=${BUNDLED_SDL:-1}
+	BUNDLED_ZLIB=${BUNDLED_ZLIB:-1}
+	BUNDLED_MINIZIP=${BUNDLED_MINIZIP:-1}
+	BUNDLED_JPEG=${BUNDLED_JPEG:-1}
+	BUNDLED_LUA=${BUNDLED_LUA:-1}
+	BUNDLED_OGG_VORBIS=${BUNDLED_OGG_VORBIS:-1}
+	BUNDLED_THEORA=${BUNDLED_THEORA:-1}
+	BUNDLED_GLEW=${BUNDLED_GLEW:-1}
+	BUNDLED_FREETYPE=${BUNDLED_FREETYPE:-1}
+	BUNDLED_JANSSON=${BUNDLED_JANSSON:-0}
+	BUNDLED_SQLITE3=${BUNDLED_SQLITE3:-1}
 
 	if [ "${PLATFORMSYS}" == "Mac OS X" ]; then
-		[ ! "${BUNDLED_CURL}" ] && BUNDLED_CURL=0
+		BUNDLED_CURL=${BUNDLED_CURL:-0}
+		BUNDLED_OPENAL=${BUNDLED_OPENAL:-0}
 	else
-		[ ! "${BUNDLED_CURL}" ] && BUNDLED_CURL=1
+		BUNDLED_CURL=${BUNDLED_CURL:-1}
+		BUNDLED_OPENAL=${BUNDLED_OPENAL:-1}
 	fi
 
-	FEATURE_OGG=1
-	FEATURE_TRACKER=1
-	[ ! "${FEATURE_OMNIBOT}" ] && FEATURE_OMNIBOT=1
-	[ ! "${FEATURE_ANTICHEAT}" ] && FEATURE_ANTICHEAT=1
-	[ ! "${FEATURE_LUA}" ] && FEATURE_LUA=1
-	[ ! "${FEATURE_FREETYPE}" ] && FEATURE_FREETYPE=1
-	[ ! "${FEATURE_RENDERER2}" ] && FEATURE_RENDERER2=0
-	[ ! "${FEATURE_LIVEAUTH}" ] && FEATURE_LIVEAUTH=1
+	FEATURE_RENDERER2=${FEATURE_RENDERER2:-1}
+	FEATURE_RENDERER_GLES=${FEATURE_RENDERER_GLES:-0}
+	RENDERER_DYNAMIC=${RENDERER_DYNAMIC:-1}
+
+	FEATURE_CURL=${FEATURE_CURL:-1}
+	FEATURE_OGG_VORBIS=${FEATURE_OGG_VORBIS:-1}
+	FEATURE_THEORA=${FEATURE_THEORA:-1}
+	FEATURE_OPENAL=${FEATURE_OPENAL:-1}
+	FEATURE_FREETYPE=${FEATURE_FREETYPE:-1}
+	FEATURE_TRACKER=${FEATURE_TRACKER:-0}
+	FEATURE_GETTEXT=${FEATURE_GETTEXT:-1}
+	FEATURE_JANSSON=${FEATURE_JANSSON:-0}
+	FEATURE_DBMS=${FEATURE_DBMS:-1}
+	FEATURE_LUA=${FEATURE_LUA:-1}
+	FEATURE_MULTIVIEW=${FEATURE_MULTIVIEW:-1}
+	FEATURE_EDV=${FEATURE_EDV:-1}
+	FEATURE_ANTICHEAT=${FEATURE_ANTICHEAT:-1}
+	FEATURE_RATING=${FEATURE_RATING:-1}
+	FEATURE_AUTOUPDATE=${FEATURE_AUTOUPDATE:-0}
+	FEATURE_LUASQL=${FEATURE_LUASQL:-1}
+	FEATURE_OMNIBOT=${FEATURE_OMNIBOT:-1}
+	INSTALL_OMNIBOT=${INSTALL_OMNIBOT:-1}
 
 	einfo "Configuring ET Legacy..."
 	_CFGSTRING="
 		-DCMAKE_BUILD_TYPE=${RELEASE_TYPE}
+		-DCROSS_COMPILE32=${CROSS_COMPILE32}
+		-DBUILD_SERVER=${BUILD_SERVER}
 		-DBUILD_CLIENT=${BUILD_CLIENT}
-		-DBUILD_SERVER=1
-		-DBUILD_MOD=1
-		-DBUILD_MOD_PK3=1
-		-DBUILD_PAK3_PK3=1
+		-DBUILD_MOD=${BUILD_MOD}
+		-DBUILD_MOD_PK3=${BUILD_MOD_PK3}
+		-DBUILD_PAK3_PK3=${BUILD_PAK_PK3}
 		-DBUNDLED_LIBS=${BUNDLED_LIBS}
 		-DBUNDLED_SDL=${BUNDLED_SDL}
+		-DBUNDLED_ZLIB=${BUNDLED_ZLIB}
+		-DBUNDLED_MINIZIP=${BUNDLED_MINIZIP}
 		-DBUNDLED_JPEG=${BUNDLED_JPEG}
-		-DBUNDLED_LUA=${BUNDLED_LUA}
 		-DBUNDLED_CURL=${BUNDLED_CURL}
-		-DBUNDLED_OGG_VORBIS=${BUNDLED_OGG}
-		-DCROSS_COMPILE32=${CROSS_COMPILE32}
-		-DFEATURE_CURL=1
-		-DFEATURE_OGG_VORBIS=${FEATURE_OGG}
+		-DBUNDLED_LUA=${BUNDLED_LUA}
+		-DBUNDLED_OGG_VORBIS=${BUNDLED_OGG_VORBIS}
+		-DBUNDLED_THEORA=${BUNDLED_THEORA}
+		-DBUNDLED_OPENAL=${BUNDLED_OPENAL}
+		-DBUNDLED_GLEW=${BUNDLED_GLEW}
+		-DBUNDLED_FREETYPE=${BUNDLED_FREETYPE}
+		-DBUNDLED_JANSSON=${BUNDLED_JANSSON}
+		-DBUNDLED_SQLITE3=${BUNDLED_SQLITE3}
+		-DFEATURE_CURL=${FEATURE_CURL}
+		-DFEATURE_OGG_VORBIS=${FEATURE_OGG_VORBIS}
+		-DFEATURE_THEORA=${FEATURE_THEORA}
+		-DFEATURE_OPENAL=${FEATURE_OPENAL}
 		-DFEATURE_FREETYPE=${FEATURE_FREETYPE}
-		-DFEATURE_OPENAL=0
 		-DFEATURE_TRACKER=${FEATURE_TRACKER}
-		-DFEATURE_OMNIBOT=${FEATURE_OMNIBOT}
-		-DFEATURE_ANTICHEAT=${FEATURE_ANTICHEAT}
 		-DFEATURE_LUA=${FEATURE_LUA}
+		-DFEATURE_MULTIVIEW=${FEATURE_MULTIVIEW}
+		-DFEATURE_EDV=${FEATURE_EDV}
+		-DFEATURE_ANTICHEAT=${FEATURE_ANTICHEAT}
+		-DFEATURE_GETTEXT=${FEATURE_GETTEXT}
+		-DFEATURE_JANSSON=${FEATURE_JANSSON}
+		-DFEATURE_DBMS=${FEATURE_DBMS}
+		-DFEATURE_RATING=${FEATURE_RATING}
+		-DFEATURE_AUTOUPDATE=${FEATURE_AUTOUPDATE}
 		-DFEATURE_RENDERER2=${FEATURE_RENDERER2}
+		-DFEATURE_RENDERER_GLES=${FEATURE_RENDERER_GLES}
 		-DRENDERER_DYNAMIC=${RENDERER_DYNAMIC}
-		-DFEATURE_LIVEAUTH=${FEATURE_LIVEAUTH}
+		-DFEATURE_LUASQL=${FEATURE_LUASQL}
+		-DFEATURE_OMNIBOT=${FEATURE_OMNIBOT}
+		-DINSTALL_OMNIBOT=${INSTALL_OMNIBOT}
 	"
 
 	if [ "${DEV}" != 1 ]; then
-		if [ "${PLATFORMSYS}" == "Mac OS X" ]; then
-			PREFIX=${HOME}/etlegacy
-			_CFGSTRING="${_CFGSTRING}
-			-DCMAKE_INSTALL_PREFIX=${PREFIX}
-			-DINSTALL_DEFAULT_MODDIR=./
-			-DINSTALL_DEFAULT_BINDIR=./
-			-DINSTALL_DEFAULT_BASEDIR=./
-			"
-		else
-			PREFIX=${HOME}/etlegacy
-			_CFGSTRING="${_CFGSTRING}
-			-DCMAKE_INSTALL_PREFIX=${PREFIX}
-			-DINSTALL_DEFAULT_MODDIR=.
-			-DINSTALL_DEFAULT_BINDIR=.
-			-DINSTALL_DEFAULT_BASEDIR=.
-			"
-		fi
+	if [ "${PLATFORMSYS}" == "Mac OS X" ]; then
+		PREFIX=${HOME}/etlegacy
+		_CFGSTRING="${_CFGSTRING}
+		-DCMAKE_INSTALL_PREFIX=${PREFIX}
+		-DINSTALL_DEFAULT_MODDIR=./
+		-DINSTALL_DEFAULT_BINDIR=./
+		-DINSTALL_DEFAULT_BASEDIR=./
+		"
+	else
+		PREFIX=${HOME}/etlegacy
+		_CFGSTRING="${_CFGSTRING}
+		-DCMAKE_INSTALL_PREFIX=${PREFIX}
+		-DINSTALL_DEFAULT_MODDIR=.
+		-DINSTALL_DEFAULT_BINDIR=.
+		-DINSTALL_DEFAULT_BASEDIR=.
+		"
+	fi
 	fi
 
 	echo -e "\033[1;33musing: \033[1;37m${_CFGSTRING}\033[0m"
@@ -303,23 +422,37 @@ run_clean() {
 	fi
 	CLEANLIBS=1
 	if [[ -e "${_SRC}/libs/CMakeLists.txt" && ${CLEANLIBS} ]]; then
-		einfo "Cleaning SDL..."
-		cd ${_SRC}/libs/sdl2;  make clean
-		einfo "Cleaning lib jpegturbo..."
-		cd ${_SRC}/libs/jpegturbo; make clean
+		if [ "${BUNDLED_SDL}" == 1 ]; then
+			einfo "Cleaning SDL..."
+			cd ${_SRC}/libs/sdl2;  make clean
+		fi
+		if [ "${BUNDLED_ZLIB}" == 1 ]; then
+			einfo "Cleaning ZLib..."
+			cd ${_SRC}/libs/zlib; make distclean
+		fi
+		if [ "${BUNDLED_MINIZIP}" == 1 ]; then
+			einfo "Cleaning MiniZip..."
+			cd ${_SRC}/libs/minizip; make clean
+		fi
+		if [ "${BUNDLED_JPEG}" == 1 ]; then
+			einfo "Cleaning libjpeg-turbo..."
+			cd ${_SRC}/libs/jpegturbo; make clean
+		fi
 		if [ "${BUNDLED_CURL}" == 1 ]; then
-			einfo "Cleaning lib curl..."
+			einfo "Cleaning libcurl..."
 			cd ${_SRC}/libs/curl/src; make clean
 		fi
 		if [ "${BUNDLED_LUA}" == 1 ]; then
-			einfo "Cleaning lib lua..."
+			einfo "Cleaning Lua..."
 			cd ${_SRC}/libs/lua/src; make clean
 		fi
-		if [ "${BUNDLED_OGG}" == 1 ]; then
-			einfo "Cleaning lib ogg..."
+		if [ "${BUNDLED_OGG_VORBIS}" == 1 ]; then
+			einfo "Cleaning libogg..."
 			cd ${_SRC}/libs/ogg; make clean
-			einfo "Cleaning lib vorbis..."
+			einfo "Cleaning libvorbis..."
 			cd ${_SRC}/libs/vorbis; make clean
+			# einfo "Cleaning libtheora..."
+			# cd ${_SRC}/libs/theora; make clean
 		fi
 		cd ${_SRC}/libs
 		git clean -d -f
@@ -336,6 +469,90 @@ run_build() {
 	check_exit
 }
 
+create_osx_dmg() {
+	# Generate DMG
+	app_exists APP_FOUND "gm"
+	if [ $APP_FOUND == 0 ]; then
+		echo "Missing GraphicsMagick skipping OSX installer creation"
+		return
+	fi
+
+	app_exists APP_FOUND "node"
+	if [ $APP_FOUND == 0 ]; then
+		echo "Missing nodejs skipping OSX installer creation"
+		return
+	fi
+
+	app_exists APP_FOUND "appdmg"
+	if [ $APP_FOUND == 0 ]; then
+		echo "Missing appdmg skipping OSX installer creation"
+		return
+	fi
+
+	app_exists APP_FOUND "rsvg-convert"
+	if [ $APP_FOUND == 0 ]; then
+		echo "Missing rsvg-convert cannot create installer"
+		exit 1
+	fi
+
+	echo "Generating OSX installer"
+	SHORT_VERSION=`git describe --abbrev=0 --tags 2>/dev/null`
+
+	# Generate the icon for the folder
+	# using rsvg-convert
+	# brew install librsvg
+	rsvg-convert -h 256 ../misc/etl.svg > icon.png
+
+	# Generate the DMG background
+	# using the Graphics Magick
+	# brew install graphicsmagick
+	gm convert ../misc/osx-dmg-background.jpg -resize 640x360 -font ../misc/din1451alt.ttf -pointsize 20 -fill 'rgb(85,85,85)'  -draw "text 75,352 '${SHORT_VERSION}'" osx-dmg-background.jpg
+
+	# Needs to be the osx:s default python install!
+	python << END
+import Cocoa
+import sys
+import os
+import glob
+import shutil
+iconfile = "icon.png"
+foldername = "ET Legacy"
+if os.path.isdir(foldername):
+	shutil.rmtree(foldername)
+files = [f for f in glob.glob('./_CPack_Packages/Darwin/TGZ/etlegacy*') if os.path.isdir(f)]
+if len(files) == 1 :
+	packfolder = files[0]
+	shutil.copytree(packfolder, foldername)
+	print 'Copied the legacy install folder'
+	Cocoa.NSWorkspace.sharedWorkspace().setIcon_forFile_options_(Cocoa.NSImage.alloc().initWithContentsOfFile_(iconfile), foldername, 0) or sys.exit("Unable to set file icon")
+	print 'The icon succesfully set'
+END
+
+	# Create the DMG json
+	cat << END > legacy-dmg.json
+{
+	"title": "ET Legacy $SHORT_VERSION",
+	"icon": "../misc/etl.icns",
+  "background": "osx-dmg-background.jpg",
+  "window": {
+  	"size": {
+  		"width": 640,
+  		"height": 390
+  	}
+  },
+  "contents": [
+    { "x": 456, "y": 250, "type": "link", "path": "/Applications" },
+    { "x": 192, "y": 250, "type": "file", "path": "ET Legacy" }
+  ]
+}
+END
+
+	# using appdmg nodejs application to generate the actual DMG installer
+	# https://github.com/LinusU/node-appdmg
+	# npm install -g appdmg
+	appdmg legacy-dmg.json "ETLegacy-${LEGACY_VERSION}.dmg"
+}
+
 run_package() {
 	einfo "Package..."
 	cd ${BUILDDIR}
@@ -344,8 +561,7 @@ run_package() {
 	check_exit "cpack"
 	# TODO: detect if osx and generate a package and a dmg installer
 	if [ "${PLATFORMSYS}" == "Mac OS X" ]; then
-		# Generate DMG
-		echo "Sorry DMG generation is not done yet"
+		create_osx_dmg
 	fi
 }
 
@@ -357,7 +573,11 @@ run_install() {
 
 handle_download() {
 	if [ ! -f $1 ]; then
-		wget "${LEGACY_MIRROR}$1"
+		if [ -f /usr/bin/curl  ]; then
+			curl -O "${LEGACY_MIRROR}$1"
+		else
+			wget "${LEGACY_MIRROR}$1"
+		fi
 	fi
 }
 
@@ -381,7 +601,10 @@ run_uncrustify() {
 
 run_project() {
 	einfo "Project..."
-	mkdir -p ${BUILDDIR}
+	if [ -d ${PROJECTDIR} ]; then
+		rm -rf ${PROJECTDIR}
+	fi
+	mkdir -p ${PROJECTDIR}
 	cd ${PROJECTDIR}
 	if [ "${PLATFORMSYS}" == "Mac OS X" ]; then
 		cmake -G 'Xcode' ${_CFGSTRING} ..
@@ -408,16 +631,18 @@ run_default() {
 print_help() {
 	ehead "ET Legacy Easy Builder Help"
 	ehead "==============================="
-	ehead "clean - cleanup the build"
+	ehead "clean - clean up the build"
 	ehead "build - run the build process"
 	ehead "package - run the package process"
 	ehead "install - install the game into the system"
+	ehead "download - download assets"
 	ehead "crust - run the uncrustify to the source"
 	ehead "project - generate the project files for your platform"
+	ehead "release - run the entire release process"
 	ehead "help - print this help"
 	echo
 	einfo "Properties"
-	ehead "-64, -debug, -clang, -r2, -dynamic, -systemlib"
+	ehead "-64, -debug, -clang, -nodb -nor2, -nodynamic, -systemlib, -noob, --noupdate, -norating -mod"
 	echo
 }
 
@@ -436,7 +661,7 @@ start_script() {
 
 	ARG_FOUND=0
 
-	# everything looks ok, try to run this shit!
+	# Everything looks ok, try to run this shit!
 
 	# Find and run the processes the user requested
 	for var in "$@"
@@ -460,5 +685,5 @@ start_script() {
 
 start_script $@
 
-# return to the original path
+# Return to the original path
 cd ${_SRC}

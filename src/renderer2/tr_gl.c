@@ -4,7 +4,7 @@
  * Copyright (C) 2010-2011 Robert Beckebans <trebor_7@users.sourceforge.net>
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -35,6 +35,10 @@
 
 #include "tr_local.h"
 
+/**
+ * @brief GL_Bind
+ * @param[in,out] image
+ */
 void GL_Bind(image_t *image)
 {
 	int texnum;
@@ -55,6 +59,7 @@ void GL_Bind(image_t *image)
 	{
 		// performance evaluation option
 		texnum = tr.blackImage->texnum;
+		image  = tr.blackImage;
 	}
 
 	if (glState.currenttextures[glState.currenttmu] != texnum)
@@ -65,6 +70,9 @@ void GL_Bind(image_t *image)
 	}
 }
 
+/**
+ * @brief GL_Unbind
+ */
 void GL_Unbind()
 {
 	Ren_LogComment("--- GL_Unbind() ---\n");
@@ -72,6 +80,10 @@ void GL_Unbind()
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+/**
+ * @brief BindAnimatedImage
+ * @param[in] bundle
+ */
 void BindAnimatedImage(textureBundle_t *bundle)
 {
 	int index;
@@ -103,6 +115,11 @@ void BindAnimatedImage(textureBundle_t *bundle)
 	GL_Bind(bundle->image[index]);
 }
 
+/**
+ * @brief GL_TextureFilter
+ * @param[in,out] image
+ * @param[in] filterType
+ */
 /*
 void GL_TextureFilter(image_t *image, filterType_t filterType)
 {
@@ -145,6 +162,10 @@ void GL_TextureFilter(image_t *image, filterType_t filterType)
 }
 */
 
+/**
+ * @brief GL_SelectTexture
+ * @param[in] unit
+ */
 void GL_SelectTexture(int unit)
 {
 	if (glState.currenttmu == unit)
@@ -166,6 +187,11 @@ void GL_SelectTexture(int unit)
 	glState.currenttmu = unit;
 }
 
+/**
+ * @brief GL_BlendFunc
+ * @param[in] sfactor
+ * @param[in] dfactor
+ */
 void GL_BlendFunc(GLenum sfactor, GLenum dfactor)
 {
 	if (glState.blendSrc != sfactor || glState.blendDst != dfactor)
@@ -177,6 +203,13 @@ void GL_BlendFunc(GLenum sfactor, GLenum dfactor)
 	}
 }
 
+/**
+ * @brief GL_ClearColor
+ * @param[in] red
+ * @param[in] green
+ * @param[in] blue
+ * @param[in] alpha
+ */
 void GL_ClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha)
 {
 	if (glState.clearColorRed != red || glState.clearColorGreen != green || glState.clearColorBlue != blue || glState.clearColorAlpha != alpha)
@@ -190,6 +223,10 @@ void GL_ClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha)
 	}
 }
 
+/**
+ * @brief GL_ClearDepth
+ * @param[in] depth
+ */
 void GL_ClearDepth(GLclampd depth)
 {
 	if (glState.clearDepth != depth)
@@ -200,6 +237,10 @@ void GL_ClearDepth(GLclampd depth)
 	}
 }
 
+/**
+ * @brief GL_ClearStencil
+ * @param[in] s
+ */
 void GL_ClearStencil(GLint s)
 {
 	if (glState.clearStencil != s)
@@ -210,6 +251,13 @@ void GL_ClearStencil(GLint s)
 	}
 }
 
+/**
+ * @brief GL_ColorMask
+ * @param[in] red
+ * @param[in] green
+ * @param[in] blue
+ * @param[in] alpha
+ */
 void GL_ColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha)
 {
 	if (glState.colorMaskRed != red || glState.colorMaskGreen != green || glState.colorMaskBlue != blue || glState.colorMaskAlpha != alpha)
@@ -223,6 +271,10 @@ void GL_ColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alph
 	}
 }
 
+/**
+ * @brief GL_CullFace
+ * @param[in] mode
+ */
 void GL_CullFace(GLenum mode)
 {
 	if (glState.cullFace != mode)
@@ -233,6 +285,10 @@ void GL_CullFace(GLenum mode)
 	}
 }
 
+/**
+ * @brief GL_DepthFunc
+ * @param[in] func
+ */
 void GL_DepthFunc(GLenum func)
 {
 	if (glState.depthFunc != func)
@@ -243,6 +299,10 @@ void GL_DepthFunc(GLenum func)
 	}
 }
 
+/**
+ * @brief GL_DepthMask
+ * @param[in] flag
+ */
 void GL_DepthMask(GLboolean flag)
 {
 	if (glState.depthMask != flag)
@@ -253,6 +313,10 @@ void GL_DepthMask(GLboolean flag)
 	}
 }
 
+/**
+ * @brief GL_DrawBuffer
+ * @param[in] mode
+ */
 void GL_DrawBuffer(GLenum mode)
 {
 	if (glState.drawBuffer != mode)
@@ -263,6 +327,10 @@ void GL_DrawBuffer(GLenum mode)
 	}
 }
 
+/**
+ * @brief GL_FrontFace
+ * @param[in] mode
+ */
 void GL_FrontFace(GLenum mode)
 {
 	if (glState.frontFace != mode)
@@ -273,28 +341,39 @@ void GL_FrontFace(GLenum mode)
 	}
 }
 
-void GL_LoadModelViewMatrix(const matrix_t m)
+/**
+ * @brief GL_LoadModelViewMatrix
+ * @param[in] m
+ */
+void GL_LoadModelViewMatrix(const mat4_t m)
 {
-	if (MatrixCompare(GLSTACK_MVM, m))
+	if (mat4_compare(GLSTACK_MVM, m))
 	{
 		return;
 	}
 
-	MatrixCopy(m, GLSTACK_MVM);
-	MatrixMultiplyMOD(GLSTACK_PM, GLSTACK_MVM, GLSTACK_MVPM);
+	mat4_copy(m, GLSTACK_MVM);
+	mat4_mult(GLSTACK_PM, GLSTACK_MVM, GLSTACK_MVPM);
 }
 
-void GL_LoadProjectionMatrix(const matrix_t m)
+/**
+ * @brief GL_LoadProjectionMatrix
+ * @param[in] m
+ */
+void GL_LoadProjectionMatrix(const mat4_t m)
 {
-	if (MatrixCompare(GLSTACK_PM, m))
+	if (mat4_compare(GLSTACK_PM, m))
 	{
 		return;
 	}
 
-	MatrixCopy(m, GLSTACK_PM);
-	MatrixMultiplyMOD(GLSTACK_PM, GLSTACK_MVM, GLSTACK_MVPM);
+	mat4_copy(m, GLSTACK_PM);
+	mat4_mult(GLSTACK_PM, GLSTACK_MVM, GLSTACK_MVPM);
 }
 
+/**
+ * @brief GL_PushMatrix
+ */
 void GL_PushMatrix()
 {
 	glState.stackIndex++;
@@ -306,6 +385,9 @@ void GL_PushMatrix()
 	}
 }
 
+/**
+ * @brief GL_PopMatrix
+ */
 void GL_PopMatrix()
 {
 	glState.stackIndex--;
@@ -317,6 +399,11 @@ void GL_PopMatrix()
 	}
 }
 
+/**
+ * @brief GL_PolygonMode
+ * @param[in] face
+ * @param[in] mode
+ */
 void GL_PolygonMode(GLenum face, GLenum mode)
 {
 	if (glState.polygonFace != face || glState.polygonMode != mode)
@@ -328,6 +415,13 @@ void GL_PolygonMode(GLenum face, GLenum mode)
 	}
 }
 
+/**
+ * @brief GL_Scissor
+ * @param[in] x
+ * @param[in] y
+ * @param[in] width
+ * @param[in] height
+ */
 void GL_Scissor(GLint x, GLint y, GLsizei width, GLsizei height)
 {
 	if (glState.scissorX != x || glState.scissorY != y || glState.scissorWidth != width || glState.scissorHeight != height)
@@ -341,6 +435,13 @@ void GL_Scissor(GLint x, GLint y, GLsizei width, GLsizei height)
 	}
 }
 
+/**
+ * @brief GL_Viewport
+ * @param[in] x
+ * @param[in] y
+ * @param[in] width
+ * @param[in] height
+ */
 void GL_Viewport(GLint x, GLint y, GLsizei width, GLsizei height)
 {
 	if (glState.viewportX != x || glState.viewportY != y || glState.viewportWidth != width || glState.viewportHeight != height)
@@ -354,6 +455,11 @@ void GL_Viewport(GLint x, GLint y, GLsizei width, GLsizei height)
 	}
 }
 
+/**
+ * @brief GL_PolygonOffset
+ * @param[in] factor
+ * @param[in] units
+ */
 void GL_PolygonOffset(float factor, float units)
 {
 	if (glState.polygonOffsetFactor != factor || glState.polygonOffsetUnits != units)
@@ -365,11 +471,19 @@ void GL_PolygonOffset(float factor, float units)
 	}
 }
 
+/**
+ * @brief GL_Clear
+ * @param[in] bits
+ */
 void GL_Clear(unsigned int bits)
 {
 	glClear(bits);
 }
 
+/**
+ * @brief GL_Cull
+ * @param[in] cullType
+ */
 void GL_Cull(int cullType)
 {
 	if (backEnd.viewParms.isMirror)
@@ -408,8 +522,9 @@ void GL_Cull(int cullType)
 }
 
 /**
-* @brief This routine is responsible for setting the most commonly changed state in Q3.
-*/
+ * @brief This routine is responsible for setting the most commonly changed state in Q3.
+ * @param[in] stateBits
+ */
 void GL_State(uint32_t stateBits)
 {
 	uint32_t diff = stateBits ^ glState.glStateBits;
@@ -475,7 +590,6 @@ void GL_State(uint32_t stateBits)
 			default:
 				srcFactor = GL_ONE;     // to get warning to shut up
 				Ren_Drop("GL_State: invalid src blend state bits\n");
-				break;
 			}
 
 			switch (stateBits & GLS_DSTBLEND_BITS)
@@ -507,7 +621,6 @@ void GL_State(uint32_t stateBits)
 			default:
 				dstFactor = GL_ONE;     // to get warning to shut up
 				Ren_Drop("GL_State: invalid dst blend state bits\n");
-				break;
 			}
 
 			glEnable(GL_BLEND);
@@ -595,37 +708,37 @@ void GL_State(uint32_t stateBits)
 	}
 #endif
 
-	/*
-	if(diff & GLS_ATEST_BITS)
-	{
-	switch (stateBits & GLS_ATEST_BITS)
-	{
-	case 0:
-	glDisable(GL_ALPHA_TEST);
-	break;
-	case GLS_ATEST_GT_0:
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER, 0.0f);
-	break;
-	case GLS_ATEST_LT_80:
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_LESS, 0.5f);
-	break;
-	case GLS_ATEST_GE_80:
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GEQUAL, 0.5f);
-	break;
-	case GLS_ATEST_GT_CUSTOM:
-	// FIXME
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER, 0.5f);
-	break;
-	default:
-	assert(0);
-	break;
-	}
-	}
-	*/
+	
+    //if(diff & GLS_ATEST_BITS)
+	//{
+	//switch (stateBits & GLS_ATEST_BITS)
+	//{
+	//case 0:
+	//glDisable(GL_ALPHA_TEST);
+	//break;
+	//case GLS_ATEST_GT_0:
+	//glEnable(GL_ALPHA_TEST);
+	//glAlphaFunc(GL_GREATER, 0.0f);
+	//break;
+	//case GLS_ATEST_LT_80:
+	//glEnable(GL_ALPHA_TEST);
+	//glAlphaFunc(GL_LESS, 0.5f);
+	//break;
+	//case GLS_ATEST_GE_80:
+	//glEnable(GL_ALPHA_TEST);
+	//glAlphaFunc(GL_GEQUAL, 0.5f);
+	//break;
+	//case GLS_ATEST_GT_CUSTOM:
+	//// FIXME
+	//glEnable(GL_ALPHA_TEST);
+	//glAlphaFunc(GL_GREATER, 0.5f);
+	//break;
+	//default:
+	//assert(0);
+	//break;
+	//}
+	//}
+	
 
 	// stenciltest
 	if (diff & GLS_STENCILTEST_ENABLE)

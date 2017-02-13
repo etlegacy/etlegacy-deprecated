@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -38,6 +38,11 @@
 #include "g_lua.h"
 #endif
 
+/**
+ * @brief G_LogDeath
+ * @param[in,out] ent
+ * @param[in] weap
+ */
 void G_LogDeath(gentity_t *ent, weapon_t weap)
 {
 	if (!ent->client)
@@ -48,6 +53,11 @@ void G_LogDeath(gentity_t *ent, weapon_t weap)
 	ent->client->pers.playerStats.weaponStats[weap].killedby++;
 }
 
+/**
+ * @brief G_LogKill
+ * @param[in,out] ent
+ * @param[in] weap
+ */
 void G_LogKill(gentity_t *ent, weapon_t weap)
 {
 	if (!ent->client)
@@ -58,6 +68,11 @@ void G_LogKill(gentity_t *ent, weapon_t weap)
 	ent->client->pers.playerStats.weaponStats[weap].kills++;
 }
 
+/**
+ * @brief G_LogTeamKill
+ * @param[in,out] ent
+ * @param[in] weap
+ */
 void G_LogTeamKill(gentity_t *ent, weapon_t weap)
 {
 	if (!ent->client)
@@ -68,6 +83,11 @@ void G_LogTeamKill(gentity_t *ent, weapon_t weap)
 	ent->client->pers.playerStats.weaponStats[weap].teamkills++;
 }
 
+/**
+ * @brief G_LogRegionHit
+ * @param[in,out] ent
+ * @param[in] hr
+ */
 void G_LogRegionHit(gentity_t *ent, hitRegion_t hr)
 {
 	if (!ent->client)
@@ -77,6 +97,10 @@ void G_LogRegionHit(gentity_t *ent, hitRegion_t hr)
 	ent->client->pers.playerStats.hitRegions[hr]++;
 }
 
+/**
+ * @brief G_PrintAccuracyLog
+ * @param[in] ent
+ */
 void G_PrintAccuracyLog(gentity_t *ent)
 {
 	int  i;
@@ -115,6 +139,10 @@ void G_PrintAccuracyLog(gentity_t *ent)
 	trap_SendServerCommand(ent - g_entities, buffer);
 }
 
+/**
+ * @brief G_SetPlayerScore
+ * @param[in,out] client
+ */
 void G_SetPlayerScore(gclient_t *client)
 {
 	int i;
@@ -125,6 +153,11 @@ void G_SetPlayerScore(gclient_t *client)
 	}
 }
 
+/**
+ * @brief G_SetPlayerSkill
+ * @param[in,out] client
+ * @param[in] skill
+ */
 void G_SetPlayerSkill(gclient_t *client, skillType_t skill)
 {
 	int i;
@@ -151,7 +184,11 @@ void G_SetPlayerSkill(gclient_t *client, skillType_t skill)
 
 extern qboolean AddWeaponToPlayer(gclient_t *client, weapon_t weapon, int ammo, int ammoclip, qboolean setcurrent);
 
-// Local func to actual do skill upgrade, used by both MP skill system, and SP scripted skill system
+/**
+ * @brief Local func to actual do skill upgrade, used by both MP skill system, and SP scripted skill system
+ * @param[in,out] ent
+ * @param[in] skill
+ */
 void G_UpgradeSkill(gentity_t *ent, skillType_t skill)
 {
 	int i;
@@ -222,6 +259,12 @@ void G_UpgradeSkill(gentity_t *ent, skillType_t skill)
 	}
 }
 
+/**
+ * @brief G_LoseSkillPoints
+ * @param[in,out] ent
+ * @param[in] skill
+ * @param[in] points
+ */
 void G_LoseSkillPoints(gentity_t *ent, skillType_t skill, float points)
 {
 	int   oldskill;
@@ -260,12 +303,16 @@ void G_LoseSkillPoints(gentity_t *ent, skillType_t skill, float points)
 		ent->client->sess.skillpoints[skill] = skillLevels[skill][oldskill];
 	}
 
-	G_Printf("%s ^7just lost %.0f skill points for skill %s\n", ent->client->pers.netname, oldskillpoints - ent->client->sess.skillpoints[skill], skillNames[skill]);
+	G_Printf("%s ^7just lost %.0f skill points for skill %s\n", ent->client->pers.netname, (double)(oldskillpoints - ent->client->sess.skillpoints[skill]), skillNames[skill]);
 
 	level.teamScores[ent->client->ps.persistant[PERS_TEAM]]        -= oldskillpoints - ent->client->sess.skillpoints[skill];
 	level.teamXP[skill][ent->client->sess.sessionTeam - TEAM_AXIS] -= oldskillpoints - ent->client->sess.skillpoints[skill];
 }
 
+/**
+ * @brief G_ResetXP
+ * @param[in,out] ent
+ */
 void G_ResetXP(gentity_t *ent)
 {
 	int i = 0;
@@ -331,6 +378,12 @@ void G_ResetXP(gentity_t *ent)
 	ClientUserinfoChanged(ent - g_entities);
 }
 
+/**
+ * @brief G_AddSkillPoints
+ * @param[in,out] ent
+ * @param[in] skill
+ * @param[in] points
+ */
 void G_AddSkillPoints(gentity_t *ent, skillType_t skill, float points)
 {
 	int oldskill;
@@ -376,6 +429,10 @@ void G_AddSkillPoints(gentity_t *ent, skillType_t skill, float points)
 
 /**
  * @brief Loose skill for evil tkers :E
+ * @param[in] tker
+ * @param[in] mod
+ * @param hr - unused
+ * @param splash - unused
  */
 void G_LoseKillSkillPoints(gentity_t *tker, meansOfDeath_t mod, hitRegion_t hr, qboolean splash)
 {
@@ -412,6 +469,10 @@ void G_LoseKillSkillPoints(gentity_t *tker, meansOfDeath_t mod, hitRegion_t hr, 
 	case MOD_SMOKEGRENADE:
 		G_LoseSkillPoints(tker, SK_LIGHT_WEAPONS, 3.f);
 		//G_DebugAddSkillPoints( attacker, SK_LIGHT_WEAPONS, 2.f, "kill" );
+		break;
+
+	case MOD_BACKSTAB:
+		G_LoseSkillPoints(tker, SK_LIGHT_WEAPONS, 5.f);
 		break;
 
 	// scoped weapons
@@ -461,6 +522,13 @@ void G_LoseKillSkillPoints(gentity_t *tker, meansOfDeath_t mod, hitRegion_t hr, 
 	}
 }
 
+/**
+ * @brief G_AddKillSkillPoints
+ * @param[in] attacker
+ * @param[in] mod
+ * @param[in] hr
+ * @param[in] splash
+ */
 void G_AddKillSkillPoints(gentity_t *attacker, meansOfDeath_t mod, hitRegion_t hr, qboolean splash)
 {
 	if (!attacker->client)
@@ -500,6 +568,11 @@ void G_AddKillSkillPoints(gentity_t *attacker, meansOfDeath_t mod, hitRegion_t h
 		case HR_LEGS:   G_AddSkillPoints(attacker, SK_LIGHT_WEAPONS, 3.f); G_DebugAddSkillPoints(attacker, SK_LIGHT_WEAPONS, 3.f, "legshot kill");  break;
 		default:        G_AddSkillPoints(attacker, SK_LIGHT_WEAPONS, 3.f); G_DebugAddSkillPoints(attacker, SK_LIGHT_WEAPONS, 3.f, "kill"); break;               // for weapons that don't have localized damage
 		}
+		break;
+
+	case MOD_BACKSTAB:
+		G_AddSkillPoints(attacker, SK_LIGHT_WEAPONS, 5.f);
+		G_DebugAddSkillPoints(attacker, SK_LIGHT_WEAPONS, 5.f, "backstab kill");
 		break;
 
 	// heavy weapons
@@ -603,6 +676,12 @@ void G_AddKillSkillPoints(gentity_t *attacker, meansOfDeath_t mod, hitRegion_t h
 	}
 }
 
+/**
+ * @brief G_AddKillSkillPointsForDestruction
+ * @param[in] attacker
+ * @param[in] mod
+ * @param[in] constructibleStats
+ */
 void G_AddKillSkillPointsForDestruction(gentity_t *attacker, meansOfDeath_t mod, g_constructible_stats_t *constructibleStats)
 {
 	switch (mod)
@@ -644,6 +723,9 @@ void G_AddKillSkillPointsForDestruction(gentity_t *attacker, meansOfDeath_t mod,
 
 static fileHandle_t skillDebugLog = -1;
 
+/**
+ * @brief G_DebugOpenSkillLog
+ */
 void G_DebugOpenSkillLog(void)
 {
 	vmCvar_t mapname;
@@ -672,6 +754,9 @@ void G_DebugOpenSkillLog(void)
 	trap_FS_Write(s, strlen(s), skillDebugLog);
 }
 
+/**
+ * @brief G_DebugCloseSkillLog
+ */
 void G_DebugCloseSkillLog(void)
 {
 	qtime_t ct;
@@ -691,6 +776,11 @@ void G_DebugCloseSkillLog(void)
 	trap_FS_FCloseFile(skillDebugLog);
 }
 
+/**
+ * @brief G_DebugAddSkillLevel
+ * @param[in] ent
+ * @param[in] skill
+ */
 void G_DebugAddSkillLevel(gentity_t *ent, skillType_t skill)
 {
 	qtime_t ct;
@@ -714,6 +804,13 @@ void G_DebugAddSkillLevel(gentity_t *ent, skillType_t skill)
 	}
 }
 
+/**
+ * @brief G_DebugAddSkillPoints
+ * @param[in] ent
+ * @param[in] skill
+ * @param[in] points
+ * @param[in] reason
+ */
 void G_DebugAddSkillPoints(gentity_t *ent, skillType_t skill, float points, const char *reason)
 {
 	qtime_t ct;
@@ -737,106 +834,19 @@ void G_DebugAddSkillPoints(gentity_t *ent, skillType_t skill, float points, cons
 	}
 }
 
-// - send name and team when there is a winner - else empty string
-// and TEAM_FREE = 0 (client structure is only used for awards!)
-// - connectedClients have a team but keep the check for TEAM_FREE
-// ... we'll never know for sure, connectedClients are determined in CalculateRanks
-
-#define CHECKSTAT1(XX)                                                        \
-	best = NULL;                                                                \
-	for (i = 0; i < level.numConnectedClients; i++) {                          \
-		gclient_t *cl = &level.clients[level.sortedClients[i]];             \
-		if (cl->sess.sessionTeam == TEAM_FREE) {                          \
-			continue;                                                           \
-		}                                                                       \
-		if (cl->XX <= 0)                                                    \
-		{                                                                   \
-			continue;                                                       \
-		}                                                                   \
-		if (!best || cl->XX > best->XX) {                                  \
-			best = cl;                                                          \
-		}                                                                       \
-	}                                                                           \
-	if (best) { best->hasaward = qtrue; }                                      \
-	Q_strcat(buffer, 1024, va(";%s; %i ", best ? best->pers.netname : "", best ? best->sess.sessionTeam : TEAM_FREE))
-
-#define CHECKSTATMIN(XX, YY)                                                  \
-	best = NULL;                                                                \
-	for (i = 0; i < level.numConnectedClients; i++) {                          \
-		gclient_t *cl = &level.clients[level.sortedClients[i]];             \
-		if (cl->sess.sessionTeam == TEAM_FREE) {                          \
-			continue;                                                           \
-		}                                                                       \
-		if (!best || cl->XX > best->XX) {                                  \
-			best = cl;                                                          \
-		}                                                                       \
-	}                                                                           \
-	if (best) { best->hasaward = qtrue; }                                      \
-	Q_strcat(buffer, 1024, va(";%s; %i ", best && best->XX >= YY ? best->pers.netname : "", best && best->XX >= YY ? best->sess.sessionTeam : TEAM_FREE))
-
-#define CHECKSTATSKILL(XX)                                                            \
-	best = NULL;                                                                \
-	for (i = 0; i < level.numConnectedClients; i++) {                          \
-		gclient_t *cl = &level.clients[level.sortedClients[i]];             \
-		if (cl->sess.sessionTeam == TEAM_FREE) {                          \
-			continue;                                                           \
-		}                                                                       \
-		if ((cl->sess.skillpoints[XX] - cl->sess.startskillpoints[XX]) <= 0)    \
-		{                                                                       \
-			continue;                                                           \
-		}                                                                       \
-		if (cl->sess.skill[XX] < 1)                                             \
-		{                                                                       \
-			continue;                                                           \
-		}                                                                       \
-		if (!best || (cl->sess.skillpoints[XX] - cl->sess.startskillpoints[XX]) > (best->sess.skillpoints[XX] - best->sess.startskillpoints[XX])) {                                    \
-			best = cl;                                                          \
-		}                                                                       \
-	}                                                                           \
-	if (best) { best->hasaward = qtrue; }                                      \
-	Q_strcat(buffer, 1024, va(";%s; %i ", best ? best->pers.netname : "", best ? best->sess.sessionTeam : TEAM_FREE))
-
-#define CHECKSTAT3(XX, YY, ZZ)                                                \
-	best = NULL;                                                                \
-	for (i = 0; i < level.numConnectedClients; i++) {                          \
-		gclient_t *cl = &level.clients[level.sortedClients[i]];             \
-		if (cl->sess.sessionTeam == TEAM_FREE) {                          \
-			continue;                                                           \
-		}                                                                       \
-		if (!best || cl->XX > best->XX) {                                  \
-			best = cl;                                                          \
-		} else if (cl->XX == best->XX && cl->YY > best->YY) {           \
-			best = cl;                                                          \
-		} else if (cl->XX == best->XX && cl->YY == best->YY && cl->ZZ > best->ZZ) {         \
-			best = cl;                                                          \
-		}                                                                       \
-	}                                                                           \
-	if (best) { best->hasaward = qtrue; }                                      \
-	Q_strcat(buffer, 1024, va(";%s; %i ", best ? best->pers.netname : "", best ? best->sess.sessionTeam : TEAM_FREE))
-
-#define CHECKSTATTIME(XX, YY)                                                 \
-	best = NULL;                                                                \
-	for (i = 0; i < level.numConnectedClients; i++) {                          \
-		gclient_t *cl = &level.clients[level.sortedClients[i]];             \
-		if (cl->sess.sessionTeam == TEAM_FREE) {                          \
-			continue;                                                           \
-		}                                                                       \
-		if (!best || (cl->XX / (float)(level.time - cl->YY)) > (best->XX / (float)(level.time - best->YY))) { \
-			best = cl;                                                          \
-		}                                                                       \
-	}                                                                           \
-	if (best) {                                                                \
-		if ((best->sess.startxptotal - best->ps.persistant[PERS_SCORE]) >= 100 || best->medals || best->hasaward) { \
-			best = NULL;                                                        \
-		}                                                                       \
-	}                                                                           \
-	Q_strcat(buffer, 1024, va(";%s; %i ", best ? best->pers.netname : "", best ? best->sess.sessionTeam : TEAM_FREE))
-
+/**
+ * @brief - send name, team and value when there is a winner - else empty string
+ * and TEAM_FREE = 0 (client structure is only used for awards!)
+ * - connectedClients have a team but keep the check for TEAM_FREE
+ * ... we'll never know for sure, connectedClients are determined in CalculateRanks
+ */
 void G_BuildEndgameStats(void)
 {
 	char      buffer[1024];
-	int       i;
-	gclient_t *best;
+	int       i, j;
+	gclient_t *best         = NULL;
+	int       bestClientNum = -1;
+	float     mapXP, bestMapXP = 0.f;
 
 	G_CalcClientAccuracies();
 
@@ -847,20 +857,456 @@ void G_BuildEndgameStats(void)
 
 	*buffer = '\0';
 
-	CHECKSTAT1(sess.kills);
-	CHECKSTAT1(ps.persistant[PERS_SCORE]);
-	CHECKSTAT3(sess.rank, medals, ps.persistant[PERS_SCORE]);
-	CHECKSTAT1(medals);
-	CHECKSTATSKILL(SK_BATTLE_SENSE);
-	CHECKSTATSKILL(SK_EXPLOSIVES_AND_CONSTRUCTION);
-	CHECKSTATSKILL(SK_FIRST_AID);
-	CHECKSTATSKILL(SK_SIGNALS);
-	CHECKSTATSKILL(SK_LIGHT_WEAPONS);
-	CHECKSTATSKILL(SK_HEAVY_WEAPONS);
-	CHECKSTATSKILL(SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS);
-	CHECKSTAT1(acc);
-	CHECKSTATMIN(sess.team_kills, 5);
-	CHECKSTATTIME(ps.persistant[PERS_SCORE], pers.enterTime);
+	// highest ranking officer - check rank, then medals and XP
+	for (i = 0; i < level.numConnectedClients; i++)
+	{
+		gclient_t *cl = &level.clients[level.sortedClients[i]];
+		if (cl->sess.sessionTeam == TEAM_FREE)
+		{
+			continue;
+		}
+		if (!best || cl->sess.rank > best->sess.rank)
+		{
+			best          = cl;
+			bestClientNum = level.sortedClients[i];
+		}
+		else if (cl->sess.rank == best->sess.rank && cl->medals > best->medals)
+		{
+			best          = cl;
+			bestClientNum = level.sortedClients[i];
+		}
+		else if (cl->sess.rank == best->sess.rank && cl->medals == best->medals && cl->ps.persistant[PERS_SCORE] > best->ps.persistant[PERS_SCORE])
+		{
+			best          = cl;
+			bestClientNum = level.sortedClients[i];
+		}
+	}
+	if (best)
+	{
+		best->hasaward = qtrue;
+		Q_strcat(buffer, 1024, va("%i 0 %i ", bestClientNum, best->sess.sessionTeam));
+	}
+	else
+	{
+		Q_strcat(buffer, 1024, "-1 0 0 ");
+	}
+
+	best = NULL;
+
+	// highest experience points - check XP (total in campaign, otherwise this map only then total XP)
+	for (i = 0; i < level.numConnectedClients; i++)
+	{
+		gclient_t *cl = &level.clients[level.sortedClients[i]];
+		if (cl->sess.sessionTeam == TEAM_FREE)
+		{
+			continue;
+		}
+		if (cl->ps.persistant[PERS_SCORE] <= 0)
+		{
+			continue;
+		}
+
+		if (g_gametype.integer == GT_WOLF_CAMPAIGN)
+		{
+			if (!best || cl->ps.persistant[PERS_SCORE] > best->ps.persistant[PERS_SCORE])
+			{
+				best          = cl;
+				bestClientNum = level.sortedClients[i];
+			}
+		}
+		else
+		{
+			mapXP = 0.f;
+
+			for (j = 0; j < SK_NUM_SKILLS; j++)
+			{
+				mapXP += (cl->sess.skillpoints[j] - cl->sess.startskillpoints[j]);
+			}
+
+			if (!best || mapXP > bestMapXP)
+			{
+				best          = cl;
+				bestMapXP     = mapXP;
+				bestClientNum = level.sortedClients[i];
+			}
+			else if (mapXP == bestMapXP && cl->ps.persistant[PERS_SCORE] > best->ps.persistant[PERS_SCORE])
+			{
+				best          = cl;
+				bestMapXP     = mapXP;
+				bestClientNum = level.sortedClients[i];
+			}
+		}
+	}
+	if (best)
+	{
+		best->hasaward = qtrue;
+		if (g_gametype.integer == GT_WOLF_CAMPAIGN)
+		{
+			Q_strcat(buffer, 1024, va("%i %i %i ", bestClientNum, best->ps.persistant[PERS_SCORE], best->sess.sessionTeam));
+		}
+		else
+		{
+			Q_strcat(buffer, 1024, va("%i %i %i ", bestClientNum, (int)bestMapXP, best->sess.sessionTeam));
+		}
+	}
+	else
+	{
+		Q_strcat(buffer, 1024, "-1 0 0 ");
+	}
+
+	best = NULL;
+
+	// most highly decorated - check medals then XP
+	for (i = 0; i < level.numConnectedClients; i++)
+	{
+		gclient_t *cl = &level.clients[level.sortedClients[i]];
+		if (cl->sess.sessionTeam == TEAM_FREE)
+		{
+			continue;
+		}
+		if (cl->medals <= 0)
+		{
+			continue;
+		}
+		if (!best || cl->medals > best->medals)
+		{
+			best          = cl;
+			bestClientNum = level.sortedClients[i];
+		}
+		else if (cl->medals == best->medals && cl->ps.persistant[PERS_SCORE] > best->ps.persistant[PERS_SCORE])
+		{
+			best          = cl;
+			bestClientNum = level.sortedClients[i];
+		}
+	}
+	if (best)
+	{
+		best->hasaward = qtrue;
+		Q_strcat(buffer, 1024, va("%i %i %i ", bestClientNum, best->medals, best->sess.sessionTeam));
+	}
+	else
+	{
+		Q_strcat(buffer, 1024, "-1 0 0 ");
+	}
+
+	// highest fragger - check kills, then damage given
+	for (i = 0; i < level.numConnectedClients; i++)
+	{
+		gclient_t *cl = &level.clients[level.sortedClients[i]];
+		if (cl->sess.sessionTeam == TEAM_FREE)
+		{
+			continue;
+		}
+		if (cl->sess.kills <= 0)
+		{
+			continue;
+		}
+		if (!best || cl->sess.kills > best->sess.kills)
+		{
+			best          = cl;
+			bestClientNum = level.sortedClients[i];
+		}
+		else if (cl->sess.kills == best->sess.kills && cl->sess.damage_given > best->sess.damage_given)
+		{
+			best          = cl;
+			bestClientNum = level.sortedClients[i];
+		}
+	}
+	if (best)
+	{
+		best->hasaward = qtrue;
+		Q_strcat(buffer, 1024, va("%i %i %i ", bestClientNum, best->sess.kills, best->sess.sessionTeam));
+	}
+	else
+	{
+		Q_strcat(buffer, 1024, "-1 0 0 ");
+	}
+
+	best = NULL;
+
+	// highest skills - check skills points (this map only, min lvl 1)
+	for (i = 0; i < SK_NUM_SKILLS; i++)
+	{
+		best = NULL;
+
+		for (j = 0; j < level.numConnectedClients; j++)
+		{
+			gclient_t *cl = &level.clients[level.sortedClients[j]];
+			if (cl->sess.sessionTeam == TEAM_FREE)
+			{
+				continue;
+			}
+			if ((cl->sess.skillpoints[i] - cl->sess.startskillpoints[i]) <= 0)
+			{
+				continue;
+			}
+			if (cl->sess.skill[i] < 1)
+			{
+				continue;
+			}
+			if (!best || (cl->sess.skillpoints[i] - cl->sess.startskillpoints[i]) > (best->sess.skillpoints[i] - best->sess.startskillpoints[i]))
+			{
+				best          = cl;
+				bestClientNum = level.sortedClients[j];
+			}
+		}
+		if (best)
+		{
+			best->hasaward = qtrue;
+			Q_strcat(buffer, 1024, va("%i %i %i ", bestClientNum, (int)(best->sess.skillpoints[i] - best->sess.startskillpoints[i]), best->sess.sessionTeam));
+		}
+		else
+		{
+			Q_strcat(buffer, 1024, "-1 0 0 ");
+		}
+	}
+
+	best = NULL;
+
+	// highest accuracy
+	for (i = 0; i < level.numConnectedClients; i++)
+	{
+		gclient_t *cl = &level.clients[level.sortedClients[i]];
+		if (cl->sess.sessionTeam == TEAM_FREE)
+		{
+			continue;
+		}
+		if (cl->acc <= 0)
+		{
+			continue;
+		}
+		if (!best || cl->acc > best->acc)
+		{
+			best          = cl;
+			bestClientNum = level.sortedClients[i];
+		}
+	}
+	if (best)
+	{
+		best->hasaward = qtrue;
+		Q_strcat(buffer, 1024, va("%i %.1f %i ", bestClientNum, best->acc < 100.f ? (double)best->acc : 100.0, best->sess.sessionTeam));
+	}
+	else
+	{
+		Q_strcat(buffer, 1024, "-1 0 0 ");
+	}
+
+	best = NULL;
+
+	// highest HS percentage
+	for (i = 0; i < level.numConnectedClients; i++)
+	{
+		gclient_t *cl = &level.clients[level.sortedClients[i]];
+		if (cl->sess.sessionTeam == TEAM_FREE)
+		{
+			continue;
+		}
+		if (cl->hspct <= 0)
+		{
+			continue;
+		}
+		if (!best || cl->hspct > best->hspct)
+		{
+			best          = cl;
+			bestClientNum = level.sortedClients[i];
+		}
+	}
+	if (best)
+	{
+		best->hasaward = qtrue;
+		Q_strcat(buffer, 1024, va("%i %.1f %i ", bestClientNum, best->hspct < 100.f ? (double)best->hspct : 100.0, best->sess.sessionTeam));
+	}
+	else
+	{
+		Q_strcat(buffer, 1024, "-1 0 0 ");
+	}
+
+	best = NULL;
+
+	// best survivor - check time played percentage (min 50% of map duration)
+	for (i = 0; i < level.numConnectedClients; i++)
+	{
+		gclient_t *cl = &level.clients[level.sortedClients[i]];
+		if (cl->sess.sessionTeam == TEAM_FREE)
+		{
+			continue;
+		}
+		if ((level.time - cl->pers.enterTime) / (float)(level.time - level.intermissiontime) < 0.5f)
+		{
+			continue;
+		}
+		if (!best || (cl->sess.time_played / (float)(level.time - cl->pers.enterTime)) > (best->sess.time_played / (float)(level.time - best->pers.enterTime)))
+		{
+			best          = cl;
+			bestClientNum = level.sortedClients[i];
+		}
+	}
+	if (best)
+	{
+		best->hasaward = qtrue;
+		Q_strcat(buffer, 1024, va("%i %f %i ", bestClientNum, MIN(100.0 * best->sess.time_played / (double)(level.time - best->pers.enterTime), 100.0), best->sess.sessionTeam));
+	}
+	else
+	{
+		Q_strcat(buffer, 1024, "-1 0 0 ");
+	}
+
+	best = NULL;
+
+	// most gibs - check gibs, then damage given
+	for (i = 0; i < level.numConnectedClients; i++)
+	{
+		gclient_t *cl = &level.clients[level.sortedClients[i]];
+		if (cl->sess.sessionTeam == TEAM_FREE)
+		{
+			continue;
+		}
+		if (cl->sess.gibs <= 0)
+		{
+			continue;
+		}
+		if (!best || cl->sess.gibs > best->sess.gibs)
+		{
+			best          = cl;
+			bestClientNum = level.sortedClients[i];
+		}
+		else if (cl->sess.gibs == best->sess.gibs && cl->sess.damage_given > best->sess.damage_given)
+		{
+			best          = cl;
+			bestClientNum = level.sortedClients[i];
+		}
+	}
+	if (best)
+	{
+		best->hasaward = qtrue;
+		Q_strcat(buffer, 1024, va("%i %i %i ", bestClientNum, best->sess.gibs, best->sess.sessionTeam));
+	}
+	else
+	{
+		Q_strcat(buffer, 1024, "-1 0 0 ");
+	}
+
+	best = NULL;
+
+	// most selfkill - check selfkills, then deaths
+	for (i = 0; i < level.numConnectedClients; i++)
+	{
+		gclient_t *cl = &level.clients[level.sortedClients[i]];
+		if (cl->sess.sessionTeam == TEAM_FREE)
+		{
+			continue;
+		}
+		if (cl->sess.self_kills <= 0)
+		{
+			continue;
+		}
+		if (!best || cl->sess.self_kills > best->sess.self_kills)
+		{
+			best          = cl;
+			bestClientNum = level.sortedClients[i];
+		}
+		else if (cl->sess.self_kills == best->sess.self_kills && cl->sess.deaths > best->sess.deaths)
+		{
+			best          = cl;
+			bestClientNum = level.sortedClients[i];
+		}
+	}
+	if (best)
+	{
+		best->hasaward = qtrue;
+		Q_strcat(buffer, 1024, va("%i %i %i ", bestClientNum, best->sess.self_kills, best->sess.sessionTeam));
+	}
+	else
+	{
+		Q_strcat(buffer, 1024, "-1 0 0 ");
+	}
+
+	best = NULL;
+
+	// most deaths - check deaths, then damage received
+	for (i = 0; i < level.numConnectedClients; i++)
+	{
+		gclient_t *cl = &level.clients[level.sortedClients[i]];
+		if (cl->sess.sessionTeam == TEAM_FREE)
+		{
+			continue;
+		}
+		if (cl->sess.deaths <= 0)
+		{
+			continue;
+		}
+		if (!best || cl->sess.deaths > best->sess.deaths)
+		{
+			best          = cl;
+			bestClientNum = level.sortedClients[i];
+		}
+		else if (cl->sess.deaths == best->sess.deaths && cl->sess.damage_received > best->sess.damage_received)
+		{
+			best          = cl;
+			bestClientNum = level.sortedClients[i];
+		}
+	}
+	if (best)
+	{
+		best->hasaward = qtrue;
+		Q_strcat(buffer, 1024, va("%i %i %i ", bestClientNum, best->sess.deaths, best->sess.sessionTeam));
+	}
+	else
+	{
+		Q_strcat(buffer, 1024, "-1 0 0 ");
+	}
+
+	best = NULL;
+
+	// I ain't got no friends award - check team kills, then team damage given (min 5 tks)
+	for (i = 0; i < level.numConnectedClients; i++)
+	{
+		gclient_t *cl = &level.clients[level.sortedClients[i]];
+		if (cl->sess.sessionTeam == TEAM_FREE)
+		{
+			continue;
+		}
+		if (!best || cl->sess.team_kills > best->sess.team_kills)
+		{
+			best          = cl;
+			bestClientNum = level.sortedClients[i];
+		}
+		else if (cl->sess.team_kills == best->sess.team_kills && cl->sess.team_damage_given > best->sess.team_damage_given)
+		{
+			best          = cl;
+			bestClientNum = level.sortedClients[i];
+		}
+	}
+	if (best)
+	{
+		best->hasaward = qtrue;
+	}
+	Q_strcat(buffer, 1024, va("%i %i %i ", best && best->sess.team_kills >= 5 ? bestClientNum : -1, best ? best->sess.team_kills : 0, best && best->sess.team_kills >= 5 ? best->sess.sessionTeam : TEAM_FREE));
+
+	best = NULL;
+
+	// welcome newbie! award - dont get this if any other award given or > 100 xp (this map)
+	for (i = 0; i < level.numConnectedClients; i++)
+	{
+		gclient_t *cl = &level.clients[level.sortedClients[i]];
+		if (cl->sess.sessionTeam == TEAM_FREE)
+		{
+			continue;
+		}
+		if (!best || (cl->ps.persistant[PERS_SCORE] / (float)(level.time - cl->pers.enterTime)) > (best->ps.persistant[PERS_SCORE] / (float)(level.time - best->pers.enterTime)))
+		{
+			best          = cl;
+			bestClientNum = level.sortedClients[i];
+		}
+	}
+	if (best)
+	{
+		if ((best->sess.startxptotal - best->ps.persistant[PERS_SCORE]) >= 100 || best->medals || best->hasaward)
+		{
+			best = NULL;
+		}
+	}
+	Q_strcat(buffer, 1024, va("%i %i %i ", best ? bestClientNum : -1, best ? best->ps.persistant[PERS_SCORE] : 0, best ? best->sess.sessionTeam : TEAM_FREE));
 
 	trap_SetConfigstring(CS_ENDGAME_STATS, buffer);
 }

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -39,7 +39,7 @@
 
 #include "../renderercommon/tr_types.h"
 
-void CM_LoadMap(const char *name, qboolean clientload, int *checksum);
+void CM_LoadMap(const char *name, qboolean clientload, unsigned int *checksum);
 void CM_ClearMap(void);
 
 clipHandle_t CM_InlineModel(int index);         // 0 = world, 1 + are bmodels
@@ -58,11 +58,11 @@ int CM_TransformedPointContents(const vec3_t p, clipHandle_t model, const vec3_t
 
 void CM_BoxTrace(trace_t *results, const vec3_t start, const vec3_t end,
                  const vec3_t mins, const vec3_t maxs,
-                 clipHandle_t model, int brushmask, int capsule);
+                 clipHandle_t model, int brushmask, qboolean capsule);
 void CM_TransformedBoxTrace(trace_t *results, const vec3_t start, const vec3_t end,
                             const vec3_t mins, const vec3_t maxs,
                             clipHandle_t model, int brushmask,
-                            const vec3_t origin, const vec3_t angles, int capsule);
+                            const vec3_t origin, const vec3_t angles, qboolean capsule);
 
 byte *CM_ClusterPVS(int cluster);
 

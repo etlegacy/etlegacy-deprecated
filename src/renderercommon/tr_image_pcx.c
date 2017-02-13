@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -53,6 +53,14 @@ typedef struct
 	unsigned char data[];
 } pcx_t;
 
+/**
+ * @brief R_LoadPCX
+ * @param[in] filename
+ * @param[out] pic
+ * @param[out] width
+ * @param[out] height
+ * @param alphaByte - unused
+ */
 void R_LoadPCX(const char *filename, byte **pic, int *width, int *height, byte alphaByte)
 {
 	union
@@ -68,7 +76,7 @@ void R_LoadPCX(const char *filename, byte **pic, int *width, int *height, byte a
 	unsigned short w, h;
 	byte           *pic8;
 	byte           *palette;
-	int            i;
+	unsigned int   i;
 	unsigned       size = 0;
 
 	if (width)
@@ -82,8 +90,8 @@ void R_LoadPCX(const char *filename, byte **pic, int *width, int *height, byte a
 	*pic = NULL;
 
 	// load the file
-	len = ri.FS_ReadFile(( char * ) filename, &raw.v);
-	if (!raw.b || len < 0)
+	len = ri.FS_ReadFile(filename, &raw.v);
+	if (!raw.b || len <= 0)
 	{
 		return;
 	}

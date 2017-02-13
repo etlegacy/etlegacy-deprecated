@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -36,6 +36,10 @@
 #include "ui_shared.h"
 #include "ui_local.h"
 
+/**
+ * @brief Item_Tooltip_Initialize
+ * @param[in,out] item
+ */
 void Item_Tooltip_Initialize(itemDef_t *item)
 {
 	item->text              = NULL;
@@ -52,6 +56,12 @@ void Item_Tooltip_Initialize(itemDef_t *item)
 	Vector4Set(item->window.foreColor, 0.f, 0.f, 0.f, 1.f);
 }
 
+/**
+ * @brief Item_SetScreenCoords
+ * @param[in,out] item
+ * @param[in] x
+ * @param[in] y
+ */
 void Item_SetScreenCoords(itemDef_t *item, float x, float y)
 {
 	if (item == NULL)
@@ -92,7 +102,11 @@ void Item_SetScreenCoords(itemDef_t *item, float x, float y)
 	item->textRect.h = 0;
 }
 
-// FIXME: consolidate this with nearby stuff
+/**
+ * @brief Item_UpdatePosition
+ * @param[in] item
+ * @todo FIXME: consolidate this with nearby stuff
+ */
 void Item_UpdatePosition(itemDef_t *item)
 {
 	float     x, y;
@@ -116,6 +130,12 @@ void Item_UpdatePosition(itemDef_t *item)
 	Item_SetScreenCoords(item, x, y);
 }
 
+/**
+ * @brief Item_EnableShowViaCvar
+ * @param[in] item
+ * @param[in] flag
+ * @return
+ */
 qboolean Item_EnableShowViaCvar(itemDef_t *item, int flag)
 {
 	char script[1024], *p;
@@ -162,16 +182,20 @@ qboolean Item_EnableShowViaCvar(itemDef_t *item, int flag)
 			}
 		}
 
-		return (item->cvarFlags & flag) ? qfalse : qtrue;
+		//return (item->cvarFlags & flag) ? qfalse : qtrue;
 	}
 
 	return qtrue;
 }
 
-// display if we poll on a server toggle setting
-// We want *current* settings, so this is a bit of a perf hit,
-// but this is only during UI display
-
+/**
+ * @brief Sisplay if we poll on a server toggle setting
+ * We want *current* settings, so this is a bit of a perf hit,
+ * but this is only during UI display
+ * @param[in] item
+ * @param[in] fVoteTest
+ * @return
+ */
 qboolean Item_SettingShow(itemDef_t *item, qboolean fVoteTest)
 {
 	char info[MAX_INFO_STRING];
@@ -197,7 +221,13 @@ qboolean Item_SettingShow(itemDef_t *item, qboolean fVoteTest)
 	return qtrue;
 }
 
-// will optionaly set focus to this item
+/**
+ * @brief Will optionaly set focus to this item
+ * @param[in] item
+ * @param[in] x
+ * @param[in] y
+ * @return
+ */
 qboolean Item_SetFocus(itemDef_t *item, float x, float y)
 {
 	int         i;
@@ -298,6 +328,11 @@ qboolean Item_SetFocus(itemDef_t *item, float x, float y)
 	return qtrue;
 }
 
+/**
+ * @brief Item_ListBox_MaxScroll
+ * @param[in] item
+ * @return
+ */
 int Item_ListBox_MaxScroll(itemDef_t *item)
 {
 	listBoxDef_t *listPtr = (listBoxDef_t *)item->typeData;
@@ -321,6 +356,11 @@ int Item_ListBox_MaxScroll(itemDef_t *item)
 	return max;
 }
 
+/**
+ * @brief Item_ListBox_ThumbPosition
+ * @param[in] item
+ * @return
+ */
 int Item_ListBox_ThumbPosition(itemDef_t *item)
 {
 	float        max, pos, size;
@@ -332,7 +372,7 @@ int Item_ListBox_ThumbPosition(itemDef_t *item)
 		size = item->window.rect.w - (SCROLLBAR_SIZE * 2) - 2;
 		if (max > 0)
 		{
-			pos = (size - SCROLLBAR_SIZE) / (float)max;
+			pos = (size - SCROLLBAR_SIZE) / max;
 		}
 		else
 		{
@@ -347,7 +387,7 @@ int Item_ListBox_ThumbPosition(itemDef_t *item)
 		size = item->window.rect.h - (SCROLLBAR_SIZE * 2) - 2;
 		if (max > 0)
 		{
-			pos = (size - SCROLLBAR_SIZE) / (float)max;
+			pos = (size - SCROLLBAR_SIZE) / max;
 		}
 		else
 		{
@@ -360,6 +400,11 @@ int Item_ListBox_ThumbPosition(itemDef_t *item)
 	}
 }
 
+/**
+ * @brief Item_ListBox_ThumbDrawPosition
+ * @param[in] item
+ * @return
+ */
 int Item_ListBox_ThumbDrawPosition(itemDef_t *item)
 {
 	if (itemCapture == item)
@@ -399,6 +444,11 @@ int Item_ListBox_ThumbDrawPosition(itemDef_t *item)
 	}
 }
 
+/**
+ * @brief Item_Slider_ThumbPosition
+ * @param[in] item
+ * @return
+ */
 float Item_Slider_ThumbPosition(itemDef_t *item)
 {
 	float          value, range, x;
@@ -440,6 +490,13 @@ float Item_Slider_ThumbPosition(itemDef_t *item)
 	return x;
 }
 
+/**
+ * @brief Item_Slider_OverSlider
+ * @param[in] item
+ * @param[in] x
+ * @param[in] y
+ * @return
+ */
 int Item_Slider_OverSlider(itemDef_t *item, float x, float y)
 {
 	rectDef_t r;
@@ -457,6 +514,13 @@ int Item_Slider_OverSlider(itemDef_t *item, float x, float y)
 	return 0;
 }
 
+/**
+ * @brief Item_ListBox_OverLB
+ * @param[in] item
+ * @param[in] x
+ * @param[in] y
+ * @return
+ */
 int Item_ListBox_OverLB(itemDef_t *item, float x, float y)
 {
 	rectDef_t r;
@@ -561,6 +625,13 @@ int Item_ListBox_OverLB(itemDef_t *item, float x, float y)
 	return 0;
 }
 
+/**
+ * @brief Item_ListBox_MouseEnter
+ * @param[in] item
+ * @param[in] x
+ * @param[in] y
+ * @param[in] click
+ */
 void Item_ListBox_MouseEnter(itemDef_t *item, float x, float y, qboolean click)
 {
 	rectDef_t    r;
@@ -617,6 +688,12 @@ void Item_ListBox_MouseEnter(itemDef_t *item, float x, float y, qboolean click)
 	}
 }
 
+/**
+ * @brief Item_MouseEnter
+ * @param[in] item
+ * @param[in] x
+ * @param[in] y
+ */
 void Item_MouseEnter(itemDef_t *item, float x, float y)
 {
 	if (item)
@@ -686,6 +763,10 @@ void Item_MouseEnter(itemDef_t *item, float x, float y)
 	}
 }
 
+/**
+ * @brief Item_MouseLeave
+ * @param[in,out] item
+ */
 void Item_MouseLeave(itemDef_t *item)
 {
 	if (item)
@@ -701,6 +782,11 @@ void Item_MouseLeave(itemDef_t *item)
 	}
 }
 
+/**
+ * @brief Item_SetMouseOver
+ * @param[in,out] item
+ * @param[in] focus
+ */
 void Item_SetMouseOver(itemDef_t *item, qboolean focus)
 {
 	if (item)
@@ -716,6 +802,12 @@ void Item_SetMouseOver(itemDef_t *item, qboolean focus)
 	}
 }
 
+/**
+ * @brief Item_OwnerDraw_HandleKey
+ * @param[in,out] item
+ * @param[in] key
+ * @return
+ */
 qboolean Item_OwnerDraw_HandleKey(itemDef_t *item, int key)
 {
 	if (item && DC->ownerDrawHandleKey)
@@ -726,6 +818,14 @@ qboolean Item_OwnerDraw_HandleKey(itemDef_t *item, int key)
 	return qfalse;
 }
 
+/**
+ * @brief Item_ListBox_HandleKey
+ * @param[in,out] item
+ * @param[in] key
+ * @param down - unused
+ * @param[in] force
+ * @return
+ */
 qboolean Item_ListBox_HandleKey(itemDef_t *item, int key, qboolean down, qboolean force)
 {
 	listBoxDef_t *listPtr = (listBoxDef_t *)item->typeData;
@@ -738,7 +838,7 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int key, qboolean down, qboolea
 
 		if (item->window.flags & WINDOW_HORIZONTAL)
 		{
-			viewmax = (item->window.rect.w / listPtr->elementWidth);
+			viewmax = (int)(item->window.rect.w / listPtr->elementWidth);
 
 			if (key == K_LEFTARROW || key == K_KP_LEFTARROW)
 			{
@@ -811,7 +911,7 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int key, qboolean down, qboolea
 		}
 		else
 		{
-			viewmax = (item->window.rect.h / listPtr->elementHeight);
+			viewmax = (int)(item->window.rect.h / listPtr->elementHeight);
 			if (key == K_UPARROW || key == K_KP_UPARROW || key == K_MWHEELUP)
 			{
 				if (!listPtr->notselectable)
@@ -1064,6 +1164,12 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int key, qboolean down, qboolea
 	return qfalse;
 }
 
+/**
+ * @brief Item_CheckBox_HandleKey
+ * @param[in] item
+ * @param[in] key
+ * @return
+ */
 qboolean Item_CheckBox_HandleKey(itemDef_t *item, int key)
 {
 	if (Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory) && (item->window.flags & WINDOW_HASFOCUS) && item->cvar)
@@ -1079,11 +1185,11 @@ qboolean Item_CheckBox_HandleKey(itemDef_t *item, int key)
 
 					if (key == K_MOUSE2)
 					{
-						curvalue = DC->getCVarValue(item->cvar) - 1;
+						curvalue = (int)(DC->getCVarValue(item->cvar) - 1);
 					}
 					else
 					{
-						curvalue = DC->getCVarValue(item->cvar) + 1;
+						curvalue = (int)(DC->getCVarValue(item->cvar) + 1);
 					}
 
 					if (curvalue > 2)
@@ -1099,7 +1205,7 @@ qboolean Item_CheckBox_HandleKey(itemDef_t *item, int key)
 				}
 				else
 				{
-					DC->setCVar(item->cvar, va("%i", !DC->getCVarValue(item->cvar)));
+					DC->setCVar(item->cvar, va("%i", DC->getCVarValue(item->cvar) != 0.f));
 				}
 			}
 
@@ -1110,6 +1216,12 @@ qboolean Item_CheckBox_HandleKey(itemDef_t *item, int key)
 	return qfalse;
 }
 
+/**
+ * @brief Item_YesNo_HandleKey
+ * @param[in] item
+ * @param[in] key
+ * @return
+ */
 qboolean Item_YesNo_HandleKey(itemDef_t *item, int key)
 {
 	if (Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory) && (item->window.flags & WINDOW_HASFOCUS) && item->cvar)
@@ -1129,6 +1241,11 @@ qboolean Item_YesNo_HandleKey(itemDef_t *item, int key)
 	return qfalse;
 }
 
+/**
+ * @brief Item_Multi_CountSettings
+ * @param[in] item
+ * @return
+ */
 int Item_Multi_CountSettings(itemDef_t *item)
 {
 	multiDef_t *multiPtr = (multiDef_t *)item->typeData;
@@ -1141,6 +1258,11 @@ int Item_Multi_CountSettings(itemDef_t *item)
 	return multiPtr->count;
 }
 
+/**
+ * @brief Item_Multi_FindCvarByValue
+ * @param[in] item
+ * @return
+ */
 int Item_Multi_FindCvarByValue(itemDef_t *item)
 {
 	char       buff[1024];
@@ -1182,6 +1304,11 @@ int Item_Multi_FindCvarByValue(itemDef_t *item)
 	return 0;
 }
 
+/**
+ * @brief Item_Multi_Setting
+ * @param[in] item
+ * @return
+ */
 const char *Item_Multi_Setting(itemDef_t *item)
 {
 	multiDef_t *multiPtr = (multiDef_t *)item->typeData;
@@ -1231,6 +1358,12 @@ const char *Item_Multi_Setting(itemDef_t *item)
 	return "";
 }
 
+/**
+ * @brief Item_Multi_HandleKey
+ * @param[in] item
+ * @param[in] key
+ * @return
+ */
 qboolean Item_Multi_HandleKey(itemDef_t *item, int key)
 {
 	multiDef_t *multiPtr = (multiDef_t *)item->typeData;
@@ -1288,6 +1421,10 @@ qboolean Item_Multi_HandleKey(itemDef_t *item, int key)
 	return qfalse;
 }
 
+/**
+ * @brief Item_ComboSelect
+ * @param[in] item
+ */
 void Item_ComboSelect(itemDef_t *item)
 {
 	if (item)
@@ -1296,11 +1433,19 @@ void Item_ComboSelect(itemDef_t *item)
 	}
 }
 
+/**
+ * @brief Item_ComboDeSelect
+ * @param item - unused
+ */
 void Item_ComboDeSelect(itemDef_t *item)
 {
 	CLEAR_EDITITEM();
 }
 
+/**
+ * @brief Item_CalcTextFieldCursor
+ * @param[in,out] item
+ */
 void Item_CalcTextFieldCursor(itemDef_t *item)
 {
 	if (item->cvar)
@@ -1308,10 +1453,12 @@ void Item_CalcTextFieldCursor(itemDef_t *item)
 		char           buff[1024];
 		int            len;
 		editFieldDef_t *editPtr = (editFieldDef_t *)item->typeData;
+
 		memset(buff, 0, sizeof(buff));
 		DC->getCVarString(item->cvar, buff, sizeof(buff));
 		len = Q_UTF8_Strlen(buff);
-		if (editPtr->maxChars && len > editPtr->maxChars)
+
+		if (editPtr && editPtr->maxChars && len > editPtr->maxChars)
 		{
 			len = editPtr->maxChars;
 		}
@@ -1321,6 +1468,10 @@ void Item_CalcTextFieldCursor(itemDef_t *item)
 	}
 }
 
+/**
+ * @brief Item_HandleTextFieldSelect
+ * @param[in] item
+ */
 void Item_HandleTextFieldSelect(itemDef_t *item)
 {
 	if (item)
@@ -1330,6 +1481,10 @@ void Item_HandleTextFieldSelect(itemDef_t *item)
 	}
 }
 
+/**
+ * @brief Item_HandleTextFieldDeSelect
+ * @param[in] item
+ */
 void Item_HandleTextFieldDeSelect(itemDef_t *item)
 {
 	if (item && item->cvar)
@@ -1343,6 +1498,9 @@ void Item_HandleTextFieldDeSelect(itemDef_t *item)
 	CLEAR_EDITITEM();
 }
 
+/**
+ * @brief Item_HandleSaveValue
+ */
 void Item_HandleSaveValue(void)
 {
 	if (g_editItem && TEXTFIELD(g_editItem->type))
@@ -1353,6 +1511,15 @@ void Item_HandleSaveValue(void)
 	}
 }
 
+/**
+ * @brief Item_TextField_InsertToCursor
+ * @param[in,out] len
+ * @param[in,out] buff
+ * @param[in] key
+ * @param[in,out] item
+ * @param[in,out] editPtr
+ * @return
+ */
 static qboolean Item_TextField_InsertToCursor(int *len, char *buff, int key, itemDef_t *item, editFieldDef_t *editPtr)
 {
 	qboolean overStrike = qfalse;
@@ -1388,6 +1555,12 @@ static qboolean Item_TextField_InsertToCursor(int *len, char *buff, int key, ite
 	return qfalse;
 }
 
+/**
+ * @brief Item_Combo_HandleKey
+ * @param[in] item
+ * @param[in] key
+ * @return
+ */
 qboolean Item_Combo_HandleKey(itemDef_t *item, int key)
 {
 	multiDef_t *multi = NULL;
@@ -1403,7 +1576,7 @@ qboolean Item_Combo_HandleKey(itemDef_t *item, int key)
 			}
 			else
 			{
-				DC->setCVar(item->cvar, va("%.0f", multi->cvarValue[item->cursorPos]));
+				DC->setCVar(item->cvar, va("%.0f", (double)multi->cvarValue[item->cursorPos]));
 			}
 			Item_RunScript(item, NULL, item->onAccept);
 			return qtrue;
@@ -1413,6 +1586,12 @@ qboolean Item_Combo_HandleKey(itemDef_t *item, int key)
 	return qfalse;
 }
 
+/**
+ * @brief Item_TextField_HandleKey
+ * @param[in] item
+ * @param[in] key
+ * @return
+ */
 qboolean Item_TextField_HandleKey(itemDef_t *item, int key)
 {
 	char           buff[1024];
@@ -1636,6 +1815,10 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key)
 	return qtrue;
 }
 
+/**
+ * @brief Item_Scroll_ListBox_AutoFunc
+ * @param[in,out] p
+ */
 static void Item_Scroll_ListBox_AutoFunc(void *p)
 {
 	scrollInfo_t *si = (scrollInfo_t *)p;
@@ -1659,6 +1842,10 @@ static void Item_Scroll_ListBox_AutoFunc(void *p)
 	}
 }
 
+/**
+ * @brief Item_Scroll_ListBox_ThumbFunc
+ * @param[in,out] p
+ */
 static void Item_Scroll_ListBox_ThumbFunc(void *p)
 {
 	scrollInfo_t *si = (scrollInfo_t *)p;
@@ -1735,6 +1922,10 @@ static void Item_Scroll_ListBox_ThumbFunc(void *p)
 	}
 }
 
+/**
+ * @brief Item_Scroll_Slider_ThumbFunc
+ * @param[in] p
+ */
 static void Item_Scroll_Slider_ThumbFunc(void *p)
 {
 	float          x, value, cursorx;
@@ -1765,9 +1956,14 @@ static void Item_Scroll_Slider_ThumbFunc(void *p)
 	value /= SLIDER_WIDTH;
 	value *= (editDef->maxVal - editDef->minVal);
 	value += editDef->minVal;
-	DC->setCVar(si->item->cvar, va("%f", value));
+	DC->setCVar(si->item->cvar, va("%f", (double)value));
 }
 
+/**
+ * @brief Item_StartCapture
+ * @param[in] item
+ * @param[in] key
+ */
 void Item_StartCapture(itemDef_t *item, int key)
 {
 	int flags;
@@ -1822,6 +2018,13 @@ void Item_StartCapture(itemDef_t *item, int key)
 	}
 }
 
+/**
+ * @brief Item_Slider_HandleKey
+ * @param[in] item
+ * @param[in] key
+ * @param down - unused
+ * @return
+ */
 qboolean Item_Slider_HandleKey(itemDef_t *item, int key, qboolean down)
 {
 	//DC->Print("slider handle key\n");
@@ -1860,7 +2063,7 @@ qboolean Item_Slider_HandleKey(itemDef_t *item, int key, qboolean down)
 					// vm fuckage
 					// value = (((float)(DC->cursorx - x)/ SLIDER_WIDTH) * (editDef->maxVal - editDef->minVal));
 					value += editDef->minVal;
-					DC->setCVar(item->cvar, va("%f", value));
+					DC->setCVar(item->cvar, va("%f", (double)value));
 					return qtrue;
 				}
 			}
@@ -1871,6 +2074,10 @@ qboolean Item_Slider_HandleKey(itemDef_t *item, int key, qboolean down)
 	return qfalse;
 }
 
+/**
+ * @brief Item_Action
+ * @param[in] item
+ */
 void Item_Action(itemDef_t *item)
 {
 	if (item)
@@ -1879,6 +2086,11 @@ void Item_Action(itemDef_t *item)
 	}
 }
 
+/**
+ * @brief Item_CorrectedTextRect
+ * @param[in] item
+ * @return
+ */
 rectDef_t *Item_CorrectedTextRect(itemDef_t *item)
 {
 	static rectDef_t rect;
@@ -1887,7 +2099,7 @@ rectDef_t *Item_CorrectedTextRect(itemDef_t *item)
 	if (item)
 	{
 		rect = item->textRect;
-		if (rect.w)
+		if (rect.w != 0.f)
 		{
 			rect.y -= rect.h;
 		}
@@ -1896,6 +2108,13 @@ rectDef_t *Item_CorrectedTextRect(itemDef_t *item)
 	return &rect;
 }
 
+/**
+ * @brief Item_SetTextExtents
+ * @param[in,out] item
+ * @param[in,out] width
+ * @param[in,out] height
+ * @param[in] text
+ */
 void Item_SetTextExtents(itemDef_t *item, int *width, int *height, const char *text)
 {
 	const char *textPtr = (text) ? text : item->text;
@@ -1953,6 +2172,11 @@ void Item_SetTextExtents(itemDef_t *item, int *width, int *height, const char *t
 	}
 }
 
+/**
+ * @brief Item_TextColor
+ * @param[in] item
+ * @param[in] newColor
+ */
 void Item_TextColor(itemDef_t *item, vec4_t *newColor)
 {
 	menuDef_t *parent = (menuDef_t *)item->parent;
@@ -1963,21 +2187,21 @@ void Item_TextColor(itemDef_t *item, vec4_t *newColor)
 	{
 		vec4_t lowLight;
 
-		lowLight[0] = 0.8 * parent->focusColor[0];
-		lowLight[1] = 0.8 * parent->focusColor[1];
-		lowLight[2] = 0.8 * parent->focusColor[2];
-		lowLight[3] = 0.8 * parent->focusColor[3];
-		LerpColor(parent->focusColor, lowLight, *newColor, 0.5 + 0.5 * sin((float)(DC->realTime / PULSE_DIVISOR)));
+		lowLight[0] = 0.8f * parent->focusColor[0];
+		lowLight[1] = 0.8f * parent->focusColor[1];
+		lowLight[2] = 0.8f * parent->focusColor[2];
+		lowLight[3] = 0.8f * parent->focusColor[3];
+		LerpColor(parent->focusColor, lowLight, *newColor, 0.5f + 0.5f * (float)(sin(DC->realTime / PULSE_DIVISOR)));
 	}
 	else if (item->textStyle == ITEM_TEXTSTYLE_BLINK && !((DC->realTime / BLINK_DIVISOR) & 1))
 	{
 		vec4_t lowLight;
 
-		lowLight[0] = 0.8 * item->window.foreColor[0];
-		lowLight[1] = 0.8 * item->window.foreColor[1];
-		lowLight[2] = 0.8 * item->window.foreColor[2];
-		lowLight[3] = 0.8 * item->window.foreColor[3];
-		LerpColor(item->window.foreColor, lowLight, *newColor, 0.5 + 0.5 * sin((float)(DC->realTime / PULSE_DIVISOR)));
+		lowLight[0] = 0.8f * item->window.foreColor[0];
+		lowLight[1] = 0.8f * item->window.foreColor[1];
+		lowLight[2] = 0.8f * item->window.foreColor[2];
+		lowLight[3] = 0.8f * item->window.foreColor[3];
+		LerpColor(item->window.foreColor, lowLight, *newColor, 0.5f + 0.5f * (float)(sin(DC->realTime / PULSE_DIVISOR)));
 	}
 	else
 	{
@@ -1994,6 +2218,10 @@ void Item_TextColor(itemDef_t *item, vec4_t *newColor)
 	}
 }
 
+/**
+ * @brief Item_Text_AutoWrapped_Paint
+ * @param[in,out] item
+ */
 void Item_Text_AutoWrapped_Paint(itemDef_t *item)
 {
 	char       text[1024];
@@ -2113,6 +2341,10 @@ void Item_Text_AutoWrapped_Paint(itemDef_t *item)
 	}
 }
 
+/**
+ * @brief Item_Text_Wrapped_Paint
+ * @param[in] item
+ */
 void Item_Text_Wrapped_Paint(itemDef_t *item)
 {
 	char       text[1024];
@@ -2167,6 +2399,13 @@ void Item_Text_Wrapped_Paint(itemDef_t *item)
 	DC->drawText(x, y, item->textscale, color, start, 0, 0, item->textStyle);
 }
 
+/**
+ * @brief Item_HandleKey
+ * @param[in] item
+ * @param[in] key
+ * @param[in] down
+ * @return
+ */
 qboolean Item_HandleKey(itemDef_t *item, int key, qboolean down)
 {
 	int realKey = key;
@@ -2223,46 +2462,39 @@ qboolean Item_HandleKey(itemDef_t *item, int key, qboolean down)
 	{
 	case ITEM_TYPE_BUTTON:
 		return qfalse;
-		break;
 	case ITEM_TYPE_RADIOBUTTON:
 		return qfalse;
-		break;
 	case ITEM_TYPE_CHECKBOX:
 	case ITEM_TYPE_TRICHECKBOX:
 		return Item_CheckBox_HandleKey(item, key);
-		break;
 	case ITEM_TYPE_EDITFIELD:
 	case ITEM_TYPE_NUMERICFIELD:
 		//return Item_TextField_HandleKey(item, key);
 		return qfalse;
-		break;
 	case ITEM_TYPE_COMBO:
 		return qfalse;
-		break;
 	case ITEM_TYPE_LISTBOX:
 		return Item_ListBox_HandleKey(item, key, down, qfalse);
-		break;
 	case ITEM_TYPE_YESNO:
 		return Item_YesNo_HandleKey(item, key);
-		break;
 	case ITEM_TYPE_MULTI:
 		return Item_Multi_HandleKey(item, key);
-		break;
 	case ITEM_TYPE_OWNERDRAW:
 		return Item_OwnerDraw_HandleKey(item, key);
-		break;
 	case ITEM_TYPE_BIND:
 		return Item_Bind_HandleKey(item, key, down);
-		break;
 	case ITEM_TYPE_SLIDER:
 		return Item_Slider_HandleKey(item, key, down);
-		break;
 	default:
 		break;
 	}
 	return qfalse;
 }
 
+/**
+ * @brief Item_Text_Paint
+ * @param[in,out] item
+ */
 void Item_Text_Paint(itemDef_t *item)
 {
 	char       text[1024];
@@ -2375,6 +2607,10 @@ void Item_Text_Paint(itemDef_t *item)
 	DC->drawText(item->textRect.x, item->textRect.y, item->textscale, color, textPtr, 0, 0, item->textStyle);
 }
 
+/**
+ * @brief Item_TextField_Paint
+ * @param[in] item
+ */
 void Item_TextField_Paint(itemDef_t *item)
 {
 	char           buff[1024];
@@ -2404,11 +2640,11 @@ void Item_TextField_Paint(itemDef_t *item)
 
 	if ((item->window.flags & WINDOW_HASFOCUS) && (item->window.flags & WINDOW_FOCUSPULSE))
 	{
-		lowLight[0] = 0.8 * parent->focusColor[0];
-		lowLight[1] = 0.8 * parent->focusColor[1];
-		lowLight[2] = 0.8 * parent->focusColor[2];
-		lowLight[3] = 0.8 * parent->focusColor[3];
-		LerpColor(parent->focusColor, lowLight, newColor, 0.5 + 0.5 * sin((float)(DC->realTime / PULSE_DIVISOR)));
+		lowLight[0] = 0.8f * parent->focusColor[0];
+		lowLight[1] = 0.8f * parent->focusColor[1];
+		lowLight[2] = 0.8f * parent->focusColor[2];
+		lowLight[3] = 0.8f * parent->focusColor[3];
+		LerpColor(parent->focusColor, lowLight, newColor, 0.5f + 0.5f * (float)(sin(DC->realTime / PULSE_DIVISOR)));
 	}
 	else
 	{
@@ -2440,7 +2676,7 @@ void Item_TextField_Paint(itemDef_t *item)
 	if (field_offset)
 	{
 		// we had to take out some chars to make it fit in, there is an additional screen offset to compute
-		screen_offset = item->window.rect.x + item->window.rect.w - (text_len + item->textRect.x + item->textRect.w + offset);
+		screen_offset = (int)(item->window.rect.x + item->window.rect.w - (text_len + item->textRect.x + item->textRect.w + offset));
 	}
 	else
 	{
@@ -2457,6 +2693,10 @@ void Item_TextField_Paint(itemDef_t *item)
 	}
 }
 
+/**
+ * @brief Item_CheckBox_Paint
+ * @param[in] item
+ */
 void Item_CheckBox_Paint(itemDef_t *item)
 {
 	vec4_t     newColor;
@@ -2469,11 +2709,11 @@ void Item_CheckBox_Paint(itemDef_t *item)
 	{
 		vec4_t lowLight;
 
-		lowLight[0] = 0.8 * parent->focusColor[0];
-		lowLight[1] = 0.8 * parent->focusColor[1];
-		lowLight[2] = 0.8 * parent->focusColor[2];
-		lowLight[3] = 0.8 * parent->focusColor[3];
-		LerpColor(parent->focusColor, lowLight, newColor, 0.5 + 0.5 * sin((float)(DC->realTime / PULSE_DIVISOR)));
+		lowLight[0] = 0.8f * parent->focusColor[0];
+		lowLight[1] = 0.8f * parent->focusColor[1];
+		lowLight[2] = 0.8f * parent->focusColor[2];
+		lowLight[3] = 0.8f * parent->focusColor[3];
+		LerpColor(parent->focusColor, lowLight, newColor, 0.5f + 0.5f * (float)(sin(DC->realTime / PULSE_DIVISOR)));
 	}
 	else
 	{
@@ -2488,11 +2728,11 @@ void Item_CheckBox_Paint(itemDef_t *item)
 	if (item->text)
 	{
 		Item_Text_Paint(item);
-		if (item->type == ITEM_TYPE_TRICHECKBOX && value == 2)
+		if (item->type == ITEM_TYPE_TRICHECKBOX && value == 2.f)
 		{
 			DC->drawHandlePic(item->textRect.x + item->textRect.w + 8, item->window.rect.y, item->window.rect.h, item->window.rect.h, DC->Assets.checkboxCheckNo);
 		}
-		else if (value)
+		else if (value != 0.f)
 		{
 			DC->drawHandlePic(item->textRect.x + item->textRect.w + 8, item->window.rect.y, item->window.rect.h, item->window.rect.h, DC->Assets.checkboxCheck);
 		}
@@ -2512,11 +2752,11 @@ void Item_CheckBox_Paint(itemDef_t *item)
 	}
 	else
 	{
-		if (item->type == ITEM_TYPE_TRICHECKBOX && value == 2)
+		if (item->type == ITEM_TYPE_TRICHECKBOX && value == 2.f)
 		{
 			DC->drawHandlePic(item->window.rect.x, item->window.rect.y, item->window.rect.h, item->window.rect.h, DC->Assets.checkboxCheckNo);
 		}
-		else if (value)
+		else if (value != 0.f)
 		{
 			DC->drawHandlePic(item->window.rect.x, item->window.rect.y, item->window.rect.h, item->window.rect.h, DC->Assets.checkboxCheck);
 		}
@@ -2536,6 +2776,10 @@ void Item_CheckBox_Paint(itemDef_t *item)
 	}
 }
 
+/**
+ * @brief Item_YesNo_Paint
+ * @param[in] item
+ */
 void Item_YesNo_Paint(itemDef_t *item)
 {
 	vec4_t    newColor;
@@ -2546,11 +2790,11 @@ void Item_YesNo_Paint(itemDef_t *item)
 	{
 		vec4_t lowLight;
 
-		lowLight[0] = 0.8 * parent->focusColor[0];
-		lowLight[1] = 0.8 * parent->focusColor[1];
-		lowLight[2] = 0.8 * parent->focusColor[2];
-		lowLight[3] = 0.8 * parent->focusColor[3];
-		LerpColor(parent->focusColor, lowLight, newColor, 0.5 + 0.5 * sin((float)(DC->realTime / PULSE_DIVISOR)));
+		lowLight[0] = 0.8f * parent->focusColor[0];
+		lowLight[1] = 0.8f * parent->focusColor[1];
+		lowLight[2] = 0.8f * parent->focusColor[2];
+		lowLight[3] = 0.8f * parent->focusColor[3];
+		LerpColor(parent->focusColor, lowLight, newColor, 0.5f + 0.5f * (float)(sin(DC->realTime / PULSE_DIVISOR)));
 	}
 	else
 	{
@@ -2561,14 +2805,18 @@ void Item_YesNo_Paint(itemDef_t *item)
 	{
 		Item_Text_Paint(item);
 		DC->drawText(item->textRect.x + item->textRect.w + 8, item->textRect.y, item->textscale, newColor,
-		             (value != 0) ? DC->translateString("Yes") : DC->translateString("No"), 0, 0, item->textStyle);
+		             value != 0.f ? DC->translateString("Yes") : DC->translateString("No"), 0, 0, item->textStyle);
 	}
 	else
 	{
-		DC->drawText(item->textRect.x, item->textRect.y, item->textscale, newColor, (value != 0) ? "Yes" : "No", 0, 0, item->textStyle);
+		DC->drawText(item->textRect.x, item->textRect.y, item->textscale, newColor, value != 0.f ? "Yes" : "No", 0, 0, item->textStyle);
 	}
 }
 
+/**
+ * @brief Item_Multi_Paint
+ * @param[in] item
+ */
 void Item_Multi_Paint(itemDef_t *item)
 {
 	vec4_t     newColor;
@@ -2579,11 +2827,11 @@ void Item_Multi_Paint(itemDef_t *item)
 	{
 		vec4_t lowLight;
 
-		lowLight[0] = 0.8 * parent->focusColor[0];
-		lowLight[1] = 0.8 * parent->focusColor[1];
-		lowLight[2] = 0.8 * parent->focusColor[2];
-		lowLight[3] = 0.8 * parent->focusColor[3];
-		LerpColor(parent->focusColor, lowLight, newColor, 0.5 + 0.5 * sin((float)(DC->realTime / PULSE_DIVISOR)));
+		lowLight[0] = 0.8f * parent->focusColor[0];
+		lowLight[1] = 0.8f * parent->focusColor[1];
+		lowLight[2] = 0.8f * parent->focusColor[2];
+		lowLight[3] = 0.8f * parent->focusColor[3];
+		LerpColor(parent->focusColor, lowLight, newColor, 0.5f + 0.5f * (float)(sin(DC->realTime / PULSE_DIVISOR)));
 	}
 	else
 	{
@@ -2603,10 +2851,14 @@ void Item_Multi_Paint(itemDef_t *item)
 	}
 }
 
+/**
+ * @brief Item_Combo_Paint
+ * @param[in,out] item
+ */
 void Item_Combo_Paint(itemDef_t *item)
 {
 	vec4_t     itemColor, backColor;
-	const char *text              = "";
+	const char *text              = Item_Multi_Setting(item);
 	int        selectedTextOffset = 0, selectorOffset = 0, temp = 0, widestText = 0, selectorSize = 0;
 	//menuDef_t    *parent            = (menuDef_t *)item->parent;
 	rectDef_t    rect, selectorRect;
@@ -2615,8 +2867,6 @@ void Item_Combo_Paint(itemDef_t *item)
 	float        valueFloat = 0;
 	int          i;
 	static float borderOffset = 4.f;
-
-	text = Item_Multi_Setting(item);
 
 	memcpy(&backColor, &item->window.backColor, sizeof(vec4_t));
 	memcpy(&itemColor, &item->window.foreColor, sizeof(vec4_t));
@@ -2656,13 +2906,13 @@ void Item_Combo_Paint(itemDef_t *item)
 		}
 	}
 
-	selectorOffset = widestText + selectedTextOffset + 8 + borderOffset;
+	selectorOffset = widestText + selectedTextOffset - 4 + borderOffset;
 
 	selectorSize = DC->textWidth(COMBO_SELECTORCHAR, item->textscale, 0);
 
 	rect.x = selectedTextOffset;
 	rect.y = item->textRect.y - item->textRect.h - borderOffset;
-	rect.w = widestText + 16 + selectorSize + borderOffset;
+	rect.w = widestText + 4 + selectorSize + borderOffset;
 	rect.h = item->textRect.h + (borderOffset * 2);
 
 	selectorRect.x = rect.x + (rect.w - selectorSize - 8 - (borderOffset * 2));
@@ -2688,10 +2938,10 @@ void Item_Combo_Paint(itemDef_t *item)
 		vec4_t    *currentColor = NULL;
 		rectDef_t textRect      = { selectedTextOffset, 0.f, 0.f, 12.f };
 
-		lowColor[0] = 0.8 * itemColor[0];
-		lowColor[1] = 0.8 * itemColor[1];
-		lowColor[2] = 0.8 * itemColor[2];
-		lowColor[3] = 0.8 * itemColor[3];
+		lowColor[0] = 0.8f * itemColor[0];
+		lowColor[1] = 0.8f * itemColor[1];
+		lowColor[2] = 0.8f * itemColor[2];
+		lowColor[3] = 0.8f * itemColor[3];
 
 		memcpy(&redishColor, &lowColor, sizeof(vec4_t));
 		redishColor[0] = 1.f;
@@ -2729,6 +2979,10 @@ void Item_Combo_Paint(itemDef_t *item)
 	}
 }
 
+/**
+ * @brief Item_Slider_Paint
+ * @param[in] item
+ */
 void Item_Slider_Paint(itemDef_t *item)
 {
 	vec4_t    newColor;
@@ -2739,11 +2993,11 @@ void Item_Slider_Paint(itemDef_t *item)
 	{
 		vec4_t lowLight;
 
-		lowLight[0] = 0.8 * parent->focusColor[0];
-		lowLight[1] = 0.8 * parent->focusColor[1];
-		lowLight[2] = 0.8 * parent->focusColor[2];
-		lowLight[3] = 0.8 * parent->focusColor[3];
-		LerpColor(parent->focusColor, lowLight, newColor, 0.5 + 0.5 * sin((float)(DC->realTime / PULSE_DIVISOR)));
+		lowLight[0] = 0.8f * parent->focusColor[0];
+		lowLight[1] = 0.8f * parent->focusColor[1];
+		lowLight[2] = 0.8f * parent->focusColor[2];
+		lowLight[3] = 0.8f * parent->focusColor[3];
+		LerpColor(parent->focusColor, lowLight, newColor, 0.5f + 0.5f * (float)(sin(DC->realTime / PULSE_DIVISOR)));
 	}
 	else
 	{
@@ -2768,6 +3022,10 @@ void Item_Slider_Paint(itemDef_t *item)
 	DC->drawHandlePic(x - (SLIDER_THUMB_WIDTH / 2), y, SLIDER_THUMB_WIDTH, SLIDER_THUMB_HEIGHT, DC->Assets.sliderThumb);
 }
 
+/**
+ * @brief Item_Bind_Paint
+ * @param[in] item
+ */
 void Item_Bind_Paint(itemDef_t *item)
 {
 	vec4_t         newColor, lowLight;
@@ -2797,7 +3055,7 @@ void Item_Bind_Paint(itemDef_t *item)
 			lowLight[3] = 0.8f * parent->focusColor[3];
 		}
 
-		LerpColor(parent->focusColor, lowLight, newColor, 0.5 + 0.5 * sin((float)(DC->realTime / PULSE_DIVISOR)));
+		LerpColor(parent->focusColor, lowLight, newColor, 0.5f + 0.5f * (float)(sin(DC->realTime / PULSE_DIVISOR)));
 	}
 	else
 	{
@@ -2807,7 +3065,7 @@ void Item_Bind_Paint(itemDef_t *item)
 			lowLight[1] = 0.8f * 0.0f;
 			lowLight[2] = 0.8f * 0.0f;
 			lowLight[3] = 0.8f * 1.0f;
-			LerpColor(item->window.foreColor, lowLight, newColor, 0.5 + 0.5 * sin((float)(DC->realTime / PULSE_DIVISOR)));
+			LerpColor(item->window.foreColor, lowLight, newColor, 0.5f + 0.5f * (float)(sin(DC->realTime / PULSE_DIVISOR)));
 		}
 		else
 		{
@@ -2826,6 +3084,13 @@ void Item_Bind_Paint(itemDef_t *item)
 	}
 }
 
+/**
+ * @brief Item_Bind_HandleKey
+ * @param[in] item
+ * @param[in] key
+ * @param[in] down
+ * @return
+ */
 qboolean Item_Bind_HandleKey(itemDef_t *item, int key, qboolean down)
 {
 	int id;
@@ -2936,6 +3201,10 @@ qboolean Item_Bind_HandleKey(itemDef_t *item, int key, qboolean down)
 	return qtrue;
 }
 
+/**
+ * @brief Item_Model_Paint
+ * @param[in] item
+ */
 void Item_Model_Paint(itemDef_t *item)
 {
 	float       x, y, w, h; //,xx;
@@ -2976,26 +3245,26 @@ void Item_Model_Paint(itemDef_t *item)
 
 	DC->modelBounds(hModel, mins, maxs);
 
-	origin[2] = -0.5 * (mins[2] + maxs[2]);
-	origin[1] = 0.5 * (mins[1] + maxs[1]);
+	origin[2] = -0.5f * (mins[2] + maxs[2]);
+	origin[1] = 0.5f * (mins[1] + maxs[1]);
 
 	// calculate distance so the model nearly fills the box
-	if (qtrue)
-	{
-		float len = 0.5 * (maxs[2] - mins[2]);
+	//if (qtrue)
+	//{
+	float len = 0.5f * (maxs[2] - mins[2]);
 
-		origin[0] = len / 0.268;    // len / tan( fov/2 )
-		//origin[0] = len / tan(w/2);
-	}
-	else
-	{
-		origin[0] = item->textscale;
-	}
+	origin[0] = len / 0.268f;        // len / tan( fov/2 )
+	//origin[0] = len / tan(w/2);
+	//}
+	//else
+	//{
+	//	origin[0] = item->textscale;
+	//}
 
 #define NEWWAY
 #ifdef NEWWAY
-	refdef.fov_x = (modelPtr->fov_x) ? modelPtr->fov_x : w;
-	refdef.fov_y = (modelPtr->fov_y) ? modelPtr->fov_y : h;
+	refdef.fov_x = (modelPtr->fov_x != 0.f) ? modelPtr->fov_x : w;
+	refdef.fov_y = (modelPtr->fov_y != 0.f) ? modelPtr->fov_y : h;
 #else
 	refdef.fov_x  = (int)((float)refdef.width / 640.0f * 90.0f);
 	xx            = refdef.width / tan(refdef.fov_x / 360 * M_PI);
@@ -3020,7 +3289,7 @@ void Item_Model_Paint(itemDef_t *item)
 		if (DC->realTime > item->window.nextTime)
 		{
 			item->window.nextTime = DC->realTime + modelPtr->rotationSpeed;
-			modelPtr->angle       = (int)(modelPtr->angle + 1) % 360;
+			modelPtr->angle       = (modelPtr->angle + 1) % 360;
 		}
 	}
 
@@ -3036,7 +3305,7 @@ void Item_Model_Paint(itemDef_t *item)
 
 	if (modelPtr->backlerp > 1)
 	{
-		int backLerpWhole = floor(modelPtr->backlerp);
+		int backLerpWhole = (int)(floor((double)modelPtr->backlerp));
 
 		modelPtr->frame += (backLerpWhole);
 		if ((modelPtr->frame - modelPtr->startframe) > modelPtr->numframes)
@@ -3068,9 +3337,14 @@ void Item_Model_Paint(itemDef_t *item)
 	DC->renderScene(&refdef);
 }
 
+/**
+ * @brief Item_ListBox_Paint
+ * @param[in] item
+ */
 void Item_ListBox_Paint(itemDef_t *item)
 {
-	float        x, y, size, count, i, thumb;
+	int          i;
+	float        x, y, size, count, thumb;
 	qhandle_t    image;
 	qhandle_t    optionalImages[8];
 	int          numOptionalImages;
@@ -3276,6 +3550,10 @@ void Item_ListBox_Paint(itemDef_t *item)
 	}
 }
 
+/**
+ * @brief Item_OwnerDraw_Paint
+ * @param[in] item
+ */
 void Item_OwnerDraw_Paint(itemDef_t *item)
 {
 	if (item == NULL)
@@ -3308,19 +3586,19 @@ void Item_OwnerDraw_Paint(itemDef_t *item)
 
 		if ((item->window.flags & WINDOW_HASFOCUS) && (item->window.flags & WINDOW_FOCUSPULSE))
 		{
-			lowLight[0] = 0.8 * parent->focusColor[0];
-			lowLight[1] = 0.8 * parent->focusColor[1];
-			lowLight[2] = 0.8 * parent->focusColor[2];
-			lowLight[3] = 0.8 * parent->focusColor[3];
-			LerpColor(parent->focusColor, lowLight, color, 0.5 + 0.5 * sin((float)(DC->realTime / PULSE_DIVISOR)));
+			lowLight[0] = 0.8f * parent->focusColor[0];
+			lowLight[1] = 0.8f * parent->focusColor[1];
+			lowLight[2] = 0.8f * parent->focusColor[2];
+			lowLight[3] = 0.8f * parent->focusColor[3];
+			LerpColor(parent->focusColor, lowLight, color, 0.5f + 0.5f * (float)(sin(DC->realTime / PULSE_DIVISOR)));
 		}
 		else if (item->textStyle == ITEM_TEXTSTYLE_BLINK && !((DC->realTime / BLINK_DIVISOR) & 1))
 		{
-			lowLight[0] = 0.8 * item->window.foreColor[0];
-			lowLight[1] = 0.8 * item->window.foreColor[1];
-			lowLight[2] = 0.8 * item->window.foreColor[2];
-			lowLight[3] = 0.8 * item->window.foreColor[3];
-			LerpColor(item->window.foreColor, lowLight, color, 0.5 + 0.5 * sin((float)(DC->realTime / PULSE_DIVISOR)));
+			lowLight[0] = 0.8f * item->window.foreColor[0];
+			lowLight[1] = 0.8f * item->window.foreColor[1];
+			lowLight[2] = 0.8f * item->window.foreColor[2];
+			lowLight[3] = 0.8f * item->window.foreColor[3];
+			LerpColor(item->window.foreColor, lowLight, color, 0.5f + 0.5f * (float)(sin(DC->realTime / PULSE_DIVISOR)));
 		}
 
 		if ((item->cvarFlags & (CVAR_ENABLE | CVAR_DISABLE)) && !Item_EnableShowViaCvar(item, CVAR_ENABLE))
@@ -3349,6 +3627,10 @@ void Item_OwnerDraw_Paint(itemDef_t *item)
 	}
 }
 
+/**
+ * @brief Item_DoTransition
+ * @param[in,out] item
+ */
 void Item_DoTransition(itemDef_t *item)
 {
 	if (DC->realTime > item->window.nextTime)
@@ -3470,6 +3752,10 @@ void Item_DoTransition(itemDef_t *item)
 	}
 }
 
+/**
+ * @brief Item_Paint
+ * @param item
+ */
 void Item_Paint(itemDef_t *item)
 {
 	menuDef_t *parent = NULL;
@@ -3490,7 +3776,8 @@ void Item_Paint(itemDef_t *item)
 	{
 		if (DC->realTime > item->window.nextTime)
 		{
-			float rx, ry, a, c, s, w, h;
+			float  rx, ry, c, s, w, h;
+			double a;
 
 			item->window.nextTime = DC->realTime + item->window.offsetTime;
 			// translate
@@ -3499,8 +3786,8 @@ void Item_Paint(itemDef_t *item)
 			rx                        = item->window.rectClient.x + w - item->window.rectEffects.x;
 			ry                        = item->window.rectClient.y + h - item->window.rectEffects.y;
 			a                         = 3 * M_PI / 180;
-			c                         = cos(a);
-			s                         = sin(a);
+			c                         = (float)cos(a);
+			s                         = (float)sin(a);
 			item->window.rectClient.x = (rx * c - ry * s) + item->window.rectEffects.x - w;
 			item->window.rectClient.y = (rx * s + ry * c) + item->window.rectEffects.y - h;
 			Item_UpdatePosition(item);
@@ -3614,7 +3901,10 @@ void Item_Paint(itemDef_t *item)
 	}
 }
 
-//This gets called on keyboard Enter and KP_Enter
+/**
+ * @brief This gets called on keyboard Enter and KP_Enter
+ * @param[in] item
+ */
 void Item_KeyboardActivate(itemDef_t *item)
 {
 	if (!item)
@@ -3632,7 +3922,10 @@ void Item_KeyboardActivate(itemDef_t *item)
 	}
 }
 
-// This gets called on mouse1-3
+/**
+ * @brief This gets called on mouse1-3
+ * @param[in] item
+ */
 void Item_MouseActivate(itemDef_t *item)
 {
 	if (!item)
@@ -3684,6 +3977,10 @@ void Item_MouseActivate(itemDef_t *item)
 	}
 }
 
+/**
+ * @brief Item_Init
+ * @param[in,out] item
+ */
 void Item_Init(itemDef_t *item)
 {
 	memset(item, 0, sizeof(itemDef_t));

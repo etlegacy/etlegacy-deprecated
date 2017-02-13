@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -37,10 +37,14 @@
 
 #include "../ui/keycodes.h"
 
+/**
+ * @struct qkey_s
+ * @brief
+ */
 typedef struct
 {
 	qboolean down;
-	int repeats;                // if > 1, it is autorepeating
+	int repeats;                ///< if > 1, it is autorepeating
 	char *binding;
 	int hash;
 } qkey_t;

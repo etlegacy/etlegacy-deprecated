@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -37,19 +37,15 @@
 #include "g_local.h"
 #include "../../etmain/ui/menudef.h"
 
-/*
-=======================================================================
-  SESSION DATA
-=======================================================================
+/**
+ * SESSION DATA
 */
 
-/*
-================
-G_WriteClientSessionData
-
-Called on game shutdown
-================
-*/
+/**
+ * @brief Called on game shutdown
+ * @param[in] client
+ * @param[in] restart
+ */
 void G_WriteClientSessionData(gclient_t *client, qboolean restart)
 {
 #ifdef FEATURE_MULTIVIEW
@@ -64,9 +60,17 @@ void G_WriteClientSessionData(gclient_t *client, qboolean restart)
 	//}
 
 #ifdef FEATURE_MULTIVIEW
-	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+#ifdef FEATURE_RATING
+	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i %i %i",
 #else
-	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+#endif
+#else
+#ifdef FEATURE_RATING
+	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i",
+#else
+	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+#endif
 #endif
 	       client->sess.sessionTeam,
 	       client->sess.spectatorTime,
@@ -79,17 +83,25 @@ void G_WriteClientSessionData(gclient_t *client, qboolean restart)
 	       client->sess.latchPlayerWeapon,
 	       client->sess.latchPlayerWeapon2,
 
-	       client->sess.coach_team,
-	       client->sess.deaths,
-	       client->sess.game_points,
-	       client->sess.kills,
 	       client->sess.referee,
 	       client->sess.spec_invite,
 	       client->sess.spec_team,
-	       client->sess.selfkills,
+	       client->sess.kills,
+	       client->sess.deaths,
+	       client->sess.gibs,
+	       client->sess.self_kills,
 	       client->sess.team_kills,
+	       client->sess.team_gibs,
+
 	       client->sess.time_axis,
 	       client->sess.time_allies,
+	       client->sess.time_played,
+#ifdef FEATURE_RATING
+	       client->sess.mu,
+	       client->sess.sigma,
+	       client->sess.oldmu,
+	       client->sess.oldsigma,
+#endif
 #ifdef FEATURE_MULTIVIEW
 	       (mvc & 0xFFFF),
 	       ((mvc >> 16) & 0xFFFF),
@@ -137,13 +149,10 @@ void G_WriteClientSessionData(gclient_t *client, qboolean restart)
 	}
 }
 
-/*
-================
-G_ClientSwap
-
-Client swap handling
-================
-*/
+/**
+ * @brief Client swap handling
+ * @param[in,out] client
+ */
 void G_ClientSwap(gclient_t *client)
 {
 	int flags = 0;
@@ -183,6 +192,10 @@ void G_ClientSwap(gclient_t *client)
 	client->sess.spec_team = flags;
 }
 
+/**
+ * @brief G_CalcRank
+ * @param[in,out] client
+ */
 void G_CalcRank(gclient_t *client)
 {
 	int i, highestskill = 0;
@@ -220,13 +233,10 @@ void G_CalcRank(gclient_t *client)
 	}
 }
 
-/*
-================
-G_ReadSessionData
-
-Called on a reconnect
-================
-*/
+/**
+ * @brief Called on a reconnect
+ * @param[in] client
+ */
 void G_ReadSessionData(gclient_t *client)
 {
 #ifdef FEATURE_MULTIVIEW
@@ -239,32 +249,47 @@ void G_ReadSessionData(gclient_t *client)
 	trap_Cvar_VariableStringBuffer(va("session%i", (int)(client - level.clients)), s, sizeof(s));
 
 #ifdef FEATURE_MULTIVIEW
-	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+#ifdef FEATURE_RATING
+	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i %i %i",
 #else
-	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+#endif
+#else
+#ifdef FEATURE_RATING
+	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i",
+#else
+	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+#endif
 #endif
 	       (int *)&client->sess.sessionTeam,
 	       &client->sess.spectatorTime,
 	       (int *)&client->sess.spectatorState,
 	       &client->sess.spectatorClient,
 	       &client->sess.playerType,
-	       &client->sess.playerWeapon,
-	       &client->sess.playerWeapon2,
+		   (int *)&client->sess.playerWeapon,
+		   (int *)&client->sess.playerWeapon2,
 	       &client->sess.latchPlayerType,
-	       &client->sess.latchPlayerWeapon,
-	       &client->sess.latchPlayerWeapon2,
+		   (int *)&client->sess.latchPlayerWeapon,
+		   (int *)&client->sess.latchPlayerWeapon2,
 
-	       &client->sess.coach_team,
-	       &client->sess.deaths,
-	       &client->sess.game_points,
-	       &client->sess.kills,
 	       &client->sess.referee,
 	       &client->sess.spec_invite,
 	       &client->sess.spec_team,
-	       &client->sess.selfkills,
+	       &client->sess.kills,
+	       &client->sess.deaths,
+	       &client->sess.gibs,
+	       &client->sess.self_kills,
 	       &client->sess.team_kills,
+	       &client->sess.team_gibs,
 	       &client->sess.time_axis,
 	       &client->sess.time_allies,
+	       &client->sess.time_played,
+#ifdef FEATURE_RATING
+	       &client->sess.mu,
+	       &client->sess.sigma,
+	       &client->sess.oldmu,
+	       &client->sess.oldsigma,
+#endif
 #ifdef FEATURE_MULTIVIEW
 	       &mvc_l,
 	       &mvc_h,
@@ -330,32 +355,30 @@ void G_ReadSessionData(gclient_t *client)
 	test = (g_altStopwatchMode.integer != 0 || g_currentRound.integer == 1);
 
 	        if (g_gametype.integer == GT_WOLF_STOPWATCH && g_gamestate.integer != GS_PLAYING && test)
-	        {
-	            G_ClientSwap(client);
-			}
+	{
+		G_ClientSwap(client);
+	}
 
 	        if (g_swapteams.integer)
-	        {
-	            trap_Cvar_Set("g_swapteams", "0");
-	            G_ClientSwap(client);
-			}
+	{
+		trap_Cvar_Set("g_swapteams", "0");
+		G_ClientSwap(client);
+	}
 
 	        client->sess.startxptotal = 0;
 	        for (j = 0; j < SK_NUM_SKILLS; j++)
-	        {
-	            client->sess.startskillpoints[j] = client->sess.skillpoints[j];
-	            client->sess.startxptotal += client->sess.skillpoints[j];
-			}
+	{
+		client->sess.startskillpoints[j] = client->sess.skillpoints[j];
+		client->sess.startxptotal += client->sess.skillpoints[j];
+	}
 }
 
-/*
-================
-G_InitSessionData
-
-Called on a first-time connect
-================
-*/
-void G_InitSessionData(gclient_t *client, char *userinfo)
+/**
+ * @brief Called on a first-time connect
+ * @param[in] client
+ * @param userinfo
+ */
+void G_InitSessionData(gclient_t *client, const char *userinfo)
 {
     clientSession_t *sess = &client->sess;
 
@@ -366,8 +389,8 @@ void G_InitSessionData(gclient_t *client, char *userinfo)
     sess->spectatorTime = level.time;
 
     sess->latchPlayerType = sess->playerType = 0;
-    sess->latchPlayerWeapon = sess->playerWeapon = 0;
-    sess->latchPlayerWeapon2 = sess->playerWeapon2 = 0;
+    sess->latchPlayerWeapon = sess->playerWeapon = WP_NONE;
+    sess->latchPlayerWeapon2 = sess->playerWeapon2 = WP_NONE;
 
     sess->spawnObjectiveIndex = 0;
 
@@ -381,7 +404,6 @@ void G_InitSessionData(gclient_t *client, char *userinfo)
     sess->rank = 0;
     sess->startxptotal = 0;
 
-    sess->coach_team = 0;
     // we set ref in ClientUserinfoChanged
     sess->referee = RL_NONE; // (client->pers.localClient) ? RL_REFEREE : RL_NONE;
     sess->spec_invite = 0;
@@ -394,11 +416,9 @@ void G_InitSessionData(gclient_t *client, char *userinfo)
     G_WriteClientSessionData(client, qfalse);
 }
 
-/*
-==================
-G_InitWorldSession
-==================
-*/
+/**
+ * @brief G_InitWorldSession
+ */
 void G_InitWorldSession(void)
 {
     char s[MAX_STRING_CHARS];
@@ -412,7 +432,6 @@ void G_InitWorldSession(void)
     // client sessions
     if (g_gametype.integer != gt)
     {
-        level.newSession = qtrue;
         level.fResetStats = qtrue;
         G_Printf("Gametype changed, clearing session data.\n");
 
@@ -520,11 +539,10 @@ void G_InitWorldSession(void)
 	}
 }
 
-/*
-==================
-G_WriteSessionData
-==================
-*/
+/**
+ * @brief G_WriteSessionData
+ * @param[in] restart
+ */
 void G_WriteSessionData(qboolean restart)
 {
     int  i;

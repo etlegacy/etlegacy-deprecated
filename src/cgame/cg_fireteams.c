@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -54,13 +54,14 @@ panel_button_t fireteamTopBorder =
 {
 	NULL,
 	NULL,
-	{ 10,                     129,        204,       136 },
-	{ 1,                      255 * .5f,  255 * .5f, 255 * .5f, 255 * .5f, 1, 0, 0},
+	{ 10,                     129,      204,     136 },
+	{ 1,                      255 / 2,  255 / 2, 255 / 2, 255 / 2, 1, 0, 0},
 	NULL,                     /* font     */
 	NULL,                     /* keyDown  */
 	NULL,                     /* keyUp    */
 	BG_PanelButtonsRender_Img,
 	NULL,
+	0
 };
 
 panel_button_t fireteamTopBorderBack =
@@ -68,12 +69,13 @@ panel_button_t fireteamTopBorderBack =
 	"white",
 	NULL,
 	{ 11,                     130,202, 134 },
-	{ 1,                      0,  0,   0, 255 * 0.75f, 0, 0, 0},
+	{ 1,                      0,  0,   0, (int)(255 * 0.75), 0, 0, 0},
 	NULL,                     /* font     */
 	NULL,                     /* keyDown  */
 	NULL,                     /* keyUp    */
 	BG_PanelButtonsRender_Img,
 	NULL,
+	0
 };
 
 panel_button_t fireteamTopBorderInner =
@@ -87,6 +89,7 @@ panel_button_t fireteamTopBorderInner =
 	NULL,                     /* keyUp    */
 	BG_PanelButtonsRender_Img,
 	NULL,
+	0
 };
 
 panel_button_t fireteamTopBorderInnerText =
@@ -100,6 +103,7 @@ panel_button_t fireteamTopBorderInnerText =
 	NULL,                           /* keyUp    */
 	CG_Fireteams_MenuTitleText_Draw,
 	NULL,
+	0
 };
 
 panel_button_t fireteamMenuItemText =
@@ -113,6 +117,7 @@ panel_button_t fireteamMenuItemText =
 	NULL,                      /* keyUp    */
 	CG_Fireteams_MenuText_Draw,
 	NULL,
+	0
 };
 
 
@@ -424,6 +429,11 @@ const char *ftLeaderMenuListAlphachars[] =
 	NULL,
 };
 
+/**
+ * @brief CG_CountFireteamsByTeam
+ * @param[in] t
+ * @return
+ */
 int CG_CountFireteamsByTeam(team_t t)
 {
 	int cnt = 0;
@@ -452,6 +462,11 @@ int CG_CountFireteamsByTeam(team_t t)
 	return cnt;
 }
 
+/**
+ * @brief CG_DrawFireteamsByTeam
+ * @param[in] button
+ * @param[in] t
+ */
 void CG_DrawFireteamsByTeam(panel_button_t *button, team_t t)
 {
 	float      y = button->rect.y;
@@ -490,6 +505,10 @@ void CG_DrawFireteamsByTeam(panel_button_t *button, team_t t)
 	}
 }
 
+/**
+ * @brief CG_CountPlayersSF
+ * @return
+ */
 int CG_CountPlayersSF(void)
 {
 	int i, cnt = 0;
@@ -522,7 +541,10 @@ int CG_CountPlayersSF(void)
 	return cnt;
 }
 
-
+/**
+ * @brief CG_CountPlayersNF
+ * @return
+ */
 int CG_CountPlayersNF(void)
 {
 	int i, cnt = 0;
@@ -555,7 +577,12 @@ int CG_CountPlayersNF(void)
 	return cnt;
 }
 
-
+/**
+ * @brief CG_PlayerSFFromPos
+ * @param[in] pos
+ * @param[in,out] pageofs
+ * @return
+ */
 int CG_PlayerSFFromPos(int pos, int *pageofs)
 {
 	int x, i;
@@ -611,6 +638,12 @@ int CG_PlayerSFFromPos(int pos, int *pageofs)
 	return -1;
 }
 
+/**
+ * @brief CG_PlayerNFFromPos
+ * @param[in] pos
+ * @param[in,out] pageofs
+ * @return
+ */
 int CG_PlayerNFFromPos(int pos, int *pageofs)
 {
 	int x, i;
@@ -666,6 +699,11 @@ int CG_PlayerNFFromPos(int pos, int *pageofs)
 	return -1;
 }
 
+/**
+ * @brief CG_DrawPlayerSF
+ * @param[in] button
+ * @param[in] pageofs
+ */
 void CG_DrawPlayerSF(panel_button_t *button, int *pageofs)
 {
 	float      y = button->rect.y;
@@ -723,10 +761,15 @@ void CG_DrawPlayerSF(panel_button_t *button, int *pageofs)
 		CG_Text_Paint_Ext(button->rect.x, y, button->font->scalex, button->font->scaley, button->font->colour, str, 0, 0, button->font->style, button->font->font);
 
 
-		y += button->rect.h;
+		//y += button->rect.h;
 	}
 }
 
+/**
+ * @brief CG_DrawPlayerNF
+ * @param[in] button
+ * @param[in] pageofs
+ */
 void CG_DrawPlayerNF(panel_button_t *button, int *pageofs)
 {
 	float      y = button->rect.y;
@@ -784,10 +827,14 @@ void CG_DrawPlayerNF(panel_button_t *button, int *pageofs)
 		CG_Text_Paint_Ext(button->rect.x, y, button->font->scalex, button->font->scaley, button->font->colour, str, 0, 0, button->font->style, button->font->font);
 
 
-		y += button->rect.h;
+		//y += button->rect.h;
 	}
 }
 
+/**
+ * @brief CG_Fireteams_MenuText_Draw
+ * @param[in] button
+ */
 void CG_Fireteams_MenuText_Draw(panel_button_t *button)
 {
 	float y = button->rect.y;
@@ -812,11 +859,11 @@ void CG_Fireteams_MenuText_Draw(panel_button_t *button)
 
 				if (cg_quickMessageAlt.integer)
 				{
-					str = va("%i. %s", (i + 1) % 10, ftMenuRootStrings[i]);
+					str = va("%i. %s", (i + 1) % 10, CG_TranslateString(ftMenuRootStrings[i]));
 				}
 				else
 				{
-					str = va("%s. %s", ftMenuRootStringsAlphachars[i], ftMenuRootStrings[i]);
+					str = va("%s. %s", ftMenuRootStringsAlphachars[i], CG_TranslateString(ftMenuRootStrings[i]));
 				}
 
 				CG_Text_Paint_Ext(button->rect.x, y, button->font->scalex, button->font->scaley, button->font->colour, str, 0, 0, button->font->style, button->font->font);
@@ -868,11 +915,11 @@ void CG_Fireteams_MenuText_Draw(panel_button_t *button)
 
 				if (cg_quickMessageAlt.integer)
 				{
-					str = va("%i. %s", (i + 1) % 10, ftOffMenuList[i]);
+					str = va("%i. %s", (i + 1) % 10, CG_TranslateString(ftOffMenuList[i]));
 				}
 				else
 				{
-					str = va("%s. %s", ftOffMenuListAlphachars[i], ftOffMenuList[i]);
+					str = va("%s. %s", ftOffMenuListAlphachars[i], CG_TranslateString(ftOffMenuList[i]));
 				}
 
 				CG_Text_Paint_Ext(button->rect.x, y, button->font->scalex, button->font->scaley, button->font->colour, str, 0, 0, button->font->style, button->font->font);
@@ -895,11 +942,11 @@ void CG_Fireteams_MenuText_Draw(panel_button_t *button)
 
 					if (cg_quickMessageAlt.integer)
 					{
-						str = va("%i. %s", (i + 1) % 10, ftOnMenuList[i]);
+						str = va("%i. %s", (i + 1) % 10, CG_TranslateString(ftOnMenuList[i]));
 					}
 					else
 					{
-						str = va("%s. %s", ftOnMenuListAlphachars[i], ftOnMenuList[i]);
+						str = va("%s. %s", ftOnMenuListAlphachars[i], CG_TranslateString(ftOnMenuList[i]));
 					}
 
 					CG_Text_Paint_Ext(button->rect.x, y, button->font->scalex, button->font->scaley, button->font->colour, str, 0, 0, button->font->style, button->font->font);
@@ -925,11 +972,11 @@ void CG_Fireteams_MenuText_Draw(panel_button_t *button)
 
 					if (cg_quickMessageAlt.integer)
 					{
-						str = va("%i. %s", (i + 1) % 10, ftLeaderMenuList[i]);
+						str = va("%i. %s", (i + 1) % 10, CG_TranslateString(ftLeaderMenuList[i]));
 					}
 					else
 					{
-						str = va("%s. %s", ftLeaderMenuListAlphachars[i], ftLeaderMenuList[i]);
+						str = va("%s. %s", ftLeaderMenuListAlphachars[i], CG_TranslateString(ftLeaderMenuList[i]));
 					}
 
 					CG_Text_Paint_Ext(button->rect.x, y, button->font->scalex, button->font->scaley, button->font->colour, str, 0, 0, button->font->style, button->font->font);
@@ -996,11 +1043,19 @@ void CG_Fireteams_MenuText_Draw(panel_button_t *button)
 	}
 }
 
+/**
+ * @brief CG_Fireteams_Setup
+ */
 void CG_Fireteams_Setup(void)
 {
 	BG_PanelButtonsSetup(fireteamButtons);
 }
 
+/**
+ * @brief CG_Fireteams_KeyHandling
+ * @param[in] key
+ * @param[in] down
+ */
 void CG_Fireteams_KeyHandling(int key, qboolean down)
 {
 	if (down)
@@ -1009,13 +1064,25 @@ void CG_Fireteams_KeyHandling(int key, qboolean down)
 	}
 }
 
+/**
+ * @brief CG_Fireteams_Draw
+ */
 void CG_Fireteams_Draw(void)
 {
 	BG_PanelButtonsRender(fireteamButtons);
 }
 
+/**
+ * @brief CG_QuickFireteamMessage_f
+ */
 void CG_QuickFireteamMessage_f(void);
 
+/**
+ * @brief CG_FireteamCheckExecKey
+ * @param[in] key
+ * @param[in] doaction
+ * @return
+ */
 qboolean CG_FireteamCheckExecKey(int key, qboolean doaction)
 {
 	if (key == K_ESCAPE)
@@ -1076,7 +1143,7 @@ qboolean CG_FireteamCheckExecKey(int key, qboolean doaction)
 			}
 			else
 			{
-				if (key >= 'a' || key <= 'z')
+				if (key >= 'a' && key <= 'z')
 				{
 					int i;
 
@@ -1149,7 +1216,7 @@ qboolean CG_FireteamCheckExecKey(int key, qboolean doaction)
 			{
 				const char **strings = ftMenuStrings[cgs.ftMenuPos];
 
-				if (key >= 'a' || key <= 'z')
+				if (key >= 'a' && key <= 'z')
 				{
 					int i;
 
@@ -1202,7 +1269,7 @@ qboolean CG_FireteamCheckExecKey(int key, qboolean doaction)
 				}
 			}
 
-			if (key >= 'a' || key <= 'z')
+			if (key >= 'a' && key <= 'z')
 			{
 				int x;
 
@@ -1248,8 +1315,6 @@ qboolean CG_FireteamCheckExecKey(int key, qboolean doaction)
 					cgs.ftMenuPos    = i;
 				}
 			}
-
-			return qtrue;
 		}
 		else
 		{
@@ -1279,8 +1344,6 @@ qboolean CG_FireteamCheckExecKey(int key, qboolean doaction)
 						cgs.ftMenuPos    = i;
 					}
 				}
-
-				return qtrue;
 			}
 			else
 			{
@@ -1323,12 +1386,10 @@ qboolean CG_FireteamCheckExecKey(int key, qboolean doaction)
 						cgs.ftMenuPos    = i;
 					}
 				}
-
-				return qtrue;
 			}
 		}
+		return qtrue;
 	}
-	break;
 	case 2:
 	{
 		int i;
@@ -1362,7 +1423,7 @@ qboolean CG_FireteamCheckExecKey(int key, qboolean doaction)
 			}
 			else
 			{
-				if (key >= 'a' || key <= 'z')
+				if (key >= 'a' && key <= 'z')
 				{
 					if (key - 'a' == cg.fireTeams[i].ident)
 					{
@@ -1391,7 +1452,7 @@ qboolean CG_FireteamCheckExecKey(int key, qboolean doaction)
 		}
 		else
 		{
-			if (key >= 'a' || key <= 'g')
+			if (key >= 'a' && key <= 'g')
 			{
 				i = key - 'a';
 			}
@@ -1439,7 +1500,6 @@ qboolean CG_FireteamCheckExecKey(int key, qboolean doaction)
 		}
 		break;
 	}
-	break;
 	case 4:
 	{
 		int i = -1, x;
@@ -1453,7 +1513,7 @@ qboolean CG_FireteamCheckExecKey(int key, qboolean doaction)
 		}
 		else
 		{
-			if (key >= 'a' || key <= 'g')
+			if (key >= 'a' && key <= 'g')
 			{
 				i = key - 'a';
 			}

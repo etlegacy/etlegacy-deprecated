@@ -9,7 +9,7 @@ weaponDef
 		weaponConfig		"models/multiplayer/mortar/weapon.cfg"
 		handsModel			"models/multiplayer/mortar/v_mortar_hand.md3"
 		
-		//flashDlightColor	0 0 0
+		flashDlightColor	1 0.7 0.5
 		//flashSound		""									// supports up to 4 flash sounds
 		//flashEchoSound	""									// supports up to 4 flash echo sounds
 		//lastShotSound		""									// supports up to 4 last shot sounds
@@ -24,6 +24,7 @@ weaponDef
 		switchSound			"sound/weapons/mortar/mortar_on.wav"		// allow overriding of weaponswitch sound
 		
 		weaponIcon				"icons/iconw_mortar_ax"
+		weaponIconScale		2
 		weaponSelectedIcon		"icons/iconw_mortar_ax_1_select"
 		
 		missileModel		"models/multiplayer/mortar/mortar_shell_ax.md3"

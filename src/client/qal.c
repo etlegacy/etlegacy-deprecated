@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -72,6 +72,7 @@ LPALSOURCEF              qalSourcef;
 LPALSOURCE3F             qalSource3f;
 LPALSOURCEFV             qalSourcefv;
 LPALSOURCEI              qalSourcei;
+LPALSOURCE3I             qalSource3i;
 LPALGETSOURCEF           qalGetSourcef;
 LPALGETSOURCE3F          qalGetSource3f;
 LPALGETSOURCEFV          qalGetSourcefv;
@@ -117,15 +118,21 @@ LPALCCAPTURESTART       qalcCaptureStart;
 LPALCCAPTURESTOP        qalcCaptureStop;
 LPALCCAPTURESAMPLES     qalcCaptureSamples;
 
+LPALGENEFFECTS              qalGenEffects;
+LPALEFFECTI                 qalEffecti;
+LPALEFFECTF                 qalEffectf;
+LPALGENAUXILIARYEFFECTSLOTS qalGenAuxiliaryEffectSlots;
+LPALAUXILIARYEFFECTSLOTI    qalAuxiliaryEffectSloti;
+
 static void *OpenALLib = NULL;
 
 static qboolean alinit_fail = qfalse;
 
-/*
-=================
-GPA
-=================
-*/
+/**
+ * @brief GPA
+ * @param[in,out] str
+ * @return 
+ */
 static void *GPA(char *str)
 {
 	void *rv;
@@ -144,11 +151,11 @@ static void *GPA(char *str)
 	}
 }
 
-/*
-=================
-QAL_Init
-=================
-*/
+/**
+ * @brief QAL_Init
+ * @param[in] libname
+ * @return 
+ */
 qboolean QAL_Init(const char *libname)
 {
 	if (OpenALLib)
@@ -207,6 +214,7 @@ qboolean QAL_Init(const char *libname)
 	qalSource3f             = GPA("alSource3f");
 	qalSourcefv             = GPA("alSourcefv");
 	qalSourcei              = GPA("alSourcei");
+	qalSource3i             = GPA("alSource3i");
 	qalGetSourcef           = GPA("alGetSourcef");
 	qalGetSource3f          = GPA("alGetSource3f");
 	qalGetSourcefv          = GPA("alGetSourcefv");
@@ -252,6 +260,12 @@ qboolean QAL_Init(const char *libname)
 	qalcCaptureStop        = GPA("alcCaptureStop");
 	qalcCaptureSamples     = GPA("alcCaptureSamples");
 
+	qalGenEffects              = GPA("alGenEffects");
+	qalEffecti                 = GPA("alEffecti");
+	qalEffectf                 = GPA("alEffectf");
+	qalGenAuxiliaryEffectSlots = GPA("alGenAuxiliaryEffectSlots");
+	qalAuxiliaryEffectSloti    = GPA("alAuxiliaryEffectSloti");
+
 	if (alinit_fail)
 	{
 		QAL_Shutdown();
@@ -262,11 +276,9 @@ qboolean QAL_Init(const char *libname)
 	return qtrue;
 }
 
-/*
-=================
-QAL_Shutdown
-=================
-*/
+/**
+ * @brief QAL_Shutdown
+ */
 void QAL_Shutdown(void)
 {
 	if (OpenALLib)
@@ -306,6 +318,7 @@ void QAL_Shutdown(void)
 	qalSource3f             = NULL;
 	qalSourcefv             = NULL;
 	qalSourcei              = NULL;
+	qalSource3i             = NULL;
 	qalGetSourcef           = NULL;
 	qalGetSource3f          = NULL;
 	qalGetSourcefv          = NULL;
@@ -350,12 +363,31 @@ void QAL_Shutdown(void)
 	qalcCaptureStart       = NULL;
 	qalcCaptureStop        = NULL;
 	qalcCaptureSamples     = NULL;
+
+	qalGenEffects              = NULL;
+	qalEffecti                 = NULL;
+	qalGenAuxiliaryEffectSlots = NULL;
+	qalAuxiliaryEffectSloti    = NULL;
 }
 #else
+
+/**
+ * @brief QAL_Init
+ * @param libname - unused
+ * @return 
+ * 
+ * @todo TODO: not implemented
+ */
 qboolean QAL_Init(const char *libname)
 {
 	return qtrue;
 }
+
+/**
+ * @brief QAL_Shutdown
+ * 
+ * @todo TODO: not implemented
+ */
 void QAL_Shutdown(void)
 {
 }

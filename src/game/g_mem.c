@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -37,15 +37,20 @@
 #define POOLSIZE    (8 * 1024 * 1024) // up to 32 if required
 
 static char memoryPool[POOLSIZE];
-static int  allocPoint;
+static unsigned int  allocPoint;
 
-void *G_Alloc(int size)
+/**
+ * @brief G_Alloc
+ * @param[in] size
+ * @return
+ */
+void *G_Alloc(unsigned int size)
 {
 	char *p;
 
 	if (g_debugAlloc.integer)
 	{
-		G_Printf("G_Alloc of %i bytes (%i bytes left)\n", size, POOLSIZE - allocPoint - ((size + 31) & ~31));
+		G_Printf("G_Alloc of %i bytes (%i bytes left)\n", size, POOLSIZE - allocPoint - ((size + 31) & ~31u));
 	}
 
 	if (allocPoint + size > POOLSIZE)
@@ -56,16 +61,22 @@ void *G_Alloc(int size)
 
 	p = &memoryPool[allocPoint];
 
-	allocPoint += (size + 31) & ~31;
+	allocPoint += (size + 31) & ~31u;
 
 	return p;
 }
 
+/**
+ * @brief G_InitMemory
+ */
 void G_InitMemory(void)
 {
 	allocPoint = 0;
 }
 
+/**
+ * @brief Svcmd_GameMem_f
+ */
 void Svcmd_GameMem_f(void)
 {
 	G_Printf("Game memory status: %i out of %i bytes allocated - %i bytes free\n", allocPoint, POOLSIZE, POOLSIZE - allocPoint);

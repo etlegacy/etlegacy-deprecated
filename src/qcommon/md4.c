@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -303,7 +303,7 @@ static void Decode(UINT4 *output, const unsigned char *input, unsigned int len)
 
 //===================================================================
 
-unsigned int Com_BlockChecksum(void *buffer, int length)
+unsigned int Com_BlockChecksum(void *buffer, size_t length)
 {
 	int      digest[4];
 	unsigned val;

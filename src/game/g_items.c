@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -59,10 +59,10 @@
 
 /**
  * @brief Add the specified ammount of ammo into the clip.
- * @param ps which player
- * @param weapon to add ammo for
- * @param ammomove amount to add. 0 means fill the clip if possible
- * @param outOfReserve amount to be added out of reserve
+ * @param[in,out] ps which player
+ * @param[in] weapon to add ammo for
+ * @param[in] ammomove amount to add. 0 means fill the clip if possible
+ * @param[in] outOfReserve amount to be added out of reserve
  * @return qboolean whether ammo was added to the clip.
  */
 int AddToClip(playerState_t *ps, int weapon, int ammomove, int outOfReserve)
@@ -108,23 +108,30 @@ int AddToClip(playerState_t *ps, int weapon, int ammomove, int outOfReserve)
 	return qfalse;
 }
 
+
 /**
-* @brief Push reserve ammo into available space in the clip.
-*/
+ * @brief Push reserve ammo into available space in the clip.
+ * @param[in] ps
+ * @param[in] weapon
+ */
 void Fill_Clip(playerState_t *ps, int weapon)
 {
 	AddToClip(ps, weapon, 0, qtrue);
 }
 
 /**
-* @brief Add ammo.
-* @return whether any ammo was added
-*/
+ * @brief Add ammo.
+ * @param ent
+ * @param weapon
+ * @param count
+ * @param fillClip
+ * @return whether any ammo was added
+ */
 int Add_Ammo(gentity_t *ent, int weapon, int count, qboolean fillClip)
 {
-	int ammoweap      = BG_FindAmmoForWeapon(weapon);
-	int maxammo       = BG_MaxAmmoForWeapon(ammoweap, ent->client->sess.skill);
-	int originalCount = ent->client->ps.ammo[ammoweap];
+	weapon_t ammoweap      = BG_FindAmmoForWeapon(weapon);
+	int      maxammo       = BG_MaxAmmoForWeapon(ammoweap, ent->client->sess.skill);
+	int      originalCount = ent->client->ps.ammo[ammoweap];
 
 	if (ammoweap == WP_GRENADE_LAUNCHER)             // make sure if he picks up a grenade that he get's the "launcher" too
 	{
@@ -180,18 +187,21 @@ int Add_Ammo(gentity_t *ent, int weapon, int count, qboolean fillClip)
 }
 
 /**
-* @brief Add the specified number of clips of magic ammo
-* @return whether any ammo was actually added
-*/
+ * @brief Add the specified number of clips of magic ammo
+ * @param[in] receiver
+ * @param[in] numOfClips
+ * @return whether any ammo was actually added
+ */
 qboolean AddMagicAmmo(gentity_t *receiver, int numOfClips)
 {
 	return BG_AddMagicAmmo(&receiver->client->ps, receiver->client->sess.skill, receiver->client->sess.sessionTeam, numOfClips);
 }
 
 /**
-* @brief Get the primary weapon of the client.
-* @return the primary weapon of the client
-*/
+ * @brief Get the primary weapon of the client.
+ * @param[in] client
+ * @return the primary weapon of the client
+ */
 weapon_t G_GetPrimaryWeaponForClient(gclient_t *client)
 {
 	int              i;
@@ -243,9 +253,66 @@ weapon_t G_GetPrimaryWeaponForClient(gclient_t *client)
 }
 
 /**
-* @brief Get the primary weapon of the client.
-* @return the primary weapon of the soldier client
-*/
+ * @brief G_GetSecondaryWeaponForClient
+ * @param[in] client
+ * @param primary - unused
+ * @return
+ */
+weapon_t G_GetSecondaryWeaponForClient(gclient_t *client, weapon_t primary)
+{
+	weapon_t secondary = WP_NONE;
+
+	// early out if not on a team
+	if (client->sess.sessionTeam != TEAM_ALLIES && client->sess.sessionTeam != TEAM_AXIS)
+	{
+		return WP_NONE;
+	}
+
+	// Record our secondary weapon (usually a pistol sidearm)
+	// Colts
+	if (COM_BitCheck(client->ps.weapons, WP_AKIMBO_SILENCEDCOLT))
+	{
+		secondary = WP_AKIMBO_SILENCEDCOLT;
+	}
+	else if (COM_BitCheck(client->ps.weapons, WP_AKIMBO_COLT))
+	{
+		secondary = WP_AKIMBO_COLT;
+	}
+	else if (COM_BitCheck(client->ps.weapons, WP_SILENCED_COLT))
+	{
+		secondary = WP_SILENCED_COLT;
+	}
+	else if (COM_BitCheck(client->ps.weapons, WP_COLT))
+	{
+		secondary = WP_COLT;
+	}
+	// Lugers
+	else if (COM_BitCheck(client->ps.weapons, WP_AKIMBO_SILENCEDLUGER))
+	{
+		secondary = WP_AKIMBO_SILENCEDLUGER;
+	}
+	else if (COM_BitCheck(client->ps.weapons, WP_AKIMBO_LUGER))
+	{
+		secondary = WP_AKIMBO_LUGER;
+	}
+	else if (COM_BitCheck(client->ps.weapons, WP_SILENCER))
+	{
+		secondary = WP_SILENCER;
+	}
+	else if (COM_BitCheck(client->ps.weapons, WP_LUGER))
+	{
+		secondary = WP_LUGER;
+	}
+
+	return secondary;
+}
+
+/**
+ * @brief Get the primary weapon of the client.
+ * @param[in] weapon
+ * @param[in] client
+ * @return the primary weapon of the soldier client
+ */
 weapon_t G_GetPrimaryWeaponForClientSoldier(weapon_t weapon, gclient_t *client)
 {
 	int              i;
@@ -322,8 +389,10 @@ weapon_t G_GetPrimaryWeaponForClientSoldier(weapon_t weapon, gclient_t *client)
 }
 
 /**
-* @brief Drop weapon.
-*/
+ * @brief Drop Weapon
+ * @param[in] ent
+ * @param[in] weapon
+ */
 void G_DropWeapon(gentity_t *ent, weapon_t weapon)
 {
 	vec3_t    angles, velocity, org, offset, mins, maxs;
@@ -435,8 +504,11 @@ void G_DropWeapon(gentity_t *ent, weapon_t weapon)
 }
 
 /**
-* @brief Check if a weapon can be picked up.
-*/
+ * @brief Check if a weapon can be picked up.
+ * @param[in] weapon
+ * @param[in] ent
+ * @return
+ */
 qboolean G_CanPickupWeapon(weapon_t weapon, gentity_t *ent)
 {
 	if (ent->client->sess.sessionTeam == TEAM_AXIS)
@@ -494,10 +566,12 @@ qboolean G_CanPickupWeapon(weapon_t weapon, gentity_t *ent)
 
 	return BG_WeaponIsPrimaryForClassAndTeam(ent->client->sess.playerType, ent->client->sess.sessionTeam, weapon);
 }
-
 /**
-* @brief Pick a weapon up.
-*/
+ * @brief Pick a weapon up.
+ * @param[in,out] ent
+ * @param[in,out] other
+ * @return
+ */
 int Pickup_Weapon(gentity_t *ent, gentity_t *other)
 {
 	int      quantity;
@@ -512,20 +586,11 @@ int Pickup_Weapon(gentity_t *ent, gentity_t *other)
 			other->client->pers.lastammo_client = ent->parent->s.clientNum;
 		}
 
-		// if LT isn't giving ammo to self or another LT or the enemy, give him some props
-		if (other->client->ps.stats[STAT_PLAYER_CLASS] != PC_FIELDOPS)
+		// if field ops isn't giving ammo to self or the enemy, give him some props
+		if (ent->parent && (ent->parent->client != other->client))
 		{
 			if (ent->parent && ent->parent->client && other->client->sess.sessionTeam == ent->parent->client->sess.sessionTeam)
 			{
-				if (!(ent->parent->client->PCSpecialPickedUpCount % LT_SPECIAL_PICKUP_MOD))
-				{
-					AddScore(ent->parent, WOLF_AMMO_UP);
-					if (ent->parent && ent->parent->client)
-					{
-						G_LogPrintf("Ammo_Pack: %d %d\n", (int)(ent->parent - g_entities), (int)(other - g_entities));
-					}
-				}
-				ent->parent->client->PCSpecialPickedUpCount++;
 				G_AddSkillPoints(ent->parent, SK_SIGNALS, 1.f);
 				G_DebugAddSkillPoints(ent->parent, SK_SIGNALS, 1.f, "ammo pack picked up");
 
@@ -536,7 +601,6 @@ int Pickup_Weapon(gentity_t *ent, gentity_t *other)
 					Bot_Event_RecievedAmmo(other - g_entities, ent->parent);
 				}
 #endif
-
 				// extracted code originally here into AddMagicAmmo
 				// add 1 clip of magic ammo for any two-handed weapon
 			}
@@ -555,7 +619,7 @@ int Pickup_Weapon(gentity_t *ent, gentity_t *other)
 		Add_Ammo(other, ent->item->giTag, quantity, qfalse);
 
 		// secondary weapon ammo
-		if (ent->delay)
+		if (ent->delay != 0.f)
 		{
 			Add_Ammo(other, weaponTable[ent->item->giTag].weapAlts, ent->delay, qfalse);
 		}
@@ -641,7 +705,7 @@ int Pickup_Weapon(gentity_t *ent, gentity_t *other)
 					other->client->ps.ammo[BG_FindClipForWeapon(ent->item->giTag)] = quantity;
 
 					// secondary weapon ammo
-					if (ent->delay)
+					if (ent->delay != 0.f)
 					{
 						Add_Ammo(other, weaponTable[ent->item->giTag].weapAlts, ent->delay, qfalse);
 					}
@@ -651,7 +715,7 @@ int Pickup_Weapon(gentity_t *ent, gentity_t *other)
 					other->client->ps.ammoclip[BG_FindClipForWeapon(ent->item->giTag)] = quantity;
 
 					// secondary weapon ammo
-					if (ent->delay)
+					if (ent->delay != 0.f)
 					{
 						other->client->ps.ammo[weaponTable[ent->item->giTag].weapAlts] = ent->delay;
 					}
@@ -672,8 +736,11 @@ int Pickup_Weapon(gentity_t *ent, gentity_t *other)
 }
 
 /**
-* @brief Pick health.
-*/
+ * @brief Pick health.
+ * @param[in,out] ent
+ * @param[in,out] other
+ * @return
+ */
 int Pickup_Health(gentity_t *ent, gentity_t *other)
 {
 	int max;
@@ -683,19 +750,13 @@ int Pickup_Health(gentity_t *ent, gentity_t *other)
 		other->client->pers.lasthealth_client = ent->parent->s.clientNum;
 	}
 
-	// if medic isn't giving ammo to self or another medic or the enemy, give him some props
-	if (other->client->ps.stats[STAT_PLAYER_CLASS] != PC_MEDIC)
+	// if medic isn't giving ammo to self or the enemy, give him some props
+	if (ent->parent && (ent->parent->client != other->client))
 	{
 		if (ent->parent && ent->parent->client && other->client->sess.sessionTeam == ent->parent->client->sess.sessionTeam)
 		{
-			if (!(ent->parent->client->PCSpecialPickedUpCount % MEDIC_SPECIAL_PICKUP_MOD))
-			{
-				AddScore(ent->parent, WOLF_HEALTH_UP);
-				G_LogPrintf("Health_Pack: %d %d\n", (int)(ent->parent - g_entities), (int)(other - g_entities));
-			}
 			G_AddSkillPoints(ent->parent, SK_FIRST_AID, 1.f);
 			G_DebugAddSkillPoints(ent->parent, SK_FIRST_AID, 1.f, "health pack picked up");
-			ent->parent->client->PCSpecialPickedUpCount++;
 		}
 	}
 
@@ -724,8 +785,9 @@ int Pickup_Health(gentity_t *ent, gentity_t *other)
 }
 
 /**
-* @brief Respawn item.
-*/
+ * @brief Respawn item.
+ * @param[in,out] ent
+ */
 void RespawnItem(gentity_t *ent)
 {
 	// randomly select from teamed entities
@@ -760,12 +822,17 @@ void RespawnItem(gentity_t *ent)
 }
 
 /**
-* @brief Auto action when touching an item.
-*
-* PICKUP_ACTIVATE  (0), he will pick up items only when using +activate
-* PICKUP_TOUCH     (1), he will pickup items when touched
-* PICKUP_FORCE     (2), he will pickup the next item when touched (and reset to PICKUP_ACTIVATE when done)
-*/
+ * @brief Auto action when touching an item.
+ *
+ * PICKUP_ACTIVATE  (0), he will pick up items only when using +activate
+ * PICKUP_TOUCH     (1), he will pickup items when touched
+ * PICKUP_FORCE     (2), he will pickup the next item when touched (and reset to PICKUP_ACTIVATE when done)
+ *
+ * @param[in,out] ent
+ * @param[in,out] other
+ * @param[in] trace
+ *
+ */
 void Touch_Item_Auto(gentity_t *ent, gentity_t *other, trace_t *trace)
 {
 	if (other->client->pers.autoActivate == PICKUP_ACTIVATE)
@@ -794,8 +861,11 @@ void Touch_Item_Auto(gentity_t *ent, gentity_t *other, trace_t *trace)
 }
 
 /**
-* @brief Action when touching an item.
-*/
+ * @brief Action when touching an item.
+ * @param[in,out] ent
+ * @param[in] other
+ * @param trace - unused
+ */
 void Touch_Item(gentity_t *ent, gentity_t *other, trace_t *trace)
 {
 	int respawn;
@@ -925,8 +995,13 @@ void Touch_Item(gentity_t *ent, gentity_t *other, trace_t *trace)
 }
 
 /**
-* @brief Spawns an item and tosses it forward.
-*/
+ * @brief Spawns an item and tosses it forward.
+ * @param[in] item
+ * @param[in] origin
+ * @param[in] velocity
+ * @param[in] ownerNum
+ * @return
+ */
 gentity_t *LaunchItem(gitem_t *item, vec3_t origin, vec3_t velocity, int ownerNum)
 {
 	gentity_t *dropped = G_Spawn();
@@ -1010,8 +1085,13 @@ gentity_t *LaunchItem(gitem_t *item, vec3_t origin, vec3_t velocity, int ownerNu
 }
 
 /**
-* @brief Spawns an item and tosses it forward.
-*/
+ * @brief Spawns an item and tosses it forward.
+ * @param[in] ent
+ * @param[in] item
+ * @param[in] angle
+ * @param[in] novelocity
+ * @return
+ */
 gentity_t *Drop_Item(gentity_t *ent, gitem_t *item, float angle, qboolean novelocity)
 {
 	vec3_t velocity;
@@ -1036,17 +1116,22 @@ gentity_t *Drop_Item(gentity_t *ent, gitem_t *item, float angle, qboolean novelo
 }
 
 /**
-* @brief Respawn the item.
-*/
+ * @brief Respawn the item.
+ * @param[in] ent
+ * @param other - unused
+ * @param activator - unused
+ */
 void Use_Item(gentity_t *ent, gentity_t *other, gentity_t *activator)
 {
 	RespawnItem(ent);
 }
 
 /**
-* @brief Traces down to find where an item should rest, instead of letting them
-*        free fall from their spawn points.
-*/
+ * @brief Traces down to find where an item should rest, instead of letting them
+ *        free fall from their spawn points.
+ *
+ * @param[in,out] ent
+ */
 void FinishSpawningItem(gentity_t *ent)
 {
 	trace_t tr;
@@ -1153,8 +1238,10 @@ void FinishSpawningItem(gentity_t *ent)
 }
 
 /**
-* @brief Sets the clipping size and plants the object on the floor.
-*/
+ * @brief Sets the clipping size and plants the object on the floor.
+ * @param[in,out] ent
+ * @param[in] item
+ */
 void G_SpawnItem(gentity_t *ent, gitem_t *item)
 {
 	char *noise;
@@ -1192,8 +1279,10 @@ void G_SpawnItem(gentity_t *ent, gitem_t *item)
 }
 
 /**
-* @brief Bounce an item.
-*/
+ * @brief Bounce an item.
+ * @param[in,out] ent
+ * @param[in,out] trace
+ */
 void G_BounceItem(gentity_t *ent, trace_t *trace)
 {
 	vec3_t velocity;
@@ -1214,7 +1303,7 @@ void G_BounceItem(gentity_t *ent, trace_t *trace)
 	{
 		vectoangles(trace->plane.normal, ent->s.angles);
 		ent->s.angles[0] += 90;
-		if (ent->s.angles[0] > 0.0 && ent->s.angles[0] < 50.0)
+		if (ent->s.angles[0] > 0.0f && ent->s.angles[0] < 50.0f)
 		{
 			// align items on inclined ground
 			G_SetAngle(ent, ent->s.angles);
@@ -1222,7 +1311,7 @@ void G_BounceItem(gentity_t *ent, trace_t *trace)
 		}
 		else
 		{
-			trace->endpos[2] += 1.0;    // make sure it is off ground
+			trace->endpos[2] += 1.0f;    // make sure it is off ground
 		}
 		SnapVector(trace->endpos);
 		G_SetOrigin(ent, trace->endpos);
@@ -1236,8 +1325,10 @@ void G_BounceItem(gentity_t *ent, trace_t *trace)
 }
 
 /**
-* @brief Run item prop.
-*/
+ * @brief Run item prop.
+ * @param[in,out] ent
+ * @param[in] origin
+ */
 void G_RunItemProp(gentity_t *ent, vec3_t origin)
 {
 	gentity_t *traceEnt;
@@ -1265,7 +1356,7 @@ void G_RunItemProp(gentity_t *ent, vec3_t origin)
 	if (owner->client && trace.startsolid && traceEnt != owner && traceEnt != ent /* && !traceEnt->active*/)
 	{
 		ent->takedamage = qfalse;
-		ent->die(ent, ent, NULL, 10, 0);
+		ent->die(ent, ent, NULL, 10, MOD_UNKNOWN);
 		Prop_Break_Sound(ent);
 
 		return;
@@ -1281,8 +1372,9 @@ void G_RunItemProp(gentity_t *ent, vec3_t origin)
 }
 
 /**
-* @brief Run item.
-*/
+ * @brief Run item.
+ * @param[in,out] ent
+ */
 void G_RunItem(gentity_t *ent)
 {
 	vec3_t  origin;
@@ -1345,7 +1437,7 @@ void G_RunItem(gentity_t *ent)
 	// check think function
 	G_RunThink(ent);
 
-	if (tr.fraction == 1)
+	if (tr.fraction == 1.f)
 	{
 		return;
 	}

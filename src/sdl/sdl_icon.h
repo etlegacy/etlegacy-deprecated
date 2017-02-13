@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -40,7 +40,7 @@ static const struct
 {
 	unsigned int width;
 	unsigned int height;
-	unsigned int bytes_per_pixel;     /* 2:RGB16, 3:RGB, 4:RGBA */
+	unsigned int bytes_per_pixel;     // 2:RGB16, 3:RGB, 4:RGBA
 	unsigned char pixel_data[64 * 64 * 4 + 1];
 } CLIENT_WINDOW_ICON =
 {

@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -54,6 +54,14 @@ typedef struct
 	unsigned char palette[256][4];
 } BMPHeader_t;
 
+/**
+ * @brief R_LoadBMP
+ * @param[in] name
+ * @param[out] pic
+ * @param[out] width
+ * @param[out] height
+ * @param alphaByte - unused
+ */
 void R_LoadBMP(const char *name, byte **pic, int *width, int *height, byte alphaByte)
 {
 	int      columns, rows;
@@ -84,7 +92,7 @@ void R_LoadBMP(const char *name, byte **pic, int *width, int *height, byte alpha
 	}
 
 	// load the file
-	length = ri.FS_ReadFile(( char * ) name, &buffer.v);
+	length = ri.FS_ReadFile(name, &buffer.v);
 	if (!buffer.b || length < 0)
 	{
 		return;
@@ -92,6 +100,7 @@ void R_LoadBMP(const char *name, byte **pic, int *width, int *height, byte alpha
 
 	if (length < 54)
 	{
+		ri.FS_FreeFile(buffer.v);
 		Ren_Drop("LoadBMP: header too short (%s)\n", name);
 	}
 
@@ -133,15 +142,16 @@ void R_LoadBMP(const char *name, byte **pic, int *width, int *height, byte alpha
 	{
 		if (buf_p + sizeof(bmpHeader.palette) > end)
 		{
+			ri.FS_FreeFile(buffer.v);
 			Ren_Drop("LoadBMP: header too short (%s)\n", name);
 		}
 
 		Com_Memcpy(bmpHeader.palette, buf_p, sizeof(bmpHeader.palette));
-		buf_p += sizeof(bmpHeader.palette);
 	}
 
 	if (buffer.b + bmpHeader.bitmapDataOffset > end)
 	{
+		ri.FS_FreeFile(buffer.v);
 		Ren_Drop("LoadBMP: invalid offset value in header (%s)\n", name);
 	}
 
@@ -149,18 +159,22 @@ void R_LoadBMP(const char *name, byte **pic, int *width, int *height, byte alpha
 
 	if (bmpHeader.id[0] != 'B' && bmpHeader.id[1] != 'M')
 	{
+		ri.FS_FreeFile(buffer.v);
 		Ren_Drop("LoadBMP: only Windows-style BMP files supported (%s)\n", name);
 	}
 	if (bmpHeader.fileSize != length)
 	{
+		ri.FS_FreeFile(buffer.v);
 		Ren_Drop("LoadBMP: header size does not match file size (%u vs. %u) (%s)\n", bmpHeader.fileSize, length, name);
 	}
 	if (bmpHeader.compression != 0)
 	{
+		ri.FS_FreeFile(buffer.v);
 		Ren_Drop("LoadBMP: only uncompressed BMP files supported (%s)\n", name);
 	}
 	if (bmpHeader.bitsPerPixel < 8)
 	{
+		ri.FS_FreeFile(buffer.v);
 		Ren_Drop("LoadBMP: monochrome and 4-bit BMP files not supported (%s)\n", name);
 	}
 
@@ -172,6 +186,7 @@ void R_LoadBMP(const char *name, byte **pic, int *width, int *height, byte alpha
 	case 32:
 		break;
 	default:
+		ri.FS_FreeFile(buffer.v);
 		Ren_Drop("LoadBMP: illegal pixel_size '%hu' in file '%s'\n", bmpHeader.bitsPerPixel, name);
 		break;
 	}
@@ -187,10 +202,12 @@ void R_LoadBMP(const char *name, byte **pic, int *width, int *height, byte alpha
 	if (columns <= 0 || !rows || numPixels > 0x1FFFFFFF // 4*1FFFFFFF == 0x7FFFFFFC < 0x7FFFFFFF
 	    || ((numPixels * 4) / columns) / 4 != rows)
 	{
+		ri.FS_FreeFile(buffer.v);
 		Ren_Drop("LoadBMP: %s has an invalid image size\n", name);
 	}
 	if (buf_p + numPixels * bmpHeader.bitsPerPixel / 8 > end)
 	{
+		ri.FS_FreeFile(buffer.v);
 		Ren_Drop("LoadBMP: file truncated (%s)\n", name);
 	}
 

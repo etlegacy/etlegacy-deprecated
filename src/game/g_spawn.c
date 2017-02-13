@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -37,6 +37,19 @@
 
 #include "g_local.h"
 
+#ifdef FEATURE_LUA
+#include "g_lua.h"
+#endif
+
+/**
+ * @brief G_SpawnStringExt
+ * @param[in] key
+ * @param[in] defaultString
+ * @param[out] out
+ * @param[in] file
+ * @param[in] line
+ * @return
+ */
 qboolean G_SpawnStringExt(const char *key, const char *defaultString, char **out, const char *file, int line)
 {
 	int i;
@@ -61,16 +74,34 @@ qboolean G_SpawnStringExt(const char *key, const char *defaultString, char **out
 	return qfalse;
 }
 
+/**
+ * @brief G_SpawnFloatExt
+ * @param[in] key
+ * @param[in] defaultString
+ * @param[out] out
+ * @param[in] file
+ * @param[in] line
+ * @return
+ */
 qboolean G_SpawnFloatExt(const char *key, const char *defaultString, float *out, const char *file, int line)
 {
 	char     *s;
 	qboolean present;
 
 	present = G_SpawnStringExt(key, defaultString, &s, file, line);
-	*out    = atof(s);
+	*out    = (float)atof(s);
 	return present;
 }
 
+/**
+ * @brief G_SpawnIntExt
+ * @param[in] key
+ * @param[in] defaultString
+ * @param[out] out
+ * @param[in] file
+ * @param[in] line
+ * @return
+ */
 qboolean G_SpawnIntExt(const char *key, const char *defaultString, int *out, const char *file, int line)
 {
 	char     *s;
@@ -81,6 +112,15 @@ qboolean G_SpawnIntExt(const char *key, const char *defaultString, int *out, con
 	return present;
 }
 
+/**
+ * @brief G_SpawnVectorExt
+ * @param[in] key
+ * @param[in] defaultString
+ * @param[out] out
+ * @param[in] file
+ * @param[in] line
+ * @return
+ */
 qboolean G_SpawnVectorExt(const char *key, const char *defaultString, float *out, const char *file, int line)
 {
 	char     *s;
@@ -91,6 +131,15 @@ qboolean G_SpawnVectorExt(const char *key, const char *defaultString, float *out
 	return present;
 }
 
+/**
+ * @brief G_SpawnVector2DExt
+ * @param[in] key
+ * @param[in] defaultString
+ * @param[out] out
+ * @param[in] file
+ * @param[in] line
+ * @return
+ */
 qboolean G_SpawnVector2DExt(const char *key, const char *defaultString, float *out, const char *file, int line)
 {
 	char     *s;
@@ -103,91 +152,91 @@ qboolean G_SpawnVector2DExt(const char *key, const char *defaultString, float *o
 
 field_t fields[] =
 {
-	{ "classname",    FOFS(classname),      F_LSTRING   },
-	{ "origin",       FOFS(s.origin),       F_VECTOR    },
-	{ "model",        FOFS(model),          F_LSTRING   },
-	{ "model2",       FOFS(model2),         F_LSTRING   },
-	{ "spawnflags",   FOFS(spawnflags),     F_INT       },
-	{ "eflags",       FOFS(s.eFlags),       F_INT       },
-	{ "svflags",      FOFS(r.svFlags),      F_INT       },
-	{ "maxs",         FOFS(r.maxs),         F_VECTOR    },
-	{ "mins",         FOFS(r.mins),         F_VECTOR    },
-	{ "speed",        FOFS(speed),          F_FLOAT     },
-	{ "closespeed",   FOFS(closespeed),     F_FLOAT     },
-	{ "target",       FOFS(target),         F_LSTRING   },
-	{ "targetname",   FOFS(targetname),     F_LSTRING   },
-	{ "message",      FOFS(message),        F_LSTRING   },
-	{ "popup",        FOFS(message),        F_LSTRING   }, // mutually exclusive from 'message', but makes the ent more logical for the level designer
-	{ "book",         FOFS(message),        F_LSTRING   }, // mutually exclusive from 'message', but makes the ent more logical for the level designer
-	{ "team",         FOFS(team),           F_LSTRING   },
-	{ "wait",         FOFS(wait),           F_FLOAT     },
-	{ "random",       FOFS(random),         F_FLOAT     },
-	{ "count",        FOFS(count),          F_INT       },
-	{ "health",       FOFS(health),         F_INT       },
-	{ "light",        0,                    F_IGNORE    },
-	{ "dmg",          FOFS(damage),         F_INT       },
-	{ "angles",       FOFS(s.angles),       F_VECTOR    },
-	{ "angle",        FOFS(s.angles),       F_ANGLEHACK },
+	{ "classname",    FOFS(classname),      F_LSTRING   , 0},
+	{ "origin",       FOFS(s.origin),       F_VECTOR    , 0},
+	{ "model",        FOFS(model),          F_LSTRING   , 0},
+	{ "model2",       FOFS(model2),         F_LSTRING   , 0},
+	{ "spawnflags",   FOFS(spawnflags),     F_INT       , 0},
+	{ "eflags",       FOFS(s.eFlags),       F_INT       , 0},
+	{ "svflags",      FOFS(r.svFlags),      F_INT       , 0},
+	{ "maxs",         FOFS(r.maxs),         F_VECTOR    , 0},
+	{ "mins",         FOFS(r.mins),         F_VECTOR    , 0},
+	{ "speed",        FOFS(speed),          F_FLOAT     , 0},
+	{ "closespeed",   FOFS(closespeed),     F_FLOAT     , 0},
+	{ "target",       FOFS(target),         F_LSTRING   , 0},
+	{ "targetname",   FOFS(targetname),     F_LSTRING   , 0},
+	{ "message",      FOFS(message),        F_LSTRING   , 0},
+	{ "popup",        FOFS(message),        F_LSTRING   , 0}, // mutually exclusive from 'message', but makes the ent more logical for the level designer
+	{ "book",         FOFS(message),        F_LSTRING   , 0}, // mutually exclusive from 'message', but makes the ent more logical for the level designer
+	{ "team",         FOFS(team),           F_LSTRING   , 0},
+	{ "wait",         FOFS(wait),           F_FLOAT     , 0},
+	{ "random",       FOFS(random),         F_FLOAT     , 0},
+	{ "count",        FOFS(count),          F_INT       , 0},
+	{ "health",       FOFS(health),         F_INT       , 0},
+	{ "light",        0,                    F_IGNORE    , 0},
+	{ "dmg",          FOFS(damage),         F_INT       , 0},
+	{ "angles",       FOFS(s.angles),       F_VECTOR    , 0},
+	{ "angle",        FOFS(s.angles),       F_ANGLEHACK , 0},
 
-	{ "duration",     FOFS(duration),       F_FLOAT     },
-	{ "rotate",       FOFS(rotate),         F_VECTOR    },
+	{ "duration",     FOFS(duration),       F_FLOAT     , 0},
+	{ "rotate",       FOFS(rotate),         F_VECTOR    , 0},
 
-	{ "degrees",      FOFS(angle),          F_FLOAT     },
-	{ "time",         FOFS(speed),          F_FLOAT     },
+	{ "degrees",      FOFS(angle),          F_FLOAT     , 0},
+	{ "time",         FOFS(speed),          F_FLOAT     , 0},
 
 	// additional ai field
-	{ "skin",         FOFS(aiSkin),         F_LSTRING   },
+	{ "skin",         FOFS(aiSkin),         F_LSTRING   , 0},
 
 	// dlight lightstyles (made all these unique variables for testing)
-	{ "_color",       FOFS(dl_color),       F_VECTOR    }, // color of the light	(the underscore is inserted by the color picker in QER)
-	{ "color",        FOFS(dl_color),       F_VECTOR    }, // color of the light
-	{ "stylestring",  FOFS(dl_stylestring), F_LSTRING   }, // user defined stylestring "fffndlsfaaaaaa" for example
+	{ "_color",       FOFS(dl_color),       F_VECTOR    , 0}, // color of the light	(the underscore is inserted by the color picker in QER)
+	{ "color",        FOFS(dl_color),       F_VECTOR    , 0}, // color of the light
+	{ "stylestring",  FOFS(dl_stylestring), F_LSTRING   , 0}, // user defined stylestring "fffndlsfaaaaaa" for example
 
-	{ "shader",       FOFS(dl_shader),      F_LSTRING   }, // shader to use for a target_effect or dlight
+	{ "shader",       FOFS(dl_shader),      F_LSTRING   , 0}, // shader to use for a target_effect or dlight
 
 	// for target_unlock
-	{ "key",          FOFS(key),            F_INT       },
+	{ "key",          FOFS(key),            F_INT       , 0},
 
 	// mg42
-	{ "harc",         FOFS(harc),           F_FLOAT     },
-	{ "varc",         FOFS(varc),           F_FLOAT     },
+	{ "harc",         FOFS(harc),           F_FLOAT     , 0},
+	{ "varc",         FOFS(varc),           F_FLOAT     , 0},
 
 	// sniper
-	{ "delay",        FOFS(delay),          F_FLOAT     },
-	{ "radius",       FOFS(radius),         F_INT       },
+	{ "delay",        FOFS(delay),          F_FLOAT     , 0},
+	{ "radius",       FOFS(radius),         F_INT       , 0},
 
 	// for reloading savegames at correct mission spot
-	{ "missionlevel", FOFS(missionLevel),   F_INT       },
+	{ "missionlevel", FOFS(missionLevel),   F_INT       , 0},
 
-	{ "start_size",   FOFS(start_size),     F_INT       },
-	{ "end_size",     FOFS(end_size),       F_INT       },
+	{ "start_size",   FOFS(start_size),     F_INT       , 0},
+	{ "end_size",     FOFS(end_size),       F_INT       , 0},
 
-	{ "shard",        FOFS(count),          F_INT       },
+	{ "shard",        FOFS(count),          F_INT       , 0},
 
-	{ "spawnitem",    FOFS(spawnitem),      F_LSTRING   },
+	{ "spawnitem",    FOFS(spawnitem),      F_LSTRING   , 0},
 
-	{ "track",        FOFS(track),          F_LSTRING   },
+	{ "track",        FOFS(track),          F_LSTRING   , 0},
 
-	{ "scriptName",   FOFS(scriptName),     F_LSTRING   },
+	{ "scriptName",   FOFS(scriptName),     F_LSTRING   , 0},
 
-	{ "shortname",    FOFS(message),        F_LSTRING   },
-	{ "constages",    FOFS(constages),      F_LSTRING   },
-	{ "desstages",    FOFS(desstages),      F_LSTRING   },
-	{ "partofstage",  FOFS(partofstage),    F_INT       },
-	{ "override",     FOFS(spawnitem),      F_LSTRING   },
+	{ "shortname",    FOFS(message),        F_LSTRING   , 0},
+	{ "constages",    FOFS(constages),      F_LSTRING   , 0},
+	{ "desstages",    FOFS(desstages),      F_LSTRING   , 0},
+	{ "partofstage",  FOFS(partofstage),    F_INT       , 0},
+	{ "override",     FOFS(spawnitem),      F_LSTRING   , 0},
 
-	{ "damageparent", FOFS(damageparent),   F_LSTRING   },
+	{ "damageparent", FOFS(damageparent),   F_LSTRING   , 0},
 
-	{ "numPlayers",   FOFS(numPlayers),     F_INT       }, // number of players needed to trigger this
+	{ "numPlayers",   FOFS(numPlayers),     F_INT       , 0}, // number of players needed to trigger this
 
-	{ "contents",     FOFS(r.contents),     F_INT       },
-	{ "clipmask",     FOFS(clipmask),       F_INT       },
-	{ "count2",       FOFS(count2),         F_INT       },
+	{ "contents",     FOFS(r.contents),     F_INT       , 0},
+	{ "clipmask",     FOFS(clipmask),       F_INT       , 0},
+	{ "count2",       FOFS(count2),         F_INT       , 0},
 	// doors need this one
-	{ "baseAngle",    FOFS(s.apos.trBase),  F_VECTOR    },
-	{ "baseOrigin",   FOFS(s.pos.trBase),   F_VECTOR    },
+	{ "baseAngle",    FOFS(s.apos.trBase),  F_VECTOR    , 0},
+	{ "baseOrigin",   FOFS(s.pos.trBase),   F_VECTOR    , 0},
 
-	{ NULL }
+	{ NULL , 0, F_IGNORE, 0}
 };
 
 typedef struct
@@ -247,7 +296,6 @@ void SP_target_speaker(gentity_t *ent);
 void SP_target_print(gentity_t *ent);
 void SP_target_laser(gentity_t *self);
 
-void SP_target_score(gentity_t *ent);
 void SP_target_teleporter(gentity_t *ent);
 void SP_target_relay(gentity_t *ent);
 void SP_target_kill(gentity_t *ent);
@@ -449,7 +497,6 @@ spawn_t spawns[] =
 	{ "target_speaker",            SP_target_speaker            },
 	{ "target_print",              SP_target_print              },
 	{ "target_laser",              SP_target_laser              },
-	{ "target_score",              SP_target_score              },
 	{ "target_teleporter",         SP_target_teleporter         },
 	{ "target_relay",              SP_target_relay              },
 	{ "target_kill",               SP_target_kill               },
@@ -576,14 +623,11 @@ spawn_t spawns[] =
 	{ 0,                           0                            }
 };
 
-/*
-===============
-G_CallSpawn
-
-Finds the spawn function for the entity and calls it,
-returning qfalse if not found
-===============
-*/
+/**
+ * @brief Finds the spawn function for the entity and calls it
+ * @param ent
+ * @return qfalse if spawn not found
+ */
 qboolean G_CallSpawn(gentity_t *ent)
 {
 	spawn_t *s;
@@ -645,18 +689,16 @@ qboolean G_CallSpawn(gentity_t *ent)
 	return qfalse;
 }
 
-/*
-=============
-G_NewString
-
-Builds a copy of the string, translating \n to real linefeeds
-so message texts can be multi-line
-=============
-*/
+/**
+ * @brief Builds a copy of the string, translating \\n to real linefeeds
+ * so message texts can be multi-line
+ * @param string
+ * @return
+ */
 char *G_NewString(const char *string)
 {
 	char *newb, *new_p;
-	int  i, l;
+	unsigned int  i, l;
 
 	l = strlen(string) + 1;
 
@@ -688,14 +730,13 @@ char *G_NewString(const char *string)
 	return newb;
 }
 
-/*
-===============
-G_ParseField
-
-Takes a key/value pair and sets the binary values
-in a gentity
-===============
-*/
+/**
+ * @brief Takes a key/value pair and sets the binary values
+ * in a gentity
+ * @param[in] key
+ * @param[in] value
+ * @param[in] ent
+ */
 void G_ParseField(const char *key, const char *value, gentity_t *ent)
 {
 	field_t *f;
@@ -725,10 +766,10 @@ void G_ParseField(const char *key, const char *value, gentity_t *ent)
 				*( int * )(b + f->ofs) = atoi(value);
 				break;
 			case F_FLOAT:
-				*( float * )(b + f->ofs) = atof(value);
+				*( float * )(b + f->ofs) = (float)atof(value);
 				break;
 			case F_ANGLEHACK:
-				v                            = atof(value);
+				v                            = (float)atof(value);
 				(( float * )(b + f->ofs))[0] = 0;
 				(( float * )(b + f->ofs))[1] = v;
 				(( float * )(b + f->ofs))[2] = 0;
@@ -742,19 +783,18 @@ void G_ParseField(const char *key, const char *value, gentity_t *ent)
 	}
 }
 
-/*
-===================
-G_SpawnGEntityFromSpawnVars
-
-Spawn an entity and fill in all of the level fields from
-level.spawnVars[], then call the class specfic spawn function
-===================
-*/
+/**
+ * @brief Spawn an entity and fill in all of the level fields from
+ * level.spawnVars[], then call the class specfic spawn function
+ * @return
+ */
 gentity_t *G_SpawnGEntityFromSpawnVars(void)
 {
 	int       i;
-	gentity_t *ent = G_Spawn(); // get the next free entity
+	gentity_t *ent;
 	char      *str;
+
+	ent = G_Spawn(); // get the next free entity
 
 	for (i = 0 ; i < level.numSpawnVars ; i++)
 	{
@@ -810,14 +850,14 @@ gentity_t *G_SpawnGEntityFromSpawnVars(void)
 	return ent;
 }
 
-/*
-====================
-G_AddSpawnVarToken
-====================
-*/
+/**
+ * @brief G_AddSpawnVarToken
+ * @param[in] string
+ * @return
+ */
 char *G_AddSpawnVarToken(const char *string)
 {
-	int  l;
+	size_t l;
 	char *dest;
 
 	l = strlen(string);
@@ -834,16 +874,12 @@ char *G_AddSpawnVarToken(const char *string)
 	return dest;
 }
 
-/*
-====================
-G_ParseSpawnVars
-
-Parses a brace bounded set of key / value pairs out of the
-level's entity strings into level.spawnVars[]
-
-This does not actually spawn an entity.
-====================
-*/
+/**
+ * @brief Parses a brace bounded set of key / value pairs out of the
+ * level's entity strings into level.spawnVars[]
+ * This does not actually spawn an entity.
+ * @return
+ */
 qboolean G_ParseSpawnVars(void)
 {
 	char keyname[MAX_TOKEN_CHARS];
@@ -899,16 +935,17 @@ qboolean G_ParseSpawnVars(void)
 	return qtrue;
 }
 
-/*QUAKED worldspawn (0 0 0) ? NO_GT_WOLF NO_GT_STOPWATCH NO_GT_CHECKPOINT NO_LMS
-
-Every map should have exactly one worldspawn.
-"music"     Music wav file
-"gravity"   800 is default gravity
-"message" Text to print during connection process
-"ambient"  Ambient light value (must use '_color')
-"_color"    Ambient light color (must be used with 'ambient')
-"sun"        Shader to use for 'sun' image
-*/
+/**
+ * @brief Every map should have exactly one worldspawn.
+ * @details QUAKED worldspawn (0 0 0) ? NO_GT_WOLF NO_GT_STOPWATCH NO_GT_CHECKPOINT NO_LMS
+ *
+ * "music"     Music wav file
+ * "gravity"   800 is default gravity
+ * "message" Text to print during connection process
+ * "ambient"  Ambient light value (must use '_color')
+ * "_color"    Ambient light color (must be used with 'ambient')
+ * "sun"        Shader to use for 'sun' image
+ */
 void SP_worldspawn(void)
 {
 	char *s;
@@ -976,13 +1013,10 @@ void SP_worldspawn(void)
 	}
 }
 
-/*
-==============
-SP_func_fakebrush
-
-forty - etpro mapscripting - spawn function for fake brushes
-==============
-*/
+/**
+ * @brief forty - etpro mapscripting - spawn function for fake brushes
+ * @param ent
+ */
 void SP_func_fakebrush(gentity_t *ent)
 {
 	ent->s.eFlags |= EF_FAKEBMODEL;
@@ -991,13 +1025,9 @@ void SP_func_fakebrush(gentity_t *ent)
 	return;
 }
 
-/*
-==============
-G_SpawnEntitiesFromString
-
-Parses textual entity definitions out of an entstring and spawns gentities.
-==============
-*/
+/**
+ * @brief Parses textual entity definitions out of an entstring and spawns gentities.
+ */
 void G_SpawnEntitiesFromString(void)
 {
 	// allow calls to G_Spawn*()
@@ -1020,6 +1050,10 @@ void G_SpawnEntitiesFromString(void)
 		G_SpawnGEntityFromSpawnVars();
 	}
 
+#ifdef FEATURE_LUA
+	G_LuaHook_SpawnEntitiesFromString();
+#endif
+
 	G_Printf("Disable spawning!\n");
 	level.spawning = qfalse;            // any future calls to G_Spawn*() will be errors
 }
@@ -1029,9 +1063,12 @@ void G_SpawnEntitiesFromString(void)
 // Some helper functions for entity property handling..
 // these functions are used by Lua.
 
-// return the index in the fiels[] array of the given fieldname,
-// return -1 if not found..
-int GetFieldIndex(char *fieldname)
+/**
+ * @brief GetFieldIndex
+ * @param[in] fieldname
+ * @return The index in the fiels[] array of the given fieldname, -1 if not found..
+ */
+int GetFieldIndex(const char *fieldname)
 {
 	int i;
 
@@ -1043,9 +1080,12 @@ int GetFieldIndex(char *fieldname)
 	return -1;
 }
 
-// return the fieldType of the given fieldname..
-// return F_IGNORE if the field is not found.
-fieldtype_t GetFieldType(char *fieldname)
+/**
+ * @brief GetFieldType
+ * @param[in] fieldname
+ * @return The fieldType of the given fieldname, otherwise F_IGNORE if the field is not found.
+ */
+fieldtype_t GetFieldType(const char *fieldname)
 {
 	int index = GetFieldIndex(fieldname);
 

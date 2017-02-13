@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -46,6 +46,11 @@ typedef struct
 
 extern const g_strtoken_t *in_word_set(const char *str, unsigned int len);
 
+/**
+ * @brief G_GetTokenForString
+ * @param[in] str
+ * @return
+ */
 g_StringToken_t G_GetTokenForString(char const *str)
 {
 	// Use our minimal perfect hash generated code to give us the

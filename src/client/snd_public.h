@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -38,7 +38,7 @@
 // background track queuing
 #define QUEUED_PLAY_ONCE    -1
 #define QUEUED_PLAY_LOOPED  -2
-#define QUEUED_PLAY_ONCE_SILENT -3  // when done it goes quiet
+#define QUEUED_PLAY_ONCE_SILENT -3  ///< when done it goes quiet
 
 void S_Init(void);
 void S_Shutdown(void);
@@ -92,8 +92,6 @@ sfxHandle_t S_RegisterSound(const char *sample, qboolean compressed);
 void S_DisplayFreeMemory(void);
 
 void S_ClearSoundBuffer(qboolean killStreaming);
-
-void SNDDMA_Activate(void);
 
 int S_GetVoiceAmplitude(int entnum);
 

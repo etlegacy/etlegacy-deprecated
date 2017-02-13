@@ -1,3 +1,7 @@
+#-----------------------------------------------------------------
+# Setup Features
+#-----------------------------------------------------------------
+
 # If we change architecture we need to force rescan of libraries
 if(NOT OLD_CROSS_COMPILE32 STREQUAL CROSS_COMPILE32)
 	force_rescan_library(SDL32)
@@ -29,25 +33,25 @@ if(BUILD_CLIENT)
 			add_definitions(-DBUNDLED_GLEW)
 			add_definitions(-DGLEW_STATIC)
 		endif()
-	endif()
 
-	if(FEATURE_RENDERER_GLES)
-    		list(APPEND RENDERER_LIBRARIES -lGLESv1_CM)
-    		include_directories(SYSTEM /mnt/utmp/codeblocks/usr/include/gles)
-	else()
 		find_package(OpenGL REQUIRED)
 		list(APPEND RENDERER_LIBRARIES ${OPENGL_LIBRARIES})
 		include_directories(SYSTEM ${OPENGL_INCLUDE_DIR})
+	else() # FEATURE_RENDERER_GLES
+			find_package(GLES REQUIRED)
+			list(APPEND RENDERER_LIBRARIES ${GLES_LIBRARY})
+			include_directories(SYSTEM ${GLES_INCLUDE_DIR})
 	endif()
 
 	if(NOT BUNDLED_SDL)
-		find_package(SDL2 2.0.3 REQUIRED) # FindSDL doesn't detect 32bit lib when crosscompiling
+		find_package(SDL2 2.0.5 REQUIRED) # FindSDL doesn't detect 32bit lib when crosscompiling
 		list(APPEND SDL_LIBRARIES ${SDL2_LIBRARY})
 		include_directories(SYSTEM ${SDL2_INCLUDE_DIR})
 	else() # BUNDLED_SDL
 		list(APPEND SDL_LIBRARIES ${SDL32_BUNDLED_LIBRARIES})
 		include_directories(SYSTEM ${SDL32_BUNDLED_INCLUDE_DIR})
 		add_definitions(-DBUNDLED_SDL)
+		add_definitions(-DHAVE_SDL) # for tinygettext
 	endif()
 	if(APPLE)
 		add_library(INTERNAL_SDLMain ${CMAKE_SOURCE_DIR}/src/sys/SDLMain.m )
@@ -97,31 +101,34 @@ if(BUILD_CLIENT)
 			"src/qcommon/i18n_main.cpp"
 			"src/qcommon/i18n_findlocale.c"
 			"src/qcommon/i18n_findlocale.h"
-			"src/tinygettext/dictionary_manager.hpp"
-			"src/tinygettext/file_system.hpp"
-			"src/tinygettext/iconv.cpp"
-			"src/tinygettext/plural_forms.hpp"
-			"src/tinygettext/tinygettext.cpp"
-			"src/tinygettext/tinygettext.hpp"
+			"src/tinygettext/tinygettext/dictionary.hpp"
+			"src/tinygettext/tinygettext/dictionary_manager.hpp"
+			"src/tinygettext/tinygettext/file_system.hpp"
+			"src/tinygettext/tinygettext/iconv.hpp"
+			"src/tinygettext/tinygettext/language.hpp"
+			"src/tinygettext/tinygettext/log.hpp"
+			"src/tinygettext/tinygettext/log_stream.hpp"
+			"src/tinygettext/tinygettext/plural_forms.hpp"
+			"src/tinygettext/tinygettext/po_parser.hpp"
+			"src/tinygettext/tinygettext/tinygettext.hpp"
 			"src/tinygettext/dictionary.cpp"
-			"src/tinygettext/dictionary.hpp"
 			"src/tinygettext/dictionary_manager.cpp"
-			"src/tinygettext/iconv.hpp"
+			"src/tinygettext/iconv.cpp"
 			"src/tinygettext/language.cpp"
-			"src/tinygettext/language.hpp"
 			"src/tinygettext/log.cpp"
-			"src/tinygettext/log.hpp"
-			"src/tinygettext/log_stream.hpp"
 			"src/tinygettext/plural_forms.cpp"
 			"src/tinygettext/po_parser.cpp"
-			"src/tinygettext/po_parser.hpp"
+			"src/tinygettext/tinygettext.cpp"
 		)
+		if(MSVC)
+			list(APPEND GETTEXT_SRC "src/tinygettext/windows_file_system.cpp")
+			list(APPEND GETTEXT_SRC "src/tinygettext/tinygettext/windows_file_system.hpp")
+		else()
+			list(APPEND GETTEXT_SRC "src/tinygettext/unix_file_system.cpp")
+			list(APPEND GETTEXT_SRC "src/tinygettext/tinygettext/unix_file_system.hpp")
+		endif()
 		set(CLIENT_SRC ${CLIENT_SRC} ${GETTEXT_SRC})
 	endif(FEATURE_GETTEXT)
-
-	if(FEATURE_AUTOUPDATE)
-		add_definitions(-DFEATURE_AUTOUPDATE)
-	endif(FEATURE_AUTOUPDATE)
 
 	if(FEATURE_IPV6)
 		add_definitions(-DFEATURE_IPV6)
@@ -140,11 +147,17 @@ if(BUILD_CLIENT)
 	endif(FEATURE_FREETYPE)
 
 	if(FEATURE_OPENAL)
-		find_package(OpenAL REQUIRED)
-		list(APPEND CLIENT_LIBRARIES ${OPENAL_LIBRARIES})
-		include_directories(SYSTEM ${OPENAL_INCLUDE_DIR})
+		if(NOT BUNDLED_OPENAL)
+			find_package(OpenAL 1.14 REQUIRED)
+			list(APPEND CLIENT_LIBRARIES ${OPENAL_LIBRARY})
+			include_directories(SYSTEM ${OPENAL_INCLUDE_DIR})
+			add_definitions(-DFEATURE_OPENAL_DLOPEN)
+		else()
+			list(APPEND CLIENT_LIBRARIES ${OPENAL_BUNDLED_LIBRARIES})
+			include_directories(SYSTEM ${OPENAL_BUNDLED_INCLUDE_DIR})
+			add_definitions(-DAL_LIBTYPE_STATIC)
+		endif()
 		add_definitions(-DFEATURE_OPENAL)
-		add_definitions(-DFEATURE_OPENAL_DLOPEN)
 	endif(FEATURE_OPENAL)
 
 	if(FEATURE_OGG_VORBIS)
@@ -159,14 +172,22 @@ if(BUILD_CLIENT)
 		add_definitions(-DFEATURE_OGG_VORBIS)
 	endif(FEATURE_OGG_VORBIS)
 
+	if(FEATURE_THEORA)
+		if(NOT BUNDLED_THEORA)
+			find_package(Theora REQUIRED)
+			list(APPEND CLIENT_LIBRARIES ${THEORA_LIBRARY})
+			include_directories(SYSTEM ${THEORA_INCLUDE_DIR})
+		else() # BUNDLED_THEORA
+			list(APPEND CLIENT_LIBRARIES ${THEORA_BUNDLED_LIBRARIES})
+			include_directories(SYSTEM ${THEORA_BUNDLED_INCLUDE_DIR})
+		endif()
+		add_definitions(-DFEATURE_THEORA)
+	endif(FEATURE_THEORA)
+
 	if(FEATURE_IRC_CLIENT)
 		add_definitions(-DFEATURE_IRC_CLIENT)
 		list(APPEND CLIENT_SRC ${IRC_CLIENT_FILES})
 	endif(FEATURE_IRC_CLIENT)
-
-	if(FEATURE_LIVEAUTH)
-		add_definitions(-DFEATURE_LIVEAUTH)
-	endif(FEATURE_LIVEAUTH)
 endif(BUILD_CLIENT)
 
 if(BUILD_CLIENT OR BUILD_SERVER)
@@ -191,7 +212,40 @@ if(BUILD_CLIENT OR BUILD_SERVER)
 		set(CLIENT_SRC ${CLIENT_SRC} "src/qcommon/dl_main_stubs.c")
 		set(SERVER_SRC ${SERVER_SRC} "src/qcommon/dl_main_stubs.c")
 	endif(FEATURE_CURL)
+
+	if(FEATURE_DBMS)
+		if(NOT BUNDLED_SQLITE3)
+			find_package(SQLite3 REQUIRED)
+			list(APPEND CLIENT_LIBRARIES ${SQLITE3_LIBRARY})
+			list(APPEND SERVER_LIBRARIES ${SQLITE3_LIBRARY})
+			include_directories(SYSTEM ${SQLITE3_INCLUDE_DIR})
+		else() # BUNDLED_SQLITE3
+			list(APPEND CLIENT_LIBRARIES ${SQLITE3_BUNDLED_LIBRARIES})
+			list(APPEND SERVER_LIBRARIES ${SQLITE3_BUNDLED_LIBRARIES})
+			include_directories(SYSTEM ${SQLITE3_BUNDLED_INCLUDE_DIR})
+		endif()
+		add_definitions(-DFEATURE_DBMS)
+		FILE(GLOB DBMS_SRC
+			"src/db/db_sql.h"
+			"src/db/db_sqlite3.c"
+			"src/db/db_sql_cmds.c"
+		)
+		set(CLIENT_SRC ${CLIENT_SRC} ${DBMS_SRC})
+		set(SERVER_SRC ${SERVER_SRC} ${DBMS_SRC})
+	endif(FEATURE_DBMS)
+
+	if(FEATURE_AUTOUPDATE)
+		add_definitions(-DFEATURE_AUTOUPDATE)
+	endif(FEATURE_AUTOUPDATE)
 endif()
+
+if(BUILD_SERVER)
+	# FIXME: this is actually DEDICATED only
+	if(FEATURE_IRC_SERVER)
+		add_definitions(-DFEATURE_IRC_SERVER)
+		list(APPEND SERVER_SRC ${IRC_CLIENT_FILES})
+	endif(FEATURE_IRC_SERVER)
+endif(BUILD_SERVER)
 
 #-----------------------------------------------------------------
 # Mod features
@@ -200,6 +254,10 @@ if(BUILD_MOD)
 	if(FEATURE_MULTIVIEW)
 		add_definitions(-DFEATURE_MULTIVIEW)
 	endif(FEATURE_MULTIVIEW)
+
+	if(FEATURE_RATING)
+		add_definitions(-DFEATURE_RATING)
+	endif(FEATURE_RATING)
 
 	if(FEATURE_LUA)
 		if(NOT BUNDLED_LUA)
@@ -219,11 +277,37 @@ if(BUILD_MOD)
 		LIST(APPEND QAGAME_SRC "src/Omnibot/Common/BotLoadLibrary.cpp")
 		add_definitions(-DFEATURE_OMNIBOT)
 	endif(FEATURE_OMNIBOT)
+
+	if(FEATURE_EDV)
+		add_definitions(-DFEATURE_EDV)
+	endif(FEATURE_EDV)
 endif(BUILD_MOD)
 
 #-----------------------------------------------------------------
 # Server/Common features
 #-----------------------------------------------------------------
+if(NOT BUNDLED_ZLIB)
+	find_package(ZLIB 1.2.8 REQUIRED)
+	list(APPEND CLIENT_LIBRARIES ${ZLIB_LIBRARIES})
+	list(APPEND SERVER_LIBRARIES ${ZLIB_LIBRARIES})
+	include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
+else()
+	list(APPEND CLIENT_LIBRARIES ${ZLIB_BUNDLED_LIBRARIES})
+	list(APPEND SERVER_LIBRARIES ${ZLIB_BUNDLED_LIBRARIES})
+	include_directories(SYSTEM ${ZLIB_BUNDLED_INCLUDE_DIR})
+endif()
+
+if(NOT BUNDLED_MINIZIP)
+	find_package(MiniZip REQUIRED)
+	list(APPEND CLIENT_LIBRARIES ${MINIZIP_LIBRARIES})
+	list(APPEND SERVER_LIBRARIES ${MINIZIP_LIBRARIES})
+	include_directories(SYSTEM ${MINIZIP_INCLUDE_DIRS})
+else()
+	list(APPEND CLIENT_LIBRARIES ${MINIZIP_BUNDLED_LIBRARIES})
+	list(APPEND SERVER_LIBRARIES ${MINIZIP_BUNDLED_LIBRARIES})
+	include_directories(SYSTEM ${MINIZIP_BUNDLED_INCLUDE_DIR})
+endif()
+
 if(FEATURE_TRACKER)
 	add_definitions(-DFEATURE_TRACKER)
 endif(FEATURE_TRACKER)
@@ -245,3 +329,5 @@ if(FEATURE_CURSES)
 	list(APPEND COMMON_SRC "src/sys/con_curses.c")
 	add_definitions(-DFEATURE_CURSES)
 endif(FEATURE_CURSES)
+
+

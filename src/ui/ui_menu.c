@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -36,6 +36,12 @@
 #include "ui_shared.h"
 #include "ui_local.h"
 
+/**
+ * @brief Menu_FadeMenuByName
+ * @param[in] p
+ * @param bAbort - unused
+ * @param[in] fadeOut
+ */
 void Menu_FadeMenuByName(const char *p, qboolean *bAbort, qboolean fadeOut)
 {
 	menuDef_t *menu = Menus_FindByName(p);
@@ -62,6 +68,15 @@ void Menu_FadeMenuByName(const char *p, qboolean *bAbort, qboolean fadeOut)
 	}
 }
 
+/**
+ * @brief Menu_TransitionItemByName
+ * @param[in] menu
+ * @param[in] p
+ * @param[in] rectFrom
+ * @param[in] rectTo
+ * @param[in] time
+ * @param[in] amt
+ */
 void Menu_TransitionItemByName(menuDef_t *menu, const char *p, rectDef_t rectFrom, rectDef_t rectTo, int time, float amt)
 {
 	itemDef_t *item;
@@ -86,6 +101,16 @@ void Menu_TransitionItemByName(menuDef_t *menu, const char *p, rectDef_t rectFro
 	}
 }
 
+/**
+ * @brief Menu_OrbitItemByName
+ * @param[in] menu
+ * @param[in] p
+ * @param[in] x
+ * @param[in] y
+ * @param[in] cx
+ * @param[in] cy
+ * @param[in] time
+ */
 void Menu_OrbitItemByName(menuDef_t *menu, const char *p, float x, float y, float cx, float cy, int time)
 {
 	itemDef_t *item;
@@ -108,6 +133,10 @@ void Menu_OrbitItemByName(menuDef_t *menu, const char *p, float x, float y, floa
 	}
 }
 
+/**
+ * @brief Menu_Init
+ * @param[in] menu
+ */
 void Menu_Init(menuDef_t *menu)
 {
 	memset(menu, 0, sizeof(menuDef_t));
@@ -120,24 +149,33 @@ void Menu_Init(menuDef_t *menu)
 	Window_Init(&menu->window);
 }
 
-// @note Unused
+/*
+ * @brief Menu_GetFocusedItem
+ * @param menu
+ * @return
+ * @note Unused
 itemDef_t *Menu_GetFocusedItem(menuDef_t *menu)
 {
-	if (menu)
-	{
-		int i;
+    if (menu)
+    {
+        int i;
 
-		for (i = 0; i < menu->itemCount; i++)
-		{
-			if (menu->items[i]->window.flags & WINDOW_HASFOCUS)
-			{
-				return menu->items[i];
-			}
-		}
-	}
-	return NULL;
+        for (i = 0; i < menu->itemCount; i++)
+        {
+            if (menu->items[i]->window.flags & WINDOW_HASFOCUS)
+            {
+                return menu->items[i];
+            }
+        }
+    }
+    return NULL;
 }
+*/
 
+/**
+ * @brief Menu_GetFocused
+ * @return
+ */
 menuDef_t *Menu_GetFocused(void)
 {
 	int i;
@@ -152,6 +190,12 @@ menuDef_t *Menu_GetFocused(void)
 	return NULL;
 }
 
+/**
+ * @brief Menu_ScrollFeeder
+ * @param[in] menu
+ * @param[in] feeder
+ * @param[in] down
+ */
 void Menu_ScrollFeeder(menuDef_t *menu, int feeder, qboolean down)
 {
 	if (menu)
@@ -169,6 +213,13 @@ void Menu_ScrollFeeder(menuDef_t *menu, int feeder, qboolean down)
 	}
 }
 
+/**
+ * @brief Menu_SetFeederSelection
+ * @param[in,out] menu
+ * @param[in] feeder
+ * @param[in] index
+ * @param[in] name
+ */
 void Menu_SetFeederSelection(menuDef_t *menu, int feeder, int index, const char *name)
 {
 	if (menu == NULL)
@@ -206,6 +257,10 @@ void Menu_SetFeederSelection(menuDef_t *menu, int feeder, int index, const char 
 	}
 }
 
+/**
+ * @brief Menus_AnyFullScreenVisible
+ * @return
+ */
 qboolean Menus_AnyFullScreenVisible(void)
 {
 	int i;
@@ -220,6 +275,12 @@ qboolean Menus_AnyFullScreenVisible(void)
 	return qfalse;
 }
 
+/**
+ * @brief Menus_ActivateByName
+ * @param[in] p
+ * @param[in] modalStack
+ * @return
+ */
 menuDef_t *Menus_ActivateByName(const char *p, qboolean modalStack)
 {
 	int       i;
@@ -251,13 +312,16 @@ menuDef_t *Menus_ActivateByName(const char *p, qboolean modalStack)
 	return m;
 }
 
-// menus
+/**
+ * @brief Menu_UpdatePosition
+ * @param[in] menu
+ */
 void Menu_UpdatePosition(menuDef_t *menu)
 {
 	int        i;
 	float      x, y;
 	float      xoffset = Cui_WideXoffset();
-	Rectangle  *r;
+	rectDef_t  *r;
 	qboolean   fullscreenItem = qfalse;
 	qboolean   fullscreenMenu = qfalse;
 	qboolean   centered       = qfalse;
@@ -273,8 +337,8 @@ void Menu_UpdatePosition(menuDef_t *menu)
 	y = menu->window.rect.y;
 
 	r              = &menu->window.rect;
-	fullscreenMenu = (r->x == 0 && r->y == 0 && r->w == SCREEN_WIDTH && r->h == SCREEN_HEIGHT);
-	centered       = (r->x == 16 && r->w == 608);
+	fullscreenMenu = (r->x == 0.f && r->y == 0.f && r->w == SCREEN_WIDTH && r->h == SCREEN_HEIGHT);
+	centered       = (r->x == 16.f && r->w == 608.f);
 	menuName       = menu->window.name;
 
 	Cui_WideRect(&menu->window.rect);
@@ -284,7 +348,7 @@ void Menu_UpdatePosition(menuDef_t *menu)
 		itemName = menu->items[i]->window.name;
 		// fullscreen menu/item..
 		r              = &menu->items[i]->window.rectClient;
-		fullscreenItem = (r->x == 0 && r->y == 0 && r->w == SCREEN_WIDTH && r->h == SCREEN_HEIGHT);
+		fullscreenItem = (r->x == 0.f && r->y == 0.f && r->w == SCREEN_WIDTH && r->h == SCREEN_HEIGHT);
 
 		// exclude background clouds as fullscreen item from Cui_WideRect(r) and adjust rect width
 		if (!Q_stricmp(itemName, "clouds"))
@@ -334,6 +398,10 @@ void Menu_UpdatePosition(menuDef_t *menu)
 	}
 }
 
+/**
+ * @brief Menu_PostParse
+ * @param[in,out] menu
+ */
 void Menu_PostParse(menuDef_t *menu)
 {
 	if (menu == NULL)
@@ -350,6 +418,11 @@ void Menu_PostParse(menuDef_t *menu)
 	Menu_UpdatePosition(menu);
 }
 
+/**
+ * @brief Menu_ClearFocus
+ * @param[in] menu
+ * @return
+ */
 itemDef_t *Menu_ClearFocus(menuDef_t *menu)
 {
 	int       i;
@@ -362,27 +435,36 @@ itemDef_t *Menu_ClearFocus(menuDef_t *menu)
 
 	for (i = 0; i < menu->itemCount; i++)
 	{
-		if (menu->items[i]->window.flags & WINDOW_HASFOCUS)
+		if (menu->items[i] != NULL)
 		{
-			ret                           = menu->items[i];
-			menu->items[i]->window.flags &= ~WINDOW_HASFOCUS;
-		}
+			if (menu->items[i]->window.flags & WINDOW_HASFOCUS)
+			{
+				ret                           = menu->items[i];
+				menu->items[i]->window.flags &= ~WINDOW_HASFOCUS;
+			}
 
-		if (menu->items[i]->window.flags & WINDOW_MOUSEOVER)
-		{
-			Item_MouseLeave(menu->items[i]);
-			Item_SetMouseOver(menu->items[i], qfalse);
-		}
+			if (menu->items[i]->window.flags & WINDOW_MOUSEOVER)
+			{
+				Item_MouseLeave(menu->items[i]);
+				Item_SetMouseOver(menu->items[i], qfalse);
+			}
 
-		if (menu->items[i]->leaveFocus)
-		{
-			Item_RunScript(menu->items[i], NULL, menu->items[i]->leaveFocus);
+			if (menu->items[i]->leaveFocus)
+			{
+				Item_RunScript(menu->items[i], NULL, menu->items[i]->leaveFocus);
+			}
 		}
 	}
 
 	return(ret);
 }
 
+/**
+ * @brief Menu_ItemsMatchingGroup
+ * @param[in] menu
+ * @param[in] name
+ * @return
+ */
 int Menu_ItemsMatchingGroup(menuDef_t *menu, const char *name)
 {
 	int  i;
@@ -417,6 +499,13 @@ int Menu_ItemsMatchingGroup(menuDef_t *menu, const char *name)
 	return count;
 }
 
+/**
+ * @brief Menu_GetMatchingItemByNumber
+ * @param[in] menu
+ * @param[in] index
+ * @param[in] name
+ * @return
+ */
 itemDef_t *Menu_GetMatchingItemByNumber(menuDef_t *menu, int index, const char *name)
 {
 	int  i;
@@ -458,6 +547,12 @@ itemDef_t *Menu_GetMatchingItemByNumber(menuDef_t *menu, int index, const char *
 	return NULL;
 }
 
+/**
+ * @brief Menu_FindItemByName
+ * @param[in] menu
+ * @param[in] p
+ * @return
+ */
 itemDef_t *Menu_FindItemByName(menuDef_t *menu, const char *p)
 {
 	int i;
@@ -478,6 +573,12 @@ itemDef_t *Menu_FindItemByName(menuDef_t *menu, const char *p)
 	return NULL;
 }
 
+/**
+ * @brief Menu_ShowItemByName
+ * @param[in] menu
+ * @param[in] p
+ * @param[in] bShow
+ */
 void Menu_ShowItemByName(menuDef_t *menu, const char *p, qboolean bShow)
 {
 	itemDef_t *item;
@@ -514,6 +615,12 @@ void Menu_ShowItemByName(menuDef_t *menu, const char *p, qboolean bShow)
 	}
 }
 
+/**
+ * @brief Menu_FadeItemByName
+ * @param[in] menu
+ * @param[in] p
+ * @param[in] fadeOut
+ */
 void Menu_FadeItemByName(menuDef_t *menu, const char *p, qboolean fadeOut)
 {
 	itemDef_t *item;
@@ -539,6 +646,11 @@ void Menu_FadeItemByName(menuDef_t *menu, const char *p, qboolean fadeOut)
 	}
 }
 
+/**
+ * @brief Menus_FindByName
+ * @param[in] p
+ * @return
+ */
 menuDef_t *Menus_FindByName(const char *p)
 {
 	int i;
@@ -553,6 +665,10 @@ menuDef_t *Menus_FindByName(const char *p)
 	return NULL;
 }
 
+/**
+ * @brief Menus_ShowByName
+ * @param[in] p
+ */
 void Menus_ShowByName(const char *p)
 {
 	menuDef_t *menu = Menus_FindByName(p);
@@ -563,11 +679,19 @@ void Menus_ShowByName(const char *p)
 	}
 }
 
+/**
+ * @brief Menus_OpenByName
+ * @param[in] p
+ */
 void Menus_OpenByName(const char *p)
 {
 	Menus_ActivateByName(p, qtrue);
 }
 
+/**
+ * @brief Menu_RunCloseScript
+ * @param[in] menu
+ */
 void Menu_RunCloseScript(menuDef_t *menu)
 {
 	if (menu && (menu->window.flags & WINDOW_VISIBLE) && menu->onClose)
@@ -579,6 +703,10 @@ void Menu_RunCloseScript(menuDef_t *menu)
 	}
 }
 
+/**
+ * @brief Menus_CloseByName
+ * @param[in] p
+ */
 void Menus_CloseByName(const char *p)
 {
 	menuDef_t *menu = Menus_FindByName(p);
@@ -620,6 +748,9 @@ void Menus_CloseByName(const char *p)
 	}
 }
 
+/**
+ * @brief Menus_CloseAll
+ */
 void Menus_CloseAll(void)
 {
 	int i;
@@ -631,21 +762,33 @@ void Menus_CloseAll(void)
 	}
 }
 
-// @note Unused
+/*
+ * @brief Menu_HitTest
+ * @param[in] menu
+ * @param[in] x
+ * @param[in] y
+ * @return
+ * @note Unused
 itemDef_t *Menu_HitTest(menuDef_t *menu, float x, float y)
 {
-	int i;
+    int i;
 
-	for (i = 0; i < menu->itemCount; i++)
-	{
-		if (Rect_ContainsPoint(&menu->items[i]->window.rect, x, y))
-		{
-			return menu->items[i];
-		}
-	}
-	return NULL;
+    for (i = 0; i < menu->itemCount; i++)
+    {
+        if (Rect_ContainsPoint(&menu->items[i]->window.rect, x, y))
+        {
+            return menu->items[i];
+        }
+    }
+    return NULL;
 }
+*/
 
+/**
+ * @brief Menu_SetPrevCursorItem
+ * @param[in,out] menu
+ * @return
+ */
 itemDef_t *Menu_SetPrevCursorItem(menuDef_t *menu)
 {
 	qboolean wrapped   = qfalse;
@@ -683,6 +826,11 @@ itemDef_t *Menu_SetPrevCursorItem(menuDef_t *menu)
 
 }
 
+/**
+ * @brief Menu_SetNextCursorItem
+ * @param[in,out] menu
+ * @return
+ */
 itemDef_t *Menu_SetNextCursorItem(menuDef_t *menu)
 {
 	qboolean wrapped = qfalse;
@@ -728,6 +876,10 @@ itemDef_t *Menu_SetNextCursorItem(menuDef_t *menu)
 	return NULL;
 }
 
+/**
+ * @brief Menu_CloseCinematics
+ * @param[in] menu
+ */
 void Menu_CloseCinematics(menuDef_t *menu)
 {
 	if (menu)
@@ -746,6 +898,10 @@ void Menu_CloseCinematics(menuDef_t *menu)
 	}
 }
 
+/**
+ * @brief Menus_Activate
+ * @param[in,out] menu
+ */
 void  Menus_Activate(menuDef_t *menu)
 {
 	int i;
@@ -777,6 +933,10 @@ void  Menus_Activate(menuDef_t *menu)
 
 }
 
+/**
+ * @brief Menus_CaptureFuncActive
+ * @return
+ */
 qboolean Menus_CaptureFuncActive(void)
 {
 	if (captureFunc)
@@ -789,6 +949,12 @@ qboolean Menus_CaptureFuncActive(void)
 	}
 }
 
+/**
+ * @brief Menus_HandleOOBClick
+ * @param[in,out] menu
+ * @param[in] key
+ * @param[in] down
+ */
 void Menus_HandleOOBClick(menuDef_t *menu, int key, qboolean down)
 {
 	if (menu)
@@ -830,6 +996,12 @@ void Menus_HandleOOBClick(menuDef_t *menu, int key, qboolean down)
 	}
 }
 
+/**
+ * @brief Menu_HandleKey
+ * @param[in] menu
+ * @param[in] key
+ * @param[in] down
+ */
 void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 {
 	int       i;
@@ -966,13 +1138,13 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 	switch (key)
 	{
 	case K_F11:
-		if (DC->getCVarValue("developer"))
+		if (DC->getCVarValue("developer") != 0.f)
 		{
 			debugMode ^= 1;
 		}
 		break;
 	case K_F12:
-		if (DC->getCVarValue("developer"))
+		if (DC->getCVarValue("developer") != 0.f)
 		{
 			DC->executeText(EXEC_APPEND, "screenshot\n");
 		}
@@ -1037,6 +1209,12 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 	}
 }
 
+/**
+ * @brief Menu_HandleMouseMove
+ * @param[in] menu
+ * @param[in] x
+ * @param[in] y
+ */
 void Menu_HandleMouseMove(menuDef_t *menu, float x, float y)
 {
 	int       i, pass;
@@ -1146,6 +1324,11 @@ void Menu_HandleMouseMove(menuDef_t *menu, float x, float y)
 	}
 }
 
+/**
+ * @brief Menu_Paint
+ * @param[in] menu
+ * @param[in] forcePaint
+ */
 void Menu_Paint(menuDef_t *menu, qboolean forcePaint)
 {
 	int       i;
@@ -1204,7 +1387,7 @@ void Menu_Paint(menuDef_t *menu, qboolean forcePaint)
 		Item_Paint(item);
 	}
 	// draw tooltip data if we have it
-	else if (DC->getCVarValue("ui_showtooltips") &&
+	else if (DC->getCVarValue("ui_showtooltips") != 0.f &&
 	         item != NULL &&
 	         item->toolTipData != NULL &&
 	         item->toolTipData->text != NULL &&
@@ -1236,6 +1419,9 @@ void Menu_Paint(menuDef_t *menu, qboolean forcePaint)
 	}
 }
 
+/**
+ * @brief Menu_PaintAll
+ */
 void Menu_PaintAll(void)
 {
 	int i;
@@ -1266,16 +1452,15 @@ void Menu_PaintAll(void)
 	{
 		vec4_t v = { 1, 1, 1, 1 };
 		DC->textFont(UI_FONT_COURBD_21);
-		DC->drawText(5, 10, .2, v, va("fps: %.2f", DC->FPS), 0, 0, 0);
-		DC->drawText(5, 20, .2, v, va("mouse: %i %i", DC->cursorx, DC->cursory), 0, 0, 0);
+		DC->drawText(5, 10, .2f, v, va("fps: %.2f", (double)DC->FPS), 0, 0, 0);
+		DC->drawText(5, 20, .2f, v, va("mouse: %i %i", DC->cursorx, DC->cursory), 0, 0, 0);
 	}
 }
 
-/*
-===============
-Menu_New
-===============
-*/
+/**
+ * @brief Menu_New
+ * @param[in] handle
+ */
 void Menu_New(int handle)
 {
 	menuDef_t *menu = &Menus[menuCount];
@@ -1291,11 +1476,20 @@ void Menu_New(int handle)
 	}
 }
 
+/**
+ * @brief Menu_Count
+ * @return
+ */
 int Menu_Count(void)
 {
 	return menuCount;
 }
 
+/**
+ * @brief Menu_Get
+ * @param[in] handle
+ * @return
+ */
 menuDef_t *Menu_Get(int handle)
 {
 	if (handle >= 0 && handle < menuCount)
@@ -1308,11 +1502,21 @@ menuDef_t *Menu_Get(int handle)
 	}
 }
 
+/**
+ * @brief Menu_Reset
+ */
 void Menu_Reset(void)
 {
 	menuCount = 0;
 }
 
+/**
+ * @brief Menu_OverActiveItem
+ * @param[in] menu
+ * @param[in] x
+ * @param[in] y
+ * @return
+ */
 qboolean Menu_OverActiveItem(menuDef_t *menu, float x, float y)
 {
 	if (menu && (menu->window.flags & (WINDOW_VISIBLE | WINDOW_FORCED)))

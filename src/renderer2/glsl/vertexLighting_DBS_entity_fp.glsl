@@ -72,13 +72,7 @@ void main()
 	// ray intersect in view direction
 
 	mat3 worldToTangentMatrix;
-	#if defined(GLHW_ATI) || defined(GLHW_ATI_DX10) || defined(GLDRV_MESA)
-	worldToTangentMatrix = mat3(tangentToWorldMatrix[0][0], tangentToWorldMatrix[1][0], tangentToWorldMatrix[2][0],
-	                            tangentToWorldMatrix[0][1], tangentToWorldMatrix[1][1], tangentToWorldMatrix[2][1],
-	                            tangentToWorldMatrix[0][2], tangentToWorldMatrix[1][2], tangentToWorldMatrix[2][2]);
-	#else
 	worldToTangentMatrix = transpose(tangentToWorldMatrix);
-	#endif
 
 	// compute view direction in tangent space
 	vec3 Vts = worldToTangentMatrix * (u_ViewOrigin - var_Position.xyz);
@@ -222,14 +216,7 @@ void main()
 	// convert normal to [0,1] color space
 	N = N * 0.5 + 0.5;
 
-#if defined(r_DeferredShading)
-	gl_FragData[0] = color;
-	gl_FragData[1] = vec4(diffuse.rgb, 0.0);
-	gl_FragData[2] = vec4(N, 0.0);
-	gl_FragData[3] = vec4(specular, 0.0);
-#else
 	gl_FragColor = color;
-#endif
 
 	// gl_FragColor = vec4(vec3(NL, NL, NL), diffuse.a);
 

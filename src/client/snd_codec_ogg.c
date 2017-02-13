@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -60,7 +60,16 @@ snd_codec_t ogg_codec =
 
 // callbacks for vobisfile
 
-// fread() replacement
+/**
+ * @brief S_OGG_Callback_read
+ * @param[in] ptr
+ * @param[in] size
+ * @param[in] nmemb
+ * @param[in,out] datasource
+ * @return
+ *
+ * @note fread() replacement
+ */
 size_t S_OGG_Callback_read(void *ptr, size_t size, size_t nmemb, void *datasource)
 {
 	snd_stream_t *stream;
@@ -113,7 +122,15 @@ size_t S_OGG_Callback_read(void *ptr, size_t size, size_t nmemb, void *datasourc
 	return nMembRead;
 }
 
-// fseek() replacement
+/**
+ * @brief S_OGG_Callback_seek
+ * @param[in,out] datasource
+ * @param[in] offset
+ * @param[in] whence
+ * @return
+ *
+ * @note fseek() replacement
+ */
 int S_OGG_Callback_seek(void *datasource, ogg_int64_t offset, int whence)
 {
 	snd_stream_t *stream;
@@ -195,14 +212,26 @@ int S_OGG_Callback_seek(void *datasource, ogg_int64_t offset, int whence)
 	return 0;
 }
 
-// fclose() replacement
+/**
+ * @brief S_OGG_Callback_close
+ * @param datasource - unused
+ * @return
+ *
+ * @note fclose() replacement
+ */
 int S_OGG_Callback_close(void *datasource)
 {
 	// we do nothing here and close all things manually in S_OGG_CodecCloseStream()
 	return 0;
 }
 
-// ftell() replacement
+/**
+ * @brief S_OGG_Callback_tell
+ * @param[in] datasource
+ * @return
+ *
+ * @note ftell() replacement
+ */
 long S_OGG_Callback_tell(void *datasource)
 {
 	snd_stream_t *stream;
@@ -229,11 +258,11 @@ const ov_callbacks S_OGG_Callbacks =
 	&S_OGG_Callback_tell
 };
 
-/*
-=================
-S_OGG_CodecOpenStream
-=================
-*/
+/**
+ * @brief S_OGG_CodecOpenStream
+ * @param[in] filename
+ * @return
+ */
 snd_stream_t *S_OGG_CodecOpenStream(const char *filename)
 {
 	snd_stream_t *stream;
@@ -334,11 +363,10 @@ snd_stream_t *S_OGG_CodecOpenStream(const char *filename)
 	return stream;
 }
 
-/*
-=================
-S_OGG_CodecCloseStream
-=================
-*/
+/**
+ * @brief S_OGG_CodecCloseStream
+ * @param[in,out] stream
+ */
 void S_OGG_CodecCloseStream(snd_stream_t *stream)
 {
 	// check if input is valid
@@ -357,11 +385,13 @@ void S_OGG_CodecCloseStream(snd_stream_t *stream)
 	S_CodecUtilClose(&stream);
 }
 
-/*
-=================
-S_OGG_CodecReadStream
-=================
-*/
+/**
+ * @brief S_OGG_CodecReadStream
+ * @param[in] stream
+ * @param[in] bytes
+ * @param[out] buffer
+ * @return
+ */
 int S_OGG_CodecReadStream(snd_stream_t *stream, int bytes, void *buffer)
 {
 	// buffer handling
@@ -419,14 +449,13 @@ int S_OGG_CodecReadStream(snd_stream_t *stream, int bytes, void *buffer)
 	return bytesRead;
 }
 
-/*
-=====================================================================
-S_OGG_CodecLoad
-
-We handle S_OGG_CodecLoad as a special case of the streaming functions
-where we read the whole stream at once.
-======================================================================
-*/
+/**
+ * @brief We handle S_OGG_CodecLoad as a special case of the streaming functions
+ * where we read the whole stream at once.
+ * @param[in] filename
+ * @param[in,out] info
+ * @return
+ */
 void *S_OGG_CodecLoad(const char *filename, snd_info_t *info)
 {
 	snd_stream_t *stream;
@@ -456,7 +485,7 @@ void *S_OGG_CodecLoad(const char *filename, snd_info_t *info)
 
 	// allocate a buffer
 	// this buffer must be free-ed by the caller of this function
-	buffer = Z_Malloc(info->size);
+	buffer = Hunk_AllocateTempMemory(info->size);
 	if (!buffer)
 	{
 		S_OGG_CodecCloseStream(stream);
@@ -470,7 +499,7 @@ void *S_OGG_CodecLoad(const char *filename, snd_info_t *info)
 	// we don't even have read a single byte
 	if (bytesRead <= 0)
 	{
-		Z_Free(buffer);
+		Hunk_FreeTempMemory(buffer);
 		S_OGG_CodecCloseStream(stream);
 
 		return NULL;

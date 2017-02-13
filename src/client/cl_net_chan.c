@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -36,16 +36,14 @@
 #include "../qcommon/qcommon.h"
 #include "client.h"
 
-/*
-==============
-CL_Netchan_Encode
-
-    // first 12 bytes of the data are always:
-    long serverId;
-    long messageAcknowledge;
-    long reliableAcknowledge;
-==============
-*/
+/**
+ * @brief CL_Netchan_Encode
+ * @details First 12 bytes of the data are always:
+ * long serverId;
+ * long messageAcknowledge;
+ * long reliableAcknowledge;
+ * @param[in,out] msg
+ */
 static void CL_Netchan_Encode(msg_t *msg)
 {
 	int      serverId, messageAcknowledge, reliableAcknowledge;
@@ -86,7 +84,11 @@ static void CL_Netchan_Encode(msg_t *msg)
 			index = 0;
 		}
 
-		key ^= GET_SKIPPED_CHAR(string[index]) << (i & 1);
+		if ((IS_LEGACY_MOD && string[index] == '%') || ((byte)string[index] > 127 || string[index] == '%'))
+		{
+			string[index] = '.';
+		}
+		key ^= string[index] << (i & 1);
 
 		index++;
 		// encode the data with this key
@@ -94,14 +96,12 @@ static void CL_Netchan_Encode(msg_t *msg)
 	}
 }
 
-/*
-==============
-CL_Netchan_Decode
-
-    // first four bytes of the data are always:
-    long reliableAcknowledge;
-==============
-*/
+/**
+ * @brief CL_Netchan_Decode
+ * @details First four bytes of the data are always:
+ * long reliableAcknowledge;
+ * @param[in,out] msg
+ */
 static void CL_Netchan_Decode(msg_t *msg)
 {
 	long     reliableAcknowledge, i, index;
@@ -133,7 +133,11 @@ static void CL_Netchan_Decode(msg_t *msg)
 			index = 0;
 		}
 
-		key ^= GET_SKIPPED_CHAR(string[index]) << (i & 1);
+		if ((IS_LEGACY_MOD && string[index] == '%') || ((byte)string[index] > 127 || string[index] == '%'))
+		{
+			string[index] = '.';
+		}
+		key ^= string[index] << (i & 1);
 
 		index++;
 		// decode the data with this key
@@ -141,21 +145,19 @@ static void CL_Netchan_Decode(msg_t *msg)
 	}
 }
 
-/*
-=================
-CL_Netchan_TransmitNextFragment
-=================
-*/
+/**
+ * @brief CL_Netchan_TransmitNextFragment
+ * @param[in] chan
+ */
 void CL_Netchan_TransmitNextFragment(netchan_t *chan)
 {
 	Netchan_TransmitNextFragment(chan);
 }
 
-/*
-================
-CL_WriteBinaryMessage
-================
-*/
+/**
+ * @brief CL_WriteBinaryMessage
+ * @param[in] msg
+ */
 static void CL_WriteBinaryMessage(msg_t *msg)
 {
 	if (!clc.binaryMessageLength)
@@ -176,11 +178,11 @@ static void CL_WriteBinaryMessage(msg_t *msg)
 	clc.binaryMessageOverflowed = qfalse;
 }
 
-/*
-================
-CL_Netchan_Transmit
-================
-*/
+/**
+ * @brief CL_Netchan_Transmit
+ * @param[in] chan
+ * @param[in] msg
+ */
 void CL_Netchan_Transmit(netchan_t *chan, msg_t *msg)
 {
 	MSG_WriteByte(msg, clc_EOF);
@@ -193,11 +195,12 @@ void CL_Netchan_Transmit(netchan_t *chan, msg_t *msg)
 
 int newsize = 0;
 
-/*
-=================
-CL_Netchan_Process
-=================
-*/
+/**
+ * @brief CL_Netchan_Process
+ * @param[in] chan
+ * @param[in] msg
+ * @return
+ */
 qboolean CL_Netchan_Process(netchan_t *chan, msg_t *msg)
 {
 	int ret;

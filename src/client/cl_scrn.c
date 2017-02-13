@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -46,6 +46,10 @@ cvar_t *cl_graphshift;
 
 /**
  * @brief Adjusted for resolution and screen aspect ratio
+ * @param[in,out] x
+ * @param[in,out] y
+ * @param[in,out] w
+ * @param[in,out] h
  */
 void SCR_AdjustFrom640(float *x, float *y, float *w, float *h)
 {
@@ -61,8 +65,8 @@ void SCR_AdjustFrom640(float *x, float *y, float *w, float *h)
 #endif
 
 	// scale for screen sizes
-	xscale = cls.glconfig.vidWidth / 640.0;
-	yscale = cls.glconfig.vidHeight / 480.0;
+	xscale = cls.glconfig.vidWidth / 640.0f;
+	yscale = cls.glconfig.vidHeight / 480.0f;
 	if (x)
 	{
 		*x *= xscale;
@@ -83,6 +87,11 @@ void SCR_AdjustFrom640(float *x, float *y, float *w, float *h)
 
 /**
  * @brief Coordinates are 640*480 virtual values
+ * @param[in] x
+ * @param[in] y
+ * @param[in] width
+ * @param[in] height
+ * @param[in] color
  */
 void SCR_FillRect(float x, float y, float width, float height, const float *color)
 {
@@ -96,13 +105,25 @@ void SCR_FillRect(float x, float y, float width, float height, const float *colo
 
 /**
  * @brief Coordinates are 640*480 virtual values
+ * @param[in] x
+ * @param[in] y
+ * @param[in] width
+ * @param[in] height
+ * @param[in] hShader
  */
 void SCR_DrawPic(float x, float y, float width, float height, qhandle_t hShader)
 {
 	SCR_AdjustFrom640(&x, &y, &width, &height);
 	re.DrawStretchPic(x, y, width, height, 0, 0, 1, 1, hShader);
 }
-
+/**
+ * @brief SRC_DrawSingleChar
+ * @param[in] x
+ * @param[in] y
+ * @param[in] w
+ * @param[in] h
+ * @param[in] ch
+ */
 static void SRC_DrawSingleChar(int x, int y, int w, int h, int ch)
 {
 	int   row, col;
@@ -114,9 +135,9 @@ static void SRC_DrawSingleChar(int x, int y, int w, int h, int ch)
 	row = ch >> 4;
 	col = ch & 15;
 
-	frow = row * 0.0625;
-	fcol = col * 0.0625;
-	size = 0.0625;
+	frow = row * 0.0625f;
+	fcol = col * 0.0625f;
+	size = 0.0625f;
 
 	re.DrawStretchPic(x, y, w, h, fcol, frow,
 	                  fcol + size, frow + size,
@@ -125,6 +146,12 @@ static void SRC_DrawSingleChar(int x, int y, int w, int h, int ch)
 
 /**
  * @brief Chars are drawn at 640*480 virtual or native screen size
+ * @param[in] x
+ * @param[in] y
+ * @param[in] w
+ * @param[in] h
+ * @param[in] ch
+ * @param[in] nativeResolution
  */
 void SCR_DrawChar(int x, int y, float w, float h, int ch, qboolean nativeResolution)
 {
@@ -140,7 +167,7 @@ void SCR_DrawChar(int x, int y, float w, float h, int ch, qboolean nativeResolut
 
 	if (nativeResolution)
 	{
-		SRC_DrawSingleChar(x, y, w, h, ch);
+		SRC_DrawSingleChar(x, y, (int)w, (int)h, ch);
 	}
 	else
 	{
@@ -151,18 +178,25 @@ void SCR_DrawChar(int x, int y, float w, float h, int ch, qboolean nativeResolut
 		aw = w;
 		ah = h;
 		SCR_AdjustFrom640(&ax, &ay, &aw, &ah);
-		SRC_DrawSingleChar(ax, ay, aw, ah, ch);
+		SRC_DrawSingleChar((int)ax, (int)ay, (int)aw, (int)ah, ch);
 	}
 }
 
-/*
-==================
-SCR_DrawBigString[Color]
-
-Draws a multi-colored string with a drop shadow, optionally forcing
-to a fixed color.
-==================
-*/
+/**
+ * @brief Draws a multi-colored string with a drop shadow, optionally forcing
+ * to a fixed color.
+ *
+ * @param[in] x
+ * @param[in] y
+ * @param[in] w
+ * @param[in] h
+ * @param[in] string
+ * @param[in] setColor
+ * @param[in] forceColor
+ * @param[in] noColorEscape
+ * @param[in] dropShadow
+ * @param[in] nativeResolution
+ */
 void SCR_DrawStringExt(int x, int y, float w, float h, const char *string, float *setColor, qboolean forceColor, qboolean noColorEscape, qboolean dropShadow, qboolean nativeResolution)
 {
 	vec4_t     color;
@@ -225,13 +259,9 @@ void SCR_DrawStringExt(int x, int y, float w, float h, const char *string, float
 	re.SetColor(NULL);
 }
 
-//===============================================================================
-
-/*
-=================
-SCR_DrawDemoRecording
-=================
-*/
+/**
+ * @brief SCR_DrawDemoRecording
+ */
 void SCR_DrawDemoRecording(void)
 {
 	if (!clc.demorecording)
@@ -242,31 +272,22 @@ void SCR_DrawDemoRecording(void)
 	Cvar_Set("cl_demooffset", va("%d", FS_FTell(clc.demofile)));
 }
 
-/*
-===============================================================================
-DEBUG GRAPH
-===============================================================================
-*/
-
 static int   current;
 static float values[1024];
 
-/*
-==============
-SCR_DebugGraph
-==============
-*/
+/**
+ * @brief SCR_DebugGraph
+ * @param value
+ */
 void SCR_DebugGraph(float value)
 {
 	values[current] = value;
 	current         = (current + 1) % ARRAY_LEN(values);
 }
 
-/*
-==============
-SCR_DrawDebugGraph
-==============
-*/
+/**
+ * @brief SCR_DrawDebugGraph
+ */
 void SCR_DrawDebugGraph(void)
 {
 	int   a, x, y, w, i, h;
@@ -296,13 +317,9 @@ void SCR_DrawDebugGraph(void)
 	}
 }
 
-//=============================================================================
-
-/*
-==================
-SCR_Init
-==================
-*/
+/**
+ * @brief SCR_Init
+ */
 void SCR_Init(void)
 {
 	cl_timegraph   = Cvar_Get("timegraph", "0", CVAR_CHEAT);
@@ -314,14 +331,12 @@ void SCR_Init(void)
 	scr_initialized = qtrue;
 }
 
-//=======================================================
-
 /**
- * @brief This will be called twice if rendering in stereo mode
+ * @brief SCR_DrawScreenField
  */
-void SCR_DrawScreenField(stereoFrame_t stereoFrame)
+void SCR_DrawScreenField(void)
 {
-	re.BeginFrame(stereoFrame);
+	re.BeginFrame();
 
 	// wide aspect ratio screens need to have the sides cleared
 	// unless they are displaying game renderings
@@ -347,7 +362,6 @@ void SCR_DrawScreenField(stereoFrame_t stereoFrame)
 		{
 		default:
 			Com_Error(ERR_FATAL, "SCR_DrawScreenField: bad cls.state");
-			break;
 		case CA_CINEMATIC:
 			SCR_DrawCinematic();
 			break;
@@ -373,7 +387,7 @@ void SCR_DrawScreenField(stereoFrame_t stereoFrame)
 		case CA_LOADING:
 		case CA_PRIMED:
 			// draw the game information screen and loading progress
-			CL_CGameRendering(stereoFrame);
+			CL_CGameRendering();
 
 			// also draw the connection information, so it doesn't
 			// flash away too briefly on local or lan games
@@ -382,7 +396,7 @@ void SCR_DrawScreenField(stereoFrame_t stereoFrame)
 			VM_Call(uivm, UI_DRAW_CONNECT_SCREEN, qtrue);
 			break;
 		case CA_ACTIVE:
-			CL_CGameRendering(stereoFrame);
+			CL_CGameRendering();
 			SCR_DrawDemoRecording();
 			break;
 		}
@@ -426,18 +440,7 @@ void SCR_UpdateScreen(void)
 	}
 	recursive = 1;
 
-	// if running in stereo, we need to draw the frame twice
-#ifndef FEATURE_RENDERER_GLES
-	if (cls.glconfig.stereoEnabled)
-	{
-		SCR_DrawScreenField(STEREO_LEFT);
-		SCR_DrawScreenField(STEREO_RIGHT);
-	}
-	else
-#endif
-	{
-		SCR_DrawScreenField(STEREO_CENTER);
-	}
+	SCR_DrawScreenField();
 
 	if (com_speeds->integer)
 	{

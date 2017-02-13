@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -148,6 +148,9 @@ rankicon_t rankicons[NUM_EXPERIENCE_LEVELS][2][2] =
 	},
 };
 
+/**
+ * @brief CG_LoadRankIcons
+ */
 void CG_LoadRankIcons(void)
 {
 	int i;

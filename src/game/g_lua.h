@@ -35,7 +35,7 @@
 #endif
 
 #define LUA_NUM_VM 16
-#define LUA_MAX_FSIZE 1024 * 1024 // 1MB
+#define LUA_MAX_FSIZE 1024 * 1024 ///< 1MB
 
 #define FIELD_INT           0
 #define FIELD_STRING        1
@@ -48,10 +48,10 @@
 #define FIELD_WEAPONSTAT    8
 //#define FIELD_WEAPONSTAT_EXT	9
 
-#define FIELD_FLAG_GENTITY  1 // marks a gentity_s field
-#define FIELD_FLAG_GCLIENT  2 // marks a gclient_s field
+#define FIELD_FLAG_GENTITY  1 ///< marks a gentity_s field
+#define FIELD_FLAG_GCLIENT  2 ///< marks a gclient_s field
 #define FIELD_FLAG_NOPTR    4
-#define FIELD_FLAG_READONLY 8 // read-only access
+#define FIELD_FLAG_READONLY 8 ///< read-only access
 
 // define HOSTARCH and EXTENSION depending on host architecture
 #if defined WIN32
@@ -78,6 +78,10 @@
 #define _et_gclient_addfield(n, t, f) { #n, t, offsetof(struct gclient_s, n), FIELD_FLAG_GCLIENT + f }
 #define _et_gclient_addfieldalias(n, a, t, f) { #n, t, offsetof(struct gclient_s, a), FIELD_FLAG_GCLIENT + f }
 
+/**
+ * @struct lua_vm_s
+ * @brief
+ */
 typedef struct
 {
 	int id;
@@ -90,6 +94,10 @@ typedef struct
 	lua_State *L;
 } lua_vm_t;
 
+/**
+ * @struct gentity_field_s
+ * @brief
+ */
 typedef struct
 {
 	const char *name;
@@ -100,6 +108,11 @@ typedef struct
 
 extern lua_vm_t *lVM[LUA_NUM_VM];
 
+/**
+ * @enum printMessageType_e
+ * @typedef printMessageType_t
+ * @brief
+ */
 typedef enum printMessageType_e
 {
 	GPRINT_TEXT = 0,
@@ -107,6 +120,11 @@ typedef enum printMessageType_e
 	GPRINT_ERROR
 } printMessageType_t;
 
+/**
+ * @struct luaPrintFunctions_s
+ * @typedef luaPrintFunctions_t
+ * @brief
+ */
 typedef struct luaPrintFunctions_s
 {
 	printMessageType_t category;
@@ -139,7 +157,9 @@ qboolean G_LuaHook_UpgradeSkill(int cno, skillType_t skill);
 qboolean G_LuaHook_SetPlayerSkill(int cno, skillType_t skill);
 void G_LuaHook_Print(printMessageType_t category, char *text);
 qboolean G_LuaHook_Obituary(int victim, int killer, int meansOfDeath);
-qboolean G_LuaHook_Damage(int target, int attacker, int damage, int dflags, int mod);
+qboolean G_LuaHook_Damage(int target, int attacker, int damage, int dflags, meansOfDeath_t mod);
+void G_LuaHook_SpawnEntitiesFromString();
+qboolean G_ScriptAction_Delete(gentity_t *ent, char *params);
 
 #endif // #ifndef INCLUDE_G_LUA_H
 

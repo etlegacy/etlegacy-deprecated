@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -80,11 +80,12 @@ panel_button_t loadScreenMap =
 	NULL,
 	{ 0,                      0,  440, 480 }, // shouldn't this be square??
 	{ 0,                      0,  0,   0, 0, 0, 0, 0},
-	NULL,                     /* font     */
-	NULL,                     /* keyDown  */
-	NULL,                     /* keyUp    */
+	NULL,                     // font
+	NULL,                     // keyDown
+	NULL,                     // keyUp
 	BG_PanelButtonsRender_Img,
 	NULL,
+	0,
 };
 
 panel_button_t loadScreenBack =
@@ -93,11 +94,12 @@ panel_button_t loadScreenBack =
 	NULL,
 	{ 440,                    0,  200, 480 },
 	{ 0,                      0,  0,   0, 0, 0, 0, 0},
-	NULL,                     /* font     */
-	NULL,                     /* keyDown  */
-	NULL,                     /* keyUp    */
+	NULL,                     // font
+	NULL,                     // keyDown
+	NULL,                     // keyUp
 	BG_PanelButtonsRender_Img,
 	NULL,
+	0,
 };
 
 panel_button_t loadingPanelText =
@@ -106,11 +108,12 @@ panel_button_t loadingPanelText =
 	NULL,
 	{ 460,                         72,   160, 244 },
 	{ 0,                           0,    0,   0, 0, 0, 0, 0},
-	&missiondescriptionTxt,        /* font     */
-	NULL,                          /* keyDown  */
-	NULL,                          /* keyUp    */
+	&missiondescriptionTxt,        // font
+	NULL,                          // keyDown
+	NULL,                          // keyUp
 	UI_LoadPanel_RenderLoadingText,
 	NULL,
+	0,
 };
 
 panel_button_t campaignPanelText =
@@ -119,25 +122,32 @@ panel_button_t campaignPanelText =
 	NULL,                         //"CONNECTING...",
 	{ 470,                        33,   152, 232 },
 	{ 0,                          0,    0,   0, 0, 0, 0, 0},
-	&campaignpTxt,                /* font     */
-	NULL,                         /* keyDown  */
-	NULL,                         /* keyUp    */
+	&campaignpTxt,                // font
+	NULL,                         // keyDown
+	NULL,                         // keyUp
 	UI_LoadPanel_RenderHeaderText,
 	NULL,
+	0,
 };
 
 panel_button_t *loadpanelButtons[] =
 {
-	&loadScreenMap,                                   &loadScreenBack,
-
-	&loadingPanelText,                                /*&loadingPanelHeaderText,*/
-
-	/*&campaignheaderPanelText,*/ &campaignPanelText,
-
+	&loadScreenMap,
+	&loadScreenBack,
+	&loadingPanelText,
+	/*&loadingPanelHeaderText,*/
+	/*&campaignheaderPanelText,*/
+	&campaignPanelText,
 	NULL,
 };
 
 static qboolean connect_ownerdraw;
+
+/**
+ * @brief UI_DrawLoadPanel
+ * @param[in] ownerdraw
+ * @param[in] uihack
+ */
 void UI_DrawLoadPanel(qboolean ownerdraw, qboolean uihack)
 {
 	static qboolean inside = qfalse;
@@ -153,7 +163,7 @@ void UI_DrawLoadPanel(qboolean ownerdraw, qboolean uihack)
 
 	if (inside)
 	{
-		if (!uihack && trap_Cvar_VariableValue("ui_connecting"))
+		if (!uihack && trap_Cvar_VariableValue("ui_connecting") != 0.f)
 		{
 			trap_Cvar_Set("ui_connecting", "0");
 		}
@@ -177,7 +187,7 @@ void UI_DrawLoadPanel(qboolean ownerdraw, qboolean uihack)
 
 	BG_PanelButtonsRender(loadpanelButtons);
 
-	if (!uihack && trap_Cvar_VariableValue("ui_connecting"))
+	if (!uihack && trap_Cvar_VariableValue("ui_connecting") != 0.f)
 	{
 		trap_Cvar_Set("ui_connecting", "0");
 	}
@@ -185,6 +195,10 @@ void UI_DrawLoadPanel(qboolean ownerdraw, qboolean uihack)
 	inside = qfalse;
 }
 
+/**
+ * @brief UI_LoadPanel_RenderHeaderText
+ * @param[in,out] button
+ */
 void UI_LoadPanel_RenderHeaderText(panel_button_t *button)
 {
 	uiClientState_t cstate;
@@ -207,6 +221,12 @@ void UI_LoadPanel_RenderHeaderText(panel_button_t *button)
 }
 
 #define ESTIMATES 80
+
+/**
+ * @brief UI_DownloadInfo
+ * @param[in] downloadName
+ * @return
+ */
 const char *UI_DownloadInfo(const char *downloadName)
 {
 	static char dlText[]                = "Downloading:";
@@ -243,7 +263,6 @@ const char *UI_DownloadInfo(const char *downloadName)
 		       etaText,
 		       xferText,
 		       dlSizeBuf);
-		return s;
 	}
 	else
 	{
@@ -262,7 +281,7 @@ const char *UI_DownloadInfo(const char *downloadName)
 		// Extrapolate estimated completion time
 		if (downloadSize && xferRate)
 		{
-			int n        = downloadSize / xferRate; // estimated time for entire d/l in secs
+			int n = downloadSize / xferRate;        // estimated time for entire d/l in secs
 			int timeleft = 0, i;
 
 			// We do it in K (/1024) because we'd overflow around 4MB
@@ -309,26 +328,29 @@ const char *UI_DownloadInfo(const char *downloadName)
 				       dlSizeBuf);
 			}
 		}
-
-		return s;
 	}
 
-	return "";
+	return s;
 }
 
+/**
+ * @brief UI_LoadPanel_RenderLoadingText
+ * @param[in] button
+ */
 void UI_LoadPanel_RenderLoadingText(panel_button_t *button)
 {
 	uiClientState_t cstate;
 	char            downloadName[MAX_INFO_VALUE];
 	char            buff[2560];
-	char            *p, *s = "";
+	char            *p1, *p2 = "";
+	const char      *s = "";
 	float           y;
 
 	trap_GetClientState(&cstate);
 
 	Com_sprintf(buff, sizeof(buff), trap_TranslateString("Connecting to:\n %s^*\n\n%s"), cstate.servername, Info_ValueForKey(cstate.updateInfoString, "motd"));
 
-	if (trap_Cvar_VariableValue("com_updateavailable"))
+	if (trap_Cvar_VariableValue("com_updateavailable") != 0.f)
 	{
 		Q_strcat(buff, sizeof(buff), "\n\nYour ET:L client is outdated. New update is available for download at www.etlegacy.com");
 	}
@@ -337,7 +359,7 @@ void UI_LoadPanel_RenderLoadingText(panel_button_t *button)
 
 	if (!connect_ownerdraw)
 	{
-		if (!trap_Cvar_VariableValue("ui_connecting"))
+		if (trap_Cvar_VariableValue("ui_connecting") == 0.f)
 		{
 			switch (cstate.connState)
 			{
@@ -351,7 +373,7 @@ void UI_LoadPanel_RenderLoadingText(panel_button_t *button)
 			case CA_CONNECTED:
 				if (*downloadName || cstate.connState == CA_DISCONNECTED)
 				{
-					s = (char *)UI_DownloadInfo(downloadName);
+					s = UI_DownloadInfo(downloadName);
 				}
 				else
 				{
@@ -364,10 +386,10 @@ void UI_LoadPanel_RenderLoadingText(panel_button_t *button)
 				break;
 			}
 		}
-		else if (trap_Cvar_VariableValue("ui_dl_running"))
+		else if (trap_Cvar_VariableValue("ui_dl_running") != 0.f)
 		{
 			// only toggle during a disconnected download
-			s = (char *)UI_DownloadInfo(downloadName);
+			s = UI_DownloadInfo(downloadName);
 		}
 
 		Q_strcat(buff, sizeof(buff), va("\n\n%s^*", s));
@@ -384,20 +406,20 @@ void UI_LoadPanel_RenderLoadingText(panel_button_t *button)
 
 	y = button->rect.y + 12;
 
-	s = p = buff;
+	p1 = p2 = buff;
 
-	while (*p)
+	while (*p1)
 	{
-		if (*p == '\n')
+		if (*p1 == '\n')
 		{
-			*p++ = '\0';
-			Text_Paint_Ext(button->rect.x + 4, y, button->font->scalex, button->font->scaley, button->font->colour, s, 0, 0, 0, button->font->font);
+			*p1++ = '\0';
+			Text_Paint_Ext(button->rect.x + 4, y, button->font->scalex, button->font->scaley, button->font->colour, p2, 0, 0, 0, button->font->font);
 			y += 8;
-			s  = p;
+			p2 = p1;
 		}
 		else
 		{
-			p++;
+			p1++;
 		}
 	}
 }

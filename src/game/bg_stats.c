@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -104,7 +104,11 @@ static const weap_ws_convert_t aWeapID[WP_NUM_WEAPONS] =
 	{ WP_BAZOOKA,              WS_BAZOOKA         }, // 53
 };
 
-// Get right stats index based on weapon id
+/**
+ * @brief Get right stats index based on weapon id
+ * @param[in] iWeaponID
+ * @return
+ */
 extWeaponStats_t BG_WeapStatForWeapon(weapon_t iWeaponID)
 {
 	if (iWeaponID < WP_NUM_WEAPONS)

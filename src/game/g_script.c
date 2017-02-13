@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012 Jan Simek <mail@etlegacy.com>
+ * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -32,6 +32,8 @@
  * @file g_script.c
  * @author Ridah
  * @brief Wolfenstein Entity Scripting
+ * @details Scripting that allows the designers to control the behaviour of entities
+ * according to each different scenario.
  */
 
 #include "../game/g_local.h"
@@ -41,245 +43,153 @@
 #include "g_etbot_interface.h"
 #endif
 
-/*
-Scripting that allows the designers to control the behaviour of entities
-according to each different scenario.
-*/
-
 vmCvar_t g_scriptDebug;
 
 //====================================================================
 
-// action functions need to be declared here so they can be accessed in the scriptAction table
-qboolean G_ScriptAction_GotoMarker(gentity_t *ent, char *params);
-qboolean G_ScriptAction_Wait(gentity_t *ent, char *params);
-qboolean G_ScriptAction_Trigger(gentity_t *ent, char *params);
-qboolean G_ScriptAction_PlaySound(gentity_t *ent, char *params);
-qboolean G_ScriptAction_PlayAnim(gentity_t *ent, char *params);
-qboolean G_ScriptAction_AlertEntity(gentity_t *ent, char *params);
-qboolean G_ScriptAction_ToggleSpeaker(gentity_t *ent, char *params);
-qboolean G_ScriptAction_DisableSpeaker(gentity_t *ent, char *params);
-qboolean G_ScriptAction_EnableSpeaker(gentity_t *ent, char *params);
-qboolean G_ScriptAction_Accum(gentity_t *ent, char *params);
-qboolean G_ScriptAction_GlobalAccum(gentity_t *ent, char *params);
-qboolean G_ScriptAction_Print(gentity_t *ent, char *params);
-qboolean G_ScriptAction_FaceAngles(gentity_t *ent, char *params);
-qboolean G_ScriptAction_ResetScript(gentity_t *ent, char *params);
-qboolean G_ScriptAction_TagConnect(gentity_t *ent, char *params);
-qboolean G_ScriptAction_Halt(gentity_t *ent, char *params);
-qboolean G_ScriptAction_StopSound(gentity_t *ent, char *params);
-qboolean G_ScriptAction_EntityScriptName(gentity_t *ent, char *params);
-qboolean G_ScriptAction_AIScriptName(gentity_t *ent, char *params);
-qboolean G_ScriptAction_AxisRespawntime(gentity_t *ent, char *params);
-qboolean G_ScriptAction_AlliedRespawntime(gentity_t *ent, char *params);
-qboolean G_ScriptAction_NumberofObjectives(gentity_t *ent, char *params);
-qboolean G_ScriptAction_SetWinner(gentity_t *ent, char *params);
-qboolean G_ScriptAction_SetDefendingTeam(gentity_t *ent, char *params);
-qboolean G_ScriptAction_Announce(gentity_t *ent, char *params);
-qboolean G_ScriptAction_Announce_Icon(gentity_t *ent, char *params);
-qboolean G_ScriptAction_AddTeamVoiceAnnounce(gentity_t *ent, char *params);
-qboolean G_ScriptAction_RemoveTeamVoiceAnnounce(gentity_t *ent, char *params);
-qboolean G_ScriptAction_TeamVoiceAnnounce(gentity_t *ent, char *params);
-qboolean G_ScriptAction_EndRound(gentity_t *ent, char *params);
-qboolean G_ScriptAction_SetRoundTimelimit(gentity_t *ent, char *params);
-qboolean G_ScriptAction_RemoveEntity(gentity_t *ent, char *params);
-qboolean G_ScriptAction_SetState(gentity_t *ent, char *params);
-qboolean G_ScriptAction_VoiceAnnounce(gentity_t *ent, char *params);
-qboolean G_ScriptAction_FollowSpline(gentity_t *ent, char *params);
-qboolean G_ScriptAction_FollowPath(gentity_t *ent, char *params);
-qboolean G_ScriptAction_AbortMove(gentity_t *ent, char *params);
-qboolean G_ScriptAction_SetSpeed(gentity_t *ent, char *params);
-qboolean G_ScriptAction_SetRotation(gentity_t *ent, char *params);
-qboolean G_ScriptAction_StopRotation(gentity_t *ent, char *params);
-qboolean G_ScriptAction_StartAnimation(gentity_t *ent, char *params);
-qboolean G_ScriptAction_AttatchToTrain(gentity_t *ent, char *params);
-qboolean G_ScriptAction_FreezeAnimation(gentity_t *ent, char *params);
-qboolean G_ScriptAction_UnFreezeAnimation(gentity_t *ent, char *params);
-qboolean G_ScriptAction_ShaderRemap(gentity_t *ent, char *params);
-qboolean G_ScriptAction_ShaderRemapFlush(gentity_t *ent, char *params);
-qboolean G_ScriptAction_ChangeModel(gentity_t *ent, char *params);
-qboolean G_ScriptAction_SetChargeTimeFactor(gentity_t *ent, char *params);
-qboolean G_ScriptAction_SetDamagable(gentity_t *ent, char *params);
-qboolean G_ScriptAction_RepairMG42(gentity_t *ent, char *params);
-qboolean G_ScriptAction_SetHQStatus(gentity_t *ent, char *params);
-qboolean G_ScriptAction_PrintAccum(gentity_t *ent, char *params);
-qboolean G_ScriptAction_PrintGlobalAccum(gentity_t *ent, char *params);
-
-qboolean G_ScriptAction_ObjectiveStatus(gentity_t *ent, char *params);
-qboolean G_ScriptAction_SetModelFromBrushmodel(gentity_t *ent, char *params);
-qboolean G_ScriptAction_SetPosition(gentity_t *ent, char *params);
-qboolean G_ScriptAction_SetAutoSpawn(gentity_t *ent, char *params);
-qboolean G_ScriptAction_SetMainObjective(gentity_t *ent, char *params);
-qboolean G_ScriptAction_SpawnRubble(gentity_t *ent, char *params);
-qboolean G_ScriptAction_AllowTankExit(gentity_t *ent, char *params);
-qboolean G_ScriptAction_AllowTankEnter(gentity_t *ent, char *params);
-qboolean G_ScriptAction_SetTankAmmo(gentity_t *ent, char *params);
-qboolean G_ScriptAction_AddTankAmmo(gentity_t *ent, char *params);
-qboolean G_ScriptAction_Kill(gentity_t *ent, char *params);
-qboolean G_ScriptAction_DisableMessage(gentity_t *ent, char *params);
-qboolean G_ScriptAction_SetGlobalFog(gentity_t *ent, char *params);
-
-qboolean G_ScriptAction_Cvar(gentity_t *ent, char *params);
-qboolean G_ScriptAction_AbortIfWarmup(gentity_t *ent, char *params);
-qboolean G_ScriptAction_AbortIfNotSinglePlayer(gentity_t *ent, char *params);
-qboolean G_ScriptAction_MusicStart(gentity_t *ent, char *params);
-qboolean G_ScriptAction_MusicPlay(gentity_t *ent, char *params);
-qboolean G_ScriptAction_MusicStop(gentity_t *ent, char *params);
-qboolean G_ScriptAction_MusicQueue(gentity_t *ent, char *params);
-qboolean G_ScriptAction_MusicFade(gentity_t *ent, char *params);
-qboolean G_ScriptAction_SetDebugLevel(gentity_t *ent, char *params);
-qboolean G_ScriptAction_FadeAllSounds(gentity_t *ent, char *params);
-
-qboolean G_ScriptAction_Construct(gentity_t *ent, char *params) ;
-qboolean G_ScriptAction_ConstructibleClass(gentity_t *ent, char *params) ;
-qboolean G_ScriptAction_ConstructibleChargeBarReq(gentity_t *ent, char *params) ;
-qboolean G_ScriptAction_ConstructibleConstructXPBonus(gentity_t *ent, char *params) ;
-qboolean G_ScriptAction_ConstructibleDestructXPBonus(gentity_t *ent, char *params) ;
-qboolean G_ScriptAction_ConstructibleHealth(gentity_t *ent, char *params) ;
-qboolean G_ScriptAction_ConstructibleWeaponclass(gentity_t *ent, char *params) ;
-qboolean G_ScriptAction_ConstructibleDuration(gentity_t *ent, char *params) ;
-
-qboolean etpro_ScriptAction_SetValues(gentity_t *ent, char *params);
-qboolean G_ScriptAction_Create(gentity_t *ent, char *params);
-qboolean G_ScriptAction_Delete(gentity_t *ent, char *params);
-
-// these are the actions that each event can call
+/**
+ * @var gScriptActions
+ * @brief These are the actions that each event can call
+ */
 g_script_stack_action_t gScriptActions[] =
 {
-	{ "gotomarker",                     G_ScriptAction_GotoMarker                    },
-	{ "playsound",                      G_ScriptAction_PlaySound                     },
-	{ "playanim",                       G_ScriptAction_PlayAnim                      },
-	{ "wait",                           G_ScriptAction_Wait                          },
-	{ "trigger",                        G_ScriptAction_Trigger                       },
-	{ "alertentity",                    G_ScriptAction_AlertEntity                   },
-	{ "togglespeaker",                  G_ScriptAction_ToggleSpeaker                 },
-	{ "disablespeaker",                 G_ScriptAction_DisableSpeaker                },
-	{ "enablespeaker",                  G_ScriptAction_EnableSpeaker                 },
-	{ "accum",                          G_ScriptAction_Accum                         },
-	{ "globalaccum",                    G_ScriptAction_GlobalAccum                   },
-	{ "print",                          G_ScriptAction_Print                         },
-	{ "faceangles",                     G_ScriptAction_FaceAngles                    },
-	{ "resetscript",                    G_ScriptAction_ResetScript                   },
-	{ "attachtotag",                    G_ScriptAction_TagConnect                    },
-	{ "halt",                           G_ScriptAction_Halt                          },
-	{ "stopsound",                      G_ScriptAction_StopSound                     },
-	{ "entityscriptname",               G_ScriptAction_EntityScriptName              },
-	{ "aiscriptname",                   G_ScriptAction_AIScriptName                  },
-	{ "wm_axis_respawntime",            G_ScriptAction_AxisRespawntime               },
-	{ "wm_allied_respawntime",          G_ScriptAction_AlliedRespawntime             },
-	{ "wm_number_of_objectives",        G_ScriptAction_NumberofObjectives            },
-	{ "wm_setwinner",                   G_ScriptAction_SetWinner                     },
-	{ "wm_set_defending_team",          G_ScriptAction_SetDefendingTeam              },
-	{ "wm_announce",                    G_ScriptAction_Announce                      },
-	{ "wm_teamvoiceannounce",           G_ScriptAction_TeamVoiceAnnounce             },
-	{ "wm_addteamvoiceannounce",        G_ScriptAction_AddTeamVoiceAnnounce          },
-	{ "wm_removeteamvoiceannounce",     G_ScriptAction_RemoveTeamVoiceAnnounce       },
-	{ "wm_announce_icon",               G_ScriptAction_Announce_Icon                 },
-	{ "wm_endround",                    G_ScriptAction_EndRound                      },
-	{ "wm_set_round_timelimit",         G_ScriptAction_SetRoundTimelimit             },
-	{ "wm_voiceannounce",               G_ScriptAction_VoiceAnnounce                 },
-	{ "wm_objective_status",            G_ScriptAction_ObjectiveStatus               },
-	{ "wm_set_main_objective",          G_ScriptAction_SetMainObjective              },
-	{ "remove",                         G_ScriptAction_RemoveEntity                  },
-	{ "setstate",                       G_ScriptAction_SetState                      },
-	{ "followspline",                   G_ScriptAction_FollowSpline                  },
-	{ "followpath",                     G_ScriptAction_FollowPath                    },
-	{ "abortmove",                      G_ScriptAction_AbortMove                     },
-	{ "setspeed",                       G_ScriptAction_SetSpeed                      },
-	{ "setrotation",                    G_ScriptAction_SetRotation                   },
-	{ "stoprotation",                   G_ScriptAction_StopRotation                  },
-	{ "startanimation",                 G_ScriptAction_StartAnimation                },
-	{ "attatchtotrain",                 G_ScriptAction_AttatchToTrain                },
-	{ "freezeanimation",                G_ScriptAction_FreezeAnimation               },
-	{ "unfreezeanimation",              G_ScriptAction_UnFreezeAnimation             },
-	{ "remapshader",                    G_ScriptAction_ShaderRemap                   },
-	{ "remapshaderflush",               G_ScriptAction_ShaderRemapFlush              },
-	{ "changemodel",                    G_ScriptAction_ChangeModel                   },
-	{ "setchargetimefactor",            G_ScriptAction_SetChargeTimeFactor           },
-	{ "setdamagable",                   G_ScriptAction_SetDamagable                  },
+	{ "gotomarker",                     G_ScriptAction_GotoMarker,                    GOTOMARKER_HASH                     },
+	{ "playsound",                      G_ScriptAction_PlaySound,                     PLAYSOUND_HASH                      },
+	{ "playanim",                       G_ScriptAction_PlayAnim,                      PLAYANIM_HASH                       },
+	{ "wait",                           G_ScriptAction_Wait,                          WAIT_HASH                           },
+	{ "trigger",                        G_ScriptAction_Trigger,                       TRIGGER_HASH                        },
+	{ "alertentity",                    G_ScriptAction_AlertEntity,                   ALERTENTITY_HASH                    },
+	{ "togglespeaker",                  G_ScriptAction_ToggleSpeaker,                 TOGGLESPEAKER_HASH                  },
+	{ "disablespeaker",                 G_ScriptAction_DisableSpeaker,                DISABLESPEAKER_HASH                 },
+	{ "enablespeaker",                  G_ScriptAction_EnableSpeaker,                 ENABLESPEAKER_HASH                  },
+	{ "accum",                          G_ScriptAction_Accum,                         ACCUM_HASH                          },
+	{ "globalaccum",                    G_ScriptAction_GlobalAccum,                   GLOBALACCUM_HASH                    },
+	{ "print",                          G_ScriptAction_Print,                         PRINT_HASH                          },
+	{ "faceangles",                     G_ScriptAction_FaceAngles,                    FACEANGLES_HASH                     },
+	{ "resetscript",                    G_ScriptAction_ResetScript,                   RESETSCRIPT_HASH                    },
+	{ "attachtotag",                    G_ScriptAction_TagConnect,                    ATTACHTOTAG_HASH                    },
+	{ "halt",                           G_ScriptAction_Halt,                          HALT_HASH                           },
+	{ "stopsound",                      G_ScriptAction_StopSound,                     STOPSOUND_HASH                      },
+	{ "entityscriptname",               G_ScriptAction_EntityScriptName,              ENTITYSCRIPTNAME_HASH               },
+	{ "wm_axis_respawntime",            G_ScriptAction_AxisRespawntime,               WM_AXIS_RESPAWNTIME_HASH            },
+	{ "wm_allied_respawntime",          G_ScriptAction_AlliedRespawntime,             WM_ALLIED_RESPAWNTIME_HASH          },
+	{ "wm_number_of_objectives",        G_ScriptAction_NumberofObjectives,            WM_NUMBER_OF_OBJECTIVES_HASH        },
+	{ "wm_setwinner",                   G_ScriptAction_SetWinner,                     WM_SETWINNER_HASH                   },
+	{ "wm_set_defending_team",          G_ScriptAction_SetDefendingTeam,              WM_SET_DEFENDING_TEAM_HASH          },
+	{ "wm_announce",                    G_ScriptAction_Announce,                      WM_ANNOUNCE_HASH                    },
+	{ "wm_teamvoiceannounce",           G_ScriptAction_TeamVoiceAnnounce,             WM_TEAMVOICEANNOUNCE_HASH           },
+	{ "wm_addteamvoiceannounce",        G_ScriptAction_AddTeamVoiceAnnounce,          WM_ADDTEAMVOICEANNOUNCE_HASH        },
+	{ "wm_removeteamvoiceannounce",     G_ScriptAction_RemoveTeamVoiceAnnounce,       WM_REMOVETEAMVOICEANNOUNCE_HASH     },
+	{ "wm_announce_icon",               G_ScriptAction_Announce_Icon,                 WM_ANNOUNCE_ICON_HASH               },
+	{ "wm_endround",                    G_ScriptAction_EndRound,                      WM_ENDROUND_HASH                    },
+	{ "wm_set_round_timelimit",         G_ScriptAction_SetRoundTimelimit,             WM_SET_ROUND_TIMELIMIT_HASH         },
+	{ "wm_voiceannounce",               G_ScriptAction_VoiceAnnounce,                 WM_VOICEANNOUNCE_HASH               },
+	{ "wm_objective_status",            G_ScriptAction_ObjectiveStatus,               WM_OBJECTIVE_STATUS_HASH            },
+	{ "wm_set_main_objective",          G_ScriptAction_SetMainObjective,              WM_SET_MAIN_OBJECTIVE_HASH          },
+	{ "remove",                         G_ScriptAction_RemoveEntity,                  REMOVE_HASH                         },
+	{ "setstate",                       G_ScriptAction_SetState,                      SETSTATE_HASH                       },
+	{ "followspline",                   G_ScriptAction_FollowSpline,                  FOLLOWSPLINE_HASH                   },
+	{ "followpath",                     G_ScriptAction_FollowPath,                    FOLLOWPATH_HASH                     },
+	{ "abortmove",                      G_ScriptAction_AbortMove,                     ABORTMOVE_HASH                      },
+	{ "setspeed",                       G_ScriptAction_SetSpeed,                      SETSPEED_HASH                       },
+	{ "setrotation",                    G_ScriptAction_SetRotation,                   SETROTATION_HASH                    },
+	{ "stoprotation",                   G_ScriptAction_StopRotation,                  STOPROTATION_HASH                   },
+	{ "startanimation",                 G_ScriptAction_StartAnimation,                STARTANIMATION_HASH                 },
+	{ "attatchtotrain",                 G_ScriptAction_AttatchToTrain,                ATTATCHTOTRAIN_HASH                 },
+	{ "freezeanimation",                G_ScriptAction_FreezeAnimation,               FREEZEANIMATION_HASH                },
+	{ "unfreezeanimation",              G_ScriptAction_UnFreezeAnimation,             UNFREEZEANIMATION_HASH              },
+	{ "remapshader",                    G_ScriptAction_ShaderRemap,                   REMAPSHADER_HASH                    },
+	{ "remapshaderflush",               G_ScriptAction_ShaderRemapFlush,              REMAPSHADERFLUSH_HASH               },
+	{ "changemodel",                    G_ScriptAction_ChangeModel,                   CHANGEMODEL_HASH                    },
+	{ "setchargetimefactor",            G_ScriptAction_SetChargeTimeFactor,           SETCHARGETIMEFACTOR_HASH            },
+	{ "setdamagable",                   G_ScriptAction_SetDamagable,                  SETDAMAGABLE_HASH                   },
 
-	{ "repairmg42",                     G_ScriptAction_RepairMG42                    },
-	{ "sethqstatus",                    G_ScriptAction_SetHQStatus                   },
+	{ "repairmg42",                     G_ScriptAction_RepairMG42,                    REPAIRMG42_HASH                     },
+	{ "sethqstatus",                    G_ScriptAction_SetHQStatus,                   SETHQSTATUS_HASH                    },
 
-	{ "printaccum",                     G_ScriptAction_PrintAccum                    },
-	{ "printglobalaccum",               G_ScriptAction_PrintGlobalAccum              },
-	{ "cvar",                           G_ScriptAction_Cvar                          },
-	{ "abortifwarmup",                  G_ScriptAction_AbortIfWarmup                 },
-	{ "abortifnotsingleplayer",         G_ScriptAction_AbortIfNotSinglePlayer        },
+	{ "printaccum",                     G_ScriptAction_PrintAccum,                    PRINTACCUM_HASH                     },
+	{ "printglobalaccum",               G_ScriptAction_PrintGlobalAccum,              PRINTGLOBALACCUM_HASH               },
+	{ "cvar",                           G_ScriptAction_Cvar,                          CVAR_HASH                           },
+	{ "abortifwarmup",                  G_ScriptAction_AbortIfWarmup,                 ABORTIFWARMUP_HASH                  },
+	{ "abortifnotsingleplayer",         G_ScriptAction_AbortIfNotSinglePlayer,        ABORTIFNOTSINGLEPLAYER_HASH         },
 
-	{ "mu_start",                       G_ScriptAction_MusicStart                    },
-	{ "mu_play",                        G_ScriptAction_MusicPlay                     },
-	{ "mu_stop",                        G_ScriptAction_MusicStop                     },
-	{ "mu_queue",                       G_ScriptAction_MusicQueue                    },
-	{ "mu_fade",                        G_ScriptAction_MusicFade                     },
-	{ "setdebuglevel",                  G_ScriptAction_SetDebugLevel                 },
-	{ "setposition",                    G_ScriptAction_SetPosition                   },
-	{ "setautospawn",                   G_ScriptAction_SetAutoSpawn                  },
+	{ "mu_start",                       G_ScriptAction_MusicStart,                    MU_START_HASH                       },
+	{ "mu_play",                        G_ScriptAction_MusicPlay,                     MU_PLAY_HASH                        },
+	{ "mu_stop",                        G_ScriptAction_MusicStop,                     MU_STOP_HASH                        },
+	{ "mu_queue",                       G_ScriptAction_MusicQueue,                    MU_QUEUE_HASH                       },
+	{ "mu_fade",                        G_ScriptAction_MusicFade,                     MU_FADE_HASH                        },
+	{ "setdebuglevel",                  G_ScriptAction_SetDebugLevel,                 SETDEBUGLEVEL_HASH                  },
+	{ "setposition",                    G_ScriptAction_SetPosition,                   SETPOSITION_HASH                    },
+	{ "setautospawn",                   G_ScriptAction_SetAutoSpawn,                  SETAUTOSPAWN_HASH                   },
 
 	// going for longest silly script command ever here :) (sets a model for a brush to one stolen from a func_brushmodel
-	{ "setmodelfrombrushmodel",         G_ScriptAction_SetModelFromBrushmodel        },
+	{ "setmodelfrombrushmodel",         G_ScriptAction_SetModelFromBrushmodel,        SETMODELFROMBRUSHMODEL_HASH         },
 
 	// fade all sounds up or down
-	{ "fadeallsounds",                  G_ScriptAction_FadeAllSounds                 },
+	{ "fadeallsounds",                  G_ScriptAction_FadeAllSounds,                 FADEALLSOUNDS_HASH                  },
 
-	{ "construct",                      G_ScriptAction_Construct                     },
-	{ "spawnrubble",                    G_ScriptAction_SpawnRubble                   },
-	{ "setglobalfog",                   G_ScriptAction_SetGlobalFog                  },
-	{ "allowtankexit",                  G_ScriptAction_AllowTankExit                 },
-	{ "allowtankenter",                 G_ScriptAction_AllowTankEnter                },
-	{ "settankammo",                    G_ScriptAction_SetTankAmmo                   },
-	{ "addtankammo",                    G_ScriptAction_AddTankAmmo                   },
-	{ "kill",                           G_ScriptAction_Kill                          },
-	{ "disablemessage",                 G_ScriptAction_DisableMessage                },
+	{ "construct",                      G_ScriptAction_Construct,                     CONSTRUCT_HASH                      },
+	{ "spawnrubble",                    G_ScriptAction_SpawnRubble,                   SPAWNRUBBLE_HASH                    },
+	{ "setglobalfog",                   G_ScriptAction_SetGlobalFog,                  SETGLOBALFOG_HASH                   },
+	{ "allowtankexit",                  G_ScriptAction_AllowTankExit,                 ALLOWTANKEXIT_HASH                  },
+	{ "allowtankenter",                 G_ScriptAction_AllowTankEnter,                ALLOWTANKENTER_HASH                 },
+	{ "settankammo",                    G_ScriptAction_SetTankAmmo,                   SETTANKAMMO_HASH                    },
+	{ "addtankammo",                    G_ScriptAction_AddTankAmmo,                   ADDTANKAMMO_HASH                    },
+	{ "kill",                           G_ScriptAction_Kill,                          KILL_HASH                           },
+	{ "disablemessage",                 G_ScriptAction_DisableMessage,                DISABLEMESSAGE_HASH                 },
 
-	{ "set",                            etpro_ScriptAction_SetValues                 },
-	{ "create",                         G_ScriptAction_Create,                       },
-	{ "delete",                         G_ScriptAction_Delete,                       },
+	{ "set",                            etpro_ScriptAction_SetValues,                 SET_HASH                            },
+	{ "create",                         G_ScriptAction_Create,                        CREATE_HASH                         },
+	{ "delete",                         G_ScriptAction_Delete,                        DELETE_HASH                         },
 
-	{ "constructible_class",            G_ScriptAction_ConstructibleClass            },
-	{ "constructible_chargebarreq",     G_ScriptAction_ConstructibleChargeBarReq     },
-	{ "constructible_constructxpbonus", G_ScriptAction_ConstructibleConstructXPBonus },
-	{ "constructible_destructxpbonus",  G_ScriptAction_ConstructibleDestructXPBonus  },
-	{ "constructible_health",           G_ScriptAction_ConstructibleHealth           },
-	{ "constructible_weaponclass",      G_ScriptAction_ConstructibleWeaponclass      },
-	{ "constructible_duration",         G_ScriptAction_ConstructibleDuration         },
-	{ NULL,                             NULL                                         }
+	{ "constructible_class",            G_ScriptAction_ConstructibleClass,            CONSTRUCTIBLE_CLASS_HASH            },
+	{ "constructible_chargebarreq",     G_ScriptAction_ConstructibleChargeBarReq,     CONSTRUCTIBLE_CHARGEBARREQ_HASH     },
+	{ "constructible_constructxpbonus", G_ScriptAction_ConstructibleConstructXPBonus, CONSTRUCTIBLE_CONSTRUCTXPBONUS_HASH },
+	{ "constructible_destructxpbonus",  G_ScriptAction_ConstructibleDestructXPBonus,  CONSTRUCTIBLE_DESTRUCTXPBONUS_HASH  },
+	{ "constructible_health",           G_ScriptAction_ConstructibleHealth,           CONSTRUCTIBLE_HEALTH_HASH           },
+	{ "constructible_weaponclass",      G_ScriptAction_ConstructibleWeaponclass,      CONSTRUCTIBLE_WEAPONCLASS_HASH      },
+	{ "constructible_duration",         G_ScriptAction_ConstructibleDuration,         CONSTRUCTIBLE_DURATION_HASH         },
+	{ NULL,                             NULL,                                         00                                  }
 };
 
-qboolean G_Script_EventMatch_StringEqual(g_script_event_t *event, char *eventParm);
-qboolean G_Script_EventMatch_IntInRange(g_script_event_t *event, char *eventParm);
+qboolean G_Script_EventMatch_StringEqual(g_script_event_t *event, const char *eventParm);
+qboolean G_Script_EventMatch_IntInRange(g_script_event_t *event, const char *eventParm);
 
-// the list of events that can start an action sequence
+/**
+ * @var gScriptEvents
+ * @details The list of events that can start an action sequence
+ */
 g_script_event_define_t gScriptEvents[] =
 {
-	{ "spawn",       NULL                            }, // called as each character is spawned into the game
-	{ "trigger",     G_Script_EventMatch_StringEqual }, // something has triggered us (always followed by an identifier)
-	{ "pain",        G_Script_EventMatch_IntInRange  }, // we've been hurt
-	{ "death",       NULL                            }, // RIP
-	{ "activate",    G_Script_EventMatch_StringEqual }, // something has triggered us [activator team]
-	{ "stopcam",     NULL                            },
-	{ "playerstart", NULL                            },
-	{ "built",       G_Script_EventMatch_StringEqual },
-	{ "buildstart",  G_Script_EventMatch_StringEqual },
-	{ "decayed",     G_Script_EventMatch_StringEqual },
-	{ "destroyed",   G_Script_EventMatch_StringEqual },
-	{ "rebirth",     NULL                            },
-	{ "failed",      NULL                            },
-	{ "dynamited",   NULL                            },
-	{ "defused",     NULL                            },
-	{ "mg42",        G_Script_EventMatch_StringEqual },
-	{ "message",     G_Script_EventMatch_StringEqual }, // contains a sequence of VO in a message
-	{ "exploded",    NULL                            }, // added for omni-bot 0.7
+	{ "spawn",       NULL,                            SPAWN_HASH       }, ///< called as each character is spawned into the game
+	{ "trigger",     G_Script_EventMatch_StringEqual, TRIGGER_HASH     }, ///< something has triggered us (always followed by an identifier)
+	{ "pain",        G_Script_EventMatch_IntInRange,  PAIN_HASH        }, ///< we've been hurt
+	{ "death",       NULL,                            DEATH_HASH       }, ///< RIP
+	{ "activate",    G_Script_EventMatch_StringEqual, ACTIVATE_HASH    }, ///< something has triggered us [activator team]
+	{ "stopcam",     NULL,                            STOPCAM_HASH     },
+	{ "playerstart", NULL,                            PLAYERSTART_HASH },
+	{ "built",       G_Script_EventMatch_StringEqual, BUILT_HASH       },
+	{ "buildstart",  G_Script_EventMatch_StringEqual, BUILDSTART_HASH  },
+	{ "decayed",     G_Script_EventMatch_StringEqual, DECAYED_HASH     },
+	{ "destroyed",   G_Script_EventMatch_StringEqual, DESTROYED_HASH   },
+	{ "rebirth",     NULL,                            REBIRTH_HASH     },
+	{ "failed",      NULL,                            FAILED_HASH      },
+	{ "dynamited",   NULL,                            DYNAMITED_HASH   },
+	{ "defused",     NULL,                            DEFUSED_HASH     },
+	{ "mg42",        G_Script_EventMatch_StringEqual, MG42_HASH        },
+	{ "message",     G_Script_EventMatch_StringEqual, MESSAGE_HASH     }, ///< contains a sequence of VO in a message
+	{ "exploded",    NULL,                            EXPLODED_HASH    }, ///< added for omni-bot 0.7
 
-	{ NULL,          NULL                            }
+	{ NULL,          NULL,                            00               }
 };
 
-/*
-===============
-G_Script_EventMatch_StringEqual
-===============
-*/
-qboolean G_Script_EventMatch_StringEqual(g_script_event_t *event, char *eventParm)
+/**
+ * @brief G_Script_EventMatch_StringEqual
+ * @param[in] event
+ * @param[in] eventParm
+ * @return
+ */
+qboolean G_Script_EventMatch_StringEqual(g_script_event_t *event, const char *eventParm)
 {
 	if (eventParm && !Q_stricmp(event->params, eventParm))
 	{
@@ -291,18 +201,19 @@ qboolean G_Script_EventMatch_StringEqual(g_script_event_t *event, char *eventPar
 	}
 }
 
-/*
-===============
-G_Script_EventMatch_IntInRange
-===============
-*/
-qboolean G_Script_EventMatch_IntInRange(g_script_event_t *event, char *eventParm)
+/**
+ * @brief G_Script_EventMatch_IntInRange
+ * @param[in] event
+ * @param[in] eventParm
+ * @return
+ */
+qboolean G_Script_EventMatch_IntInRange(g_script_event_t *event, const char *eventParm)
 {
 	char *pString, *token;
 	int  int1, int2, eInt;
 
 	// get the cast name
-	pString = eventParm;
+	pString = (char *)eventParm;
 	token   = COM_ParseExt(&pString, qfalse);
 	int1    = atoi(token);
 	token   = COM_ParseExt(&pString, qfalse);
@@ -320,11 +231,11 @@ qboolean G_Script_EventMatch_IntInRange(g_script_event_t *event, char *eventParm
 	}
 }
 
-/*
-===============
-G_Script_EventForString
-===============
-*/
+/**
+ * @brief G_Script_EventForString
+ * @param[in] string
+ * @return
+ */
 int G_Script_EventForString(const char *string)
 {
 	int i, hash;
@@ -333,7 +244,7 @@ int G_Script_EventForString(const char *string)
 
 	for (i = 0; gScriptEvents[i].eventStr; i++)
 	{
-		if (gScriptEvents[i].hash == hash && !Q_stricmp(string, gScriptEvents[i].eventStr))
+		if (gScriptEvents[i].hash == hash)
 		{
 			return i;
 		}
@@ -342,12 +253,12 @@ int G_Script_EventForString(const char *string)
 	return -1;
 }
 
-/*
-===============
-G_Script_ActionForString
-===============
-*/
-g_script_stack_action_t *G_Script_ActionForString(char *string)
+/**
+ * @brief G_Script_ActionForString
+ * @param[in] string
+ * @return
+ */
+g_script_stack_action_t *G_Script_ActionForString(const char *string)
 {
 	int i, hash;
 
@@ -355,22 +266,20 @@ g_script_stack_action_t *G_Script_ActionForString(char *string)
 
 	for (i = 0; gScriptActions[i].actionString; i++)
 	{
-		if (gScriptActions[i].hash == hash && !Q_stricmp(string, gScriptActions[i].actionString))
+		if (gScriptActions[i].hash == hash)
 		{
 			return &gScriptActions[i];
 		}
 	}
 
+	G_Printf("G_Script_ActionForString warning: unknown action: '%s' - returning NULL\n", string);
+
 	return NULL;
 }
 
-/*
-=============
-G_Script_ScriptLoad
-
-  Loads the script for the current level into the buffer
-=============
-*/
+/**
+ * @brief Loads the script for the current level into the buffer
+ */
 void G_Script_ScriptLoad(void)
 {
 	char         filename[MAX_QPATH];
@@ -441,20 +350,13 @@ void G_Script_ScriptLoad(void)
 	trap_FS_Read(level.scriptEntity, len, f);
 	*(level.scriptEntity + len) = '\0';
 
-	// and make sure ppl haven't put stuff with uppercase in the string table..
-	// FIXME: check this
-	G_Script_EventStringInit();
-
 	trap_FS_FCloseFile(f);
 }
 
-/*
-==============
-G_Script_ScriptParse
-
-  Parses the script for the given entity
-==============
-*/
+/**
+ * @brief Parses the script for the given entity
+ * @param[in,out] ent
+ */
 void G_Script_ScriptParse(gentity_t *ent)
 {
 	char                    *pScript;
@@ -463,13 +365,13 @@ void G_Script_ScriptParse(gentity_t *ent)
 	qboolean                inScript;
 	int                     eventNum;
 	g_script_event_t        events[G_MAX_SCRIPT_STACK_ITEMS];
-	int                     numEventItems;
+	unsigned int            numEventItems;
 	g_script_event_t        *curEvent;
 	char                    params[MAX_INFO_STRING]; // was MAX_QPATH some of our multiplayer script commands have longer parameters
 	g_script_stack_action_t *action;
 	int                     i;
 	int                     bracketLevel;
-	int                     len;
+	unsigned int            len;
 	qboolean                buildScript;
 
 	if (!ent->scriptName)
@@ -481,7 +383,7 @@ void G_Script_ScriptParse(gentity_t *ent)
 		return;
 	}
 
-	buildScript = trap_Cvar_VariableIntegerValue("com_buildScript");
+	buildScript = (qboolean)(trap_Cvar_VariableIntegerValue("com_buildScript"));
 
 	pScript  = level.scriptEntity;
 	wantName = qtrue;
@@ -599,7 +501,7 @@ void G_Script_ScriptParse(gentity_t *ent)
 				memset(params, 0, sizeof(params));
 
 				// Parse for {}'s if this is a set command
-				if (!Q_stricmp(action->actionString, "set") || !Q_stricmp(action->actionString, "create") || !Q_stricmp(action->actionString, "delete"))
+				if (action->hash == SET_HASH || action->hash == DELETE_HASH || action->hash == CREATE_HASH)
 				{
 					token = COM_Parse(&pScript);
 					if (token[0] != '{')
@@ -640,20 +542,15 @@ void G_Script_ScriptParse(gentity_t *ent)
 						if (i == 0)
 						{
 							// Special case: playsound's need to be cached on startup to prevent in-game pauses
-							if (!Q_stricmp(action->actionString, "playsound"))
+							if (action->hash == PLAYSOUND_HASH)
 							{
 								G_SoundIndex(token);
 							}
-							else if (!Q_stricmp(action->actionString, "changemodel"))
+							else if (action->hash == CHANGEMODEL_HASH)
 							{
 								G_ModelIndex(token);
 							}
-							else if (buildScript && (
-							             !Q_stricmp(action->actionString, "mu_start") ||
-							             !Q_stricmp(action->actionString, "mu_play") ||
-							             !Q_stricmp(action->actionString, "mu_queue") ||
-							             !Q_stricmp(action->actionString, "startcam"))
-							         )
+							else if (buildScript && (action->hash == MU_START_HASH || action->hash == MU_PLAY_HASH || action->hash == MU_QUEUE_HASH))
 							{
 								if (strlen(token))           // we know there's a [0], but don't know if it's '0'
 								{
@@ -664,7 +561,7 @@ void G_Script_ScriptParse(gentity_t *ent)
 
 						if (i == 0 || i == 1)
 						{
-							if (!Q_stricmp(action->actionString, "remapshader"))
+							if (action->hash == REMAPSHADER_HASH)
 							{
 								G_ShaderIndex(token);
 							}
@@ -734,13 +631,13 @@ void G_Script_ScriptParse(gentity_t *ent)
 	}
 }
 
-/*
-================
-G_Script_ScriptChange
-================
-*/
 qboolean G_Script_ScriptRun(gentity_t *ent);
 
+/**
+ * @brief G_Script_ScriptChange
+ * @param[in,out] ent
+ * @param[in] newScriptNum
+ */
 void G_Script_ScriptChange(gentity_t *ent, int newScriptNum)
 {
 	g_script_status_t scriptStatusBackup;
@@ -764,58 +661,43 @@ void G_Script_ScriptChange(gentity_t *ent, int newScriptNum)
 	}
 }
 
-// lower the strings and hash them
-void G_Script_EventStringInit(void)
-{
-	int i;
-
-	for (i = 0; gScriptEvents[i].eventStr; i++)
-	{
-		gScriptEvents[i].hash = BG_StringHashValue_Lwr(gScriptEvents[i].eventStr);
-	}
-
-	for (i = 0; gScriptActions[i].actionString; i++)
-	{
-		gScriptActions[i].hash = BG_StringHashValue_Lwr(gScriptActions[i].actionString);
-	}
-}
-
-/*
-================
-G_Script_GetEventIndex
-
-  returns the event index within the entity for the specified event string
-  - extracted from G_Script_ScriptEvent.
-================
-*/
-int G_Script_GetEventIndex(gentity_t *ent, char *eventStr, char *params)
+/**
+ * @brief G_Script_GetEventIndex
+ * @param[in] ent
+ * @param[in] eventStr
+ * @param[in] params
+ * @return The event index within the entity for the specified event string extracted from G_Script_ScriptEvent.
+ */
+int G_Script_GetEventIndex(gentity_t *ent, const char *eventStr, const char *params)
 {
 	int i, eventNum = -1;
-	int hash = BG_StringHashValue_Lwr(eventStr);
+	int hash;
+
+	hash = BG_StringHashValue_Lwr(eventStr);
 
 	// find out which event this is
 	for (i = 0; gScriptEvents[i].eventStr; i++)
 	{
-		if (gScriptEvents[i].hash == hash && !Q_stricmp(eventStr, gScriptEvents[i].eventStr))       // match found
+		if (gScriptEvents[i].hash == hash)       // match found
 		{
 			eventNum = i;
 			break;
 		}
 	}
 
-	if (eventNum < 0)
-	{
-		if (g_cheats.integer)        // dev mode
-		{
-			G_Printf("devmode-> G_Script_GetEventIndex(), unknown event: %s\n", eventStr);
-		}
-		return -1;
-	}
-
 	// show debugging info
 	if (g_scriptDebug.integer)
 	{
 		G_Printf("%i : (%s) GScript event: %s %s\n", level.time, ent->scriptName ? ent->scriptName : "n/a", eventStr, params ? params : "");
+	}
+
+	if (eventNum < 0)
+	{
+		if (g_cheats.integer)        // dev mode
+		{
+			G_Printf("devmode-> G_Script_GetEventIndex(), unknown event: '%s'\n", eventStr);
+		}
+		return -1;
 	}
 
 	// see if this entity has this event
@@ -833,77 +715,82 @@ int G_Script_GetEventIndex(gentity_t *ent, char *eventStr, char *params)
 	return -1;      // event not found/matched in this ent
 }
 
-/*
-================
-G_Script_ScriptEvent
-
-  An event has occured, for which a script may exist
-================
-*/
-void G_Script_ScriptEvent(gentity_t *ent, char *eventStr, char *params)
+/**
+ * @brief An event has occured, for which a script may exist
+ * @param[in] ent
+ * @param[in] eventStr
+ * @param[in] params
+ */
+void G_Script_ScriptEvent(gentity_t *ent, const char *eventStr, const char *params)
 {
-	int i = G_Script_GetEventIndex(ent, eventStr, params);
+	int i;
+
+	i = G_Script_GetEventIndex(ent, eventStr, params);
 
 	if (i >= 0)
 	{
 		G_Script_ScriptChange(ent, i);
 	}
 
-#ifdef FEATURE_OMNIBOT
-	// skip these
-	if (!Q_stricmp(eventStr, "trigger") ||
-	    !Q_stricmp(eventStr, "activate") ||
-	    !Q_stricmp(eventStr, "spawn") ||
-	    !Q_stricmp(eventStr, "death") ||
-	    !Q_stricmp(eventStr, "pain") ||
-	    !Q_stricmp(eventStr, "playerstart"))
+	// log script trigger stolen & returned actions (ETPro behavior)
+	if (!Q_stricmp(eventStr, "trigger"))
 	{
-		return;
+		if (!Q_stricmp(params, "stolen"))
+		{
+			G_LogPrintf("legacy popup: ^7%s^7 stole \"%s\"\n",
+			            Q_stricmp(ent->classname, "team_CTF_redflag") ? "axis" : "allies", ent->message);
+		}
+		else if (!Q_stricmp(params, "returned"))
+		{
+			G_LogPrintf("legacy popup: ^7%s^7 returned \"%s\"\n",
+			            Q_stricmp(ent->classname, "team_CTF_redflag") ? "allies" : "axis", ent->message);
+		}
 	}
-
-	if (!Q_stricmp(eventStr, "defused"))
+/*
+    // skip these
+    if ( //!Q_stricmp(eventStr, "trigger") ||
+        !Q_stricmp(eventStr, "activate") ||
+        !Q_stricmp(eventStr, "spawn") ||
+        !Q_stricmp(eventStr, "death") ||
+        !Q_stricmp(eventStr, "pain") ||
+        !Q_stricmp(eventStr, "playerstart"))
+    {
+        return;
+    }
+*/
+	else if (!Q_stricmp(eventStr, "defused"))
 	{
-		Bot_Util_SendTrigger(ent, NULL,
-		                     va("Defused at %s.", ent->parent ? ent->parent->track : ent->track),
-		                     eventStr);
-
+#ifdef FEATURE_OMNIBOT
+		Bot_Util_SendTrigger(ent, NULL, va("Defused at %s.", ent->parent ? ent->parent->track : ent->track), eventStr);
+#endif
 		// log script defused actions (ETPro behavior)
-		G_LogPrintf("legacy popup: %s defused \"%s\"\n",
-		            params,
-		            ent->parent ? ent->parent->track : ent->track);
+		G_LogPrintf("legacy popup: ^7%s^7 defused \"%s\"\n", params, ent->parent ? ent->parent->track : ent->track);
 	}
 	else if (!Q_stricmp(eventStr, "dynamited"))
 	{
-		Bot_Util_SendTrigger(ent, NULL,
-		                     va("Planted at %s.", ent->parent ? ent->parent->track : ent->track),
-		                     eventStr);
-
+#ifdef FEATURE_OMNIBOT
+		Bot_Util_SendTrigger(ent, NULL, va("Planted at %s.", ent->parent ? ent->parent->track : ent->track), eventStr);
+#endif
 		// log script dynamited actions (ETPro behavior)
-		G_LogPrintf("legacy popup: %s planted \"%s\"\n",
-		            params,
-		            ent->parent ? ent->parent->track : ent->track);
+		G_LogPrintf("legacy popup: ^7%s^7 planted \"%s\"\n", params, ent->parent ? ent->parent->track : ent->track);
 	}
+#ifdef FEATURE_OMNIBOT
 	else if (!Q_stricmp(eventStr, "destroyed"))
 	{
-		Bot_Util_SendTrigger(ent, NULL,
-		                     va("%s Destroyed.", ent->parent ? ent->parent->track : ent->track),
-		                     eventStr);
+		Bot_Util_SendTrigger(ent, NULL, va("%s Destroyed.", ent->parent ? ent->parent->track : ent->track), eventStr);
 	}
 	else if (!Q_stricmp(eventStr, "exploded"))
 	{
-		Bot_Util_SendTrigger(ent, NULL,
-		                     va("Explode_%s Exploded.", _GetEntityName(ent)), eventStr);
+		Bot_Util_SendTrigger(ent, NULL, va("Explode_%s Exploded.", _GetEntityName(ent)), eventStr);
 	}
 #endif
 }
 
-/*
-=============
-G_Script_ScriptRun
-
-  returns qtrue if the script completed
-=============
-*/
+/**
+ * @brief G_Script_ScriptRun
+ * @param[in,out] ent
+ * @return qtrue if the script completed
+ */
 qboolean G_Script_ScriptRun(gentity_t *ent)
 {
 	g_script_stack_t *stack;
@@ -986,6 +873,10 @@ qboolean G_Script_ScriptRun(gentity_t *ent)
 //================================================================================
 // Script Entities
 
+/**
+ * @brief mountedmg42_fire
+ * @param[in,out] other
+ */
 void mountedmg42_fire(gentity_t *other)
 {
 	vec3_t    forward, right, up;
@@ -1005,6 +896,10 @@ void mountedmg42_fire(gentity_t *other)
 
 	SnapVector(muzzle);
 
+	// ent & activator are same for Fire_Lead_Ext
+	//self->s.eFlags  |= EF_MG42_ACTIVE;
+	other->s.eFlags |= EF_MG42_ACTIVE;
+
 	if (self->s.density & 8)
 	{
 		Fire_Lead_Ext(other, other, MG42_SPREAD_MP, MG42_DAMAGE_MP, muzzle, forward, right, up, MOD_BROWNING);
@@ -1015,13 +910,25 @@ void mountedmg42_fire(gentity_t *other)
 	}
 }
 
+/**
+ * @brief script_linkentity
+ * @param[in] ent
+ */
 void script_linkentity(gentity_t *ent)
 {
 	// this is required since non-solid brushes need to be linked but not solid
 	trap_LinkEntity(ent);
 }
 
-void script_mover_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int mod)
+/**
+ * @brief script_mover_die
+ * @param[in,out] self
+ * @param inflictor - unused
+ * @param attacker  - unused
+ * @param damage    - unused
+ * @param mod       - unused
+ */
+void script_mover_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, meansOfDeath_t mod)
 {
 	G_Script_ScriptEvent(self, "death", "");
 
@@ -1038,11 +945,10 @@ void script_mover_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker
 	self->die = NULL;
 }
 
-/*
-================
-script_mover_think
-================
-*/
+/**
+ * @brief script_mover_think
+ * @param[in,out] ent
+ */
 void script_mover_think(gentity_t *ent)
 {
 	if (ent->spawnflags & 128)
@@ -1051,7 +957,7 @@ void script_mover_think(gentity_t *ent)
 		{
 			if (ent->mg42weapHeat)
 			{
-				ent->mg42weapHeat -= (300.f * 100 * 0.001);
+				ent->mg42weapHeat -= (300.f * 100 * 0.001f);
 
 				if (ent->mg42weapHeat < 0)
 				{
@@ -1069,9 +975,13 @@ void script_mover_think(gentity_t *ent)
 		}
 	}
 
-	ent->nextthink = level.time + 100;
+	ent->nextthink = level.time + FRAMETIME;
 }
 
+/**
+ * @brief script_mover_spawn
+ * @param[in,out] ent
+ */
 void script_mover_spawn(gentity_t *ent)
 {
 	if (ent->spawnflags & 128)
@@ -1114,6 +1024,12 @@ void script_mover_spawn(gentity_t *ent)
 	ent->nextthink = level.time + 200;
 }
 
+/**
+ * @brief script_mover_use
+ * @param[in] ent
+ * @param other     - unused
+ * @param activator - unused
+ */
 void script_mover_use(gentity_t *ent, gentity_t *other, gentity_t *activator)
 {
 	if (ent->spawnflags & 8)
@@ -1137,6 +1053,11 @@ void script_mover_use(gentity_t *ent, gentity_t *other, gentity_t *activator)
 	}
 }
 
+/**
+ * @brief script_mover_blocked
+ * @param[in] ent
+ * @param[in] other
+ */
 void script_mover_blocked(gentity_t *ent, gentity_t *other)
 {
 	// remove it, we must not stop for anything or it will screw up script timing
@@ -1161,7 +1082,10 @@ void script_mover_blocked(gentity_t *ent, gentity_t *other)
 	G_Damage(other, ent, ent, NULL, NULL, 9999, 0, MOD_CRUSH);
 }
 
-// script mover flags
+/**
+ * Script mover flags
+ */
+
 #define SMF_TRIGGERSPAWN        1
 #define SMF_SOLID               2
 #define SMF_EXPLOSIVEDAMAGEONLY 4
@@ -1172,16 +1096,21 @@ void script_mover_blocked(gentity_t *ent, gentity_t *other)
 #define SMF_MOUNTED_GUN         128
 #define SMF_DENSITY             256
 
-/*QUAKED script_mover (0.5 0.25 1.0) ? TRIGGERSPAWN SOLID EXPLOSIVEDAMAGEONLY RESURECTABLE COMPASS ALLIED AXIS MOUNTED_GUN
-Scripted brush entity. A simplified means of moving brushes around based on events.
-
-"modelscale" - Scale multiplier (defaults to 1, and scales uniformly)
-"modelscale_vec" - Set scale per-axis.  Overrides "modelscale", so if you have both the "modelscale" is ignored
-"model2" optional md3 to draw over the solid clip brush
-"scriptname" name used for scripting purposes (like aiName in AI scripting)
-"health" optionally make this entity damagable
-"description" used with health, if the entity is damagable, it draws a healthbar with this description above it.
-*/
+/**
+ * @brief Scripted brush entity. A simplified means of moving brushes around based on events.
+ *
+ * @details
+ * QUAKED script_mover (0.5 0.25 1.0) ? TRIGGERSPAWN SOLID EXPLOSIVEDAMAGEONLY RESURECTABLE COMPASS ALLIED AXIS MOUNTED_GUN
+ *
+ * "modelscale" - Scale multiplier (defaults to 1, and scales uniformly)
+ * "modelscale_vec" - Set scale per-axis.  Overrides "modelscale", so if you have both the "modelscale" is ignored
+ * "model2" optional md3 to draw over the solid clip brush
+ * "scriptname" name used for scripting purposes (like aiName in AI scripting)
+ * "health" optionally make this entity damagable
+ * "description" used with health, if the entity is damagable, it draws a healthbar with this description above it.
+ *
+ * @param[in,out] ent
+ */
 void SP_script_mover(gentity_t *ent)
 {
 	float  scale[3] = { 1, 1, 1 };
@@ -1191,13 +1120,12 @@ void SP_script_mover(gentity_t *ent)
 
 	if (!ent->model)
 	{
-		G_Error("script_mover must have a \"model\"\n");
+		G_Error("script_mover entity #%i must have a \"model\"\n", ent->s.number);
 	}
 	if (!ent->scriptName)
 	{
-		G_Error("script_mover must have a \"scriptname\"\n");
+		G_Error("script_mover entity #%i must have a \"scriptname\"\n", ent->s.number);
 	}
-
 	ent->blocked = script_mover_blocked;
 
 	// first position at start
@@ -1306,7 +1234,7 @@ void SP_script_mover(gentity_t *ent)
 		VectorCopy(scalevec, scale);
 	}
 
-	if (scale[0] != 1 || scale[1] != 1 || scale[2] != 1)
+	if (scale[0] != 1.f || scale[1] != 1.f || scale[2] != 1.f)
 	{
 		ent->s.density |= 1;
 		// scale is stored in 'angles2'
@@ -1329,7 +1257,7 @@ void SP_script_mover(gentity_t *ent)
 		}
 
 		G_SpawnString("tagent", "", &tagent);
-		Q_strncpyz(ent->tagBuffer, tagent, 16);
+		Q_strncpyz(ent->tagBuffer, tagent, 32);
 		ent->s.powerups = -1;
 	}
 
@@ -1339,6 +1267,10 @@ void SP_script_mover(gentity_t *ent)
 
 //..............................................................................
 
+/**
+ * @brief script_model_med_spawn
+ * @param[in,out] ent
+ */
 void script_model_med_spawn(gentity_t *ent)
 {
 	if (ent->spawnflags & 2)
@@ -1357,27 +1289,38 @@ void script_model_med_spawn(gentity_t *ent)
 	trap_LinkEntity(ent);
 }
 
+/**
+ * @brief script_model_med_use
+ * @param[in] ent
+ * @param other     - unused
+ * @param activator - unused
+ */
 void script_model_med_use(gentity_t *ent, gentity_t *other, gentity_t *activator)
 {
 	script_model_med_spawn(ent);
 }
 
-/*QUAKED script_model_med (0.5 0.25 1.0) (-16 -16 -24) (16 16 64) TriggerSpawn Solid
-MEDIUM SIZED scripted entity, used for animating a model, moving it around, etc
-SOLID spawnflag means this entity will clip the player and AI, otherwise they can walk
-straight through it
-"model" the full path of the model to use
-"scriptname" name used for scripting purposes (like aiName in AI scripting)
-*/
+/**
+ * @brief SP_script_model_med
+ *
+ * @details QUAKED script_model_med (0.5 0.25 1.0) (-16 -16 -24) (16 16 64) TriggerSpawn Solid
+ * MEDIUM SIZED scripted entity, used for animating a model, moving it around, etc
+ * SOLID spawnflag means this entity will clip the player and AI, otherwise they can walk
+ * straight through it
+ * "model" the full path of the model to use
+ * "scriptname" name used for scripting purposes (like aiName in AI scripting)
+ *
+ * @param[in,out] ent
+ */
 void SP_script_model_med(gentity_t *ent)
 {
 	if (!ent->model)
 	{
-		G_Error("script_model_med %s must have a \"model\"\n", ent->scriptName);
+		G_Error("script_model_med entity #%i must have a \"model\"\n", ent->s.number);
 	}
 	if (!ent->scriptName)
 	{
-		G_Error("script_model_med must have a \"scriptname\"\n");
+		G_Error("script_model_med entity #%i must have a \"scriptname\"\n", ent->s.number);
 	}
 
 	ent->s.eType           = ET_GENERAL;
@@ -1399,13 +1342,18 @@ void SP_script_model_med(gentity_t *ent)
 
 //..............................................................................
 
-/*QUAKED script_camera (1.0 0.25 1.0) (-8 -8 -8) (8 8 8) TriggerSpawn
-
-  This is a camera entity. Used by the scripting to show cinematics, via special
-  camera commands. See scripting documentation.
-
-"scriptname" name used for scripting purposes (like aiName in AI scripting)
-*/
+/**
+ * @brief This is a camera entity.
+ *
+ * @details QUAKED script_camera (1.0 0.25 1.0) (-8 -8 -8) (8 8 8) TriggerSpawn
+ *
+ * Used by the scripting to show cinematics, via special
+ * camera commands. See scripting documentation.
+ *
+ * "scriptname" name used for scripting purposes (like aiName in AI scripting)
+ *
+ * @param[in,out] ent
+ */
 void SP_script_camera(gentity_t *ent)
 {
 	if (!ent->scriptName)
@@ -1425,15 +1373,17 @@ void SP_script_camera(gentity_t *ent)
 	ent->r.svFlags |= SVF_NOCLIENT;     // only broadcast when in use
 }
 
-
-/*QUAKED script_multiplayer (1.0 0.25 1.0) (-8 -8 -8) (8 8 8)
-
-  This is used to script multiplayer maps.  Entity not displayed in game.
-
-// also storing some stuff that will change often but needs to be broadcast, so we dont want to use a configstring
-
-"scriptname" name used for scripting purposes (REQUIRED)
-*/
+/**
+ * @brief This is used to script multiplayer maps. Entity not displayed in game.
+ *
+ * @details QUAKED script_multiplayer (1.0 0.25 1.0) (-8 -8 -8) (8 8 8)
+ *
+ * "scriptname" name used for scripting purposes (REQUIRED)
+ *
+ * @param[in,out] ent
+ *
+ * @note Also storing some stuff that will change often but needs to be broadcast, so we dont want to use a configstring
+ */
 void SP_script_multiplayer(gentity_t *ent)
 {
 	ent->scriptName = "game_manager";
