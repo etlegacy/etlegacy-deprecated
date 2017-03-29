@@ -1500,6 +1500,7 @@ static void S_AL_SrcLoop(alSrcPriority_t priority, sfxHandle_t sfx,
 	src_t     *curSource;
 	vec3_t    sorigin, svelocity;
 
+	//TODO: implement soundTime
 	//if(S_AL_CheckInput(entityNum, sfx))
 	//  return;
 
@@ -1543,15 +1544,8 @@ static void S_AL_SrcLoop(alSrcPriority_t priority, sfxHandle_t sfx,
 	sent->loopSfx      = sfx;
 	sent->volume       = volume;
 
-	if (soundTime != 0)
-	{
-		// If this is not set then the looping sound is stopped.
-		sent->loopAddedThisFrame = qtrue;
-	}
-	else
-	{
-		sent->loopAddedThisFrame = qfalse;
-	}
+	// If this is not set then the looping sound is stopped.
+	sent->loopAddedThisFrame = qtrue;
 	
 	// UGH
 	// These lines should be called via S_AL_SrcSetup, but we
@@ -3266,11 +3260,17 @@ qboolean S_AL_Init(soundInterface_t *si)
 	s_alRolloff       = Cvar_Get("s_alRolloff", "2", CVAR_CHEAT);
 	s_alGraceDistance = Cvar_Get("s_alGraceDistance", "1250", CVAR_CHEAT);
 
-	s_alDriver = Cvar_Get("s_alDriver", ALDRIVER_DEFAULT, CVAR_ARCHIVE | CVAR_LATCH);
+	s_alDriver = Cvar_Get("s_alDriver", ALDRIVER_DEFAULT, CVAR_ARCHIVE | CVAR_LATCH | CVAR_PROTECTED);
 
 	s_alDevice     = Cvar_Get("s_alDevice", "", CVAR_ARCHIVE | CVAR_LATCH);
 	s_debugStreams = Cvar_Get("s_debugStreams", "0", CVAR_TEMP);
 
+	if (COM_CompareExtension(s_alDriver->string, ".pk3"))
+	{
+		Com_Printf("Rejecting DLL named \"%s\"\n", s_alDriver->string);
+		return qfalse;
+	}
+	
 	// Load QAL
 	if (!QAL_Init(s_alDriver->string))
 	{

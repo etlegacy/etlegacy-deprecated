@@ -109,7 +109,12 @@ option(FORCE_DEBUG				"Force enable legacy debug macros"						OFF)
 cmake_dependent_option(FEATURE_LUASQL	"Enable LuaSQL sqlite3 backend (mod)"			ON "FEATURE_LUA" OFF)
 cmake_dependent_option(FEATURE_RATING	"Enable skill rating support (mod)"				ON "FEATURE_DBMS" OFF)
 cmake_dependent_option(FEATURE_OMNIBOT	"Enable Omni-bot support (mod)"					ON "WIN32 OR APPLE OR CMAKE_SYSTEM_NAME MATCHES Linux" OFF)
-cmake_dependent_option(INSTALL_OMNIBOT	"Install Omni-bot"								ON "FEATURE_OMNIBOT" OFF)
+
+option(INSTALL_EXTRA			"Install extra add-ons (omni-bot, geoip, wolfadmin)."	ON)
+
+cmake_dependent_option(INSTALL_OMNIBOT		"Install Omni-bot"							ON "INSTALL_EXTRA" OFF)
+cmake_dependent_option(INSTALL_GEOIP		"Install GeoLite geolocation database"		ON "INSTALL_EXTRA" OFF)
+cmake_dependent_option(INSTALL_WOLFADMIN	"Install WolfAdmin enhancement suite"		ON "INSTALL_EXTRA" OFF)
 
 option(ARM						"Build ARM version"										OFF)
 
@@ -182,9 +187,18 @@ endif(BUILD_PAK3_PK3)
 # Post build
 #-----------------------------------------------------------------
 
-if(INSTALL_OMNIBOT AND BUILD_MOD)
-	include(cmake/ETLInstallOmniBot.cmake)
-endif(INSTALL_OMNIBOT AND BUILD_MOD)
+# Install third-party add-ons
+if(BUILD_MOD AND INSTALL_EXTRA)
+	if(INSTALL_OMNIBOT)
+		include(cmake/ETLInstallOmniBot.cmake)
+	endif(INSTALL_OMNIBOT)
+	if(INSTALL_GEOIP)
+		include(cmake/ETLInstallGeoIP.cmake)
+	endif(INSTALL_GEOIP)
+	if(INSTALL_WOLFADMIN)
+		include(cmake/ETLInstallWolfAdmin.cmake)
+	endif(INSTALL_WOLFADMIN)
+endif(BUILD_MOD AND INSTALL_EXTRA)
 
 # Generate install and uninstall packs
 include(cmake/ETLInstall.cmake)

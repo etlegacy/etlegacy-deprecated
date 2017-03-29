@@ -758,9 +758,19 @@ void SV_DemoWriteFrame(void)
 void SV_DemoAutoDemoRecord(void)
 {
 	qtime_t now;
-	char    *demoname = (char *)malloc(MAX_QPATH * sizeof(char));
-	Com_RealTime(&now);
+	char    *demoname;
 
+	// break if a demo is already being recorded
+	// FIXME: this should not happen, this is a failsafe but if it's used it means there are redundant calls that we can maybe remove
+	if (sv.demoState == DS_RECORDING)
+	{
+		Com_Printf("SV_DemoAutoDemoRecord: already recording a demo!\n");
+		return;
+	}
+
+	// generate the demo filename
+	*demoname = (char *)malloc(MAX_QPATH * sizeof(char));
+	Com_RealTime(&now);
 	Q_strncpyz(demoname, va("%s_%04d-%02d-%02d-%02d-%02d-%02d_%s",
 	                        SV_CleanFilename(va("%s", sv_hostname->string)),
 	                        1900 + now.tm_year,
@@ -772,10 +782,13 @@ void SV_DemoAutoDemoRecord(void)
 	                        SV_CleanFilename(Cvar_VariableString("mapname"))),
 	           MAX_QPATH);
 
+	// print a message
 	Com_Printf("DEMO: recording a server-side demo to: %s/svdemos/%s.%s%d\n", strlen(Cvar_VariableString("fs_game")) ? Cvar_VariableString("fs_game") : BASEGAME, demoname, SVDEMOEXT, PROTOCOL_VERSION);
 
+	// launch the demo recording
 	Cbuf_AddText(va("demo_record %s\n", demoname));
 
+	// free memory of the filename
 	free(demoname);
 }
 
@@ -1468,7 +1481,7 @@ static void SV_DemoReadClientConfigString(msg_t *msg)
 		SV_SetConfigstring(CS_PLAYERS + num, configstring);
 
 		// Set some infos about this user:
-		svs.clients[num].demoClient = qtrue; // to check if a client is a democlient, you can either rely on this variable, either you can check if num (index of client) is >= CS_PLAYERS + sv_democlients->integer && < CS_PLAYERS + sv_maxclients->integer (if it's not a configstring, remove CS_PLAYERS from your if)
+		svs.clients[num].demoClient = qtrue; // to check if a client is a democlient, you can either rely on this variable, either you can check if it's a real client num (index of client) is >= CS_PLAYERS + sv_democlients->integer && < CS_PLAYERS + sv_maxclients->integer (if it's not a configstring, remove CS_PLAYERS from your if)
 		Q_strncpyz(svs.clients[num].name, Info_ValueForKey(configstring, "n"), MAX_NAME_LENGTH);     // set the name (useful for internal functions such as status_f). Anyway userinfo will automatically set both name (server-side) and netname (gamecode-side).
 
 
@@ -1654,17 +1667,39 @@ static void SV_DemoReadAllEntityState(msg_t *msg)
 	sharedEntity_t *entity;
 	int            num;
 
+	// For each state in this message (because we store a concatenation of all entities states in a single message, we could do otherwise, but that's the design)
 	while (1)
 	{
+		// Get entity num
 		num = MSG_ReadBits(msg, GENTITYNUM_BITS);
 
+		// Reached the end of the message, stop here
 		if (num == ENTITYNUM_NONE)
 		{
 			break;
 		}
 
+		// Create a blank entity
 		entity = SV_GentityNum(num);
+		// Interpolate the new entity state from previous state in sv.demoEntities
 		MSG_ReadDeltaEntity(msg, &sv.demoEntities[num].s, &entity->s, num);
+
+		// Fix mover movements, (avoid the "bad moverstate" error)
+		if (entity->s.eType == ET_MOVER)
+		{
+			// 1st way to fix: completely disable movers (but not their displacement effects, so they will be invisible, but players are still moved by movers)
+			//entity->s.eType = ET_GENERAL;
+
+			// 2nd way to fix (better): only binarymovers are producing the bug, because the game will be confused about the moverState since we cannot have access nor set it...
+			// the solution: avoid changing the moverState, only change the position. To do this, avoid calls to ent->reached, so in other words never allow s.pot.trType to be TR_LINEAR_STOP (other types of movers are not affected since they don't have a stop/reached state, they are just looping over and over)
+			if (entity->s.pos.trType == TR_LINEAR_STOP)  // mover reached end of movement? change it...
+			{
+				entity->s.pos.trType = TR_LINEAR;  // ... to always set movers in a moving linear state.
+				//entity->s.apos.trType = TR_LINEAR; // should apos be also set?
+			}
+		}
+
+		// Save new entity state (in sv.demoEntities, which in other words display the new state)
 		sv.demoEntities[num].s = entity->s;
 	}
 }
@@ -1680,16 +1715,20 @@ static void SV_DemoReadAllEntityShared(msg_t *msg)
 	sharedEntity_t *entity;
 	int            num;
 
-	while (1)
+	while (1) // loop until we read the whole message (which is storing several states)
 	{
+		// Get entity num
 		num = MSG_ReadBits(msg, GENTITYNUM_BITS);
 
+		// Reached end of message, stop here
 		if (num == ENTITYNUM_NONE)
 		{
 			break;
 		}
 
+		// Load an empty entity
 		entity = SV_GentityNum(num);
+		// Interpolate the new entity state from previous state in sv.demoEntities
 		MSG_ReadDeltaSharedEntity(msg, &sv.demoEntities[num].r, &entity->r, num);
 
 		entity->r.svFlags &= ~SVF_BOT; // fix bots camera freezing issues - because since now the engine will consider these democlients just as normal players, it won't be using anymore special bots fields and instead just use the standard viewangles field to replay the camera movements
@@ -1707,6 +1746,7 @@ static void SV_DemoReadAllEntityShared(msg_t *msg)
 			SV_UnlinkEntity(entity);
 		}
 
+		// Save the new state in sv.demoEntities (ie, display current entity state)
 		sv.demoEntities[num].r = entity->r;
 		if (num > sv.num_entities)
 		{

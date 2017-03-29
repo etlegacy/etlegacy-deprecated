@@ -205,15 +205,15 @@ parse_commandline() {
 			BUNDLED_FREETYPE=0
 			BUNDLED_JANSSON=0
 			BUNDLED_SQLITE3=0
-		elif [ "$var" = "-noob" ]; then
-			einfo "Will disable omni-bot installation"
+		elif [ "$var" = "-noextra" ]; then
+			einfo "Will disable installation of Omni-bot, GeoIP and WolfAdmin"
+			INSTALL_EXTRA=0
 			INSTALL_OMNIBOT=0
+			INSTALL_GEOIP=0
+			INSTALL_WOLFADMIN=0
 		elif [ "$var" = "-noupdate" ]; then
 			einfo "Will disable autoupdate"
 			FEATURE_AUTOUPDATE=0
-		elif [ "$var" = "-norating" ]; then
-			einfo "Will disable skill rating"
-			FEATURE_RATING=0
 		elif [ "$var" = "-RPI" ]; then
 			einfo "Will enable Raspberry PI build ..."
 			ARM=1
@@ -335,7 +335,10 @@ generate_configuration() {
 	FEATURE_AUTOUPDATE=${FEATURE_AUTOUPDATE:-0}
 	FEATURE_LUASQL=${FEATURE_LUASQL:-1}
 	FEATURE_OMNIBOT=${FEATURE_OMNIBOT:-1}
+	INSTALL_EXTRA=${INSTALL_EXTRA:-1}
 	INSTALL_OMNIBOT=${INSTALL_OMNIBOT:-1}
+	INSTALL_GEOIP=${INSTALL_GEOIP:-1}
+	INSTALL_WOLFADMIN=${INSTALL_WOLFADMIN:-1}
 
 	einfo "Configuring ET Legacy..."
 	_CFGSTRING="
@@ -380,7 +383,10 @@ generate_configuration() {
 		-DRENDERER_DYNAMIC=${RENDERER_DYNAMIC}
 		-DFEATURE_LUASQL=${FEATURE_LUASQL}
 		-DFEATURE_OMNIBOT=${FEATURE_OMNIBOT}
+		-DINSTALL_EXTRA=${INSTALL_EXTRA}
 		-DINSTALL_OMNIBOT=${INSTALL_OMNIBOT}
+		-DINSTALL_GEOIP=${INSTALL_GEOIP}
+		-DINSTALL_WOLFADMIN=${INSTALL_WOLFADMIN}
 	"
 
 	if [ "${DEV}" != 1 ]; then
@@ -642,7 +648,7 @@ print_help() {
 	ehead "help - print this help"
 	echo
 	einfo "Properties"
-	ehead "-64, -debug, -clang, -nodb -nor2, -nodynamic, -systemlib, -noob, --noupdate, -norating -mod"
+	ehead "-64, -debug, -clang, -nodb -nor2, -nodynamic, -systemlib, -noextra, -noupdate, -mod"
 	echo
 }
 
