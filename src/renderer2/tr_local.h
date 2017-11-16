@@ -3569,7 +3569,8 @@ typedef struct
 	// vertex buffer objects
 	VBO_t *unitCubeVBO;
 	IBO_t *unitCubeIBO;
-
+	VBO_t *SkyVBO; //for sky
+	IBO_t *SkyIBO;// for sky
 	// internal shaders
 	shader_t *defaultShader;
 	shader_t *defaultPointLightShader;

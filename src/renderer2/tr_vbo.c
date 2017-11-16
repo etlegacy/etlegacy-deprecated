@@ -545,6 +545,49 @@ static void R_InitUnitCubeVBO()
 }
 
 /**
+* @brief R_InitUnitCubeVBO
+*/
+static void R_InitSkyVBO()
+{
+	
+	int  dataSize;
+	byte *data;
+
+	Ren_Print("------- R_InitVBOs -------\n");
+
+	Com_InitGrowList(&tr.vbos, 100);
+	Com_InitGrowList(&tr.ibos, 100);
+
+	dataSize = sizeof(vec4_t) * SHADER_MAX_VERTEXES * 11;
+	data = (byte *)Com_Allocate(dataSize);
+	Com_Memset(data, 0, dataSize);
+
+	tr.SkyVBO = R_CreateVBO("skyVertexArray_VBO", data, dataSize, VBO_USAGE_STATIC);
+	tr.SkyVBO->ofsXYZ = 0;
+	tr.SkyVBO->ofsTexCoords = tr.SkyVBO->ofsXYZ + sizeof(tess.xyz);
+	tr.SkyVBO->ofsLightCoords = tr.SkyVBO->ofsTexCoords + sizeof(tess.texCoords);
+	tr.SkyVBO->ofsTangents = tr.SkyVBO->ofsLightCoords + sizeof(tess.lightCoords);
+	tr.SkyVBO->ofsBinormals = tr.SkyVBO->ofsTangents + sizeof(tess.tangents);
+	tr.SkyVBO->ofsNormals = tr.SkyVBO->ofsBinormals + sizeof(tess.binormals);
+	tr.SkyVBO->ofsColors = tr.SkyVBO->ofsNormals + sizeof(tess.normals);
+	tr.SkyVBO->sizeXYZ = sizeof(tess.xyz);
+	tr.SkyVBO->sizeTangents = sizeof(tess.tangents);
+	tr.SkyVBO->sizeBinormals = sizeof(tess.binormals);
+	tr.SkyVBO->sizeNormals = sizeof(tess.normals);
+
+	Com_Dealloc(data);
+
+	dataSize = sizeof(tess.indexes);
+	data = (byte *)Com_Allocate(dataSize);
+	Com_Memset(data, 0, dataSize);
+
+	tr.SkyIBO = R_CreateIBO("skyVertexArray_IBO", data, dataSize, VBO_USAGE_STATIC);
+
+	Com_Dealloc(data);
+}
+
+
+/**
  * @brief R_InitVBOs
  */
 void R_InitVBOs(void)
@@ -585,6 +628,7 @@ void R_InitVBOs(void)
 	Com_Dealloc(data);
 
 	R_InitUnitCubeVBO();
+	R_InitSkyVBO();//for sky
 
 	R_BindNullVBO();
 	R_BindNullIBO();
