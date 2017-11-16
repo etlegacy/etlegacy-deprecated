@@ -2965,7 +2965,7 @@ void ParseSkyParms(char **text)
 		for (i = 0 ; i < 6 ; i++)
 		{
 			pathname = va("%s_%s.tga", buffer, suf[i]);
-			shader.sky.outerbox[i] = R_FindImageFile(pathname, IF_NONE, FT_DEFAULT, WT_EDGE_CLAMP, shader.name);
+			shader.sky.outerbox[i] = R_FindCubeImage(pathname, IF_NONE, FT_DEFAULT, WT_EDGE_CLAMP, shader.name);
 
 			if (!shader.sky.outerbox[i])
 			{
