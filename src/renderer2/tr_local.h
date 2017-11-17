@@ -1385,7 +1385,7 @@ typedef enum
 typedef struct
 {
 	float cloudHeight;
-	image_t *outerbox[6], *innerbox[6];
+	image_t *outerbox, *innerbox;
 } skyParms_t; // FIXME: move to renderercommon
 
 /**
@@ -3521,7 +3521,7 @@ typedef struct
 	image_t *blackCubeImage;
 	image_t *whiteCubeImage;
 	image_t *autoCubeImage;                 ///< special pointer to the nearest cubemap probe
-
+	image_t *cubemapimage;                 //cubemap for outerbox
 	image_t *contrastRenderFBOImage;
 	image_t *bloomRenderFBOImage[2];
 	image_t *currentRenderImage;
@@ -3569,7 +3569,8 @@ typedef struct
 	// vertex buffer objects
 	VBO_t *unitCubeVBO;
 	IBO_t *unitCubeIBO;
-
+	VBO_t *SkyVBO; //for sky
+	IBO_t *SkyIBO;// for sky
 	// internal shaders
 	shader_t *defaultShader;
 	shader_t *defaultPointLightShader;

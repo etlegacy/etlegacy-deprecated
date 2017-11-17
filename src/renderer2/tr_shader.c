@@ -2965,12 +2965,12 @@ void ParseSkyParms(char **text)
 		for (i = 0 ; i < 6 ; i++)
 		{
 			pathname = va("%s_%s.tga", buffer, suf[i]);
-			shader.sky.outerbox[i] = R_FindImageFile(pathname, IF_NONE, FT_DEFAULT, WT_EDGE_CLAMP, shader.name);
+			shader.sky.outerbox = R_FindCubeImage(pathname, IF_NONE, FT_LINEAR, WT_EDGE_CLAMP, shader.name);
 
-			if (!shader.sky.outerbox[i])
+			if (!shader.sky.outerbox)
 			{
 				Ren_Warning("WARNING: could not find image '%s' for outer skybox in shader '%s'\n", pathname, shader.name);
-				shader.sky.outerbox[i] = tr.defaultImage;
+				shader.sky.outerbox = tr.defaultImage;
 			}
 		}
 	}
@@ -3005,12 +3005,12 @@ void ParseSkyParms(char **text)
 		for (i = 0 ; i < 6 ; i++)
 		{
 			pathname = va("%s_%s.tga", buffer, suf[i]);
-			shader.sky.innerbox[i] = R_FindImageFile(pathname, IF_NONE, FT_DEFAULT, WT_REPEAT, shader.name); // GL_REPEAT?!
+			shader.sky.innerbox = R_FindImageFile(pathname, IF_NONE, FT_DEFAULT, WT_REPEAT, shader.name); // GL_REPEAT?!
 
-			if (!shader.sky.innerbox[i])
+			if (!shader.sky.innerbox)
 			{
 				Ren_Warning("WARNING: could not find image '%s' for inner skybox in shader '%s'\n", pathname, shader.name);
-				shader.sky.innerbox[i] = tr.defaultImage;
+				shader.sky.innerbox = tr.defaultImage;
 			}
 		}
 	}
