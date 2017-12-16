@@ -1,67 +1,67 @@
 /*
- * Wolfenstein: Enemy Territory GPL Source Code
- * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
- * Copyright (C) 2010-2011 Robert Beckebans <trebor_7@users.sourceforge.net>
- *
- * ET: Legacy
- * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
- *
- * This file is part of ET: Legacy - http://www.etlegacy.com
- *
- * ET: Legacy is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * ET: Legacy is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with ET: Legacy. If not, see <http://www.gnu.org/licenses/>.
- *
- * In addition, Wolfenstein: Enemy Territory GPL Source Code is also
- * subject to certain additional terms. You should have received a copy
- * of these additional terms immediately following the terms and conditions
- * of the GNU General Public License which accompanied the source code.
- * If not, please request a copy in writing from id Software at the address below.
- *
- * id Software LLC, c/o ZeniMax Media Inc., Suite 120, Rockville, Maryland 20850 USA.
- */
+* Wolfenstein: Enemy Territory GPL Source Code
+* Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
+* Copyright (C) 2010-2011 Robert Beckebans <trebor_7@users.sourceforge.net>
+*
+* ET: Legacy
+* Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
+*
+* This file is part of ET: Legacy - http://www.etlegacy.com
+*
+* ET: Legacy is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* ET: Legacy is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with ET: Legacy. If not, see <http://www.gnu.org/licenses/>.
+*
+* In addition, Wolfenstein: Enemy Territory GPL Source Code is also
+* subject to certain additional terms. You should have received a copy
+* of these additional terms immediately following the terms and conditions
+* of the GNU General Public License which accompanied the source code.
+* If not, please request a copy in writing from id Software at the address below.
+*
+* id Software LLC, c/o ZeniMax Media Inc., Suite 120, Rockville, Maryland 20850 USA.
+*/
 /**
- * @file renderer2/tr_shade.c
- *
- * @brief THIS ENTIRE FILE IS BACK END!
- * This file deals with applying shaders to surface data in the tess struct.
- */
+* @file renderer2/tr_shade.c
+*
+* @brief THIS ENTIRE FILE IS BACK END!
+* This file deals with applying shaders to surface data in the tess struct.
+*/
 
 #include "tr_local.h"
 
 /*
- * @brief MyMultiDrawElements
- * @param[in] mode
- * @param[in] count
- * @param[in] type
- * @param[in] indices
- * @param[in] primcount
- *
- * @note Unused
+* @brief MyMultiDrawElements
+* @param[in] mode
+* @param[in] count
+* @param[in] type
+* @param[in] indices
+* @param[in] primcount
+*
+* @note Unused
 static void MyMultiDrawElements(GLenum mode, const GLsizei *count, GLenum type, const void* *indices, GLsizei primcount)
 {
-    int			i;
+int			i;
 
-    for (i = 0; i < primcount; i++)
-    {
-        if (count[i] > 0)
-            glDrawElements(mode, count[i], type, indices[i]);
-    }
+for (i = 0; i < primcount; i++)
+{
+if (count[i] > 0)
+glDrawElements(mode, count[i], type, indices[i]);
+}
 }
 */
 
 /**
- * @brief Tess_DrawElements
- */
+* @brief Tess_DrawElements
+*/
 void Tess_DrawElements()
 {
 	if ((tess.numIndexes == 0 || tess.numVertexes == 0) && tess.multiDrawPrimitives == 0)
@@ -76,7 +76,7 @@ void Tess_DrawElements()
 		{
 			int i;
 
-			glMultiDrawElements(GL_TRIANGLES, tess.multiDrawCounts, GL_INDEX_TYPE, (const GLvoid **) tess.multiDrawIndexes, tess.multiDrawPrimitives);
+			glMultiDrawElements(GL_TRIANGLES, tess.multiDrawCounts, GL_INDEX_TYPE, (const GLvoid **)tess.multiDrawIndexes, tess.multiDrawPrimitives);
 
 			backEnd.pc.c_multiDrawElements++;
 			backEnd.pc.c_multiDrawPrimitives += tess.multiDrawPrimitives;
@@ -86,7 +86,7 @@ void Tess_DrawElements()
 			for (i = 0; i < tess.multiDrawPrimitives; i++)
 			{
 				backEnd.pc.c_multiVboIndexes += tess.multiDrawCounts[i];
-				backEnd.pc.c_indexes         += tess.multiDrawCounts[i];
+				backEnd.pc.c_indexes += tess.multiDrawCounts[i];
 			}
 		}
 		else
@@ -96,9 +96,9 @@ void Tess_DrawElements()
 			backEnd.pc.c_drawElements++;
 
 			backEnd.pc.c_vboVertexes += tess.numVertexes;
-			backEnd.pc.c_vboIndexes  += tess.numIndexes;
+			backEnd.pc.c_vboIndexes += tess.numIndexes;
 
-			backEnd.pc.c_indexes  += tess.numIndexes;
+			backEnd.pc.c_indexes += tess.numIndexes;
 			backEnd.pc.c_vertexes += tess.numVertexes;
 		}
 	}
@@ -108,7 +108,7 @@ void Tess_DrawElements()
 
 		backEnd.pc.c_drawElements++;
 
-		backEnd.pc.c_indexes  += tess.numIndexes;
+		backEnd.pc.c_indexes += tess.numIndexes;
 		backEnd.pc.c_vertexes += tess.numVertexes;
 	}
 }
@@ -122,15 +122,15 @@ SURFACE SHADERS
 shaderCommands_t tess;
 
 /**
- * @brief BindLightMap
- */
+* @brief BindLightMap
+*/
 static void BindLightMap()
 {
 	image_t *lightmap;
 
 	if (tess.lightmapNum >= 0 && tess.lightmapNum < tr.lightmaps.currentElements)
 	{
-		lightmap = (image_t *) Com_GrowListElement(&tr.lightmaps, tess.lightmapNum);
+		lightmap = (image_t *)Com_GrowListElement(&tr.lightmaps, tess.lightmapNum);
 	}
 	else
 	{
@@ -147,15 +147,15 @@ static void BindLightMap()
 }
 
 /**
- * @brief BindDeluxeMap
- */
+* @brief BindDeluxeMap
+*/
 static void BindDeluxeMap()
 {
 	image_t *deluxemap;
 
 	if (tess.lightmapNum >= 0 && tess.lightmapNum < tr.deluxemaps.currentElements)
 	{
-		deluxemap = (image_t *) Com_GrowListElement(&tr.deluxemaps, tess.lightmapNum);
+		deluxemap = (image_t *)Com_GrowListElement(&tr.deluxemaps, tess.lightmapNum);
 	}
 	else
 	{
@@ -172,21 +172,21 @@ static void BindDeluxeMap()
 }
 
 /**
- * @brief Draws triangle outlines for debugging
- */
+* @brief Draws triangle outlines for debugging
+*/
 static void DrawTris()
 {
 	vec_t *color;
 	Ren_LogComment("--- DrawTris ---\n");
 
 	SetMacrosAndSelectProgram(trProg.gl_genericShader,
-	                          USE_ALPHA_TESTING, qfalse,
-	                          USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
-	                          USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
-	                          USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
-	                          USE_DEFORM_VERTEXES, qfalse,
-	                          USE_TCGEN_ENVIRONMENT, qfalse,
-	                          USE_TCGEN_LIGHTMAP, qfalse);
+		USE_ALPHA_TESTING, qfalse,
+		USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
+		USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
+		USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
+		USE_DEFORM_VERTEXES, qfalse,
+		USE_TCGEN_ENVIRONMENT, qfalse,
+		USE_TCGEN_LIGHTMAP, qfalse);
 
 	GLSL_SetRequiredVertexPointers(trProg.gl_genericShader);
 
@@ -242,33 +242,33 @@ static void DrawTris()
 
 // *INDENT-OFF*
 /**
- * @brief We must set some things up before beginning any tesselation,
- * because a surface may be forced to perform a Tess_End due
- * to overflow.
- *
- * @param stageIteratorFunc
- * @param stageIteratorFunc2
- * @param[in] surfaceShader
- * @param[in] lightShader
- * @param[in] skipTangentSpaces
- * @param[in] skipVBO
- * @param[in] lightmapNum
- * @param[in] fogNum
- */
-void Tess_Begin(void (*stageIteratorFunc)(),
-                void (*stageIteratorFunc2)(),
-                shader_t *surfaceShader, shader_t *lightShader,
-                qboolean skipTangentSpaces,
-                qboolean skipVBO,
-                int lightmapNum,
-                int fogNum)
+* @brief We must set some things up before beginning any tesselation,
+* because a surface may be forced to perform a Tess_End due
+* to overflow.
+*
+* @param stageIteratorFunc
+* @param stageIteratorFunc2
+* @param[in] surfaceShader
+* @param[in] lightShader
+* @param[in] skipTangentSpaces
+* @param[in] skipVBO
+* @param[in] lightmapNum
+* @param[in] fogNum
+*/
+void Tess_Begin(void(*stageIteratorFunc)(),
+	void(*stageIteratorFunc2)(),
+	shader_t *surfaceShader, shader_t *lightShader,
+	qboolean skipTangentSpaces,
+	qboolean skipVBO,
+	int lightmapNum,
+	int fogNum)
 {
 	shader_t *state;
 	qboolean isSky = qfalse;
 
-	tess.numIndexes          = 0;
-	tess.numVertexes         = 0;
-	tess.attribsSet          = 0;
+	tess.numIndexes = 0;
+	tess.numVertexes = 0;
+	tess.attribsSet = 0;
 	tess.multiDrawPrimitives = 0;
 
 	// materials are optional
@@ -276,8 +276,8 @@ void Tess_Begin(void (*stageIteratorFunc)(),
 	{
 		state = (surfaceShader->remappedShader) ? surfaceShader->remappedShader : surfaceShader;
 
-		tess.surfaceShader    = state;
-		tess.surfaceStages    = state->stages;
+		tess.surfaceShader = state;
+		tess.surfaceStages = state->stages;
 		tess.numSurfaceStages = state->numStages;
 
 		if (state->isSky)
@@ -290,13 +290,13 @@ void Tess_Begin(void (*stageIteratorFunc)(),
 		state = NULL;
 
 		tess.numSurfaceStages = 0;
-		tess.surfaceShader    = NULL;
-		tess.surfaceStages    = NULL;
+		tess.surfaceShader = NULL;
+		tess.surfaceStages = NULL;
 	}
 
 	tess.lightShader = lightShader;
 
-	tess.stageIteratorFunc  = stageIteratorFunc;
+	tess.stageIteratorFunc = stageIteratorFunc;
 	tess.stageIteratorFunc2 = stageIteratorFunc2;
 
 	if (!tess.stageIteratorFunc)
@@ -309,7 +309,7 @@ void Tess_Begin(void (*stageIteratorFunc)(),
 	{
 		if (isSky)
 		{
-			tess.stageIteratorFunc  = &Tess_StageIteratorSky;
+			tess.stageIteratorFunc = &Tess_StageIteratorSky;
 			tess.stageIteratorFunc2 = &Tess_StageIteratorGeneric;
 		}
 	}
@@ -317,23 +317,23 @@ void Tess_Begin(void (*stageIteratorFunc)(),
 	{
 		if (isSky)
 		{
-			tess.stageIteratorFunc  = &Tess_StageIteratorSky;
+			tess.stageIteratorFunc = &Tess_StageIteratorSky;
 			tess.stageIteratorFunc2 = &Tess_StageIteratorDepthFill;
 		}
 	}
 
 	tess.skipTangentSpaces = skipTangentSpaces;
-	tess.skipVBO           = skipVBO;
-	tess.lightmapNum       = lightmapNum;
-	tess.fogNum            = fogNum;
+	tess.skipVBO = skipVBO;
+	tess.lightmapNum = lightmapNum;
+	tess.fogNum = fogNum;
 
 	Ren_LogComment("--- Tess_Begin( surfaceShader = %s, lightShader = %s, skipTangentSpaces = %i, lightmapNum = %i, fogNum = %i) ---\n", tess.surfaceShader->name, tess.lightShader ? tess.lightShader->name : NULL, tess.skipTangentSpaces, tess.lightmapNum, tess.fogNum);
 }
 // *INDENT-ON*
 
 /**
- * @brief clipping portal plane in world space
- */
+* @brief clipping portal plane in world space
+*/
 void clipPortalPlane() // static for now - might be used in tr_main.c and tr_sky.c
 {
 	vec4_t plane;
@@ -346,9 +346,9 @@ void clipPortalPlane() // static for now - might be used in tr_main.c and tr_sky
 }
 
 /**
- * @brief Render_generic
- * @param[in] stage
- */
+* @brief Render_generic
+* @param[in] stage
+*/
 static void Render_generic(int stage)
 {
 	shaderStage_t *pStage;
@@ -363,13 +363,13 @@ static void Render_generic(int stage)
 
 	// choose right shader program ----------------------------------
 	SetMacrosAndSelectProgram(trProg.gl_genericShader,
-	                          USE_ALPHA_TESTING, (pStage->stateBits & GLS_ATEST_BITS) != 0,
-	                          USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
-	                          USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
-	                          USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
-	                          USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
-	                          USE_TCGEN_ENVIRONMENT, pStage->tcGen_Environment,
-	                          USE_TCGEN_LIGHTMAP, pStage->tcGen_Lightmap);
+		USE_ALPHA_TESTING, (pStage->stateBits & GLS_ATEST_BITS) != 0,
+		USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
+		USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
+		USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
+		USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
+		USE_TCGEN_ENVIRONMENT, pStage->tcGen_Environment,
+		USE_TCGEN_LIGHTMAP, pStage->tcGen_Lightmap);
 	// end choose right shader program ------------------------------
 
 	// set uniforms
@@ -447,13 +447,13 @@ static void Render_generic(int stage)
 }
 
 /**
- * @brief Render_vertexLighting_DBS_entity
- * @param[in] stage
- */
+* @brief Render_vertexLighting_DBS_entity
+* @param[in] stage
+*/
 static void Render_vertexLighting_DBS_entity(int stage)
 {
 	uint32_t      stateBits;
-	shaderStage_t *pStage       = tess.surfaceStages[stage];
+	shaderStage_t *pStage = tess.surfaceStages[stage];
 	qboolean      normalMapping = qfalse;
 
 	Ren_LogComment("--- Render_vertexLighting_DBS_entity ---\n");
@@ -469,14 +469,14 @@ static void Render_vertexLighting_DBS_entity(int stage)
 	}
 
 	SetMacrosAndSelectProgram(trProg.gl_vertexLightingShader_DBS_entity,
-	                          USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
-	                          USE_ALPHA_TESTING, (pStage->stateBits & GLS_ATEST_BITS) != 0,
-	                          USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
-	                          USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
-	                          USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
-	                          USE_NORMAL_MAPPING, normalMapping,
-	                          USE_PARALLAX_MAPPING, normalMapping && r_parallaxMapping->integer && tess.surfaceShader->parallax,
-	                          USE_REFLECTIVE_SPECULAR, normalMapping && tr.cubeHashTable != NULL);
+		USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
+		USE_ALPHA_TESTING, (pStage->stateBits & GLS_ATEST_BITS) != 0,
+		USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
+		USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
+		USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
+		USE_NORMAL_MAPPING, normalMapping,
+		USE_PARALLAX_MAPPING, normalMapping && r_parallaxMapping->integer && tess.surfaceShader->parallax,
+		USE_REFLECTIVE_SPECULAR, normalMapping && tr.cubeHashTable != NULL);
 
 	// now we are ready to set the shader program uniforms
 	if (glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning)
@@ -548,7 +548,7 @@ static void Render_vertexLighting_DBS_entity(int stage)
 
 		SetUniformMatrix16(UNIFORM_SPECULARTEXTUREMATRIX, tess.svars.texMatrices[TB_SPECULARMAP]);
 
-		if(tr.cubeHashTable != NULL)
+		if (tr.cubeHashTable != NULL)
 		{
 			cubemapProbe_t *cubeProbeNearest;
 			cubemapProbe_t *cubeProbeSecondNearest;
@@ -608,20 +608,20 @@ static void Render_vertexLighting_DBS_entity(int stage)
 
 				if (backEnd.currentEntity && (backEnd.currentEntity != &tr.worldEntity))
 				{
-					cubeProbeNearestDistance       = Distance(backEnd.currentEntity->e.origin, cubeProbeNearest->origin);
+					cubeProbeNearestDistance = Distance(backEnd.currentEntity->e.origin, cubeProbeNearest->origin);
 					cubeProbeSecondNearestDistance = Distance(backEnd.currentEntity->e.origin, cubeProbeSecondNearest->origin);
 				}
 				else
 				{
 					// FIXME position
-					cubeProbeNearestDistance       = Distance(backEnd.viewParms.orientation.origin, cubeProbeNearest->origin);
+					cubeProbeNearestDistance = Distance(backEnd.viewParms.orientation.origin, cubeProbeNearest->origin);
 					cubeProbeSecondNearestDistance = Distance(backEnd.viewParms.orientation.origin, cubeProbeSecondNearest->origin);
 				}
 
 				interpolate = cubeProbeNearestDistance / (cubeProbeNearestDistance + cubeProbeSecondNearestDistance);
 
 				Ren_LogComment("cubeProbeNearestDistance = %f, cubeProbeSecondNearestDistance = %f, interpolation = %f\n",
-				               cubeProbeNearestDistance, cubeProbeSecondNearestDistance, interpolate);
+					cubeProbeNearestDistance, cubeProbeSecondNearestDistance, interpolate);
 
 				// bind u_EnvironmentMap0
 				SelectTexture(TEX_ENVMAP0);
@@ -644,15 +644,15 @@ static void Render_vertexLighting_DBS_entity(int stage)
 }
 
 /**
- * @brief Render_vertexLighting_DBS_world
- * @param[in] stage
- */
+* @brief Render_vertexLighting_DBS_world
+* @param[in] stage
+*/
 static void Render_vertexLighting_DBS_world(int stage)
 {
 	uint32_t      stateBits;
 	colorGen_t    colorGen;
 	alphaGen_t    alphaGen;
-	shaderStage_t *pStage       = tess.surfaceStages[stage];
+	shaderStage_t *pStage = tess.surfaceStages[stage];
 	qboolean      normalMapping = qfalse;
 
 	Ren_LogComment("--- Render_vertexLighting_DBS_world ---\n");
@@ -667,15 +667,15 @@ static void Render_vertexLighting_DBS_world(int stage)
 	}
 
 	SetMacrosAndSelectProgram(trProg.gl_vertexLightingShader_DBS_world,
-	                          USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
-	                          USE_ALPHA_TESTING, (pStage->stateBits & GLS_ATEST_BITS) != 0,
-	                          USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
-	                          USE_NORMAL_MAPPING, normalMapping,
-	                          USE_PARALLAX_MAPPING, normalMapping && r_parallaxMapping->integer && tess.surfaceShader->parallax);
+		USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
+		USE_ALPHA_TESTING, (pStage->stateBits & GLS_ATEST_BITS) != 0,
+		USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
+		USE_NORMAL_MAPPING, normalMapping,
+		USE_PARALLAX_MAPPING, normalMapping && r_parallaxMapping->integer && tess.surfaceShader->parallax);
 	// now we are ready to set the shader program uniforms
 
 	// set uniforms
-	
+
 	GL_CheckErrors();
 
 	// u_DeformGen
@@ -781,14 +781,14 @@ static void Render_vertexLighting_DBS_world(int stage)
 }
 
 /**
- * @brief Render_lightMapping
- * @param[in] stage
- * @param[in] asColorMap
- * @param[in] normalMapping
- */
+* @brief Render_lightMapping
+* @param[in] stage
+* @param[in] asColorMap
+* @param[in] normalMapping
+*/
 static void Render_lightMapping(int stage, qboolean asColorMap, qboolean normalMapping)
 {
-	shaderStage_t *pStage   = tess.surfaceStages[stage];
+	shaderStage_t *pStage = tess.surfaceStages[stage];
 	uint32_t      stateBits = pStage->stateBits;
 	colorGen_t    rgbGen;
 	alphaGen_t    alphaGen;
@@ -833,11 +833,11 @@ static void Render_lightMapping(int stage, qboolean asColorMap, qboolean normalM
 
 	// choose right shader program ----------------------------------
 	SetMacrosAndSelectProgram(trProg.gl_lightMappingShader,
-	                          USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
-	                          USE_ALPHA_TESTING, pStage->stateBits & GLS_ATEST_BITS,
-	                          USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
-	                          USE_NORMAL_MAPPING, normalMapping,
-	                          USE_PARALLAX_MAPPING, normalMapping && r_parallaxMapping->integer && tess.surfaceShader->parallax);
+		USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
+		USE_ALPHA_TESTING, pStage->stateBits & GLS_ATEST_BITS,
+		USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
+		USE_NORMAL_MAPPING, normalMapping,
+		USE_PARALLAX_MAPPING, normalMapping && r_parallaxMapping->integer && tess.surfaceShader->parallax);
 
 	if (tess.surfaceShader->numDeforms)
 	{
@@ -931,9 +931,9 @@ static void Render_lightMapping(int stage, qboolean asColorMap, qboolean normalM
 }
 
 /**
- * @brief Render_depthFill
- * @param[in] stage
- */
+* @brief Render_depthFill
+* @param[in] stage
+*/
 static void Render_depthFill(int stage)
 {
 	shaderStage_t *pStage;
@@ -942,7 +942,7 @@ static void Render_depthFill(int stage)
 
 	Ren_LogComment("--- Render_depthFill ---\n");
 
-	pStage     = tess.surfaceStages[stage];
+	pStage = tess.surfaceStages[stage];
 	// stateBits  = pStage->stateBits;
 	// stateBits &= ~(GLS_SRCBLEND_BITS | GLS_DSTBLEND_BITS | GLS_ATEST_BITS);
 	// stateBits |= GLS_DEPTHMASK_TRUE;
@@ -950,12 +950,12 @@ static void Render_depthFill(int stage)
 	GL_State(pStage->stateBits);
 
 	SetMacrosAndSelectProgram(trProg.gl_genericShader,
-	                          USE_ALPHA_TESTING, (pStage->stateBits & GLS_ATEST_BITS) != 0,
-	                          USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
-	                          USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
-	                          USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
-	                          USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
-	                          USE_TCGEN_ENVIRONMENT, pStage->tcGen_Environment);
+		USE_ALPHA_TESTING, (pStage->stateBits & GLS_ATEST_BITS) != 0,
+		USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
+		USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
+		USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
+		USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
+		USE_TCGEN_ENVIRONMENT, pStage->tcGen_Environment);
 
 	// set uniforms
 
@@ -1030,9 +1030,9 @@ static void Render_depthFill(int stage)
 }
 
 /**
- * @brief Render_shadowFill
- * @param[in] stage
- */
+* @brief Render_shadowFill
+* @param[in] stage
+*/
 static void Render_shadowFill(int stage)
 {
 	shaderStage_t *pStage;
@@ -1043,18 +1043,18 @@ static void Render_shadowFill(int stage)
 	pStage = tess.surfaceStages[stage];
 
 	// remove blend modes
-	stateBits  = pStage->stateBits;
+	stateBits = pStage->stateBits;
 	stateBits &= ~(GLS_SRCBLEND_BITS | GLS_DSTBLEND_BITS);
 
 	GL_State(stateBits);
 
 	SetMacrosAndSelectProgram(trProg.gl_shadowFillShader,
-	                          USE_ALPHA_TESTING, (pStage->stateBits & GLS_ATEST_BITS) != 0,
-	                          USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
-	                          USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
-	                          USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
-	                          USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
-	                          LIGHT_DIRECTIONAL, backEnd.currentLight->l.rlType == RL_DIRECTIONAL);
+		USE_ALPHA_TESTING, (pStage->stateBits & GLS_ATEST_BITS) != 0,
+		USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
+		USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
+		USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
+		USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
+		LIGHT_DIRECTIONAL, backEnd.currentLight->l.rlType == RL_DIRECTIONAL);
 
 	GLSL_SetRequiredVertexPointers(trProg.gl_shadowFillShader);
 
@@ -1121,15 +1121,15 @@ static void Render_shadowFill(int stage)
 }
 
 /**
- * @brief Render_forwardLighting_DBS_omni
- * @param[in] diffuseStage
- * @param[in] attenuationXYStage
- * @param[in] attenuationZStage
- * @param[in] light
- */
+* @brief Render_forwardLighting_DBS_omni
+* @param[in] diffuseStage
+* @param[in] attenuationXYStage
+* @param[in] attenuationZStage
+* @param[in] light
+*/
 static void Render_forwardLighting_DBS_omni(shaderStage_t *diffuseStage,
-                                            shaderStage_t *attenuationXYStage,
-                                            shaderStage_t *attenuationZStage, trRefLight_t *light)
+	shaderStage_t *attenuationXYStage,
+	shaderStage_t *attenuationZStage, trRefLight_t *light)
 {
 	float      shadowTexelSize;
 	colorGen_t colorGen;
@@ -1158,14 +1158,14 @@ static void Render_forwardLighting_DBS_omni(shaderStage_t *diffuseStage,
 	}
 
 	SetMacrosAndSelectProgram(trProg.gl_forwardLightingShader_omniXYZ,
-	                          USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
-	                          USE_ALPHA_TESTING, (diffuseStage->stateBits & GLS_ATEST_BITS) != 0,
-	                          USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
-	                          USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
-	                          USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
-	                          USE_NORMAL_MAPPING, normalMapping,
-	                          USE_PARALLAX_MAPPING, normalMapping && r_parallaxMapping->integer && tess.surfaceShader->parallax,
-	                          USE_SHADOWING, shadowCompare);
+		USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
+		USE_ALPHA_TESTING, (diffuseStage->stateBits & GLS_ATEST_BITS) != 0,
+		USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
+		USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
+		USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
+		USE_NORMAL_MAPPING, normalMapping,
+		USE_PARALLAX_MAPPING, normalMapping && r_parallaxMapping->integer && tess.surfaceShader->parallax,
+		USE_SHADOWING, shadowCompare);
 	// end choose right shader program ------------------------------
 
 	// now we are ready to set the shader program uniforms
@@ -1328,15 +1328,15 @@ static void Render_forwardLighting_DBS_omni(shaderStage_t *diffuseStage,
 }
 
 /**
- * @brief Render_forwardLighting_DBS_proj
- * @param[in] diffuseStage
- * @param[in] attenuationXYStage
- * @param[in] attenuationZStage
- * @param[in] light
- */
+* @brief Render_forwardLighting_DBS_proj
+* @param[in] diffuseStage
+* @param[in] attenuationXYStage
+* @param[in] attenuationZStage
+* @param[in] light
+*/
 static void Render_forwardLighting_DBS_proj(shaderStage_t *diffuseStage,
-                                            shaderStage_t *attenuationXYStage,
-                                            shaderStage_t *attenuationZStage, trRefLight_t *light)
+	shaderStage_t *attenuationXYStage,
+	shaderStage_t *attenuationZStage, trRefLight_t *light)
 {
 	float      shadowTexelSize;
 	colorGen_t colorGen;
@@ -1366,14 +1366,14 @@ static void Render_forwardLighting_DBS_proj(shaderStage_t *diffuseStage,
 
 	// choose right shader program ----------------------------------
 	SetMacrosAndSelectProgram(trProg.gl_forwardLightingShader_projXYZ,
-	                          USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
-	                          USE_ALPHA_TESTING, (diffuseStage->stateBits & GLS_ATEST_BITS) != 0,
-	                          USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
-	                          USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
-	                          USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
-	                          USE_NORMAL_MAPPING, normalMapping,
-	                          USE_PARALLAX_MAPPING, normalMapping && r_parallaxMapping->integer && tess.surfaceShader->parallax,
-	                          USE_SHADOWING, shadowCompare);
+		USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
+		USE_ALPHA_TESTING, (diffuseStage->stateBits & GLS_ATEST_BITS) != 0,
+		USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
+		USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
+		USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
+		USE_NORMAL_MAPPING, normalMapping,
+		USE_PARALLAX_MAPPING, normalMapping && r_parallaxMapping->integer && tess.surfaceShader->parallax,
+		USE_SHADOWING, shadowCompare);
 	// end choose right shader program ------------------------------
 
 	// now we are ready to set the shader program uniforms
@@ -1537,15 +1537,15 @@ static void Render_forwardLighting_DBS_proj(shaderStage_t *diffuseStage,
 }
 
 /**
- * @brief Render_forwardLighting_DBS_directional
- * @param[in] diffuseStage
- * @param attenuationXYStage - unused
- * @param attenuationZStage - unused
- * @param[in] light
- */
+* @brief Render_forwardLighting_DBS_directional
+* @param[in] diffuseStage
+* @param attenuationXYStage - unused
+* @param attenuationZStage - unused
+* @param[in] light
+*/
 static void Render_forwardLighting_DBS_directional(shaderStage_t *diffuseStage,
-                                                   shaderStage_t *attenuationXYStage,
-                                                   shaderStage_t *attenuationZStage, trRefLight_t *light)
+	shaderStage_t *attenuationXYStage,
+	shaderStage_t *attenuationZStage, trRefLight_t *light)
 {
 #if 1
 	vec3_t     lightDirection;
@@ -1569,14 +1569,14 @@ static void Render_forwardLighting_DBS_directional(shaderStage_t *diffuseStage,
 
 	// choose right shader program ----------------------------------
 	SetMacrosAndSelectProgram(trProg.gl_forwardLightingShader_directionalSun,
-	                          USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
-	                          USE_ALPHA_TESTING, (diffuseStage->stateBits & GLS_ATEST_BITS) != 0,
-	                          USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
-	                          USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
-	                          USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
-	                          USE_NORMAL_MAPPING, normalMapping,
-	                          USE_PARALLAX_MAPPING, normalMapping && r_parallaxMapping->integer && tess.surfaceShader->parallax,
-	                          USE_SHADOWING, shadowCompare);
+		USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
+		USE_ALPHA_TESTING, (diffuseStage->stateBits & GLS_ATEST_BITS) != 0,
+		USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
+		USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
+		USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
+		USE_NORMAL_MAPPING, normalMapping,
+		USE_PARALLAX_MAPPING, normalMapping && r_parallaxMapping->integer && tess.surfaceShader->parallax,
+		USE_SHADOWING, shadowCompare);
 
 	// end choose right shader program ------------------------------
 
@@ -1762,9 +1762,9 @@ static void Render_forwardLighting_DBS_directional(shaderStage_t *diffuseStage,
 }
 
 /**
- * @brief Render_reflection_CB
- * @param[in] stage
- */
+* @brief Render_reflection_CB
+* @param[in] stage
+*/
 static void Render_reflection_CB(int stage)
 {
 	shaderStage_t *pStage = tess.surfaceStages[stage];
@@ -1785,11 +1785,11 @@ static void Render_reflection_CB(int stage)
 
 	// choose right shader program ----------------------------------
 	SetMacrosAndSelectProgram(trProg.gl_reflectionShader,
-	                          USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
-	                          USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
-	                          USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
-	                          USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
-	                          USE_NORMAL_MAPPING, normalMapping);
+		USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
+		USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
+		USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
+		USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
+		USE_NORMAL_MAPPING, normalMapping);
 
 	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.origin); // in world space
 	SetUniformMatrix16(UNIFORM_MODELMATRIX, backEnd.orientation.transformMatrix);
@@ -1836,9 +1836,9 @@ static void Render_reflection_CB(int stage)
 }
 
 /**
- * @brief Render_refraction_C
- * @param[in] stage
- */
+* @brief Render_refraction_C
+* @param[in] stage
+*/
 static void Render_refraction_C(int stage)
 {
 	shaderStage_t *pStage = tess.surfaceStages[stage];
@@ -1876,9 +1876,9 @@ static void Render_refraction_C(int stage)
 }
 
 /**
- * @brief Render_dispersion_C
- * @param[in] stage
- */
+* @brief Render_dispersion_C
+* @param[in] stage
+*/
 static void Render_dispersion_C(int stage)
 {
 	shaderStage_t *pStage = tess.surfaceStages[stage];
@@ -1895,13 +1895,13 @@ static void Render_dispersion_C(int stage)
 	GLSL_VertexAttribsState(ATTR_POSITION | ATTR_NORMAL);
 
 	// set uniforms
-	eta      = RB_EvalExpression(&pStage->etaExp, (float)1.1);
+	eta = RB_EvalExpression(&pStage->etaExp, (float)1.1);
 	etaDelta = RB_EvalExpression(&pStage->etaDeltaExp, (float)-0.02);
 
 	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.origin);  // in world space
 	{
 		vec3_t temp = { eta, eta + etaDelta, eta + (etaDelta * 2) };
-		
+
 		SetUniformVec3(UNIFORM_ETARATIO, temp);
 	}
 	SetUniformFloat(UNIFORM_FRESNELPOWER, RB_EvalExpression(&pStage->fresnelPowerExp, 2.0f));
@@ -1926,9 +1926,9 @@ static void Render_dispersion_C(int stage)
 }
 
 /**
- * @brief Render_skybox
- * @param[in] stage
- */
+* @brief Render_skybox
+* @param[in] stage
+*/
 static void Render_skybox(int stage)
 {
 	shaderStage_t *pStage = tess.surfaceStages[stage];
@@ -1961,9 +1961,9 @@ static void Render_skybox(int stage)
 }
 
 /**
- * @brief Render_screen
- * @param[in] stage
- */
+* @brief Render_screen
+* @param[in] stage
+*/
 static void Render_screen(int stage)
 {
 	shaderStage_t *pStage = tess.surfaceStages[stage];
@@ -1977,7 +1977,7 @@ static void Render_screen(int stage)
 	/*
 	if(pStage->vertexColor || pStage->inverseVertexColor)
 	{
-	    GL_VertexAttribsState(tr.screenShader.attribs);
+	GL_VertexAttribsState(tr.screenShader.attribs);
 	}
 	else
 	*/
@@ -1998,9 +1998,9 @@ static void Render_screen(int stage)
 }
 
 /**
- * @brief Render_portal
- * @param[in] stage
- */
+* @brief Render_portal
+* @param[in] stage
+*/
 static void Render_portal(int stage)
 {
 	shaderStage_t *pStage = tess.surfaceStages[stage];
@@ -2015,7 +2015,7 @@ static void Render_portal(int stage)
 	/*
 	if(pStage->vertexColor || pStage->inverseVertexColor)
 	{
-	    GL_VertexAttribsState(tr.portalShader.attribs);
+	GL_VertexAttribsState(tr.portalShader.attribs);
 	}
 	else
 	*/
@@ -2038,9 +2038,9 @@ static void Render_portal(int stage)
 }
 
 /**
- * @brief Render_heatHaze
- * @param[in] stage
- */
+* @brief Render_heatHaze
+* @param[in] stage
+*/
 static void Render_heatHaze(int stage)
 {
 	uint32_t      stateBits;
@@ -2061,7 +2061,7 @@ static void Render_heatHaze(int stage)
 		SelectTexture(TEX_CURRENT);
 		GL_Bind(tr.currentRenderImage);
 		glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, tr.currentRenderImage->uploadWidth,
-		                     tr.currentRenderImage->uploadHeight);
+		tr.currentRenderImage->uploadHeight);
 
 		*/
 
@@ -2093,7 +2093,7 @@ static void Render_heatHaze(int stage)
 		GL_Clear(GL_COLOR_BUFFER_BIT);
 
 		// remove blend mode
-		stateBits  = pStage->stateBits;
+		stateBits = pStage->stateBits;
 		stateBits &= ~(GLS_SRCBLEND_BITS | GLS_DSTBLEND_BITS | GLS_DEPTHMASK_TRUE);
 
 		GL_State(stateBits);
@@ -2101,12 +2101,12 @@ static void Render_heatHaze(int stage)
 		// choose right shader program ----------------------------------
 		//gl_genericShader->SetAlphaTesting((pStage->stateBits & GLS_ATEST_BITS) != 0);
 		SetMacrosAndSelectProgram(trProg.gl_genericShader,
-		                          USE_ALPHA_TESTING, qfalse,
-		                          USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
-		                          USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
-		                          USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
-		                          USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
-		                          USE_TCGEN_ENVIRONMENT, qfalse);
+			USE_ALPHA_TESTING, qfalse,
+			USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
+			USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
+			USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
+			USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
+			USE_TCGEN_ENVIRONMENT, qfalse);
 		// end choose right shader program ------------------------------
 
 		GLSL_SetUniform_ColorModulate(trProg.gl_genericShader, CGEN_CONST, AGEN_CONST);
@@ -2152,7 +2152,7 @@ static void Render_heatHaze(int stage)
 	}
 
 	// remove alpha test
-	stateBits  = pStage->stateBits;
+	stateBits = pStage->stateBits;
 	stateBits &= ~GLS_ATEST_BITS;
 	stateBits &= ~GLS_DEPTHMASK_TRUE;
 
@@ -2160,10 +2160,10 @@ static void Render_heatHaze(int stage)
 
 	// choose right shader program ----------------------------------
 	SetMacrosAndSelectProgram(trProg.gl_heatHazeShader,
-	                          USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
-	                          USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
-	                          USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
-	                          USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms);
+		USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
+		USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
+		USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
+		USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms);
 	// end choose right shader program ------------------------------
 
 	// set uniforms
@@ -2224,9 +2224,9 @@ static void Render_heatHaze(int stage)
 }
 
 /**
- * @brief Render_liquid
- * @param[in] stage
- */
+* @brief Render_liquid
+* @param[in] stage
+*/
 static void Render_liquid(int stage)
 {
 	float         fogDensity;
@@ -2295,8 +2295,8 @@ static void Render_liquid(int stage)
 }
 
 /**
- * @brief Render_fog
- */
+* @brief Render_fog
+*/
 static void Render_fog()
 {
 	fog_t  *fog;
@@ -2348,11 +2348,11 @@ static void Render_fog()
 	if (fog->hasSurface)
 	{
 		fogDepthVector[0] = fog->surface[0] * backEnd.orientation.axis[0][0] +
-		                    fog->surface[1] * backEnd.orientation.axis[0][1] + fog->surface[2] * backEnd.orientation.axis[0][2];
+			fog->surface[1] * backEnd.orientation.axis[0][1] + fog->surface[2] * backEnd.orientation.axis[0][2];
 		fogDepthVector[1] = fog->surface[0] * backEnd.orientation.axis[1][0] +
-		                    fog->surface[1] * backEnd.orientation.axis[1][1] + fog->surface[2] * backEnd.orientation.axis[1][2];
+			fog->surface[1] * backEnd.orientation.axis[1][1] + fog->surface[2] * backEnd.orientation.axis[1][2];
 		fogDepthVector[2] = fog->surface[0] * backEnd.orientation.axis[2][0] +
-		                    fog->surface[1] * backEnd.orientation.axis[2][1] + fog->surface[2] * backEnd.orientation.axis[2][2];
+			fog->surface[1] * backEnd.orientation.axis[2][1] + fog->surface[2] * backEnd.orientation.axis[2][2];
 		fogDepthVector[3] = -fog->surface[3] + DotProduct(backEnd.orientation.origin, fog->surface);
 
 		eyeT = DotProduct(backEnd.orientation.viewOrigin, fogDepthVector) + fogDepthVector[3];
@@ -2375,11 +2375,11 @@ static void Render_fog()
 	}
 
 	SetMacrosAndSelectProgram(trProg.gl_fogQuake3Shader,
-	                          USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
-	                          USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
-	                          USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
-	                          USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
-	                          EYE_OUTSIDE, eyeT < 0); // viewpoint is outside when eyeT < 0 - needed for clipping distance even for constant fog
+		USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal,
+		USE_VERTEX_SKINNING, glConfig2.vboVertexSkinningAvailable && tess.vboVertexSkinning,
+		USE_VERTEX_ANIMATION, glState.vertexAttribsInterpolation > 0,
+		USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
+		EYE_OUTSIDE, eyeT < 0); // viewpoint is outside when eyeT < 0 - needed for clipping distance even for constant fog
 
 	SetUniformVec4(UNIFORM_FOGDISTANCEVECTOR, fogDistanceVector);
 	SetUniformVec4(UNIFORM_FOGDEPTHVECTOR, fogDepthVector);
@@ -2422,9 +2422,9 @@ static void Render_fog()
 }
 
 /**
- * @brief Render_volumetricFog
- * @note see Fog Polygon Volumes documentation by Nvidia for further information
- */
+* @brief Render_volumetricFog
+* @note see Fog Polygon Volumes documentation by Nvidia for further information
+*/
 static void Render_volumetricFog()
 {
 	//vec3_t fogColor; not used anymore
@@ -2491,7 +2491,7 @@ static void Render_volumetricFog()
 		glVertexAttrib4fv(ATTR_INDEX_COLOR, tr.fogColor);
 
 		// set uniforms
-		
+
 		{
 			//get in from shaders and bsp
 			fogDensity = tess.surfaceShader->fogParms.tcScale;
@@ -2531,9 +2531,9 @@ static void Render_volumetricFog()
 }
 
 /**
- * @brief Tess_ComputeColor
- * @param[in] pStage
- */
+* @brief Tess_ComputeColor
+* @param[in] pStage
+*/
 void Tess_ComputeColor(shaderStage_t *pStage)
 {
 	float rgb;
@@ -2675,26 +2675,26 @@ void Tess_ComputeColor(shaderStage_t *pStage)
 	{
 		if (backEnd.currentLight)
 		{
-			red   = Q_bound(0.0f, RB_EvalExpression(&pStage->redExp, backEnd.currentLight->l.color[0]), 1.0f);
+			red = Q_bound(0.0f, RB_EvalExpression(&pStage->redExp, backEnd.currentLight->l.color[0]), 1.0f);
 			green = Q_bound(0.0f, RB_EvalExpression(&pStage->greenExp, backEnd.currentLight->l.color[1]), 1.0f);
-			blue  = Q_bound(0.0f, RB_EvalExpression(&pStage->blueExp, backEnd.currentLight->l.color[2]), 1.0f);
+			blue = Q_bound(0.0f, RB_EvalExpression(&pStage->blueExp, backEnd.currentLight->l.color[2]), 1.0f);
 		}
 		else if (backEnd.currentEntity)
 		{
 			red =
-			    Q_bound(0.0f, RB_EvalExpression(&pStage->redExp, backEnd.currentEntity->e.shaderRGBA[0] * (1.0f / 255.0)), 1.0f);
+				Q_bound(0.0f, RB_EvalExpression(&pStage->redExp, backEnd.currentEntity->e.shaderRGBA[0] * (1.0f / 255.0)), 1.0f);
 			green =
-			    Q_bound(0.0f, RB_EvalExpression(&pStage->greenExp, backEnd.currentEntity->e.shaderRGBA[1] * (1.0f / 255.0f)),
-			            1.0f);
+				Q_bound(0.0f, RB_EvalExpression(&pStage->greenExp, backEnd.currentEntity->e.shaderRGBA[1] * (1.0f / 255.0f)),
+					1.0f);
 			blue =
-			    Q_bound(0.0f, RB_EvalExpression(&pStage->blueExp, backEnd.currentEntity->e.shaderRGBA[2] * (1.0f / 255.0f)),
-			            1.0f);
+				Q_bound(0.0f, RB_EvalExpression(&pStage->blueExp, backEnd.currentEntity->e.shaderRGBA[2] * (1.0f / 255.0f)),
+					1.0f);
 		}
 		else
 		{
-			red   = Q_bound(0.0f, RB_EvalExpression(&pStage->redExp, 1.0f), 1.0f);
+			red = Q_bound(0.0f, RB_EvalExpression(&pStage->redExp, 1.0f), 1.0f);
 			green = Q_bound(0.0f, RB_EvalExpression(&pStage->greenExp, 1.0f), 1.0f);
-			blue  = Q_bound(0.0f, RB_EvalExpression(&pStage->blueExp, 1.0f), 1.0f);
+			blue = Q_bound(0.0f, RB_EvalExpression(&pStage->blueExp, 1.0f), 1.0f);
 		}
 
 		tess.svars.color[0] = red;
@@ -2790,13 +2790,13 @@ void Tess_ComputeColor(shaderStage_t *pStage)
 		lowest = pStage->zFadeBounds[0];
 		if (lowest == -1000)      // use entity alpha
 		{
-			lowest       = backEnd.currentEntity->e.shaderTime;
+			lowest = backEnd.currentEntity->e.shaderTime;
 			zombieEffect = qtrue;
 		}
 		highest = pStage->zFadeBounds[1];
 		if (highest == -1000)      // use entity alpha
 		{
-			highest      = backEnd.currentEntity->e.shaderTime;
+			highest = backEnd.currentEntity->e.shaderTime;
 			zombieEffect = qtrue;
 		}
 		range = highest - lowest;
@@ -2808,7 +2808,7 @@ void Tess_ComputeColor(shaderStage_t *pStage)
 			// special handling for Zombie fade effect
 			if (zombieEffect)
 			{
-				alpha  = (float)backEnd.currentEntity->e.shaderRGBA[3] * (dot + 1.0f) / 2.0f;
+				alpha = (float)backEnd.currentEntity->e.shaderRGBA[3] * (dot + 1.0f) / 2.0f;
 				alpha += (2.0f * (float)backEnd.currentEntity->e.shaderRGBA[3]) * (1.0f - (dot + 1.0f) / 2.0f);
 				if (alpha > 255.0f)
 				{
@@ -2818,7 +2818,7 @@ void Tess_ComputeColor(shaderStage_t *pStage)
 				{
 					alpha = 0.0f;
 				}
-				tess.svars.color[3] = (byte) (alpha);
+				tess.svars.color[3] = (byte)(alpha);
 				continue;
 			}
 
@@ -2849,7 +2849,7 @@ void Tess_ComputeColor(shaderStage_t *pStage)
 						alpha *= (float)backEnd.currentEntity->e.shaderRGBA[3] / 255.0f;
 					}
 
-					tess.svars.color[3] = (byte) (alpha);
+					tess.svars.color[3] = (byte)(alpha);
 				}
 				else
 				{
@@ -2886,9 +2886,9 @@ void Tess_ComputeColor(shaderStage_t *pStage)
 }
 
 /**
- * @brief Tess_ComputeTexMatrices
- * @param[in] pStage
- */
+* @brief Tess_ComputeTexMatrices
+* @param[in] pStage
+*/
 static void Tess_ComputeTexMatrices(shaderStage_t *pStage)
 {
 	int   i;
@@ -2904,22 +2904,22 @@ static void Tess_ComputeTexMatrices(shaderStage_t *pStage)
 		if (pStage->tcGen_Lightmap && i == TB_COLORMAP)
 		{
 			MatrixMultiplyScale(matrix,
-			                    tr.fatLightmapStep,
-			                    tr.fatLightmapStep,
-			                    tr.fatLightmapStep);
+				tr.fatLightmapStep,
+				tr.fatLightmapStep,
+				tr.fatLightmapStep);
 		}
 	}
 }
 
 /**
- * @brief Set the fog parameters for this pass
- */
+* @brief Set the fog parameters for this pass
+*/
 static void SetIteratorFog()
 {
 	Ren_LogComment("--- SetIteratorFog() ---\n");
 
 	// changed for problem when you start the game with r_fastsky set to '1'
-//  if(r_fastsky->integer || backEnd.refdef.rdflags & RDF_NOWORLDMODEL ) {
+	//  if(r_fastsky->integer || backEnd.refdef.rdflags & RDF_NOWORLDMODEL ) {
 	if (backEnd.refdef.rdflags & RDF_NOWORLDMODEL)
 	{
 		RB_FogOff();
@@ -2965,8 +2965,8 @@ static void SetIteratorFog()
 }
 
 /**
- * @brief Tess_StageIteratorDebug
- */
+* @brief Tess_StageIteratorDebug
+*/
 void Tess_StageIteratorDebug()
 {
 	Ren_LogComment("--- Tess_StageIteratorDebug( %i vertices, %i triangles ) ---\n", tess.numVertexes, tess.numIndexes / 3);
@@ -2982,10 +2982,10 @@ void Tess_StageIteratorDebug()
 }
 
 /**
- * @brief RB_StencilOp
- * @param[in] op
- * @return
- */
+* @brief RB_StencilOp
+* @param[in] op
+* @return
+*/
 static ID_INLINE GLenum RB_StencilOp(int op)
 {
 	switch (op & STO_MASK)
@@ -3008,10 +3008,10 @@ static ID_INLINE GLenum RB_StencilOp(int op)
 }
 
 /**
- * @brief RB_SetStencil
- * @param[in] side
- * @param[in] stencil
- */
+* @brief RB_SetStencil
+* @param[in] side
+* @param[in] stencil
+*/
 static void RB_SetStencil(GLenum side, stencil_t *stencil)
 {
 	GLenum sfailOp, zfailOp, zpassOp;
@@ -3060,18 +3060,18 @@ static void RB_SetStencil(GLenum side, stencil_t *stencil)
 	zfailOp = RB_StencilOp(stencil->flags >> STS_ZFAIL);
 	zpassOp = RB_StencilOp(stencil->flags >> STS_ZPASS);
 	glStencilOpSeparate(side, sfailOp, zfailOp, zpassOp);
-	glStencilMaskSeparate(side, (GLuint) stencil->writeMask);
+	glStencilMaskSeparate(side, (GLuint)stencil->writeMask);
 }
 
 /**
- * @brief Tess_StageIteratorGeneric
- */
+* @brief Tess_StageIteratorGeneric
+*/
 void Tess_StageIteratorGeneric()
 {
 	int stage;
 
 	Ren_LogComment("--- Tess_StageIteratorGeneric( %s, %i vertices, %i triangles ) ---\n", tess.surfaceShader->name,
-	               tess.numVertexes, tess.numIndexes / 3);
+		tess.numVertexes, tess.numIndexes / 3);
 
 	GL_CheckErrors();
 
@@ -3153,6 +3153,9 @@ void Tess_StageIteratorGeneric()
 		switch (pStage->type)
 		{
 		case ST_COLORMAP:
+		case ST_DIFFUSEMAP:
+		case ST_COLLAPSE_lighting_DB:
+		case ST_COLLAPSE_lighting_DBS:
 		{
 			Render_generic(stage);
 			break;
@@ -3162,41 +3165,8 @@ void Tess_StageIteratorGeneric()
 			Render_lightMapping(stage, qtrue, qfalse);
 			break;
 		}
-		case ST_DIFFUSEMAP:
-		case ST_COLLAPSE_lighting_DB:
-		case ST_COLLAPSE_lighting_DBS:
-		{
-			//if(tess.surfaceShader->sort <= SS_OPAQUE)
-			{
-				if (r_precomputedLighting->integer || r_vertexLighting->integer)
-				{
-					if (!r_vertexLighting->integer && tess.lightmapNum >= 0 && tess.lightmapNum < tr.lightmaps.currentElements)
-					{
-						if (tr.worldDeluxeMapping && r_normalMapping->integer)
-						{
-							Render_lightMapping(stage, qfalse, qtrue);
-						}
-						else
-						{
-							Render_lightMapping(stage, qfalse, qfalse);
-						}
-					}
-					else if (backEnd.currentEntity != &tr.worldEntity)
-					{
-						Render_vertexLighting_DBS_entity(stage);
-					}
-					else
-					{
-						Render_vertexLighting_DBS_world(stage);
-					}
-				}
-				else
-				{
-					Render_depthFill(stage);
-				}
-			}
-			break;
-		}
+
+
 		case ST_COLLAPSE_reflection_CB:
 		case ST_REFLECTIONMAP:
 		{
@@ -3268,15 +3238,16 @@ void Tess_StageIteratorGeneric()
 	}
 }
 
+
 /**
- * @brief Tess_StageIteratorDepthFill
- */
+* @brief Tess_StageIteratorDepthFill
+*/
 void Tess_StageIteratorDepthFill()
 {
 	int stage;
 
 	Ren_LogComment("--- Tess_StageIteratorDepthFill( %s, %i vertices, %i triangles ) ---\n", tess.surfaceShader->name,
-	               tess.numVertexes, tess.numIndexes / 3);
+		tess.numVertexes, tess.numIndexes / 3);
 
 	GL_CheckErrors();
 
@@ -3346,14 +3317,14 @@ void Tess_StageIteratorDepthFill()
 }
 
 /**
- * @brief Tess_StageIteratorShadowFill
- */
+* @brief Tess_StageIteratorShadowFill
+*/
 void Tess_StageIteratorShadowFill()
 {
 	int stage;
 
 	Ren_LogComment("--- Tess_StageIteratorShadowFill( %s, %i vertices, %i triangles ) ---\n", tess.surfaceShader->name,
-	               tess.numVertexes, tess.numIndexes / 3);
+		tess.numVertexes, tess.numIndexes / 3);
 
 	GL_CheckErrors();
 
@@ -3421,8 +3392,8 @@ void Tess_StageIteratorShadowFill()
 }
 
 /**
- * @brief Tess_StageIteratorLighting
- */
+* @brief Tess_StageIteratorLighting
+*/
 void Tess_StageIteratorLighting()
 {
 	int           i, j;
@@ -3431,7 +3402,7 @@ void Tess_StageIteratorLighting()
 	shaderStage_t *attenuationZStage;
 
 	Ren_LogComment("--- Tess_StageIteratorLighting( %s, %s, %i vertices, %i triangles ) ---\n", tess.surfaceShader->name,
-	               tess.lightShader->name, tess.numVertexes, tess.numIndexes / 3);
+		tess.lightShader->name, tess.numVertexes, tess.numIndexes / 3);
 
 	GL_CheckErrors();
 
@@ -3551,8 +3522,8 @@ void Tess_StageIteratorLighting()
 }
 
 /**
- * @brief Render tesselated data
- */
+* @brief Render tesselated data
+*/
 void Tess_End()
 {
 	if ((tess.numIndexes == 0 || tess.numVertexes == 0) && tess.multiDrawPrimitives == 0)
@@ -3584,7 +3555,7 @@ void Tess_End()
 	tess.stageIteratorFunc();
 
 	if ((tess.stageIteratorFunc != Tess_StageIteratorShadowFill) &&
-	    (tess.stageIteratorFunc != Tess_StageIteratorDebug))
+		(tess.stageIteratorFunc != Tess_StageIteratorDebug))
 	{
 		// draw debugging stuff
 		if (r_showTris->integer || r_showBatches->integer || (r_showLightBatches->integer && (tess.stageIteratorFunc == Tess_StageIteratorLighting)))
@@ -3596,9 +3567,9 @@ void Tess_End()
 	tess.vboVertexSkinning = qfalse;
 
 	// clear shader so we can tell we don't have any unclosed surfaces
-	tess.numIndexes          = 0;
-	tess.numVertexes         = 0;
-	tess.attribsSet          = 0;
+	tess.numIndexes = 0;
+	tess.numVertexes = 0;
+	tess.attribsSet = 0;
 	tess.multiDrawPrimitives = 0;
 
 	Ren_LogComment("--- Tess_End ---\n");
