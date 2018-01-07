@@ -1338,10 +1338,11 @@ void R_Register(void)
 	r_offsetUnits     = ri.Cvar_Get("r_offsetUnits", "-2", CVAR_CHEAT);
 	r_forceSpecular   = ri.Cvar_Get("r_forceSpecular", "0", CVAR_CHEAT);
 	//These makes the spec spot bigger or smaller, the higher the number the smaller the dot
-	r_specularExponent  = ri.Cvar_Get("r_specularExponent", "16", CVAR_CHEAT | CVAR_LATCH);
-	r_specularExponent2 = ri.Cvar_Get("r_specularExponent2", "3", CVAR_CHEAT | CVAR_LATCH);
+	r_specularExponent  = ri.Cvar_Get("r_specularExponent", "64", CVAR_CHEAT | CVAR_LATCH);
+	r_specularExponent2 = ri.Cvar_Get("r_specularExponent2", "64", CVAR_CHEAT | CVAR_LATCH);
 	//this one sets the power of specular, the higher the brighter
-	r_specularScale      = ri.Cvar_Get("r_specularScale", "1.0", CVAR_CHEAT);
+	//1.0 is totally white, leave some for color
+	r_specularScale      = ri.Cvar_Get("r_specularScale", "0.8", CVAR_CHEAT);
 	r_normalScale        = ri.Cvar_Get("r_normalScale", "1.1", CVAR_CHEAT);
 	r_normalMapping      = ri.Cvar_Get("r_normalMapping", "1", CVAR_ARCHIVE | CVAR_LATCH);
 	r_parallaxDepthScale = ri.Cvar_Get("r_parallaxDepthScale", "0.03", CVAR_CHEAT);

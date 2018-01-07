@@ -138,7 +138,7 @@ void main()
 
 	gl_FragColor = color;
 
-#elif 1
+#else
 
 	vec3 N;
 
@@ -176,81 +176,8 @@ void main()
 
 	vec4 color = vec4(diffuse.rgb * var_LightColor.rgb, var_LightColor.a);
 
-	// gl_FragColor = vec4(diffuse.rgb * var_LightColor.rgb, diffuse.a);
-	// color = vec4(vec3(1.0, 0.0, 0.0), diffuse.a);
-	// gl_FragColor = vec4(vec3(diffuse.a, diffuse.a, diffuse.a), 1.0);
-	// gl_FragColor = vec4(vec3(var_LightColor.a, var_LightColor.a, var_LightColor.a), 1.0);
-	// gl_FragColor = var_LightColor;
-
-//defined(r_ShowTerrainBlends)
-#if 0
-	color = vec4(vec3(var_LightColor.a), 1.0);
-#endif
-
 	gl_FragColor = color;
 
-#else
-// USE_NORMAL_MAPPING
 
-	// compute the diffuse term
-	vec4 diffuse = texture2D(u_DiffuseMap, var_TexDiffuseNormal.st);
-
-#if defined(USE_ALPHA_TESTING)
-	if (u_AlphaTest == ATEST_GT_0 && diffuse.a <= 0.0)
-	{
-		discard;
-		return;
-	}
-	else if (u_AlphaTest == ATEST_LT_128 && diffuse.a >= 0.5)
-	{
-		discard;
-		return;
-	}
-	else if (u_AlphaTest == ATEST_GE_128 && diffuse.a < 0.5)
-	{
-		discard;
-		return;
-	}
-#endif
-
-	vec3 N;
-
-#if defined(TWOSIDED)
-	if (gl_FrontFacing)
-	{
-		N = -normalize(var_Normal);
-	}
-	else
-#endif
-	{
-		N = normalize(var_Normal);
-	}
-
-	vec3 L = normalize(var_LightDirection);
-
-	// compute the light term
-#if defined(r_WrapAroundLighting)
-	float NL = clamp(dot(N, L) + u_LightWrapAround, 0.0, 1.0) / clamp(1.0 + u_LightWrapAround, 0.0, 1.0);
-#else
-	float NL = clamp(dot(N, L), 0.0, 1.0);
-#endif
-
-	vec3 light = var_LightColor.rgb * NL;
-
-	vec4 color = vec4(diffuse.rgb * light, var_LightColor.a);
-	// vec4 color = vec4(vec3(NL, NL, NL), diffuse.a);
-
-	gl_FragColor = color;
-
-#endif // USE_NORMAL_MAPPING
-
-#if 0
-#if defined(USE_PARALLAX_MAPPING)
-	gl_FragColor = vec4(vec3(1.0, 0.0, 0.0), 1.0);
-#elif defined(USE_NORMAL_MAPPING)
-	gl_FragColor = vec4(vec3(0.0, 0.0, 1.0), 1.0);
-#else
-	gl_FragColor = vec4(vec3(0.0, 1.0, 0.0), 1.0);
-#endif
 #endif
 }
