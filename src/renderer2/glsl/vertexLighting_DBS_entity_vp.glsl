@@ -89,7 +89,7 @@ void main()
 	gl_Position = u_ModelViewProjectionMatrix * position;
 
 	// transform position into world space
-	var_Position = (u_ModelMatrix * position).xyz;
+	var_Position = position.xyz;
 
 	#if defined(USE_NORMAL_MAPPING)
 	var_Tangent.xyz  = (u_ModelMatrix * vec4(tangent, 0.0)).xyz;
