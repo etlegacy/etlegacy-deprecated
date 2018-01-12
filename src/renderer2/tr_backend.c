@@ -538,7 +538,7 @@ static void Render_lightVolume(interaction_t *ia)
 
 			shadowCompare = (r_shadows->integer >= SHADOWING_ESM16 && !light->l.noShadows && light->shadowLOD >= 0);
 
-			SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.origin); // in world space
+			SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.viewOrigin); // in world space
 			SetUniformVec3(UNIFORM_LIGHTORIGIN, light->origin);
 			SetUniformVec3(UNIFORM_LIGHTCOLOR, tess.svars.color);
 			SetUniformFloat(UNIFORM_LIGHTRADIUS, light->sphereRadius);
@@ -2305,7 +2305,7 @@ void RB_RenderGlobalFog()
 	backEnd.orientation = backEnd.viewParms.world;
 
 	SetMacrosAndSelectProgram(trProg.gl_fogGlobalShader);
-	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.origin); // world space
+	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.viewOrigin); // world space
 
 	{
 		fog_t *fog = &tr.world->fogs[tr.world->globalFog];
@@ -5115,7 +5115,7 @@ static void RB_RenderDebugUtils()
 		                          USE_DEFORM_VERTEXES, qfalse,
 		                          USE_NORMAL_MAPPING, qfalse);
 
-		SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.origin); // in world space
+		SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.viewOrigin); // in world space
 
 		GL_State(0);
 		GL_Cull(CT_FRONT_SIDED);
