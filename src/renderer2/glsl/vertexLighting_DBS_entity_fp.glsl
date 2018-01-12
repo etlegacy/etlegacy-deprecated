@@ -17,6 +17,7 @@ uniform vec3  u_LightColor;
 uniform float u_SpecularExponent;
 uniform float u_DepthScale;
 uniform vec4  u_PortalPlane;
+uniform float u_LightWrapAround;
 
 varying vec3 var_Position;
 varying vec2 var_TexDiffuse;
@@ -118,10 +119,15 @@ void main()
 	specular *= mix(envColor0, envColor1, u_EnvironmentInterpolation).rgb;
 
 	// Blinn-Phong
-	float NH = clamp(dot(N, H), 0.0, 1.0);
+	float NH = clamp(dot(N, H), 0, 1);
 	specular *= u_LightColor * pow(NH, r_SpecularExponent2) * r_SpecularScale;
 
-
+#if 0
+	gl_FragColor = vec4(specular, 1.0);
+	// gl_FragColor = vec4(u_EnvironmentInterpolation, u_EnvironmentInterpolation, u_EnvironmentInterpolation, 1.0);
+	// gl_FragColor = envColor0;
+	return;
+#endif
 
 #else
 
@@ -181,16 +187,18 @@ void main()
 	float rim      = 1.0 - clamp(dot(N, V), 0, 1);
 	vec3  emission = r_rimColor.rgb * pow(rim, r_rimExponent);
 
+	// gl_FragColor = vec4(emission, 1.0);
+	// return;
 
 #endif
 
 	// compute the light term
 #if defined(r_HalfLambertLighting)
 	// http://developer.valvesoftware.com/wiki/Half_Lambert
-	float NL = clamp(dot(N, L), 0.0, 1.0) * 0.5 + 0.5;
+	float NL = dot(N, L) * 0.5 + 0.5;
 	NL *= NL;
 #elif defined(r_WrapAroundLighting)
-	float NL = clamp(dot(N, L) + u_LightWrapAround, 0.0, 1.0) / clamp(1.0 + r_WrapAroundLighting, 0.0, 1.0);
+	float NL = clamp(dot(N, L) + u_LightWrapAround, 0.0, 1.0) / clamp(1.0 + u_LightWrapAround, 0.0, 1.0);
 #else
 	float NL = clamp(dot(N, L), 0.0, 1.0);
 #endif
@@ -206,7 +214,8 @@ void main()
 	color.rgb += emission;
 #endif
 
-
+	// convert normal to [0,1] color space
+	N = N * 0.5 + 0.5;
 
 	gl_FragColor = color;
 

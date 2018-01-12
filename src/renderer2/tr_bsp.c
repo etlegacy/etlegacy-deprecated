@@ -1039,7 +1039,7 @@ static void R_LoadVisibility(lump_t *l)
 
 	Ren_Developer("...loading visibility\n");
 
-	len               = (s_worldData.numClusters + 63) & ~63;
+	len               = PAD(s_worldData.numClusters, 64);
 	s_worldData.novis = (byte *)ri.Hunk_Alloc(len, h_low);
 	Com_Memset(s_worldData.novis, 0xff, len);
 
@@ -3183,6 +3183,8 @@ static void R_CreateClusters()
 
 /**
  * @brief R_CreateWorldVBO
+ *
+ * @todo FIXME: adjust for foliage (consider foliage instances/triangles. adjust positions)
  */
 static void R_CreateWorldVBO()
 {
@@ -3241,6 +3243,15 @@ static void R_CreateWorldVBO()
 			if (tri->numTriangles)
 			{
 				numTriangles += tri->numTriangles;
+			}
+		}
+		else if (*surface->data == SF_FOLIAGE)
+		{
+			srfFoliage_t *fol = (srfFoliage_t *) surface->data;
+
+			if (fol->numVerts)
+			{
+				numVerts += fol->numVerts;
 			}
 		}
 	}
@@ -3398,6 +3409,24 @@ static void R_CreateWorldVBO()
 				numVerts += srf->numVerts;
 			}
 		}
+		else if (*surface->data == SF_FOLIAGE)
+		{
+			srfFoliage_t *srf = (srfFoliage_t *) surface->data;
+
+			//srf->firstVert = numVerts;
+
+			// FIXME: 'instances are just additional drawverts' see ParseFoliage
+
+			if (srf->numVerts)
+			{
+				//for (i = 0; i < srf->numVerts; i++)
+				//{
+				//	CopyVert(&srf->verts[i], &verts[numVerts + i]);
+				//}
+
+				numVerts += srf->numVerts;
+			}
+		}
 	}
 
 #if 0
@@ -3459,6 +3488,13 @@ static void R_CreateWorldVBO()
 				srf->ibo = s_worldData.ibo;
 				//srf->ibo = R_CreateIBO2(va("staticBspModel0_triangleSurface_IBO %i", k), srf->numTriangles, triangles + srf->firstTriangle, VBO_USAGE_STATIC);
 			}
+		}
+		else if (*surface->data == SF_FOLIAGE)
+		{
+			srfFoliage_t *srf = (srfFoliage_t *) surface->data;
+
+			srf->vbo = s_worldData.vbo;
+			srf->ibo = s_worldData.ibo;
 		}
 	}
 
@@ -7646,7 +7682,6 @@ void R_FindTwoNearestCubeMaps(const vec3_t position, cubemapProbe_t **cubeProbeN
  */
 void R_BuildCubeMaps(void)
 {
-#if 1
 	int            i, j; // k;
 	int            ii, jj;
 	refdef_t       rf;
@@ -7836,7 +7871,8 @@ void R_BuildCubeMaps(void)
 
 			do
 			{
-				Ren_Print("*");
+				Ren_Developer("*");
+				// FIXME: updating screen doesn't work properly, R_BuildCubeMaps during map load causes eye cancer
 				Ren_UpdateScreen();
 			}
 			while (++tics < ticsNeeded);
@@ -7846,9 +7882,9 @@ void R_BuildCubeMaps(void)
 			{
 				if (tics < 51)
 				{
-					Ren_Print("*");
+					Ren_Developer("*");
 				}
-				Ren_Print("\n");
+				Ren_Developer("\n");
 			}
 		}
 
@@ -8184,8 +8220,6 @@ void R_BuildCubeMaps(void)
 	endTime = ri.Milliseconds();
 	Ren_Developer("cubemap probes pre-rendering time of %i cubes = %5.2f seconds\n", tr.cubeProbes.currentElements,
 	              (endTime - startTime) / 1000.0);
-
-#endif
 }
 
 /**
@@ -8347,6 +8381,8 @@ void RE_LoadWorldMap(const char *name)
 	}
 
 	// build cubemaps after the necessary vbo stuff is done
+	// FIXME: causes missing vbo error on radar (maps with portal sky or foliage )
+	// devmap oasis; set developer 1; set r_showcubeprobs 1
 	//R_BuildCubeMaps();
 
 	// never move this to RE_BeginFrame because we need it to set it here for the first frame
