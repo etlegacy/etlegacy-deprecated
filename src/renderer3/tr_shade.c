@@ -126,58 +126,58 @@ shaderCommands_t tess;
  */
 static void BindLightMap()
 {
-	image_t *lightmap;
-
+	//dont use normal lightmaps if we have normalmapping
+	if (r_normalMapping->integer)
+	{
+		return;
+	}
 	if (tess.lightmapNum >= 0 && tess.lightmapNum < tr.lightmaps.currentElements)
 	{
-		lightmap = (image_t *) Com_GrowListElement(&tr.lightmaps, tess.lightmapNum);
+		tr.lightmap = (image_t *) Com_GrowListElement(&tr.lightmaps, tess.lightmapNum);
 	}
 	else
 	{
-		lightmap = NULL;
+		tr.lightmap = NULL;
 	}
 
-	if (!tr.lightmaps.currentElements || !lightmap)
-	{   //whiteimage for light info
-		//should this be some kind of identitylightimage??
-		//todo:check
+	if (!tr.lightmaps.currentElements || !tr.lightmap)
+	{
 		GL_Bind(tr.whiteImage);
 		return;
 	}
 
-	GL_Bind(lightmap);
+	GL_Bind(tr.lightmap);
 }
 
 /**
  * @brief BindDeluxeMap
+ * These are for Normalmapping
  */
+
 static void BindDeluxeMap()
 {
-	image_t *deluxemap;
-
-	if (tess.lightmapNum >= 0 && tess.lightmapNum < tr.deluxemaps.currentElements)
+	//if we dont have normalmapping dont use this
+	if (r_normalMapping->integer = 0)
 	{
-		deluxemap = (image_t *) Com_GrowListElement(&tr.deluxemaps, tess.lightmapNum);
-	}
-	else
-	{
-		deluxemap = NULL;
-	}
-
-	if (!tr.deluxemaps.currentElements || !deluxemap)
-	{    
-		//was:
-		//GL_Bind(tr.flatImage);
-		//creates black dots when normalmapping is used
-
-		//whiteimage for light info
-		//should this be some kind of identitylightimage??
-		//todo:check
-		GL_Bind(tr.whiteImage);
 		return;
 	}
 
-	GL_Bind(deluxemap);
+	if (tess.lightmapNum >= 0 && tess.lightmapNum < tr.deluxemaps.currentElements)
+	{
+		tr.deluxemap = (image_t *) Com_GrowListElement(&tr.deluxemaps, tess.lightmapNum);
+	}
+	else
+	{
+		tr.deluxemap = NULL;
+	}
+
+	if (!tr.deluxemaps.currentElements || !tr.deluxemap)
+	{
+		GL_Bind(tr.flatImage);
+		return;
+	}
+
+	GL_Bind(tr.deluxemap);
 }
 
 /**
@@ -337,7 +337,14 @@ void Tess_Begin(void (*stageIteratorFunc)(),
 	tess.fogNum            = fogNum;
 
 	Ren_LogComment("--- Tess_Begin( surfaceShader = %s, lightShader = %s, skipTangentSpaces = %i, lightmapNum = %i, fogNum = %i) ---\n", tess.surfaceShader->name, tess.lightShader ? tess.lightShader->name : NULL, tess.skipTangentSpaces, tess.lightmapNum, tess.fogNum);
+
+	tess.shaderTime = backEnd.refdef.floatTime - tess.surfaceShader->timeOffset;
+	if (tess.surfaceShader->clampTime != 0.0 && tess.shaderTime >= tess.surfaceShader->clampTime)
+	{
+		tess.shaderTime = tess.surfaceShader->clampTime;
+	}
 }
+
 // *INDENT-ON*
 
 /**
@@ -493,17 +500,12 @@ static void Render_vertexLighting_DBS_entity(int stage)
 		SetUniformMatrix16ARR(UNIFORM_BONEMATRIX, tess.boneMatrices, MAX_BONES);
 	}
 
-	if (r_wrapAroundLighting->integer)
-	{
-		SetUniformFloat(UNIFORM_LIGHTWRAPAROUND, RB_EvalExpression(&pStage->wrapAroundLightingExp, 0));
-	}
-
 	// set uniforms
 	//ClampColor(ambientColor);
 	// u_AlphaTest
 	GLSL_SetUniform_AlphaTest(pStage->stateBits);
 	SetUniformVec3(UNIFORM_AMBIENTCOLOR, backEnd.currentEntity->ambientLight);
-	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.origin); // in world space
+	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.viewOrigin); // in world space
 	SetUniformVec3(UNIFORM_LIGHTDIR, backEnd.currentEntity->lightDir); // = L vector which means surface to light
 	SetUniformVec3(UNIFORM_LIGHTCOLOR, backEnd.currentEntity->directedLight);
 
@@ -809,27 +811,36 @@ static void Render_lightMapping(int stage, qboolean asColorMap, qboolean normalM
 {
 	shaderStage_t *pStage   = tess.surfaceStages[stage];
 	uint32_t      stateBits = pStage->stateBits;
-	colorGen_t    rgbGen;
+	colorGen_t    colorGen;
 	alphaGen_t    alphaGen;
 
 	Ren_LogComment("--- Render_lightMapping ---\n");
 
+	// u_ColorModulate
 	switch (pStage->rgbGen)
 	{
 	case CGEN_VERTEX:
 	case CGEN_ONE_MINUS_VERTEX:
-		rgbGen = pStage->rgbGen;
+		colorGen = pStage->rgbGen;
 		break;
 	default:
-		rgbGen = CGEN_CONST;
+		colorGen = CGEN_CONST;
 		break;
 	}
 
 	switch (pStage->alphaGen)
 	{
 	case AGEN_VERTEX:
+		alphaGen = pStage->alphaGen;
+		break;
 	case AGEN_ONE_MINUS_VERTEX:
 		alphaGen = pStage->alphaGen;
+
+		/*
+		alphaGen = AGEN_VERTEX;
+		stateBits &= ~(GLS_SRCBLEND_BITS | GLS_DSTBLEND_BITS);
+		stateBits |= (GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA);
+		*/
 		break;
 	default:
 		alphaGen = AGEN_CONST;
@@ -844,9 +855,9 @@ static void Render_lightMapping(int stage, qboolean asColorMap, qboolean normalM
 	GL_State(stateBits);
 
 	// enable by cvar - if there's no image tr.flatImage is used
-	if (!r_normalMapping->integer)
+	if (r_normalMapping->integer)
 	{
-		normalMapping = qfalse;
+		normalMapping = qtrue;
 	}
 
 	// choose right shader program ----------------------------------
@@ -863,11 +874,11 @@ static void Render_lightMapping(int stage, qboolean asColorMap, qboolean normalM
 		SetUniformFloat(UNIFORM_TIME, backEnd.refdef.floatTime);
 	}
 
-	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.origin); // in world space
+	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.viewOrigin); // in world space
 	SetUniformMatrix16(UNIFORM_MODELMATRIX, backEnd.orientation.transformMatrix);
 	SetUniformMatrix16(UNIFORM_MODELVIEWPROJECTIONMATRIX, GLSTACK_MVPM);
 	GLSL_SetUniform_AlphaTest(pStage->stateBits);
-	GLSL_SetUniform_ColorModulate(trProg.gl_lightMappingShader, rgbGen, alphaGen);
+	GLSL_SetUniform_ColorModulate(trProg.gl_lightMappingShader, colorGen, alphaGen);
 	SetUniformVec4(UNIFORM_COLOR, tess.svars.color);
 
 	if (r_parallaxMapping->integer)
@@ -1235,8 +1246,8 @@ static void Render_forwardLighting_DBS_omni(shaderStage_t *diffuseStage,
 	{
 		shadowTexelSize = 1.0f;
 	}
-
-	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.origin);
+	
+	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.viewOrigin);
 	SetUniformVec3(UNIFORM_LIGHTORIGIN, light->origin);
 	SetUniformVec3(UNIFORM_LIGHTCOLOR, tess.svars.color);
 	SetUniformFloat(UNIFORM_LIGHTRADIUS, light->sphereRadius);
@@ -1440,7 +1451,7 @@ static void Render_forwardLighting_DBS_proj(shaderStage_t *diffuseStage,
 		shadowTexelSize = 1.0f;
 	}
 
-	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.origin);
+	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.viewOrigin);
 	SetUniformVec3(UNIFORM_LIGHTORIGIN, light->origin);
 	SetUniformVec3(UNIFORM_LIGHTCOLOR, tess.svars.color);
 	SetUniformFloat(UNIFORM_LIGHTRADIUS, light->sphereRadius);
@@ -1653,14 +1664,14 @@ static void Render_forwardLighting_DBS_directional(shaderStage_t *diffuseStage,
 		shadowTexelSize = 1.0f;
 	}
 
-	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.origin);
+	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.viewOrigin);
 	SetUniformVec3(UNIFORM_LIGHTDIR, lightDirection);
 	SetUniformVec3(UNIFORM_LIGHTCOLOR, tess.svars.color);
 	SetUniformFloat(UNIFORM_LIGHTRADIUS, light->sphereRadius);
 	SetUniformFloat(UNIFORM_LIGHTSCALE, light->l.scale);
 	if (r_wrapAroundLighting->integer)
 	{
-		SetUniformFloat(UNIFORM_LIGHTWRAPAROUND, RB_EvalExpression(&diffuseStage->wrapAroundLightingExp, 0));
+	SetUniformFloat(UNIFORM_LIGHTWRAPAROUND, RB_EvalExpression(&diffuseStage->wrapAroundLightingExp, 0));
 	}
 	SetUniformMatrix16(UNIFORM_LIGHTATTENUATIONMATRIX, light->attenuationMatrix2);
 
@@ -1813,7 +1824,7 @@ static void Render_reflection_CB(int stage)
 	                          USE_DEFORM_VERTEXES, tess.surfaceShader->numDeforms,
 	                          USE_NORMAL_MAPPING, normalMapping);
 
-	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.origin); // in world space
+	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.viewOrigin); // in world space
 	SetUniformMatrix16(UNIFORM_MODELMATRIX, backEnd.orientation.transformMatrix);
 	SetUniformMatrix16(UNIFORM_MODELVIEWPROJECTIONMATRIX, GLSTACK_MVPM);
 
@@ -1874,7 +1885,7 @@ static void Render_refraction_C(int stage)
 	GLSL_VertexAttribsState(ATTR_POSITION | ATTR_NORMAL);
 
 	// set uniforms
-	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.origin); // in world space
+	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.viewOrigin); // in world space
 	SetUniformFloat(UNIFORM_REFRACTIONINDEX, RB_EvalExpression(&pStage->refractionIndexExp, 1.0));
 	SetUniformFloat(UNIFORM_FRESNELPOWER, RB_EvalExpression(&pStage->fresnelPowerExp, 2.0));
 	SetUniformFloat(UNIFORM_FRESNELSCALE, RB_EvalExpression(&pStage->fresnelScaleExp, 2.0));
@@ -1920,7 +1931,7 @@ static void Render_dispersion_C(int stage)
 	eta      = RB_EvalExpression(&pStage->etaExp, (float)1.1);
 	etaDelta = RB_EvalExpression(&pStage->etaDeltaExp, (float)-0.02);
 
-	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.origin);  // in world space
+	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.viewOrigin);  // in world space
 	{
 		vec3_t temp = { eta, eta + etaDelta, eta + (etaDelta * 2) };
 		
@@ -1961,7 +1972,7 @@ static void Render_skybox(int stage)
 
 	SetMacrosAndSelectProgram(trProg.gl_skyboxShader, USE_PORTAL_CLIPPING, backEnd.viewParms.isPortal);
 
-	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.origin);   // in world space
+	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.viewOrigin);   // in world space
 	SetUniformMatrix16(UNIFORM_MODELMATRIX, backEnd.orientation.transformMatrix);
 	SetUniformMatrix16(UNIFORM_MODELVIEWPROJECTIONMATRIX, GLSTACK_MVPM);
 
@@ -2266,7 +2277,7 @@ static void Render_liquid(int stage)
 	// set uniforms
 	fogDensity = RB_EvalExpression(&pStage->fogDensityExp, 0.001f);
 
-	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.origin); // in world space
+	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.viewOrigin); // in world space
 	SetUniformFloat(UNIFORM_REFRACTIONINDEX, RB_EvalExpression(&pStage->refractionIndexExp, 1.0f));
 	SetUniformFloat(UNIFORM_FRESNELPOWER, RB_EvalExpression(&pStage->fresnelPowerExp, 2.0f));
 	SetUniformFloat(UNIFORM_FRESNELSCALE, RB_EvalExpression(&pStage->fresnelScaleExp, 1.0f));
@@ -2522,7 +2533,7 @@ static void Render_volumetricFog()
 
 		SetUniformMatrix16(UNIFORM_MODELVIEWPROJECTIONMATRIX, GLSTACK_MVPM);
 		SetUniformMatrix16(UNIFORM_UNPROJECTMATRIX, backEnd.viewParms.unprojectionMatrix);
-		SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.origin); // in world space
+		SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.viewOrigin); // in world space
 		SetUniformFloat(UNIFORM_FOGDENSITY, fogDensity);
 		SetUniformVec3(UNIFORM_FOGCOLOR, tr.fogColor);
 
@@ -3188,40 +3199,43 @@ void Tess_StageIteratorGeneric()
 		case ST_COLLAPSE_lighting_DB:
 		case ST_COLLAPSE_lighting_DBS:
 		{
-			//if(tess.surfaceShader->sort <= SS_OPAQUE)
-			{
+			
+			
 				if (r_precomputedLighting->integer || r_vertexLighting->integer)
 				{
 					if (!r_vertexLighting->integer && tess.lightmapNum >= 0 && tess.lightmapNum < tr.lightmaps.currentElements)
-					{
-						if (tr.worldDeluxeMapping && r_normalMapping->integer)
+					{    //we dont use worldDeluxemapping in ET
+						//if (tr.worldDeluxeMapping && r_normalMapping->integer)
+						if (r_normalMapping->integer)
 						{
 							Render_lightMapping(stage, qfalse, qtrue);
+							break;
 						}
-						//else if (r_normalMapping->integer)
-						//{
-						//	Render_lightMapping(stage, qfalse, qtrue);
-						//}
 						else
 						{
 							Render_lightMapping(stage, qfalse, qfalse);
+							break;
 						}
 					}
-					else if (backEnd.currentEntity != &tr.worldEntity)
+					//if it is a worldEnity 
+					else if (backEnd.currentEntity = &tr.worldEntity)
 					{
-						Render_vertexLighting_DBS_entity(stage);
+						Render_vertexLighting_DBS_world(stage);
+						break;
 					}
 					else
 					{
-						Render_vertexLighting_DBS_world(stage);
+						Render_vertexLighting_DBS_entity(stage);
+						break;
 					}
 				}
 				else
-				{
-					Render_depthFill(stage);
+				{   //never reached
+					Render_lightMapping(stage, qfalse, qfalse);
+					break;
 				}
-			}
-			break;
+			
+			
 		}
 		case ST_COLLAPSE_reflection_CB:
 		case ST_REFLECTIONMAP:

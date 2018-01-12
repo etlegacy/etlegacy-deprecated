@@ -138,9 +138,7 @@ static void BindLightMap()
 	}
 
 	if (!tr.lightmaps.currentElements || !lightmap)
-	{   //whiteimage for light info
-		//should this be some kind of identitylightimage??
-		//todo:check
+	{
 		GL_Bind(tr.whiteImage);
 		return;
 	}
@@ -165,15 +163,8 @@ static void BindDeluxeMap()
 	}
 
 	if (!tr.deluxemaps.currentElements || !deluxemap)
-	{    
-		//was:
-		//GL_Bind(tr.flatImage);
-		//creates black dots when normalmapping is used
-
-		//whiteimage for light info
-		//should this be some kind of identitylightimage??
-		//todo:check
-		GL_Bind(tr.whiteImage);
+	{
+		GL_Bind(tr.flatImage);
 		return;
 	}
 
