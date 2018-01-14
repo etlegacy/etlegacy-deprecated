@@ -2578,6 +2578,15 @@ void Tess_ComputeColor(shaderStage_t *pStage)
 		tess.svars.color[3] = 1.0;
 		break;
 	}
+	//probably the closest we get old one
+	case CGEN_EXACT_VERTEX:
+	{
+		tess.svars.color[0] = 0.0 * tr.identityLight;
+		tess.svars.color[1] = 0.0 * tr.identityLight;
+		tess.svars.color[2] = 0.0 * tr.identityLight;
+		tess.svars.color[3] = 0.0 * tr.identityLight;
+		break;
+	}
 	case CGEN_VERTEX:
 	case CGEN_ONE_MINUS_VERTEX:
 	{
