@@ -126,9 +126,9 @@ void main()
 
 
 #else // USE_NORMAL_MAPPING
-    {
+   
 	vec3 N;
-	}
+	
 #if defined(TWOSIDED)
 	if (gl_FrontFacing)
 	{
@@ -147,7 +147,7 @@ void main()
 	// compute the diffuse term
 	vec4 diffuse = texture2D(u_DiffuseMap, texDiffuse);
 
-//dont know if this works, have to test
+
 
 
 #if defined(USE_ALPHA_TESTING)
