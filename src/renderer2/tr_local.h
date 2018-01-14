@@ -902,7 +902,7 @@ typedef enum
 	CGEN_IDENTITY,              ///< always (1,1,1,1)
 	CGEN_ENTITY,                ///< grabbed from entity's modulate field
 	CGEN_ONE_MINUS_ENTITY,      ///< grabbed from 1 - entity.modulate
-	//CGEN_EXACT_VERTEX,        ///< tess.vertexColors
+	CGEN_EXACT_VERTEX,        ///< tess.vertexColors
 	CGEN_VERTEX,                ///< tess.vertexColors * tr.identityLight
 	CGEN_ONE_MINUS_VERTEX,
 	CGEN_WAVEFORM,              ///< programmatically generated

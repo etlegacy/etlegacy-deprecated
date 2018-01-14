@@ -505,15 +505,15 @@ int R_LightForPoint(vec3_t point, vec3_t ambientLight, vec3_t directedLight, vec
  */
 void R_SetupLightOrigin(trRefLight_t *light)
 {
-	vec3_t transformed;
+	
 
 	if (light->l.rlType == RL_DIRECTIONAL)
 	{
 #if 1
 		if (!VectorCompare(light->l.center, vec3_origin))
 		{
-			mat4_transform_vec3(light->transformMatrix, light->l.center, transformed);
-			VectorSubtract(transformed, light->l.origin, light->direction);
+			mat4_transform_vec3(light->transformMatrix, light->l.center, light->transformed);
+			VectorSubtract(light->transformed, light->l.origin, light->direction);
 			VectorNormalize(light->direction);
 
 			VectorMA(light->l.origin, 10000, light->direction, light->origin);
@@ -523,8 +523,8 @@ void R_SetupLightOrigin(trRefLight_t *light)
 		{
 			vec3_t down = { 0, 0, 1 };
 
-			mat4_transform_vec3(light->transformMatrix, down, transformed);
-			VectorSubtract(transformed, light->l.origin, light->direction);
+			mat4_transform_vec3(light->transformMatrix, down, light->transformed);
+			VectorSubtract(light->transformed, light->l.origin, light->direction);
 			VectorNormalize(light->direction);
 
 			VectorMA(light->l.origin, 10000, light->direction, light->origin);

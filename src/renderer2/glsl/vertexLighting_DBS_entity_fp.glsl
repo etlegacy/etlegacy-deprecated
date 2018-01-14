@@ -43,7 +43,7 @@ void main()
 #endif
 
 	// compute light direction in world space
-	vec3 L = u_LightDir;
+	vec3 L = normalize(u_LightDir);
 
 	// compute view direction in world space
 	vec3 V = normalize(u_ViewOrigin - var_Position);
@@ -82,20 +82,11 @@ void main()
 	// size and start position of search in texture space
 	vec2 S = Vts.xy * -u_DepthScale / Vts.z;
 
-#if 0
-	vec2 texOffset = vec2(0.0);
-	for (int i = 0; i < 4; i++)
-	{
-		vec4  Normal = texture2D(u_NormalMap, texNormal.st + texOffset);
-		float height = Normal.a * 0.2 - 0.0125;
-		texOffset += height * Normal.z * S;
-	}
-#else
 	float depth = RayIntersectDisplaceMap(texNormal, S, u_NormalMap);
 
 	// compute texcoords offset
 	vec2 texOffset = S * depth;
-#endif
+
 
 	texDiffuse.st  += texOffset;
 	texNormal.st   += texOffset;
@@ -122,32 +113,26 @@ void main()
 	float NH = clamp(dot(N, H), 0, 1);
 	specular *= u_LightColor * pow(NH, r_SpecularExponent2) * r_SpecularScale;
 
-#if 0
-	gl_FragColor = vec4(specular, 1.0);
-	// gl_FragColor = vec4(u_EnvironmentInterpolation, u_EnvironmentInterpolation, u_EnvironmentInterpolation, 1.0);
-	// gl_FragColor = envColor0;
-	return;
-#endif
 
 #else
 
-	// simple Blinn-Phong
-	float NH       = clamp(dot(N, H), 0, 1);
-	vec3  specular = texture2D(u_SpecularMap, texSpecular).rgb * u_LightColor * pow(NH, r_SpecularExponent) * r_SpecularScale;
+	// compute the specular term
+	//using Gouraud shading
+	vec3 reflectDir = reflect(-L, N);
+	
+	vec3  specular = texture2D(u_SpecularMap, texSpecular).rgb * u_LightColor * pow(max(dot(V, reflectDir), 0.0), r_SpecularExponent2) * r_SpecularScale;
 
 #endif // USE_REFLECTIVE_SPECULAR
 
 
 #else // USE_NORMAL_MAPPING
-
+   
 	vec3 N;
-
+	
 #if defined(TWOSIDED)
 	if (gl_FrontFacing)
 	{
 		N = -normalize(var_Normal);
-		// gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-		// return;
 	}
 	else
 #endif
@@ -155,13 +140,15 @@ void main()
 		N = normalize(var_Normal);
 	}
 
-	vec3 specular = vec3(0.0);
+	
 
 #endif // USE_NORMAL_MAPPING
 
-
 	// compute the diffuse term
 	vec4 diffuse = texture2D(u_DiffuseMap, texDiffuse);
+
+
+
 
 #if defined(USE_ALPHA_TESTING)
 	if (u_AlphaTest == ATEST_GT_0 && diffuse.a <= 0.0)
@@ -181,53 +168,35 @@ void main()
 	}
 #endif
 
+    // compute the light term
+	#if defined(r_WrapAroundLighting)
+	float NL = max(dot(N, L) + u_LightWrapAround, 0.0) / clamp(1.0 + u_LightWrapAround, 0.0);
 
-// add Rim Lighting to highlight the edges
-#if defined(r_rimLighting)
-	float rim      = 1.0 - clamp(dot(N, V), 0, 1);
-	vec3  emission = r_rimColor.rgb * pow(rim, r_rimExponent);
-
-	// gl_FragColor = vec4(emission, 1.0);
-	// return;
-
-#endif
-
-	// compute the light term
-#if defined(r_HalfLambertLighting)
-	// http://developer.valvesoftware.com/wiki/Half_Lambert
-	float NL = dot(N, L) * 0.5 + 0.5;
-	NL *= NL;
-#elif defined(r_WrapAroundLighting)
-	float NL = clamp(dot(N, L) + u_LightWrapAround, 0.0, 1.0) / clamp(1.0 + u_LightWrapAround, 0.0, 1.0);
 #else
+    //floating the lightraypower
 	float NL = clamp(dot(N, L), 0.0, 1.0);
 #endif
+    //compute the ambient term
+	//taken from the map
+    
+    vec3 ambient = u_AmbientColor * u_LightColor;
 
-	vec3 light = u_AmbientColor + u_LightColor * NL;
-	clamp(light, 0.0, 1.0);
+	// compute diffuse lightning
+	float NormalizedLight = clamp(dot(N, L), 0.0, 1.0);
+	vec3 light = u_LightColor * NormalizedLight;
+	//clamp(light, 0.0, 1.0);
 
+	
+	
 	// compute final color
-	vec4 color = diffuse;
-	color.rgb *= light;
-	color.rgb += specular;
-#if defined(r_rimLighting)
-	color.rgb += emission;
-#endif
-
-	// convert normal to [0,1] color space
+#if defined(USE_NORMAL_MAPPING)
+	vec3 result = (ambient + light + specular) * diffuse.rgb;
+#else
+    vec3 result = (ambient + light) * diffuse.rgb;
+#endif	
+   // convert normal to [0,1] color space
 	N = N * 0.5 + 0.5;
 
-	gl_FragColor = color;
+	gl_FragColor = vec4(result, 1.0);
 
-	// gl_FragColor = vec4(vec3(NL, NL, NL), diffuse.a);
-
-#if 0
-#if defined(USE_PARALLAX_MAPPING)
-	gl_FragColor = vec4(vec3(1.0, 0.0, 0.0), diffuse.a);
-#elif defined(USE_NORMAL_MAPPING)
-	gl_FragColor = vec4(vec3(0.0, 0.0, 1.0), diffuse.a);
-#else
-	gl_FragColor = vec4(vec3(0.0, 1.0, 0.0), diffuse.a);
-#endif
-#endif
 }
