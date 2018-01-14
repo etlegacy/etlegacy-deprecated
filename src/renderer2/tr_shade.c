@@ -166,14 +166,8 @@ static void BindDeluxeMap()
 
 	if (!tr.deluxemaps.currentElements || !deluxemap)
 	{    
-		//was:
-		//GL_Bind(tr.flatImage);
-		//creates black dots when normalmapping is used
-
-		//whiteimage for light info
-		//should this be some kind of identitylightimage??
-		//todo:check
-		GL_Bind(deluxemap);
+		//not sure yet if this one is right..
+		GL_Bind(tr.flatImage);
 		return;
 	}
 
@@ -849,9 +843,9 @@ static void Render_lightMapping(int stage, qboolean asColorMap, qboolean normalM
 	GL_State(stateBits);
 
 	// enable by cvar - if there's no image tr.flatImage is used
-	if (!r_normalMapping->integer)
+	if (r_normalMapping->integer)
 	{
-		normalMapping = qfalse;
+		normalMapping = qtrue;
 	}
 
 	// choose right shader program ----------------------------------
@@ -874,6 +868,8 @@ static void Render_lightMapping(int stage, qboolean asColorMap, qboolean normalM
 	GLSL_SetUniform_AlphaTest(pStage->stateBits);
 	GLSL_SetUniform_ColorModulate(trProg.gl_lightMappingShader, rgbGen, alphaGen);
 	SetUniformVec4(UNIFORM_COLOR, tess.svars.color);
+	//better of setting ambient from map
+	SetUniformVec3(UNIFORM_AMBIENTCOLOR, tr.worldEntity.ambientLight);
 
 	if (r_parallaxMapping->integer)
 	{
@@ -3199,19 +3195,19 @@ void Tess_StageIteratorGeneric()
 				{
 					if (!r_vertexLighting->integer && tess.lightmapNum >= 0 && tess.lightmapNum < tr.lightmaps.currentElements)
 					{
-						if (tr.worldDeluxeMapping && r_normalMapping->integer)
+						if (r_normalMapping->integer)
 						{
 							Render_lightMapping(stage, qfalse, qtrue);
+							break;
 						}
-						//else if (r_normalMapping->integer)
-						//{
-						//	Render_lightMapping(stage, qfalse, qtrue);
-						//}
+						
 						else
 						{
 							Render_lightMapping(stage, qfalse, qfalse);
+							break;
 						}
 					}
+
 					else if (backEnd.currentEntity != &tr.worldEntity)
 					{
 						Render_vertexLighting_DBS_entity(stage);
