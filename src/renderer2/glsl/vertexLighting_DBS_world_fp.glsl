@@ -18,10 +18,12 @@ varying vec4 var_LightColor;
 varying vec3 var_Tangent;
 varying vec3 var_Binormal;
 varying vec3 var_Normal;
+//new
+uniform vec3  u_AmbientColor;
 
 void main()
 {
-	if (bool(u_PortalClipping))
+	#if defined(USE_PORTAL_CLIPPING)
 	{
 		float dist = dot(var_Position.xyz, u_PortalPlane.xyz) - u_PortalPlane.w;
 		if (dist < 0.0)
@@ -30,6 +32,7 @@ void main()
 			return;
 		}
 	}
+	#endif
 
 #if defined(USE_NORMAL_MAPPING)
 
@@ -51,34 +54,27 @@ void main()
 		                             var_Tangent.z, var_Binormal.z, var_Normal.z);
 	}
 
-	// compute view direction in tangent space
-	vec3 V = normalize(objectToTangentMatrix * (u_ViewOrigin - var_Position));
+	// compute view direction in world space
+	vec3 V = normalize (u_ViewOrigin - var_Position);
 
 	vec2 texDiffuse  = var_TexDiffuseNormal.st;
 	vec2 texNormal   = var_TexDiffuseNormal.pq;
 	vec2 texSpecular = var_TexSpecular.st;
 
 #if defined(USE_PARALLAX_MAPPING)
-
+      //calculate view in tangentspace
+	  //needed for parallax
+     vec3 Vts = normalize(objectToTangentMatrix * (u_ViewOrigin - var_Position));
 	// ray intersect in view direction
 
 	// size and start position of search in texture space
-	vec2 S = V.xy * -u_DepthScale / V.z;
+	vec2 S = Vts.xy * -u_DepthScale / Vts.z;
 
-#if 0
-	vec2 texOffset = vec2(0.0);
-	for (int i = 0; i < 4; i++)
-	{
-		vec4  Normal = texture2D(u_NormalMap, texNormal.st + texOffset);
-		float height = Normal.a * 0.2 - 0.0125;
-		texOffset += height * Normal.z * S;
-	}
-#else
 	float depth = RayIntersectDisplaceMap(texNormal, S, u_NormalMap);
 
 	// compute texcoords offset
 	vec2 texOffset = S * depth;
-#endif
+
 
 	texDiffuse.st  += texOffset;
 	texNormal.st   += texOffset;
@@ -114,8 +110,8 @@ void main()
 	normalize(N);
 	#endif
 
-	// fake bump mapping
-	vec3 L = N;
+	// fake Light direction
+	vec3 L = normalize(N);
 
 	// compute half angle in tangent space
 	vec3 H = normalize(L + V);
@@ -126,18 +122,29 @@ void main()
 #else
 	float NL = clamp(dot(N, L), 0.0, 1.0);
 #endif
+    //compute normalized diffuselight
 	vec3 light = var_LightColor.rgb * NL;
 
 	// compute the specular term
-	vec3 specular = texture2D(u_SpecularMap, texSpecular).rgb * var_LightColor.rgb * pow(clamp(dot(N, H), 0.0, 1.0), r_SpecularExponent) * r_SpecularScale;
+	//using a form for Gouraud shading,
+	//this one isnt quite right, but need to be this way 
+	//or else it will make wierd artifacts for specular, since we fake the light
+	//todo: make lightdirection right
+	vec3 reflectDir = reflect(-L, N); 
+	vec3 specular = texture2D(u_SpecularMap, texSpecular).rgb * var_LightColor.rgb * pow(clamp(dot(V , reflectDir),0.0,1.0), r_SpecularExponent) * r_SpecularScale;
+	
+	//compute the ambient term
+	//taken from the map
+    
+    vec3 ambient = u_AmbientColor * var_LightColor.rgb;
 	
 	// compute final color
-	vec4 color = vec4(diffuse.rgb, var_LightColor.a);
-	color.rgb *= light;
-	color.rgb += specular;
+	vec3 result = (ambient + light + specular) * diffuse.rgb;
+    // convert normal to [0,1] color space
+	N = N * 0.5 + 0.5;
+	gl_FragColor = vec4(result, 1.0);
 
-	gl_FragColor = color;
-
+//will leave this part for non-bump for now
 #elif 1
 
 	vec3 N;
@@ -176,81 +183,7 @@ void main()
 
 	vec4 color = vec4(diffuse.rgb * var_LightColor.rgb, var_LightColor.a);
 
-	// gl_FragColor = vec4(diffuse.rgb * var_LightColor.rgb, diffuse.a);
-	// color = vec4(vec3(1.0, 0.0, 0.0), diffuse.a);
-	// gl_FragColor = vec4(vec3(diffuse.a, diffuse.a, diffuse.a), 1.0);
-	// gl_FragColor = vec4(vec3(var_LightColor.a, var_LightColor.a, var_LightColor.a), 1.0);
-	// gl_FragColor = var_LightColor;
-
-//defined(r_ShowTerrainBlends)
-#if 0
-	color = vec4(vec3(var_LightColor.a), 1.0);
-#endif
-
 	gl_FragColor = color;
 
-#else
-// USE_NORMAL_MAPPING
-
-	// compute the diffuse term
-	vec4 diffuse = texture2D(u_DiffuseMap, var_TexDiffuseNormal.st);
-
-#if defined(USE_ALPHA_TESTING)
-	if (u_AlphaTest == ATEST_GT_0 && diffuse.a <= 0.0)
-	{
-		discard;
-		return;
-	}
-	else if (u_AlphaTest == ATEST_LT_128 && diffuse.a >= 0.5)
-	{
-		discard;
-		return;
-	}
-	else if (u_AlphaTest == ATEST_GE_128 && diffuse.a < 0.5)
-	{
-		discard;
-		return;
-	}
-#endif
-
-	vec3 N;
-
-#if defined(TWOSIDED)
-	if (gl_FrontFacing)
-	{
-		N = -normalize(var_Normal);
-	}
-	else
-#endif
-	{
-		N = normalize(var_Normal);
-	}
-
-	vec3 L = normalize(var_LightDirection);
-
-	// compute the light term
-#if defined(r_WrapAroundLighting)
-	float NL = clamp(dot(N, L) + u_LightWrapAround, 0.0, 1.0) / clamp(1.0 + u_LightWrapAround, 0.0, 1.0);
-#else
-	float NL = clamp(dot(N, L), 0.0, 1.0);
-#endif
-
-	vec3 light = var_LightColor.rgb * NL;
-
-	vec4 color = vec4(diffuse.rgb * light, var_LightColor.a);
-	// vec4 color = vec4(vec3(NL, NL, NL), diffuse.a);
-
-	gl_FragColor = color;
-
-#endif // USE_NORMAL_MAPPING
-
-#if 0
-#if defined(USE_PARALLAX_MAPPING)
-	gl_FragColor = vec4(vec3(1.0, 0.0, 0.0), 1.0);
-#elif defined(USE_NORMAL_MAPPING)
-	gl_FragColor = vec4(vec3(0.0, 0.0, 1.0), 1.0);
-#else
-	gl_FragColor = vec4(vec3(0.0, 1.0, 0.0), 1.0);
-#endif
 #endif
 }
