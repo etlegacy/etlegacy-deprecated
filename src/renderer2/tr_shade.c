@@ -141,7 +141,7 @@ static void BindLightMap()
 	{   //whiteimage for light info
 		//should this be some kind of identitylightimage??
 		//todo:check
-		GL_Bind(lightmap);
+		GL_Bind(tr.whiteImage);
 		return;
 	}
 
