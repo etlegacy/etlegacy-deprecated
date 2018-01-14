@@ -142,10 +142,12 @@ void main()
 	vec3 result = (ambient + light + specular) * diffuse.rgb;
     // convert normal to [0,1] color space
 	N = N * 0.5 + 0.5;
+	//TODO:inspect if it should be 0.0 or 1.0, has todo with alpha
 	gl_FragColor = vec4(result, 1.0);
 
+	
 //will leave this part for non-bump for now
-#elif 1
+#else
 
 	vec3 N;
 

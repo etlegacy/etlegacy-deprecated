@@ -126,9 +126,9 @@ void main()
 
 
 #else // USE_NORMAL_MAPPING
-
+    {
 	vec3 N;
-
+	}
 #if defined(TWOSIDED)
 	if (gl_FrontFacing)
 	{
