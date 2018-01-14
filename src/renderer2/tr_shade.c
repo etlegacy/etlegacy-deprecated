@@ -141,7 +141,7 @@ static void BindLightMap()
 	{   //whiteimage for light info
 		//should this be some kind of identitylightimage??
 		//todo:check
-		GL_Bind(tr.whiteImage);
+		GL_Bind(lightmap);
 		return;
 	}
 
@@ -173,7 +173,7 @@ static void BindDeluxeMap()
 		//whiteimage for light info
 		//should this be some kind of identitylightimage??
 		//todo:check
-		GL_Bind(tr.whiteImage);
+		GL_Bind(deluxemap);
 		return;
 	}
 
@@ -502,8 +502,11 @@ static void Render_vertexLighting_DBS_entity(int stage)
 	//ClampColor(ambientColor);
 	// u_AlphaTest
 	GLSL_SetUniform_AlphaTest(pStage->stateBits);
-	SetUniformVec3(UNIFORM_AMBIENTCOLOR, backEnd.currentEntity->ambientLight);
+	//better of setting ambient from map
+	SetUniformVec3(UNIFORM_AMBIENTCOLOR, tr.worldEntity.ambientLight);
+	//set camera
 	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.viewOrigin); // in world space
+	//set lightdirection
 	SetUniformVec3(UNIFORM_LIGHTDIR, backEnd.currentEntity->lightDir); // = L vector which means surface to light
 	SetUniformVec3(UNIFORM_LIGHTCOLOR, backEnd.currentEntity->directedLight);
 
@@ -733,10 +736,12 @@ static void Render_vertexLighting_DBS_world(int stage)
 	GL_State(stateBits);
 
 	GLSL_SetUniform_ColorModulate(trProg.gl_vertexLightingShader_DBS_world, colorGen, alphaGen);
-	SetUniformVec4(UNIFORM_COLOR, tess.svars.color);
-
+	SetUniformVec4(UNIFORM_COLOR, backEnd.currentEntity->directedLight);
+	SetUniformVec3(UNIFORM_LIGHTDIR, backEnd.currentEntity->lightDir); // = L vector which means surface to light
 	SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.orientation.viewOrigin);
 	SetUniformMatrix16(UNIFORM_MODELVIEWPROJECTIONMATRIX, GLSTACK_MVPM);
+	//better of setting ambient from map
+	SetUniformVec3(UNIFORM_AMBIENTCOLOR, tr.worldEntity.ambientLight);
 	GLSL_SetUniform_AlphaTest(pStage->stateBits);
 
 	if (r_wrapAroundLighting->integer)
