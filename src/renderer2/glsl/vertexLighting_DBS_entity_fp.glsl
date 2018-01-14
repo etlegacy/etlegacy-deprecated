@@ -104,8 +104,8 @@ void main()
 
 	vec3 specular = texture2D(u_SpecularMap, texSpecular).rgb;
 
-	vec4 envColor0 = textureCube(u_EnvironmentMap0, reflect(-L, N)).rgba;
-	vec4 envColor1 = textureCube(u_EnvironmentMap1, reflect(-L, N)).rgba;
+	vec4 envColor0 = textureCube(u_EnvironmentMap0, reflect(-V, N)).rgba;
+	vec4 envColor1 = textureCube(u_EnvironmentMap1, reflect(-V, N)).rgba;
 
 	specular *= mix(envColor0, envColor1, u_EnvironmentInterpolation).rgb;
 
@@ -116,10 +116,11 @@ void main()
 
 #else
 
-	// real Blinn-Phong
+	// compute the specular term
+	//using Gouraud shading
 	vec3 reflectDir = reflect(-L, N);
 	
-	vec3  specular = texture2D(u_SpecularMap, texSpecular).rgb * u_LightColor * pow(max(dot(V, reflectDir), 0.0), r_SpecularExponent) * r_SpecularScale;
+	vec3  specular = texture2D(u_SpecularMap, texSpecular).rgb * u_LightColor * pow(max(dot(V, reflectDir), 0.0), r_SpecularExponent2) * r_SpecularScale;
 
 #endif // USE_REFLECTIVE_SPECULAR
 
@@ -147,9 +148,7 @@ void main()
 	vec4 diffuse = texture2D(u_DiffuseMap, texDiffuse);
 
 //dont know if this works, have to test
-#if !defined(USE_NORMAL_MAPPING)
-    vec3 specular =(0.2);
-#endif
+
 
 #if defined(USE_ALPHA_TESTING)
 	if (u_AlphaTest == ATEST_GT_0 && diffuse.a <= 0.0)
@@ -178,10 +177,9 @@ void main()
 	float NL = clamp(dot(N, L), 0.0, 1.0);
 #endif
     //compute the ambient term
-	//TODO make u_AbientColor be a float from a cvar or something.
-	//we do this with a tiny factor so it wont be black in shadows
-    float ambientStrength = 0.125;
-    vec3 ambient = ambientStrength * u_LightColor;
+	//taken from the map
+    
+    vec3 ambient = u_AmbientColor * u_LightColor;
 
 	// compute diffuse lightning
 	float NormalizedLight = clamp(dot(N, L), 0.0, 1.0);
@@ -191,10 +189,13 @@ void main()
 	
 	
 	// compute final color
+#if defined(USE_NORMAL_MAPPING)
 	vec3 result = (ambient + light + specular) * diffuse.rgb;
-	
+#else
+    vec3 result = (ambient + light) * diffuse.rgb;
+#endif	
    // convert normal to [0,1] color space
-	//N = N * 0.5 + 0.5;
+	N = N * 0.5 + 0.5;
 
 	gl_FragColor = vec4(result, 1.0);
 
