@@ -127,23 +127,18 @@ shaderCommands_t tess;
 static void BindLightMap()
 {
 	image_t *lightmap;
-	textureBundle_t *bundle;
 
 	if (tess.lightmapNum >= 0 && tess.lightmapNum < tr.lightmaps.currentElements)
 	{
-		
 		lightmap = (image_t *) Com_GrowListElement(&tr.lightmaps, tess.lightmapNum);
-		bundle->isLightmap = qtrue;
 	}
 	else
 	{
 		lightmap = NULL;
-		bundle->isLightmap = qfalse;
 	}
 
 	if (!tr.lightmaps.currentElements || !lightmap)
 	{
-		bundle->isLightmap = qtrue;
 		GL_Bind(tr.whiteImage);
 		return;
 	}
