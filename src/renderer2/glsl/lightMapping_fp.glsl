@@ -110,13 +110,16 @@ void main()
 
 
 	// compute normal in world space from normalmap
-	vec3 N =normalize(2.0 * (texture2D(u_NormalMap, texNormal).xyz - 0.5));
-	
-	
+	vec3 N = (2.0 * (texture2D(u_NormalMap, texNormal).xyz - 0.5));
+	//just normalize as we dont parralax
+	N = normalize(N);
 
 	// compute light direction in world space
-	vec3 L =normalize(2.0 * (lightmapColor.xyz - 0.5));
-	//L = normalize(L);
+	vec3 L = 2.0 * (deluxemapColor.xyz - 0.5);
+	//always normalize light
+	normalize(L);
+
+	float NdotL = clamp(dot(N, L), 0.0, 1.0);
 
 	// compute half angle in world space
 	vec3 H = normalize(L + I);
@@ -126,17 +129,20 @@ void main()
 	// compute light color from world space lightmap
 	vec3 lightColor = lightmapColor.rgb * NL;
 	
-	// compute the specular term in worldspace
-	vec3 specular = texture2D(u_SpecularMap, texSpecular).rgb * lightColor.rgb * pow(clamp(dot(N, H), 0.0, 1.0), r_SpecularExponent) * r_SpecularScale;
+	// compute the specular term
+	vec3 reflectDir = reflect(-L, N);
+	vec3 specular = texture2D(u_SpecularMap, texSpecular).rgb*pow(max(dot(I, reflectDir), 0.0), r_SpecularExponent) * r_SpecularScale;
+
 	
 	
 	// compute final color
 	vec4 color = diffuse;
-	color.rgb *= lightColor.rgb;
+	color.rgb *= lightColor;
 	color.rgb += specular;
 	// for smooth terrain blending
 	color.a   *= var_Color.a; 
-
+	gl_FragColor = color;
+	gl_FragColor.a = color.a;
 
 #else // USE_NORMAL_MAPPING
 
