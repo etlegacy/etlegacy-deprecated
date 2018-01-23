@@ -3185,7 +3185,8 @@ void Tess_StageIteratorGeneric()
 				{
 					if (!r_vertexLighting->integer && tess.lightmapNum >= 0 && tess.lightmapNum < tr.lightmaps.currentElements)
 					{
-						if (tr.worldDeluxeMapping && r_normalMapping->integer)
+						//atm we dont use tr.worldDeluxeMapping so lets use OR
+						if (tr.worldDeluxeMapping || r_normalMapping->integer)
 						{
 							Render_lightMapping(stage, qfalse, qtrue);
 						}

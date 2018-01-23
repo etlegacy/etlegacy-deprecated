@@ -25,7 +25,7 @@ varying vec3 var_Normal;
 
 varying vec4 var_Color;
 
-#define LIGTMAP_INTENSITY 0.75
+//#define LIGTMAP_INTENSITY 0.75
 
 void main()
 {
@@ -33,7 +33,7 @@ void main()
 	vec4 deluxemapColor = texture2D(u_DeluxeMap, var_TexLight);
 
 	//lower the lightmap intensity (this should be done on load)
-	lightmapColor.rgb = pow(lightmapColor.rgb, vec3(1.0 / LIGTMAP_INTENSITY));
+	//lightmapColor.rgb = pow(lightmapColor.rgb, vec3(1.0 / LIGTMAP_INTENSITY));
 
 #if defined(USE_PORTAL_CLIPPING)
 	float dist = dot(var_Position.xyz, u_PortalPlane.xyz) - u_PortalPlane.w;
@@ -78,21 +78,9 @@ void main()
 
 	// size and start position of search in texture space
 	vec2 S = V.xy * -u_DepthScale / V.z;
-
-#if 0
-	vec2 texOffset = vec2(0.0);
-	for (int i = 0; i < 4; i++)
-	{
-		vec4  Normal = texture2D(u_NormalMap, texNormal.st + texOffset);
-		float height = Normal.a * 0.2 - 0.0125;
-		texOffset += height * Normal.z * S;
-	}
-#else
-	float depth = RayIntersectDisplaceMap(texNormal, S, u_NormalMap);
-
+    float depth = RayIntersectDisplaceMap(texNormal, S, u_NormalMap);
 	// compute texcoords offset
 	vec2 texOffset = S * depth;
-#endif
 
 	texDiffuse.st  += texOffset;
 	texNormal.st   += texOffset;
@@ -123,45 +111,38 @@ void main()
 
 	// compute normal in world space from normalmap
 	vec3 N = (2.0 * (texture2D(u_NormalMap, texNormal).xyz - 0.5));
-	//N.x = -N.x;
-	//N = normalize(N);
-	//N = normalize(var_Normal.xyz);
-	N = normalize(tangentToWorldMatrix * N);
+	//just normalize as we dont parralax
+	N = normalize(N);
 
 	// compute light direction in world space
 	vec3 L = 2.0 * (deluxemapColor.xyz - 0.5);
-	//L = normalize(L);
+	//always normalize light
+	normalize(L);
+
+	float NdotL = clamp(dot(N, L), 0.0, 1.0);
 
 	// compute half angle in world space
 	vec3 H = normalize(L + I);
 
+	//diffuse lightining
+	float NL = clamp(dot(N, L), 0.0, 1.0);
 	// compute light color from world space lightmap
-	vec3 lightColor = lightmapColor.rgb;
-
+	vec3 lightColor = lightmapColor.rgb * NL;
+	
 	// compute the specular term
-	vec3 specular = texture2D(u_SpecularMap, texSpecular).rgb;
+	vec3 reflectDir = reflect(-L, N);
+	vec3 specular = texture2D(u_SpecularMap, texSpecular).rgb*pow(max(dot(I, reflectDir), 0.0), r_SpecularExponent) * r_SpecularScale;
 
-	float NdotL = clamp(dot(N, L), 0.0, 1.0);
-
-	float NdotLnobump = clamp(dot(normalize(var_Normal.xyz), L), 0.004, 1.0);
-	//vec3 lightColorNoNdotL = clamp(lightColor.rgb / NdotLnobump, 0.0, 1.0);
-
-	//float NdotLnobump = dot(normalize(var_Normal.xyz), L);
-	vec3 lightColorNoNdotL = lightColor.rgb / NdotLnobump;
-
+	
+	
 	// compute final color
 	vec4 color = diffuse;
-	// color = vec4(vec3(1.0, 1.0, 1.0), diffuse.a);
-	//color.rgb = vec3(NdotLnobump, NdotLnobump, NdotLnobump);
-	//color.rgb *= lightColor.rgb;
-	//color.rgb = lightColorNoNdotL.rgb * NdotL;
-	color.rgb *= clamp(lightColorNoNdotL.rgb * NdotL, lightColor.rgb * 0.3, lightColor.rgb);
-	//color.rgb *= diffuse.rgb;
-	//color.rgb = L * 0.5 + 0.5;
-	color.rgb += specular * lightColorNoNdotL * pow(clamp(dot(N, H), 0.0, 1.0), r_SpecularExponent) * r_SpecularScale;
+	color.rgb *= lightColor;
+	color.rgb += specular;
 	// for smooth terrain blending
 	color.a   *= var_Color.a; 
-
+	gl_FragColor = color;
+	gl_FragColor.a = color.a;
 
 #else // USE_NORMAL_MAPPING
 
