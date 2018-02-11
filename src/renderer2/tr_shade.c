@@ -3190,16 +3190,21 @@ void Tess_StageIteratorGeneric()
 						{
 							Render_lightMapping(stage, qfalse, qtrue);
 						}
-						//else if (r_normalMapping->integer)
-						//{
-						//	Render_lightMapping(stage, qfalse, qtrue);
-						//}
+						else if (r_normalMapping->integer)
+						{
+							Render_lightMapping(stage, qfalse, qtrue);
+						}
 						else
 						{
 							Render_lightMapping(stage, qfalse, qfalse);
 						}
 					}
-					else if (backEnd.currentEntity != &tr.worldEntity)
+					else if (backEnd.currentEntity != &tr.worldEntity && &tr.currentModel->bsp)
+					{
+
+						Render_vertexLighting_DBS_world(stage);
+					}
+					else if (backEnd.currentEntity != &tr.worldEntity && &tr.currentModel->mdv)
 					{
 						Render_vertexLighting_DBS_entity(stage);
 					}
