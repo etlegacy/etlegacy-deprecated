@@ -3589,9 +3589,9 @@ static void PM_Weapon(void)
 		return;
 	}
 
-	// player is zooming - no fire
+	// player is zooming or using binocular - no fire
 	// PC_FIELDOPS needs to zoom to call artillery
-	if (pm->ps->eFlags & EF_ZOOMING)
+	if (pm->ps->eFlags & EF_ZOOMING || pm->ps->weapon == WP_BINOCULARS)
 	{
 #ifdef GAMEDLL
 		if (pm->ps->stats[STAT_PLAYER_CLASS] == PC_FIELDOPS)
@@ -3809,7 +3809,8 @@ static void PM_Weapon(void)
 	}
 
 	// weapon firing animation
-	if (GetWeaponTableData(pm->ps->weapon)->firingAuto)
+	// FG42 is exclude because the continue animation don't look great with it (no recoil, look stuck)
+	if (GetWeaponTableData(pm->ps->weapon)->firingAuto && pm->ps->weapon != WP_FG42 && pm->ps->weapon != WP_FG42SCOPE)
 	{
 		PM_ContinueWeaponAnim(weapattackanim);
 	}
@@ -4140,7 +4141,7 @@ void PM_UpdateLean(playerState_t *ps, usercmd_t *cmd, pmove_t *tpm)
  *
  * @note Tnused trace parameter
  */
-void PM_UpdateViewAngles(playerState_t *ps, pmoveExt_t *pmext, usercmd_t *cmd, void(trace) (trace_t * results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask), int tracemask)            //   modified
+void PM_UpdateViewAngles(playerState_t *ps, pmoveExt_t *pmext, usercmd_t *cmd, void(trace) (trace_t * results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask), int tracemask)             //   modified
 {
 	short  temp;
 	int    i;

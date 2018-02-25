@@ -812,6 +812,8 @@ qboolean FS_SV_FileExists(const char *file);
 
 qboolean FS_IsSamePath(const char *s1, const char *s2);
 qboolean FS_CreatePath(const char *OSPath);
+void FS_CheckFilenameIsNotExecutable(const char *fileName, const char *function);
+//void FS_CheckFilenameIsMutable(const char *filename, const char *function);
 void FS_Remove(const char *osPath);
 
 char *FS_BuildOSPath(const char *base, const char *game, const char *qpath);
@@ -923,6 +925,7 @@ qboolean FS_CheckDirTraversal(const char *checkdir);
 qboolean FS_VerifyOfficialPaks(void);
 qboolean FS_idPak(const char *pak, const char *base);
 qboolean FS_ComparePaks(char *neededpaks, size_t len, qboolean dlstring);
+qboolean FS_InvalidGameDir(const char *gamedir);
 
 void FS_Rename(const char *from, const char *to);
 

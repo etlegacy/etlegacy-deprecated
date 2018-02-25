@@ -3754,6 +3754,36 @@ void CG_AltWeapon_f(void)
 		return;
 	}
 
+	if (cg.weaponSelect == WP_BINOCULARS)
+	{
+		/*if(cg.snap->ps.eFlags & EF_ZOOMING) {
+		    trap_SendConsoleCommand( "-zoom\n" );
+		} else {
+		    trap_SendConsoleCommand( "+zoom\n" );
+		}*/
+
+		// don't allow zooming when prone moving (prevent fast zoom/unzoom)
+		if (cg.predictedPlayerState.eFlags & EF_PRONE_MOVING)
+		{
+			return;
+		}
+
+		if (cg.snap->ps.eFlags & EF_ZOOMING)
+		{
+			trap_SendConsoleCommand("-zoom\n");
+			cg.binocZoomTime = -cg.time;
+		}
+		else
+		{
+			if (!cg.binocZoomTime)
+			{
+				cg.binocZoomTime = cg.time;
+			}
+		}
+
+		return;
+	}
+
 	// some alt vsays, don't check for weapon with alternative weapon
 	// 0 - disabled
 	// 1 - team
@@ -3888,35 +3918,6 @@ void CG_AltWeapon_f(void)
 		{
 			return;
 		}
-	}
-	else if (cg.weaponSelect == WP_BINOCULARS)
-	{
-		/*if(cg.snap->ps.eFlags & EF_ZOOMING) {
-		    trap_SendConsoleCommand( "-zoom\n" );
-		} else {
-		    trap_SendConsoleCommand( "+zoom\n" );
-		}*/
-
-		// don't allow zooming when prone moving (prevent fast zoom/unzoom)
-		if (cg.predictedPlayerState.eFlags & EF_PRONE_MOVING)
-		{
-			return;
-		}
-
-		if (cg.snap->ps.eFlags & EF_ZOOMING)
-		{
-			trap_SendConsoleCommand("-zoom\n");
-			cg.binocZoomTime = -cg.time;
-		}
-		else
-		{
-			if (!cg.binocZoomTime)
-			{
-				cg.binocZoomTime = cg.time;
-			}
-		}
-
-		return;
 	}
 	else if (GetWeaponTableData(GetWeaponTableData(cg.weaponSelect)->weapAlts)->isScoped)
 	{
@@ -4728,8 +4729,7 @@ void CG_WeaponFireRecoil(int weapon)
 	//      pitchAdd = 2 + rand() % 3;
 	// }
 
-	if (weapon == WP_MP40 || weapon == WP_THOMPSON || weapon == WP_STEN || weapon == WP_FG42SCOPE || weapon == WP_FG42
-	    || GetWeaponTableData(weapon)->isMG || GetWeaponTableData(weapon)->isMGSet)
+	if (GetWeaponTableData(weapon)->firingAuto)
 	{
 		pitchAdd *= (1 + rand() % 3);
 	}
