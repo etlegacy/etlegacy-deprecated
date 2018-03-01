@@ -1,6 +1,6 @@
 /*
  * ET: Legacy
- * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
+ * Copyright (C) 2012-2018 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -5077,7 +5077,7 @@ public:
 				gentity_t *pWho = EntityFromHandle(pMsg->m_WhoToKill);
 				if (pWho)
 				{
-					G_Damage(pWho, NULL, NULL, NULL, NULL, GIB_DAMAGE(pWho->health), DAMAGE_NO_PROTECTION, MOD_TELEFRAG);
+					G_Damage(pWho, NULL, NULL, NULL, NULL, pWho->client ? GIB_DAMAGE(pWho->health) : GIB_ENT, DAMAGE_NO_PROTECTION, MOD_TELEFRAG);
 				}
 			}
 			break;

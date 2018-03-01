@@ -4,7 +4,7 @@
  * Copyright (C) 2010-2011 Robert Beckebans <trebor_7@users.sourceforge.net>
  *
  * ET: Legacy
- * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
+ * Copyright (C) 2012-2018 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -223,14 +223,14 @@ qhandle_t RE_RegisterModel(const char *name)
 		}
 
 		filename[strlen(filename) - 1] = '3';   // try MD3 first (changed order for 2.76)
-		if (ri.FS_FOpenFileRead(filename, NULL, qfalse))
+		if (ri.FS_FOpenFileRead(filename, NULL, qfalse) > 0)
 		{
 			ri.FS_ReadFile(filename, (void **)&buffer);
 		}
 		if (!buffer)
 		{
 			filename[strlen(filename) - 1] = 'c';   // try MDC  second
-			if (ri.FS_FOpenFileRead(filename, NULL, qfalse))
+			if (ri.FS_FOpenFileRead(filename, NULL, qfalse) > 0)
 			{
 				ri.FS_ReadFile(filename, (void **)&buffer);
 			}

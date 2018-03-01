@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
+ * Copyright (C) 2012-2018 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -2668,7 +2668,7 @@ qboolean Com_CheckProfile(void)
 		return qtrue;
 	}
 
-	if (FS_FOpenFileRead(com_pidfile->string, &f, qtrue) < 0)
+	if (FS_FOpenFileRead(com_pidfile->string, &f, qtrue) <= 0)
 	{
 		// no profile found, we're ok
 		return qtrue;

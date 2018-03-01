@@ -6,7 +6,7 @@
  * Copyright (C) 2010-2011 Robert Beckebans <trebor_7@users.sourceforge.net>
  *
  * ET: Legacy
- * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
+ * Copyright (C) 2012-2018 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -1188,7 +1188,7 @@ static void GLSL_GetShaderText(const char *name, GLenum shaderType, char **data,
 		Ren_Print("...loading vertex shader '%s'\n", fullname);
 	}
 
-	if (ri.FS_FOpenFileRead(va("glsl/%s.glsl", fullname), NULL, qfalse))
+	if (ri.FS_FOpenFileRead(va("glsl/%s.glsl", fullname), NULL, qfalse) > 0)
 	{
 		dataSize = ri.FS_ReadFile(va("glsl/%s.glsl", fullname), ( void ** ) &dataBuffer);
 	}

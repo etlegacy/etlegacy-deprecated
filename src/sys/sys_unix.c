@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
+ * Copyright (C) 2012-2018 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -547,7 +547,7 @@ char **Sys_ListFiles(const char *directory, const char *extension, const char *f
 
 		for (i = 0; i < strlen(d->d_name); i++)
 		{
-			if (d->d_name[i] <= 31 || d->d_name[i] == 127)
+			if (d->d_name[i] <= 31 || d->d_name[i] >= 123)
 			{
 				Com_Printf(S_COLOR_RED "ERROR: invalid char in name of file '%s'.\n", d->d_name);
 				invalid = qtrue;
@@ -561,6 +561,7 @@ char **Sys_ListFiles(const char *directory, const char *extension, const char *f
 #ifdef DEDICATED
 			Sys_Error("Invalid character in file name '%s'. The file has been removed. Start the server again.", d->d_name);
 #else
+			Cvar_Set("com_missingFiles", "");
 			Com_Error(ERR_DROP, va("Invalid file name detected & removed\nFile \"%s\" did contain an invalid character for ET: L file structure.\nSome admins take advantage of this to ensure their menu loads last.\nThe file has been removed.", d->d_name));
 #endif
 		}

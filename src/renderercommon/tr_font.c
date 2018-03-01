@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
+ * Copyright (C) 2012-2018 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -520,7 +520,7 @@ static qboolean R_LoadScalableFont(const char *fontName, int pointSize, fontInfo
 	while (i < formatCount)
 	{
 		Com_sprintf(name, sizeof(name), "fonts/%s.%s", fontName, supportedFormats[i]);
-		if (ri.FS_FOpenFileRead(name, NULL, qfalse))
+		if (ri.FS_FOpenFileRead(name, NULL, qfalse) > 0)
 		{
 			formatFound = qtrue;
 			break;

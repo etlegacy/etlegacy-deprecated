@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
+ * Copyright (C) 2012-2018 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -59,6 +59,7 @@
 
 #define DEFAULT_GRAVITY     800
 #define FORCE_LIMBO_HEALTH  -75
+#define GIB_ENT             99999
 #define GIB_HEALTH          -175
 #define GIB_DAMAGE(health) health - GIB_HEALTH + 1
 

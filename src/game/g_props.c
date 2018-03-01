@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
+ * Copyright (C) 2012-2018 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -2023,7 +2023,7 @@ void Use_DamageInflictor(gentity_t *ent, gentity_t *other, gentity_t *activator)
 		}
 		else
 		{
-			G_Damage(daent, ent, ent, NULL, NULL, GIB_DAMAGE(daent->health), 0, MOD_CRUSH);
+			G_Damage(daent, ent, ent, NULL, NULL, daent->client ? GIB_DAMAGE(daent->health) : GIB_ENT, 0, MOD_CRUSH);
 		}
 	}
 

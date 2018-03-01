@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
+ * Copyright (C) 2012-2018 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -1151,6 +1151,13 @@ static void CG_CPM_f(void)
 	CG_AddPMItem(PM_MESSAGE, CG_Argv(1), " ", cgs.media.pmImages[iconnumber], 0, 0, NULL);
 }
 
+qboolean resetmaxspeed = qfalse;
+
+static void CG_ResetMaxSpeed_f(void)
+{
+	resetmaxspeed = qtrue;
+}
+
 /**
  * @brief ETPro style enemy spawntimer
  */
@@ -1831,7 +1838,8 @@ static consoleCommand_t commands[] =
 	{ "noclip",              CG_NoClip_f               },
 #endif
 	// objective info list for mappers/scripters (and players? - we might extend it)
-	{ "oinfo",               CG_PrintObjectiveInfo     }
+	{ "oinfo",               CG_PrintObjectiveInfo     },
+	{ "resetmaxspeed",       CG_ResetMaxSpeed_f        }
 };
 
 /**

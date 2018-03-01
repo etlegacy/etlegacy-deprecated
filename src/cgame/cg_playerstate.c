@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
+ * Copyright (C) 2012-2018 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -577,6 +577,10 @@ void CG_TransitionPlayerState(playerState_t *ps, playerState_t *ops)
 				trap_SendConsoleCommand("-zoom\n");
 			}
 		}
+		else if (GetWeaponTableData(ps->weapon)->isScoped)
+		{
+			CG_FinishWeaponChange(ps->weapon, GetWeaponTableData(ps->weapon)->weapAlts);
+		}
 
 		if (!(ops->eFlags & EF_PRONE_MOVING))
 		{
@@ -597,6 +601,12 @@ void CG_TransitionPlayerState(playerState_t *ps, playerState_t *ops)
 		{
 			CG_FinishWeaponChange(cg.weaponSelect, ps->nextWeapon);
 		}
+	}
+
+	// don't let players run with rifles -- speed 80 == crouch, 128 == walk, 256 == run until player start to don't run
+	if (GetWeaponTableData(ps->weapon)->isScoped && VectorLength(ps->velocity) > 127)
+	{
+		CG_FinishWeaponChange(ps->weapon, GetWeaponTableData(ps->weapon)->weapAlts);
 	}
 
 	// run events

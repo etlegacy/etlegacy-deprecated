@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
+ * Copyright (C) 2012-2018 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -157,6 +157,20 @@ void Com_BeginDownload(const char *localName, const char *remoteName)
 #endif
 }
 
+static void checkDownloadName(char *filename)
+{
+	int i;
+
+	for (i = 0; i < strlen(filename); i++)
+	{
+		if (filename[i] <= 31 || filename[i] >= 123)
+		{
+			Cvar_Set("com_missingFiles", "");
+			Com_Error(ERR_DROP, va("Disconnected from server.\n\nServer file name \"%s\" is containing an invalid character for the ET: Legacy file structure.\n\nDownloading file denied.", filename));
+		}
+	}
+}
+
 /**
  * @brief A download completed or failed
  */
@@ -196,6 +210,9 @@ void Com_NextDownload(void)
 			s = localName + strlen(localName);    // point at the nul byte
 
 		}
+
+		checkDownloadName(remoteName);
+
 		Com_BeginDownload(localName, remoteName);
 
 		dld.downloadRestart = qtrue;

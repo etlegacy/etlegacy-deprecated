@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
+ * Copyright (C) 2012-2018 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -2501,6 +2501,8 @@ extern vmCvar_t cg_scoreboard;
 
 extern vmCvar_t cg_quickchat;
 
+extern vmCvar_t	cg_drawspeed;
+
 // local clock flags
 #define LOCALTIME_ON                0x01
 #define LOCALTIME_SECOND            0x02
@@ -3582,5 +3584,7 @@ typedef enum
 #define SCREEN_HEIGHT_SAFE SCREEN_HEIGHT
 
 #define IS_MOUNTED_TANK_BROWNING(entNum) (cg_entities[cg_entities[cg_entities[entNum].tagParent].tankparent].currentState.density & 8)
+
+extern qboolean resetmaxspeed; // CG_DrawSpeed
 
 #endif // #ifndef INCLUDE_CG_LOCAL_H

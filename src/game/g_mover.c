@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012-2017 ET:Legacy team <mail@etlegacy.com>
+ * Copyright (C) 2012-2018 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -694,7 +694,7 @@ qboolean G_MoverPush(gentity_t *pusher, vec3_t move, vec3_t amove, gentity_t **o
 		// bobbing entities are instant-kill and never get blocked
 		if (pusher->s.pos.trType == TR_SINE || pusher->s.apos.trType == TR_SINE)
 		{
-			G_Damage(check, pusher, pusher, NULL, NULL, GIB_DAMAGE(check->health), 0, MOD_CRUSH);
+			G_Damage(check, pusher, pusher, NULL, NULL, check->client ? GIB_DAMAGE(check->health) : GIB_ENT, 0, MOD_CRUSH);
 			continue;
 		}
 

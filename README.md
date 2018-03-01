@@ -86,19 +86,22 @@ DEPENDENCIES
 
 * **CMake** (compile-time only)
 * **OpenGL**
-* **GLEW** version 1.10
-* **SDL** version 2.0.5
-* **ZLib** version 1.2.8
+* **GLEW**
+* **SDL**
+* **ZLib**
 * **MiniZip**
-* **libjpeg-turbo** version 1.3, or **libjpeg** version 8
+* **libjpeg-turbo** or **libjpeg**
 * **libcurl** (optional, enabled by default)
-* **Lua** version 5.3 (optional, enabled by default)
+* **Lua** (optional, enabled by default)
 * **Ogg Vorbis** (optional, enabled by default)
 * **Theora** (optional, enabled by default)
-* **Freetype** version 2 (optional, enabled by default)
-* **SQLite** version 3 (optional, enabled by default)
-* **OpenAL** version 1.17 (optional, enabled by default)
+* **Freetype** (optional, enabled by default)
+* **SQLite** (optional, enabled by default)
+* **OpenAL** (optional, enabled by default)
 * **Jansson** (optional)
+
+
+Grab info about current lib versions from our wiki page [ET: Legacy Libs_Changelog](https://dev.etlegacy.com/projects/etlegacy/wiki/Libs_Changelog)
 
 To get the latest source code install [git](http://git-scm.com/) and
 clone our repository hosted at [Github.com](https://github.com/etlegacy/etlegacy):
@@ -294,7 +297,7 @@ OpenWolf GPL Source Code
 Copyright (C) 2011 Dusan Jocic
 
 ET: Legacy
-Copyright (C) 2012-2017 ET:Legacy Team <mail@etlegacy.com>
+Copyright (C) 2012-2018 ET:Legacy Team <mail@etlegacy.com>
 
   ET: Legacy is free software: you can redistribute it and/or modify it under
   the terms of the GNU General Public License as published by the Free Software
