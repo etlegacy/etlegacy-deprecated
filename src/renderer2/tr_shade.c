@@ -3110,7 +3110,7 @@ void Tess_StageIteratorGeneric()
 				{
 					if (!r_vertexLighting->integer && tess.lightmapNum >= 0 && tess.lightmapNum < tr.lightmaps.currentElements)
 					{
-						if (tr.worldDeluxeMapping && r_normalMapping->integer)
+						if (tr.worldDeluxeMapping || r_normalMapping->integer)
 						{
 							Render_lightMapping(stage, qfalse, qtrue);
 						}
@@ -3125,16 +3125,22 @@ void Tess_StageIteratorGeneric()
 					}
 					else if (backEnd.currentEntity != &tr.worldEntity)
 					{
+						//dont use entity shader for brushmodels
+						model_t *pModel = R_GetModelByHandle(backEnd.currentEntity->e.hModel);
+						 if (pModel->bsp)
+						{
+							 Render_vertexLighting_DBS_world(stage);
+							
+						}
+					else 
+					{
 						Render_vertexLighting_DBS_entity(stage);
+					}
 					}
 					else
 					{
 						Render_vertexLighting_DBS_world(stage);
 					}
-				}
-				else
-				{
-					Render_depthFill(stage);
 				}
 			}
 			break;
