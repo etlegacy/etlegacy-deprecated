@@ -355,8 +355,9 @@ typedef struct rgbaGen_s {
 static rgbaGen_t getRgbaGen(shaderStage_t *pStage, int lightmapNum)
 {
 	qboolean isVertexLit = lightmapNum == LIGHTMAP_BY_VERTEX;
-	qboolean shouldForceCgenVertex = (isVertexLit && pStage->rgbGen == CGEN_IDENTITY);
-	qboolean shouldForceAgenVertex = (isVertexLit && pStage->alphaGen == AGEN_IDENTITY);
+	qboolean isSky = tess.surfaceShader->isSky;
+	qboolean shouldForceCgenVertex = (isVertexLit && !isSky && pStage->rgbGen == CGEN_IDENTITY);
+	qboolean shouldForceAgenVertex = (isVertexLit && !isSky && pStage->alphaGen == AGEN_IDENTITY);
 	int colorGen = shouldForceCgenVertex ? CGEN_VERTEX : pStage->rgbGen;
 	int alphaGen = shouldForceAgenVertex ? AGEN_VERTEX : pStage->alphaGen;
 	rgbaGen_t rgbaGen = { colorGen, alphaGen };
@@ -432,6 +433,7 @@ static void Render_generic(int stage)
 	rgbaGen_t rgbaGen = getRgbaGenForColorModulation(pStage, tess.lightmapNum);
 
 	GLSL_SetUniform_ColorModulate(trProg.gl_genericShader, rgbaGen.color, rgbaGen.alpha);
+
 	SetUniformVec4(UNIFORM_COLOR, tess.svars.color);
 	SetUniformMatrix16(UNIFORM_MODELMATRIX, MODEL_MATRIX);
 	SetUniformMatrix16(UNIFORM_MODELVIEWPROJECTIONMATRIX, GLSTACK_MVPM);
@@ -3110,7 +3112,7 @@ void Tess_StageIteratorGeneric()
 				{
 					if (!r_vertexLighting->integer && tess.lightmapNum >= 0 && tess.lightmapNum < tr.lightmaps.currentElements)
 					{
-						if (tr.worldDeluxeMapping && r_normalMapping->integer)
+						if (tr.worldDeluxeMapping || r_normalMapping->integer)
 						{
 							Render_lightMapping(stage, qfalse, qtrue);
 						}
@@ -3125,16 +3127,21 @@ void Tess_StageIteratorGeneric()
 					}
 					else if (backEnd.currentEntity != &tr.worldEntity)
 					{
-						Render_vertexLighting_DBS_entity(stage);
+						//dont use entity shader for brushmodels
+						model_t *pModel = R_GetModelByHandle(backEnd.currentEntity->e.hModel);
+						if (pModel->bsp)
+						{
+							Render_vertexLighting_DBS_world(stage);
+						}
+						else
+						{
+							Render_vertexLighting_DBS_entity(stage);
+						}
 					}
 					else
 					{
 						Render_vertexLighting_DBS_world(stage);
 					}
-				}
-				else
-				{
-					Render_depthFill(stage);
 				}
 			}
 			break;
