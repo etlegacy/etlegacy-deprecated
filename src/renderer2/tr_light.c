@@ -276,14 +276,8 @@ static void R_SetupEntityLightingGrid(trRefEntity_t *ent, vec3_t forcedOrigin)
 		VectorScale(ent->directedLight, totalFactor, ent->directedLight);
 	}
 
-	VectorNormalize2(direction, ent->lightDir);
-
-	if (VectorLength(ent->ambientLight) < r_forceAmbient->value)
-	{
-		ent->ambientLight[0] = r_forceAmbient->value;
-		ent->ambientLight[1] = r_forceAmbient->value;
-		ent->ambientLight[2] = r_forceAmbient->value;
-	}
+	VectorScale(ent->ambientLight, r_ambientScale->value, ent->ambientLight);
+	VectorScale(ent->directedLight, r_lightScale->value, ent->directedLight);
 
 	// cheats?  check for single player?
 	if (tr.lightGridMulDirected != 0.f)
@@ -294,6 +288,11 @@ static void R_SetupEntityLightingGrid(trRefEntity_t *ent, vec3_t forcedOrigin)
 	{
 		VectorScale(ent->ambientLight, tr.lightGridMulAmbient, ent->ambientLight);
 	}
+
+	VectorNormalize2(direction, ent->lightDir);
+
+	// debug hack
+	//VectorSubtract( vec3_origin, direction, ent->lightDir );
 }
 
 /*
