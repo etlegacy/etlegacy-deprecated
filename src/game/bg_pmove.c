@@ -238,7 +238,7 @@ void PM_ClipVelocity(vec3_t in, vec3_t normal, vec3_t out, float overbounce)
  * @param[in] ignoreent
  * @param[in] tracemask
  */
-void PM_TraceLegs(trace_t *trace, float *legsOffset, vec3_t start, vec3_t end, trace_t *bodytrace, vec3_t viewangles, void(tracefunc) (trace_t * results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask), int ignoreent, int tracemask)
+void PM_TraceLegs(trace_t *trace, float *legsOffset, vec3_t start, vec3_t end, trace_t *bodytrace, vec3_t viewangles, void(tracefunc) (trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask), int ignoreent, int tracemask)
 {
 	vec3_t ofs, org, point;
 	vec3_t flatforward;
@@ -319,7 +319,7 @@ void PM_TraceLegs(trace_t *trace, float *legsOffset, vec3_t start, vec3_t end, t
  * @param[in] tracemask
  */
 void PM_TraceHead(trace_t *trace, vec3_t start, vec3_t end, trace_t *bodytrace, vec3_t viewangles,
-                  void(tracefunc) (trace_t * results,
+                  void(tracefunc) (trace_t *results,
                                    const vec3_t start,
                                    const vec3_t mins,
                                    const vec3_t maxs,
@@ -2252,9 +2252,20 @@ static void PM_BeginWeaponReload(weapon_t weapon)
 	}
 
 	// fixing reloading with a full clip
-	if (pm->ps->ammoclip[GetWeaponTableData(weapon)->ammoIndex] >= GetWeaponTableData(weapon)->maxClip)
+	if (pm->ps->ammoclip[GetWeaponTableData(weapon)->clipIndex] >= GetWeaponTableData(weapon)->maxClip)
 	{
-		return;
+		// akimbo should also check other weapon status
+		if (GetWeaponTableData(weapon)->isAkimbo)
+		{
+			if (pm->ps->ammoclip[GetWeaponTableData(GetWeaponTableData(weapon)->akimboSideArm)->clipIndex] >= GetWeaponTableData(GetWeaponTableData(GetWeaponTableData(weapon)->akimboSideArm)->clipIndex)->maxClip)
+			{
+				return;
+			}
+		}
+		else
+		{
+			return;
+		}
 	}
 
 	// no reload when leaning (this includes manual and auto reloads)
@@ -2598,10 +2609,6 @@ static void PM_FinishWeaponReload(void)
  */
 void PM_CheckForReload(weapon_t weapon)
 {
-	qboolean autoreload;
-	qboolean reloadRequested;
-	int      clipWeap, ammoWeap;
-
 	if (pm->noWeapClips)     // no need to reload
 	{
 		return;
@@ -2632,30 +2639,16 @@ void PM_CheckForReload(weapon_t weapon)
 		break;
 	}
 
-	// user is forcing a reload (manual reload)
-	reloadRequested = (qboolean)(pm->cmd.wbuttons & WBUTTON_RELOAD);
-
-	autoreload = pm->pmext->bAutoReload || !GetWeaponTableData(weapon)->isAutoReload;
-	clipWeap   = GetWeaponTableData(weapon)->clipIndex;
-	ammoWeap   = GetWeaponTableData(weapon)->ammoIndex;
-
-	if (GetWeaponTableData(weapon)->isScoped)
-	{
-		if (reloadRequested && pm->ps->ammo[ammoWeap] && pm->ps->ammoclip[clipWeap] < GetWeaponTableData(weapon)->maxClip)
-		{
-			PM_BeginWeaponChange(weapon, GetWeaponTableData(weapon)->weapAlts, !(pm->ps->ammo[ammoWeap]) ? qfalse : qtrue);
-		}
-	}
-
 	if (pm->ps->weaponTime <= 0)
 	{
 		qboolean doReload = qfalse;
 
-		if (reloadRequested)
+		// user is forcing a reload (manual reload)
+		if (pm->cmd.wbuttons & WBUTTON_RELOAD)
 		{
-			if (pm->ps->ammo[ammoWeap])
+			if (pm->ps->ammo[GetWeaponTableData(weapon)->ammoIndex])
 			{
-				if (pm->ps->ammoclip[clipWeap] < GetWeaponTableData(weapon)->maxClip)
+				if (pm->ps->ammoclip[GetWeaponTableData(weapon)->clipIndex] < GetWeaponTableData(weapon)->maxClip)
 				{
 					doReload = qtrue;
 				}
@@ -2670,9 +2663,9 @@ void PM_CheckForReload(weapon_t weapon)
 				}
 			}
 		}
-		else if (autoreload)
+		else if (pm->pmext->bAutoReload || !GetWeaponTableData(weapon)->isAutoReload)   // auto reload
 		{
-			if (!pm->ps->ammoclip[clipWeap] && pm->ps->ammo[ammoWeap])
+			if (!pm->ps->ammoclip[GetWeaponTableData(weapon)->clipIndex] && pm->ps->ammo[GetWeaponTableData(weapon)->ammoIndex])
 			{
 				if (GetWeaponTableData(weapon)->isAkimbo)
 				{
@@ -2690,6 +2683,11 @@ void PM_CheckForReload(weapon_t weapon)
 
 		if (doReload)
 		{
+			if (GetWeaponTableData(weapon)->isScoped)
+			{
+				PM_BeginWeaponChange(weapon, GetWeaponTableData(weapon)->weapAlts, qtrue);
+			}
+
 			PM_BeginWeaponReload(weapon);
 		}
 	}
@@ -2770,9 +2768,7 @@ void PM_WeaponUseAmmo(weapon_t wp, int amount)
 	}
 	else
 	{
-		int takeweapon;
-
-		takeweapon = GetWeaponTableData(wp)->clipIndex;
+		int takeweapon = GetWeaponTableData(wp)->clipIndex;
 
 		if (GetWeaponTableData(wp)->isAkimbo)
 		{
@@ -2799,9 +2795,7 @@ int PM_WeaponAmmoAvailable(weapon_t wp)
 	}
 	else
 	{
-		int takeweapon;
-
-		takeweapon = GetWeaponTableData(wp)->clipIndex;
+		int takeweapon = GetWeaponTableData(wp)->clipIndex;
 
 		if (GetWeaponTableData(wp)->isAkimbo)
 		{
@@ -3286,8 +3280,7 @@ static void PM_Weapon(void)
 {
 	int      addTime           = GetWeaponTableData(pm->ps->weapon)->nextShotTime;
 	int      aimSpreadScaleAdd = GetWeaponTableData(pm->ps->weapon)->aimSpreadScaleAdd;
-	int      ammoNeeded;
-	qboolean delayedFire;       // true if the delay time has just expired and this is the frame to send the fire event
+	qboolean delayedFire       = qfalse; // true if the delay time has just expired and this is the frame to send the fire event
 	int      weapattackanim;
 	qboolean akimboFire;
 #ifdef DO_WEAPON_DBG
@@ -3389,8 +3382,6 @@ static void PM_Weapon(void)
 	// check for weapon recoil
 	// do the recoil before setting the values, that way it will be shown next frame and not this
 	PM_HandleRecoil();
-
-	delayedFire = qfalse;
 
 	if (PM_CheckGrenade())
 	{
@@ -3526,6 +3517,30 @@ static void PM_Weapon(void)
 		}
 	}
 
+	// a not mounted mortar can't fire
+	if (GetWeaponTableData(pm->ps->weapon)->isMortar)
+	{
+		return;
+	}
+
+	// check for fire
+	// if not on fire button and there's not a delayed shot this frame...
+	// consider also leaning, with delayed attack reset
+	if ((!(pm->cmd.buttons & BUTTON_ATTACK) && !(pm->cmd.wbuttons & WBUTTON_ATTACK2) && !delayedFire) ||
+	    (pm->ps->leanf != 0.f && !GetWeaponTableData(pm->ps->weapon)->isGrenade && pm->ps->weapon != WP_SMOKE_BOMB))
+	{
+		pm->ps->weaponTime  = 0;
+		pm->ps->weaponDelay = 0;
+
+		if (weaponstateFiring)     // you were just firing, time to relax
+		{
+			PM_ContinueWeaponAnim(GetWeaponTableData(pm->ps->weapon)->idleAnim);
+		}
+
+		pm->ps->weaponstate = WEAPON_READY;
+		return;
+	}
+
 	// don't allow some weapons to fire if charge bar isn't full
 	if (GetWeaponTableData(pm->ps->weapon)->useChargeTime)
 	{
@@ -3548,6 +3563,7 @@ static void PM_Weapon(void)
 
 		if (chargeTime != -1)
 		{
+			// check if there is enough charge to fire
 			if (pm->cmd.serverTime - pm->ps->classWeaponTime < chargeTime * coeff)
 			{
 				if ((pm->ps->weapon == WP_MEDKIT || pm->ps->weapon == WP_AMMO) && pm->cmd.buttons & BUTTON_ATTACK)
@@ -3557,36 +3573,25 @@ static void PM_Weapon(void)
 
 				return;
 			}
+
+			// ready to fire, handle the charge time
+			if (weaponstateFiring)
+			{
+				if (coeff != 1.f)
+				{
+					if (pm->cmd.serverTime - pm->ps->classWeaponTime > chargeTime)
+					{
+						pm->ps->classWeaponTime = pm->cmd.serverTime - chargeTime;
+					}
+
+					pm->ps->classWeaponTime += coeff * chargeTime;
+				}
+				else
+				{
+					pm->ps->classWeaponTime = pm->cmd.serverTime;
+				}
+			}
 		}
-	}
-
-	if (GetWeaponTableData(pm->ps->weapon)->isMortarSet && !delayedFire)
-	{
-		pm->ps->weaponstate = WEAPON_READY;
-	}
-
-	// check for fire
-	// if not on fire button and there's not a delayed shot this frame...
-	// consider also leaning, with delayed attack reset
-	if ((!(pm->cmd.buttons & BUTTON_ATTACK) && !(pm->cmd.wbuttons & WBUTTON_ATTACK2) && !delayedFire) ||
-	    (pm->ps->leanf != 0.f && !GetWeaponTableData(pm->ps->weapon)->isGrenade && pm->ps->weapon != WP_SMOKE_BOMB))
-	{
-		pm->ps->weaponTime  = 0;
-		pm->ps->weaponDelay = 0;
-
-		if (weaponstateFiring)     // you were just firing, time to relax
-		{
-			PM_ContinueWeaponAnim(GetWeaponTableData(pm->ps->weapon)->idleAnim);
-		}
-
-		pm->ps->weaponstate = WEAPON_READY;
-		return;
-	}
-
-	// a not mounted mortar can't fire
-	if (GetWeaponTableData(pm->ps->weapon)->isMortar)
-	{
-		return;
 	}
 
 	// player is zooming or using binocular - no fire
@@ -3693,48 +3698,13 @@ static void PM_Weapon(void)
 	pm->ps->weaponstate = WEAPON_FIRING;
 
 	// check for out of ammo
-	ammoNeeded = GetWeaponTableData(pm->ps->weapon)->uses;
-
-	if (pm->ps->weapon)
+	if (GetWeaponTableData(pm->ps->weapon)->uses > PM_WeaponAmmoAvailable(pm->ps->weapon))
 	{
-		int ammoAvailable;
+		PM_AddEvent(EV_NOAMMO);
+		PM_ContinueWeaponAnim(GetWeaponTableData(pm->ps->weapon)->idleAnim);
+		pm->ps->weaponTime += 500;
 
-		ammoAvailable = PM_WeaponAmmoAvailable(pm->ps->weapon);
-
-		if (ammoNeeded > ammoAvailable)
-		{
-			// you have ammo for this, just not in the clip
-			qboolean reloading = (qboolean)(ammoNeeded <= pm->ps->ammo[GetWeaponTableData(pm->ps->weapon)->ammoIndex]);
-
-			// if not in auto-reload mode, and reload was not explicitely requested, just play the 'out of ammo' sound
-			// scoped weapons not allowed to reload.  must switch back to primary first
-			if ((!pm->pmext->bAutoReload && GetWeaponTableData(pm->ps->weapon)->isAutoReload && !(pm->cmd.wbuttons & WBUTTON_RELOAD))
-			    || GetWeaponTableData(pm->ps->weapon)->isScoped)
-			{
-				reloading = qfalse;
-			}
-
-			// only play the switch sound if using a triggered weapon
-			if (!GetWeaponTableData(pm->ps->weapon)->isGrenade && pm->ps->weapon != WP_LANDMINE)
-			{
-				if (!reloading)
-				{
-					PM_AddEvent(EV_NOAMMO);
-				}
-			}
-
-			if (reloading)
-			{
-				PM_ContinueWeaponAnim(PM_ReloadAnimForWeapon(pm->ps->weapon));
-			}
-			else
-			{
-				PM_ContinueWeaponAnim(GetWeaponTableData(pm->ps->weapon)->idleAnim);
-				pm->ps->weaponTime += 500;
-			}
-
-			return;
-		}
+		return;
 	}
 
 	if (pm->ps->weaponDelay > 0)
@@ -3744,6 +3714,8 @@ static void PM_Weapon(void)
 		// checks for delayed weapons that have already been fired are return'ed above.
 		return;
 	}
+
+	// fire weapon
 
 	if (!(pm->ps->eFlags & EF_PRONE) && (pml.groundTrace.surfaceFlags & SURF_SLICK))
 	{
@@ -3769,11 +3741,9 @@ static void PM_Weapon(void)
 		// check for being mounted
 		if (!BG_PlayerMounted(pm->ps->eFlags))
 		{
-			PM_WeaponUseAmmo(pm->ps->weapon, ammoNeeded);
+			PM_WeaponUseAmmo(pm->ps->weapon, GetWeaponTableData(pm->ps->weapon)->uses);
 		}
 	}
-
-	// fire weapon
 
 	// add weapon heat
 	if (GetWeaponTableData(pm->ps->weapon)->maxHeat)
@@ -4141,7 +4111,7 @@ void PM_UpdateLean(playerState_t *ps, usercmd_t *cmd, pmove_t *tpm)
  *
  * @note Tnused trace parameter
  */
-void PM_UpdateViewAngles(playerState_t *ps, pmoveExt_t *pmext, usercmd_t *cmd, void(trace) (trace_t * results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask), int tracemask)             //   modified
+void PM_UpdateViewAngles(playerState_t *ps, pmoveExt_t *pmext, usercmd_t *cmd, void(trace) (trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask), int tracemask)              //   modified
 {
 	short  temp;
 	int    i;

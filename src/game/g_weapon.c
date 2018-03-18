@@ -2849,9 +2849,11 @@ void weapon_callAirStrike(gentity_t *ent)
 			bomb = G_Spawn();
 			G_PreFilledMissileEntity(bomb, WP_ARTY, WP_SMOKE_MARKER, ent->s.number, ent->s.teamNum, -1, ent->parent);     // might wanna change this
 
-			bomb->nextthink    = (int)(level.time + i * 100 + crandom() * 50 + 1000 + (j * 2000));    // overwrite, 1000 for aircraft flyby, other term for tumble stagger
-			bomb->think        = G_AirStrikeExplode;
-			bomb->s.pos.trTime = 0; // overwrite due to previous impl : //bomb->s.pos.trTime = level.time;      // move a bit on the very first frame
+			bomb->nextthink           = (int)(level.time + i * 100 + crandom() * 50 + 1000 + (j * 2000)); // overwrite, 1000 for aircraft flyby, other term for tumble stagger
+			bomb->think               = G_AirStrikeExplode;
+			bomb->s.pos.trTime        = 0; // overwrite due to previous impl : //bomb->s.pos.trTime = level.time;      // move a bit on the very first frame
+			bomb->methodOfDeath       = GetWeaponTableData(WP_SMOKE_MARKER)->mod;        // overwrite
+			bomb->splashMethodOfDeath = GetWeaponTableData(WP_SMOKE_MARKER)->splashMod;  // overwrite
 
 			bomboffset[0] = crandom() * .5f * BOMBSPREAD;
 			bomboffset[1] = crandom() * .5f * BOMBSPREAD;
@@ -4269,41 +4271,6 @@ void FireWeapon(gentity_t *ent)
 				ent->client->ps.powerups[PW_OPS_DISGUISED] = 0;
 				ent->client->disguiseClientNum             = -1;
 			}
-		}
-	}
-
-	// charge time handle
-	if (GetWeaponTableData(ent->s.weapon)->useChargeTime)
-	{
-		skillType_t skill = GetWeaponTableData(ent->s.weapon)->skillBased;
-		float       coeff = GetWeaponTableData(ent->s.weapon)->chargeTimeCoeff[ent->client->sess.skill[skill]];
-		int         chargeTime;
-
-		switch (skill)
-		{
-		case SK_EXPLOSIVES_AND_CONSTRUCTION:              chargeTime = level.engineerChargeTime[ent->client->sess.sessionTeam - 1];  break;
-		case SK_FIRST_AID:                                chargeTime = level.medicChargeTime[ent->client->sess.sessionTeam - 1];     break;
-		case SK_SIGNALS:                                  chargeTime = level.fieldopsChargeTime[ent->client->sess.sessionTeam - 1];  break;
-		case SK_HEAVY_WEAPONS:                            chargeTime = level.soldierChargeTime[ent->client->sess.sessionTeam - 1];   break;
-		case SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS: chargeTime = level.covertopsChargeTime[ent->client->sess.sessionTeam - 1]; break;
-		case SK_BATTLE_SENSE:
-		case SK_LIGHT_WEAPONS:
-		case SK_NUM_SKILLS:
-		default:                                          chargeTime = -1 /*ent->client->ps.classWeaponTime*/; break;
-		}
-
-		if (coeff != 1.f && chargeTime != -1)
-		{
-			if (level.time - ent->client->ps.classWeaponTime > chargeTime)
-			{
-				ent->client->ps.classWeaponTime = level.time - chargeTime;
-			}
-
-			ent->client->ps.classWeaponTime += coeff * chargeTime;
-		}
-		else
-		{
-			ent->client->ps.classWeaponTime = level.time;
 		}
 	}
 
