@@ -983,7 +983,7 @@ void    main()
 
 	// compute half angle in world space
 	vec3 H = normalize(L + V);
-
+	
 	// compute normal in tangent space from normalmap
 	vec3 N = 2.0 * (texture2D(u_NormalMap, texNormal.st).xyz - 0.5);
 	#if defined(r_NormalScale)
@@ -994,7 +994,7 @@ void    main()
 	// transform normal into world space
 	N = normalize(tangentToWorldMatrix * N);
 
-
+	vec3 R = normalize(-L, N)
 #else // USE_NORMAL_MAPPING
 
 	vec3 N;
@@ -1041,7 +1041,7 @@ void    main()
 
 #if defined(USE_NORMAL_MAPPING)
 	// compute the specular term
-	vec3 specular = texture2D(u_SpecularMap, texSpecular).rgb * u_LightColor * pow(clamp(dot(N, H), 0.0, 1.0), r_SpecularExponent) * r_SpecularScale;
+	vec3 specular = texture2D(u_SpecularMap, texSpecular).rgb * u_LightColor * pow(max(dot(V, R), 0.0), r_SpecularExponent) * r_SpecularScale;
 #endif
 
 
