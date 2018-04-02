@@ -2690,7 +2690,11 @@ typedef struct
 	srfVBOMesh_t **vboSurfaces;
 
 	//decals
-	decal_t *decals;
+	decal_t *decals; 
+// for fog volumes
+	int firstBrush;
+	int numBrushes;
+	orientation_t orientation;
 } bspModel_t;
 
 /**
