@@ -303,24 +303,24 @@ static void LogLight(trRefEntity_t *ent)
         return;
     }
 
-    max1 = ent->ambientLight[0];
+	max1 = (int)ent->ambientLight[0];
     if (ent->ambientLight[1] > max1)
     {
-        max1 = ent->ambientLight[1];
+		max1 = (int)ent->ambientLight[1];
     }
     else if (ent->ambientLight[2] > max1)
     {
-        max1 = ent->ambientLight[2];
+		max1 = (int)ent->ambientLight[2];
     }
 
-    max2 = ent->directedLight[0];
+	max2 = (int)ent->directedLight[0];
     if (ent->directedLight[1] > max2)
     {
-        max2 = ent->directedLight[1];
+		max2 = (int)ent->directedLight[1];
     }
     else if (ent->directedLight[2] > max2)
     {
-        max2 = ent->directedLight[2];
+		max2 = (int)ent->directedLight[2];
     }
 
     Ren_Print("amb:%i  dir:%i\n", max1, max2);
@@ -420,12 +420,15 @@ void R_SetupEntityLighting(const trRefdef_t *refdef, trRefEntity_t *ent, vec3_t 
 		if (pModel->bsp)
 		{
 			VectorScale(ent->ambientLight, 0.5f, ent->ambientLight); // default r_ambientscale
+			//for some reason we need to lift the value of directed light on brushes
+			VectorScale(ent->directedLight, 1.45f, ent->directedLight);
 		}
 		else
 		{
 			if (refdef->rdflags & RDF_NOWORLDMODEL) // no scaling for no world models set world ambient light instead
 			{
 				VectorCopy(tr.worldEntity.ambientLight, ent->ambientLight);
+				VectorCopy(tr.worldEntity.directedLight, ent->directedLight);
 			}
 			if (refdef->rdflags & RDF_SNOOPERVIEW) // nightscope
 			{
@@ -434,6 +437,7 @@ void R_SetupEntityLighting(const trRefdef_t *refdef, trRefEntity_t *ent, vec3_t 
 			else
 			{
 				VectorScale(ent->ambientLight, r_ambientScale->value, ent->ambientLight);
+				//FIXME, we dont have a r_directedScale->value as r1 has
 			}
 		}
 	}
