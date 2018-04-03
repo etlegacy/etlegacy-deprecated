@@ -4049,8 +4049,8 @@ static void R_LoadSubmodels(lump_t *l)
 		}
 
 		// for attaching fog brushes to models
-		//out->firstBrush = LittleLong(in->firstBrush);
-		//out->numBrushes = LittleLong(in->numBrushes);
+		out->firstBrush = LittleLong(in->firstBrush);
+		out->numBrushes = LittleLong(in->numBrushes);
 
 		// allocate decal memory
 		j           = (i == 0 ? MAX_WORLD_DECALS : MAX_ENTITY_DECALS);

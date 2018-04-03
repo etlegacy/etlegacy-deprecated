@@ -7,7 +7,6 @@ uniform sampler2D u_SpecularMap;
 uniform int       u_AlphaTest;
 uniform vec3      u_ViewOrigin;
 uniform float     u_DepthScale;
-uniform int       u_PortalClipping;
 uniform vec4      u_PortalPlane;
 uniform float     u_LightWrapAround;
 
@@ -22,7 +21,7 @@ varying vec3 var_Normal;
 
 void main()
 {
-	if (bool(u_PortalClipping))
+#if defined(USE_PORTAL_CLIPPING)
 	{
 		float dist = dot(var_Position.xyz, u_PortalPlane.xyz) - u_PortalPlane.w;
 		if (dist < 0.0)
@@ -31,6 +30,11 @@ void main()
 			return;
 		}
 	}
+#endif
+	 //do these here so they are for both cases, normalmap and vanilla
+	// compute view direction in world space
+	vec3 V = normalize(u_ViewOrigin - var_Position);
+	vec2 texDiffuse  = var_TexDiffuseNormal.st;
 
 #if defined(USE_NORMAL_MAPPING)
 
@@ -52,10 +56,8 @@ void main()
 		                             var_Tangent.z, var_Binormal.z, var_Normal.z);
 	}
 
-	// compute view direction in tangent space
-	vec3 V = normalize(objectToTangentMatrix * (u_ViewOrigin - var_Position));
-
-	vec2 texDiffuse  = var_TexDiffuseNormal.st;
+	
+	
 	vec2 texNormal   = var_TexDiffuseNormal.pq;
 	vec2 texSpecular = var_TexSpecular.st;
 
@@ -63,8 +65,14 @@ void main()
 
 	// ray intersect in view direction
 
+	mat3 worldToTangentMatrix = transpose(tangentToWorldMatrix);
+
+	// compute view direction in tangent space
+	vec3 Vts = worldToTangentMatrix * (u_ViewOrigin - var_Position.xyz);
+	Vts = normalize(Vts);
+
 	// size and start position of search in texture space
-	vec2 S = V.xy * -u_DepthScale / V.z;
+	vec2 S = Vts.xy * -u_DepthScale / Vts.z;
 
 #if 0
 	vec2 texOffset = vec2(0.0);
@@ -84,7 +92,7 @@ void main()
 	texDiffuse.st  += texOffset;
 	texNormal.st   += texOffset;
 	texSpecular.st += texOffset;
-#endif // USE_PARALLAX_MAPPING
+#endif // end USE_PARALLAX_MAPPING
 
 	// compute the diffuse term
 	vec4 diffuse = texture2D(u_DiffuseMap, texDiffuse);
@@ -124,6 +132,7 @@ void main()
 	// compute half angle in tangent space
 	vec3 H = normalize(L + V);
 
+	// compute specular reflection
 	vec3 R = reflect(-L, N);
 
 	// compute the light term
@@ -203,5 +212,5 @@ void main()
 
 	gl_FragColor = color;
 
-#endif // USE_NORMAL_MAPPING
+#endif // vanilla
 }
