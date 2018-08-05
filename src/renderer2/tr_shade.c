@@ -862,6 +862,11 @@ static void Render_lightMapping(int stage, qboolean asColorMap, qboolean normalM
 	GLSL_SetUniform_ColorModulate(trProg.gl_lightMappingShader, rgbaGen.color, rgbaGen.alpha);
 	SetUniformVec4(UNIFORM_COLOR, tess.svars.color);
 
+	if (r_wrapAroundLighting->integer)
+	{
+		SetUniformFloat(UNIFORM_LIGHTWRAPAROUND, RB_EvalExpression(&pStage->wrapAroundLightingExp, 0));
+	}
+
 	if (r_parallaxMapping->integer)
 	{
 		float depthScale;

@@ -135,31 +135,30 @@ void main()
 	// compute half angle in world space
 	vec3 H = normalize(L + I);
 
+	//compute reflection
+	vec3 R = reflect(-L, N);
 	// compute the specular term
 	vec3 specular = texture2D(u_SpecularMap, texSpecular).rgb;
 
-	float NdotL = clamp(dot(N, L), 0.0, 1.0);
+		// compute the light term
+#if defined(r_HalfLambertLighting)
+	// http://developer.valvesoftware.com/wiki/Half_Lambert
+	float NL = dot(N, L) * 0.5 + 0.5;
+#elif defined(r_WrapAroundLighting)
+	float NL = clamp(dot(N, L) + u_LightWrapAround, 0.0, 1.0) / clamp(1.0 + u_LightWrapAround, 0.0, 1.0);
+#else
+	float NL = clamp(dot(N, L), 0.0, 1.0);
+#endif
 
 	// compute light color from world space lightmap
-	vec3 lightColor = lightmapColor.rgb * NdotL;
+	vec3 lightColor = lightmapColor.rgb * NL;
 
-	float NdotLnobump = clamp(dot(normalize(var_Normal.xyz), L), 0.004, 1.0);
-	//vec3 lightColorNoNdotL = clamp(lightColor.rgb / NdotLnobump, 0.0, 1.0);
-
-	//float NdotLnobump = dot(normalize(var_Normal.xyz), L);
-	vec3 lightColorNoNdotL = lightColor.rgb / NdotLnobump;
+	
 
 	// compute final color
 	vec4 color = diffuse;
-	// color = vec4(vec3(1.0, 1.0, 1.0), diffuse.a);
-	//color.rgb = vec3(NdotLnobump, NdotLnobump, NdotLnobump);
-	//color.rgb *= lightColor.rgb;
-	//color.rgb = lightColorNoNdotL.rgb * NdotL;
-	//color.rgb *= clamp(lightColorNoNdotL.rgb * NdotL, lightColor.rgb * 1.0, lightColor.rgb);
-	//color.rgb *= diffuse.rgb;
-	//color.rgb = L * 0.5 + 0.5;
 	color.rgb *= lightColor;
-	color.rgb += specular * lightColor * pow(clamp(dot(N, H), 0.0, 1.0), r_SpecularExponent) * r_SpecularScale;
+	color.rgb += specular * lightColor * pow(max(dot(I, R), 0.0), r_SpecularExponent) * r_SpecularScale;
 	// for smooth terrain blending
 	color.a   *= var_Color.a; 
 
@@ -211,7 +210,7 @@ void main()
 	color.a   *= var_Color.a; 
 #endif
 
-	gl_FragColor = color;
+	
 
 	if (SHOW_DELUXEMAP)
 	{
