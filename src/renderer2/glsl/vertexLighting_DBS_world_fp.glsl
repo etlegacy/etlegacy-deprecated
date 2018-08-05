@@ -29,6 +29,8 @@ void main()
 			return;
 		}
 	#endif
+	// compute view direction in world space
+	vec3 V = normalize (u_ViewOrigin - var_Position);
 
 #if defined(USE_NORMAL_MAPPING)
 
@@ -50,8 +52,7 @@ void main()
 		                             var_Tangent.z, var_Binormal.z, var_Normal.z);
 	}
 
-	// compute view direction in tangent space
-	vec3 V = normalize(objectToTangentMatrix * (u_ViewOrigin - var_Position));
+	
 
 	vec2 texDiffuse  = var_TexDiffuseNormal.st;
 	vec2 texNormal   = var_TexDiffuseNormal.pq;
