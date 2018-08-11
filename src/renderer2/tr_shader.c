@@ -4396,13 +4396,14 @@ static qboolean ParseShader(char *_text)
 			//Ren_Warning( "WARNING: keyword '%s' not supported in shader '%s'\n", token, shader.name);
 			//SkipRestOfLine(text);
 
-			// set implicit mapping state
+			/*// set implicit mapping state
+			NOTE: FIXE.. todo check thru all combinations of blending
 			if (!Q_stricmp(token, "implicitBlend"))
 			{
 				implicitStateBits = GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
 				implicitCullType  = CT_TWO_SIDED;
-			}
-			else if (!Q_stricmp(token, "implicitMask"))
+			}*/
+			if (!Q_stricmp(token, "implicitBlend")|| (!Q_stricmp(token, "implicitMask")))
 			{
 				implicitStateBits = GLS_DEPTHMASK_TRUE | GLS_ATEST_GE_128;
 				implicitCullType  = CT_TWO_SIDED;
