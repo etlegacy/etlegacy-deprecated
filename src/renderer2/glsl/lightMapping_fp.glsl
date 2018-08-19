@@ -2,13 +2,10 @@
 #include "lib/reliefMapping"
 
 uniform bool SHOW_LIGHTMAP;
-uniform bool SHOW_DELUXEMAP;
-
 uniform sampler2D u_DiffuseMap;
 uniform sampler2D u_NormalMap;
 uniform sampler2D u_SpecularMap;
 uniform sampler2D u_LightMap;
-uniform sampler2D u_DeluxeMap;
 uniform int       u_AlphaTest;
 uniform vec3      u_ViewOrigin;
 uniform float     u_DepthScale;
@@ -30,7 +27,7 @@ varying vec4 var_Color;
 void main()
 {
 	vec4 lightmapColor  = texture2D(u_LightMap, var_TexLight);
-	vec4 deluxemapColor = texture2D(u_DeluxeMap, var_TexLight);
+	
 
 	//lower the lightmap intensity (this should be done on load)
 	lightmapColor.rgb = pow(lightmapColor.rgb, vec3(1.0 / LIGTMAP_INTENSITY));
@@ -129,7 +126,8 @@ void main()
 	// too expensive in fragment : N = normalize(tangentToWorldMatrix * N);
 
 	// compute light direction in world space
-	vec3 L = normalize(2.0 * (deluxemapColor.xyz - 0.5));
+
+	vec3 L = normalize(N);
 	//L = normalize(L);
 
 	// compute half angle in world space
@@ -143,21 +141,9 @@ void main()
 	// compute light color from world space lightmap
 	vec3 lightColor = lightmapColor.rgb * NdotL;
 
-	float NdotLnobump = clamp(dot(normalize(var_Normal.xyz), L), 0.004, 1.0);
-	//vec3 lightColorNoNdotL = clamp(lightColor.rgb / NdotLnobump, 0.0, 1.0);
-
-	//float NdotLnobump = dot(normalize(var_Normal.xyz), L);
-	vec3 lightColorNoNdotL = lightColor.rgb / NdotLnobump;
 
 	// compute final color
 	vec4 color = diffuse;
-	// color = vec4(vec3(1.0, 1.0, 1.0), diffuse.a);
-	//color.rgb = vec3(NdotLnobump, NdotLnobump, NdotLnobump);
-	//color.rgb *= lightColor.rgb;
-	//color.rgb = lightColorNoNdotL.rgb * NdotL;
-	//color.rgb *= clamp(lightColorNoNdotL.rgb * NdotL, lightColor.rgb * 1.0, lightColor.rgb);
-	//color.rgb *= diffuse.rgb;
-	//color.rgb = L * 0.5 + 0.5;
 	color.rgb *= lightColor;
 	color.rgb += specular * lightColor * pow(clamp(dot(N, H), 0.0, 1.0), r_SpecularExponent) * r_SpecularScale;
 	// for smooth terrain blending
@@ -211,11 +197,7 @@ void main()
 	color.a   *= var_Color.a; 
 #endif
 
-	if (SHOW_DELUXEMAP)
-	{
-		color = deluxemapColor;
-	}
-	else if (SHOW_LIGHTMAP)
+	if (SHOW_LIGHTMAP)
 	{
 		color = lightmapColor;
 	}

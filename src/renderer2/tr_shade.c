@@ -903,16 +903,9 @@ static void Render_lightMapping(int stage, qboolean asColorMap, qboolean normalM
 
 		SetUniformMatrix16(UNIFORM_SPECULARTEXTUREMATRIX, tess.svars.texMatrices[TB_SPECULARMAP]);
 
-		// bind u_DeluxeMap
-		SelectTexture(TEX_DELUXE);
-		BindDeluxeMap();
+		
 	}
-	else if (r_showDeluxeMaps->integer == 1)
-	{
-		SelectTexture(TEX_DELUXE);
-		BindDeluxeMap();
-	}
-
+	
 	// bind u_LightMap
 	SelectTexture(TEX_LIGHTMAP);
 	BindLightMap();
@@ -3120,7 +3113,16 @@ void Tess_StageIteratorGeneric()
 					}
 					else if (backEnd.currentEntity != &tr.worldEntity)
 					{
-						Render_vertexLighting_DBS_entity(stage);
+						model_t *pmodel;
+						pmodel = R_GetModelByHandle(backEnd.currentEntity->e.hModel);
+						if (pmodel->bsp)
+						{
+							Render_vertexLighting_DBS_world(stage);
+						}
+						else if (!pmodel->bsp)
+						{
+							Render_vertexLighting_DBS_entity(stage);
+						}
 					}
 					else
 					{
