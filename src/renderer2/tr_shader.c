@@ -6922,7 +6922,7 @@ static void CreateExternalShaders(void)
 
 	tr.flareShader = R_FindShader("flareShader", SHADER_3D_DYNAMIC, qtrue);
 	//use wolf image
-	tr.sunShader   = R_FindShader("sunshader", SHADER_3D_DYNAMIC, qtrue);
+	tr.sunShader   = R_FindShader("sunShader", SHADER_3D_DYNAMIC, qtrue);
 
 	tr.defaultPointLightShader     = R_FindShader("lights/defaultPointLight", SHADER_LIGHT, qtrue);
 	tr.defaultProjectedLightShader = R_FindShader("lights/defaultProjectedLight", SHADER_LIGHT, qtrue);
