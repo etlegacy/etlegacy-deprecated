@@ -144,23 +144,16 @@ int Add_Ammo(gentity_t *ent, weapon_t weapon, int count, qboolean fillClip)
 		Fill_Clip(&ent->client->ps, weapon);
 	}
 
-	if (GetWeaponTableData(ammoweap)->isPanzer || ammoweap == WP_FLAMETHROWER)
-	{
-		ent->client->ps.ammoclip[ammoweap] += count;
+	ent->client->ps.ammo[ammoweap] += count;
 
-		if (ent->client->ps.ammoclip[ammoweap] > maxammo)
-		{
-			ent->client->ps.ammoclip[ammoweap] = maxammo;   // - ent->client->ps.ammoclip[BG_FindClipForWeapon(weapon)];
-		}
+	if (!GetWeaponTableData(ammoweap)->useClip)
+	{
+		maxammo -= ent->client->ps.ammoclip[ammoweap];
 	}
-	else
-	{
-		ent->client->ps.ammo[ammoweap] += count;
 
-		if (ent->client->ps.ammo[ammoweap] > maxammo)
-		{
-			ent->client->ps.ammo[ammoweap] = maxammo;   // - ent->client->ps.ammoclip[BG_FindClipForWeapon(weapon)];
-		}
+	if (ent->client->ps.ammo[ammoweap] > maxammo)
+	{
+		ent->client->ps.ammo[ammoweap] = maxammo;   // - ent->client->ps.ammoclip[BG_FindClipForWeapon(weapon)];
 	}
 
 	if (count >= 999)     // 'really, give /all/'
@@ -408,7 +401,7 @@ void G_DropWeapon(gentity_t *ent, weapon_t weapon)
 	ent2 = LaunchItem(item, org, velocity, client->ps.clientNum);
 	COM_BitClear(client->ps.weapons, weapon);
 
-	if (GetWeaponTableData(weapon)->weapAlts != WP_NONE)
+	if (GetWeaponTableData(weapon)->weapAlts)
 	{
 		weapon_t weapAlts = GetWeaponTableData(weapon)->weapAlts;
 
@@ -426,7 +419,7 @@ void G_DropWeapon(gentity_t *ent, weapon_t weapon)
 		client->ps.weapon = 0;
 	}
 
-	if (GetWeaponTableData(weapon)->isMortarSet)
+	if (!GetWeaponTableData(weapon)->useClip)
 	{
 		ent2->count = client->ps.ammo[GetWeaponTableData(weapon)->ammoIndex] + client->ps.ammoclip[GetWeaponTableData(weapon)->clipIndex];
 	}
@@ -578,7 +571,7 @@ int Pickup_Weapon(gentity_t *ent, gentity_t *other)
 				COM_BitSet(other->client->ps.weapons, ent->item->giWeapon);
 
 				// fixup mauser/sniper issues
-				if (GetWeaponTableData(ent->item->giWeapon)->weapAlts != WP_NONE)
+				if (GetWeaponTableData(ent->item->giWeapon)->weapAlts)
 				{
 					weapon_t weapAlts = GetWeaponTableData(ent->item->giWeapon)->weapAlts;
 

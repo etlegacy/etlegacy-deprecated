@@ -206,10 +206,7 @@ void CG_AddLightstyle(centity_t *cent)
 	// normal global dlight
 	else
 	{
-		int g = ((cl >> 8) & 0xFF) / 255;
-		int b = ((cl >> 16) & 0xFF) / 255;
-
-		trap_R_AddLightToScene(cent->lerpOrigin, 256, lightval, r, g, b, 0, 0);
+		trap_R_AddLightToScene(cent->lerpOrigin, 256, lightval, r, ((cl >> 8) & 0xFF) / 255.f, ((cl >> 16) & 0xFF) / 255.f, 0, 0);
 	}
 }
 
@@ -280,13 +277,9 @@ static void CG_EntityEffects(centity_t *cent)
 		}
 		else
 		{
-			int   cl = cent->currentState.constantLight;
-			float r  = (cl & 0xFF) / 255.0f;
-			float g  = ((cl >> 8) & 0xFF) / 255.0f;
-			float b  = ((cl >> 16) & 0xFF) / 255.0f;
-			float i  = ((cl >> 24) & 0xFF) * 4;
+			int cl = cent->currentState.constantLight;
 
-			trap_R_AddLightToScene(cent->lerpOrigin, i, 1.0f, r, g, b, 0, 0);
+			trap_R_AddLightToScene(cent->lerpOrigin, ((cl >> 24) & 0xFF) * 4, 1.0f, (cl & 0xFF) / 255.0f, ((cl >> 8) & 0xFF) / 255.0f, ((cl >> 16) & 0xFF) / 255.0f, 0, 0);
 		}
 	}
 
@@ -1033,8 +1026,6 @@ static void CG_Missile(centity_t *cent)
 	// add dynamic light
 	if (weapon->missileDlight != 0.f)
 	{
-		//trap_R_AddLightToScene(cent->lerpOrigin, weapon->missileDlight,
-		//weapon->missileDlightColor[0], weapon->missileDlightColor[1], weapon->missileDlightColor[2], 0 );
 		trap_R_AddLightToScene(cent->lerpOrigin, weapon->missileDlight, 1.0,
 		                       weapon->missileDlightColor[0], weapon->missileDlightColor[1], weapon->missileDlightColor[2], 0, 0);
 	}
@@ -1817,7 +1808,7 @@ static void CG_Portal(centity_t *cent)
 	CrossProduct(ent.axis[0], ent.axis[1], ent.axis[2]);
 	ent.reType  = RT_PORTALSURFACE;
 	ent.frame   = s1->frame;    // rotation speed
-	ent.skinNum = s1->clientNum / 256 * 360;    // roll offset
+	ent.skinNum = s1->clientNum / 256.0 * 360;    // roll offset
 
 	// add to refresh list
 	trap_R_AddRefEntityToScene(&ent);

@@ -2275,7 +2275,6 @@ static void PM_BeginWeaponReload(weapon_t weapon)
 	}
 
 	// easier check now that the animation system handles the specifics
-	// TODO: this check seem useless ! throwable weapon don't enter in this function
 	if (!GetWeaponTableData(weapon)->isThrowable)
 	{
 		// override current animation (so reloading after firing will work)
@@ -2312,7 +2311,13 @@ static void PM_BeginWeaponReload(weapon_t weapon)
 	}
 
 	pm->ps->weaponstate = WEAPON_RELOADING;
-	PM_AddEvent(EV_FILL_CLIP);      // play reload sound
+
+	// FIXME: Currently, the rifle nade play an extra reload sound which wasn't used before. Maybe we should get ride of this in pak0.
+	// once theses sound remove, we can remove this check below
+	if (GetWeaponTableData(weapon)->useClip)
+	{
+		PM_AddEvent(EV_FILL_CLIP);      // play reload sound
+	}
 }
 
 static void PM_ReloadClip(weapon_t weapon);
@@ -2371,7 +2376,8 @@ static void PM_BeginWeaponChange(weapon_t oldWeapon, weapon_t newWeapon, qboolea
 
 	if (GetWeaponTableData(newWeapon)->isRifle)
 	{
-		if (newWeapon != GetWeaponTableData(oldWeapon)->weapAlts)
+		// don't send change weapon event after firing with riflenade
+		if (GetWeaponTableData(oldWeapon)->weapAlts != newWeapon || pm->ps->ammoclip[GetWeaponTableData(oldWeapon)->ammoIndex])
 		{
 			PM_AddEvent(EV_CHANGE_WEAPON);
 		}
@@ -2400,14 +2406,7 @@ static void PM_BeginWeaponChange(weapon_t oldWeapon, weapon_t newWeapon, qboolea
 	{
 		PM_StartWeaponAnim(GetWeaponTableData(oldWeapon)->altSwitchFrom);
 
-		if (GetWeaponTableData(oldWeapon)->isRifle)
-		{
-			if (!pm->ps->ammoclip[newWeapon] && pm->ps->ammo[newWeapon])
-			{
-				PM_ReloadClip(newWeapon);
-			}
-		}
-		else if (GetWeaponTableData(oldWeapon)->isMG || GetWeaponTableData(oldWeapon)->isMortar)
+		if (GetWeaponTableData(newWeapon)->isSetWeapon)
 		{
 			vec3_t axis[3];
 
@@ -2612,8 +2611,8 @@ void PM_CheckForReload(weapon_t weapon)
 		return;
 	}
 
-	// some weapons don't reload
-	if (!GetWeaponTableData(weapon)->isReload)
+	// some weapons don't use ammo and no need to reload
+	if (!GetWeaponTableData(weapon)->useAmmo)
 	{
 		return;
 	}
@@ -2695,34 +2694,20 @@ static void PM_SwitchIfEmpty(void)
 
 	// In multiplayer, pfaust fires once then switches to pistol since it's useless for a while
 	// after throwing landmine, let switch to pliers
-	if (GetWeaponTableData(pm->ps->weapon)->useAmmo && !GetWeaponTableData(pm->ps->weapon)->isPanzer && pm->ps->weapon != WP_LANDMINE)
+	if (GetWeaponTableData(pm->ps->weapon)->useAmmo
+	    && !GetWeaponTableData(pm->ps->weapon)->isPanzer
+	    && pm->ps->weapon != WP_LANDMINE)
 	{
-		// WP_M7 and WP_GPG40 run out of ammo immediately after firing their last grenade
-		if (GetWeaponTableData(pm->ps->weapon)->isRiflenade)
+		// use clip and still got ammo in clip
+		if (GetWeaponTableData(pm->ps->weapon)->useClip && pm->ps->ammoclip[GetWeaponTableData(pm->ps->weapon)->clipIndex])
 		{
-			if (pm->ps->ammoclip[GetWeaponTableData(pm->ps->weapon)->clipIndex])
-			{
-				return;
-			}
+			return;
 		}
-		else if (GetWeaponTableData(pm->ps->weapon)->isMortarSet)                   // the ammo from mortar are stored in the mortar (not mortar set)
-		{
-			if (pm->ps->ammo[GetWeaponTableData(pm->ps->weapon)->weapAlts])
-			{
-				return;
-			}
-		}
-		else
-		{
-			if (pm->ps->ammoclip[GetWeaponTableData(pm->ps->weapon)->clipIndex])    // still got ammo in clip
-			{
-				return;
-			}
 
-			if (pm->ps->ammo[GetWeaponTableData(pm->ps->weapon)->ammoIndex])        // still got ammo in reserve
-			{
-				return;
-			}
+		// still got ammo in reserve
+		if (pm->ps->ammo[GetWeaponTableData(pm->ps->weapon)->ammoIndex])
+		{
+			return;
 		}
 	}
 
@@ -3679,12 +3664,6 @@ static void PM_Weapon(void)
 		}
 	}
 
-	// add weapon heat
-	if (GetWeaponTableData(pm->ps->weapon)->maxHeat)
-	{
-		pm->ps->weapHeat[pm->ps->weapon] += GetWeaponTableData(pm->ps->weapon)->nextShotTime;
-	}
-
 	// first person weapon animations
 
 	// if this was the last round in the clip, play the 'lastshot' animation
@@ -3818,11 +3797,8 @@ static void PM_Weapon(void)
 
 	pm->ps->aimSpreadScale = (int)(pm->ps->aimSpreadScaleFloat);
 
-	if (GetWeaponTableData(pm->ps->weapon)->isMG || GetWeaponTableData(pm->ps->weapon)->isMGSet)
+	if ((GetWeaponTableData(pm->ps->weapon)->isMG || GetWeaponTableData(pm->ps->weapon)->isMGSet))
 	{
-		// sync heat for overheat check
-		pm->ps->weapHeat[GetWeaponTableData(pm->ps->weapon)->weapAlts] = pm->ps->weapHeat[pm->ps->weapon];
-
 		if (weapattackanim == WEAP_ATTACK_LASTSHOT)
 		{
 			addTime = 0;
@@ -3852,13 +3828,24 @@ static void PM_Weapon(void)
 	}
 
 	// check for overheat
-	// the weapon can overheat, and it is overheating
-	if (GetWeaponTableData(pm->ps->weapon)->maxHeat && pm->ps->weapHeat[pm->ps->weapon] >= GetWeaponTableData(pm->ps->weapon)->maxHeat)
+	if (GetWeaponTableData(pm->ps->weapon)->maxHeat)
 	{
-		pm->ps->weapHeat[pm->ps->weapon] = GetWeaponTableData(pm->ps->weapon)->maxHeat;         // cap heat to max
-		PM_AddEvent(EV_WEAP_OVERHEAT);
-		//PM_StartWeaponAnim(WEAP_IDLE1); // removed.  client handles anim in overheat event
-		addTime = 2000;         // force "heat recovery minimum" to 2 sec right now
+		pm->ps->weapHeat[pm->ps->weapon] += GetWeaponTableData(pm->ps->weapon)->nextShotTime;
+
+		// it is overheating
+		if (pm->ps->weapHeat[pm->ps->weapon] >= GetWeaponTableData(pm->ps->weapon)->maxHeat)
+		{
+			pm->ps->weapHeat[pm->ps->weapon] = GetWeaponTableData(pm->ps->weapon)->maxHeat;         // cap heat to max
+			PM_AddEvent(EV_WEAP_OVERHEAT);
+			//PM_StartWeaponAnim(WEAP_IDLE1); // removed.  client handles anim in overheat event
+			addTime = 2000;         // force "heat recovery minimum" to 2 sec right now
+		}
+
+		// sync heat for overheat check
+		if (GetWeaponTableData(pm->ps->weapon)->weapAlts)
+		{
+			pm->ps->weapHeat[GetWeaponTableData(pm->ps->weapon)->weapAlts] = pm->ps->weapHeat[pm->ps->weapon];
+		}
 	}
 
 	pm->ps->weaponTime += addTime;
