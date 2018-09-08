@@ -392,9 +392,10 @@ static void R_AddWorldSurface(bspSurface_t *surf, int decalBits)
 /**
  * @brief R_AddBrushModelSurface
  * @param[in,out] surf
+ * @param[in] customShader
  * @param[in] fogIndex
  */
-static void R_AddBrushModelSurface(bspSurface_t *surf, int fogIndex)
+static void R_AddBrushModelSurface(bspSurface_t *surf, shader_t *customShader, int fogIndex)
 {
 	int frontFace;
 
@@ -410,7 +411,14 @@ static void R_AddBrushModelSurface(bspSurface_t *surf, int fogIndex)
 		return;
 	}
 
-	R_AddDrawSurf(surf->data, surf->shader, surf->lightmapNum, fogIndex);
+	if (customShader)
+	{
+		R_AddDrawSurf(surf->data, customShader, surf->lightmapNum, fogIndex);
+	}
+	else
+	{
+		R_AddDrawSurf(surf->data, surf->shader, surf->lightmapNum, fogIndex);
+	}
 }
 
 /**
@@ -485,8 +493,14 @@ void R_AddBSPModelSurfaces(trRefEntity_t *ent)
 		for (i = 0; i < bspModel->numVBOSurfaces; i++)
 		{
 			vboSurface = bspModel->vboSurfaces[i];
-
-			R_AddDrawSurf((surfaceType_t *) vboSurface, vboSurface->shader, vboSurface->lightmapNum, fogNum);
+			if (ent->e.customShader)
+			{
+				R_AddDrawSurf((surfaceType_t *)vboSurface, R_GetShaderByHandle(ent->e.customShader), vboSurface->lightmapNum, fogNum);
+			}
+			else
+			{
+				R_AddDrawSurf((surfaceType_t *)vboSurface, vboSurface->shader, vboSurface->lightmapNum, fogNum);
+			}
 		}
 
 		// also add surfaces like deform autosprite
@@ -498,15 +512,28 @@ void R_AddBSPModelSurfaces(trRefEntity_t *ent)
 			{
 				continue;
 			}
-
-			R_AddBrushModelSurface(surf, fogNum);
+			if (ent->e.customShader)
+			{
+				R_AddBrushModelSurface(surf, R_GetShaderByHandle(ent->e.customShader), fogNum);
+			}
+			else
+			{
+				R_AddBrushModelSurface(surf, NULL, fogNum);
+			}
 		}
 	}
 	else
 	{
 		for (i = 0; i < bspModel->numSurfaces; i++)
 		{
-			R_AddBrushModelSurface(bspModel->firstSurface + i, fogNum);
+			if (ent->e.customShader)
+			{
+				R_AddBrushModelSurface(bspModel->firstSurface + i, R_GetShaderByHandle(ent->e.customShader), fogNum);
+			}
+			else
+			{
+				R_AddBrushModelSurface(bspModel->firstSurface + i, NULL, fogNum);
+			}
 		}
 	}
 }
