@@ -979,7 +979,9 @@ qboolean ShaderRequiresCPUDeforms(const shader_t *shader)
 			case DEFORM_WAVE:
 			case DEFORM_BULGE:
 				// need CPU deforms at high level-times to avoid floating point percision loss
-				return (backEnd.refdef.floatTime != (float)backEnd.refdef.floatTime); // tess.shaderTime?!
+				//return (backEnd.refdef.floatTime != (float)backEnd.refdef.floatTime); // tess.shaderTime?!
+				//just return time:
+				return ((float)backEnd.refdef.floatTime);
 			case DEFORM_MOVE:
 				break;
 			default:
