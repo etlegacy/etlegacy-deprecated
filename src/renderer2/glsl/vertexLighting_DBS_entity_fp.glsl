@@ -103,7 +103,7 @@ void main()
 	vec3 H = normalize(L + V);
 
 	// compute specular reflection
-	vec3 R =  reflect(-L, N); 
+	vec3 R =  reflect(L, N); 
 
 	// compute the specular term
 #if defined(USE_REFLECTIVE_SPECULAR)
