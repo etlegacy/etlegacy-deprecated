@@ -25,7 +25,7 @@ varying vec3 var_Normal;
 
 varying vec4 var_Color;
 
-#define LIGHTMAP_INTENSITY 1
+//#define LIGHTMAP_INTENSITY 1
 
 void main()
 {
@@ -45,7 +45,7 @@ void main()
 	vec4 deluxemapColor = texture2D(u_DeluxeMap, var_TexLight);
 
 	//lower the lightmap intensity (this should be done on load)
-	lightmapColor.rgb = pow(lightmapColor.rgb, vec3(1.0 / LIGHTMAP_INTENSITY));
+	//lightmapColor.rgb = pow(lightmapColor.rgb, vec3(1.0 / LIGHTMAP_INTENSITY));
 
 #if defined(USE_NORMAL_MAPPING)
 
@@ -56,7 +56,7 @@ void main()
 	// invert tangent space for two sided surfaces
 	mat3 tangentToWorldMatrix;
 #if defined(TWOSIDED)
-	if (gl_FrontFacing)
+	if (!gl_FrontFacing)
 	{
 		tangentToWorldMatrix = mat3(-var_Tangent.xyz, -var_Binormal.xyz, -var_Normal.xyz);
 	}
@@ -175,7 +175,7 @@ void main()
 	vec3 N;
 
 #if defined(TWOSIDED)
-	if (gl_FrontFacing)
+	if (!gl_FrontFacing)
 	{
 		N = -normalize(var_Normal);
 	}

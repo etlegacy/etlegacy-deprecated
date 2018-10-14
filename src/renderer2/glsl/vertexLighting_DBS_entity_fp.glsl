@@ -43,7 +43,7 @@ void main()
 #endif
 
 	// compute light direction in world space
-	vec3 L = u_LightDir;
+	vec3 L = -u_LightDir;
 
 	// compute view direction in world space
 	vec3 V = normalize(u_ViewOrigin - var_Position);
@@ -55,7 +55,7 @@ void main()
 	mat3 tangentToWorldMatrix;
 
 #if defined(TWOSIDED)
-	if (gl_FrontFacing)
+	if (!gl_FrontFacing)
 	{
 		tangentToWorldMatrix = mat3(-var_Tangent.xyz, -var_Binormal.xyz, -var_Normal.xyz);
 	}
@@ -143,7 +143,7 @@ void main()
 	vec3 N;
 
 #if defined(TWOSIDED)
-	if (gl_FrontFacing)
+	if (!gl_FrontFacing)
 	{
 		N = -normalize(var_Normal);
 		// gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);

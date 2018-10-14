@@ -39,7 +39,7 @@ void main()
 	mat3 objectToTangentMatrix;
 
 #if defined(TWOSIDED)
-	if (gl_FrontFacing)
+	if (!gl_FrontFacing)
 	{
 		objectToTangentMatrix = mat3(-var_Tangent.x, -var_Binormal.x, -var_Normal.x,
 		                             -var_Tangent.y, -var_Binormal.y, -var_Normal.y,
@@ -154,7 +154,7 @@ void main()
 	vec3 N;
 
 #if defined(TWOSIDED)
-	if (gl_FrontFacing)
+	if (!gl_FrontFacing)
 	{
 		N = -normalize(var_Normal);
 	}
