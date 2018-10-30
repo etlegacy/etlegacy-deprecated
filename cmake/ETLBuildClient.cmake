@@ -42,6 +42,10 @@ if(BUNDLED_CURL)
 	add_dependencies(etl bundled_curl)
 endif(BUNDLED_CURL)
 
+if(BUNDLED_OPENSSL)
+	add_dependencies(etl bundled_openssl)
+endif(BUNDLED_OPENSSL)
+
 if(BUNDLED_JANSSON)
 	add_dependencies(etl bundled_jansson)
 endif(BUNDLED_JANSSON)

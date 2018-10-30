@@ -34,7 +34,7 @@ LEG_BUNDLE(ZLIB Zlib)
 LEG_BUNDLE(MINIZIP Minizip)
 LEG_BUNDLE(JPEG JPEG)
 LEG_BUNDLE(CURL Curl "NOT APPLE")
-LEG_BUNDLE(OPENSSL OpenSSL "OFF")
+LEG_BUNDLE(OPENSSL OpenSSL)
 LEG_BUNDLE(LUA Lua)
 LEG_BUNDLE(OGG_VORBIS OGG)
 LEG_BUNDLE(THEORA Theora)
@@ -50,7 +50,8 @@ cmake_dependent_option(CROSS_COMPILE32 "Compile 32-bit version of ET:L (64bit is
 
 # Optional features
 option(FEATURE_CURL				"Enable auto-download support using cURL (client)"		ON)
-option(FEATURE_OPENSSL			"Build openssl for curl and authentication"				OFF)
+option(FEATURE_OPENSSL			"Build openssl for curl and authentication"				ON)
+option(FEATURE_AUTH				"ET:Legacy master authentication"						ON)
 option(FEATURE_OGG_VORBIS		"Enable OGG Vorbis support (client)"					ON)
 option(FEATURE_THEORA			"Enable Theora video support (client)"					ON)
 option(FEATURE_OPENAL			"Enable OpenAL sound backend (client)"					ON)
