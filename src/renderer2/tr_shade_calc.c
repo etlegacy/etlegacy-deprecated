@@ -1118,8 +1118,14 @@ void RB_CalcTexMatrix(const textureBundle_t *bundle, mat4_t matrix)
 
 			// clamp so coordinates don't continuously get larger, causing problems
 			// with hardware limits
-			x = x - floor(x);
-			y = y - floor(y);
+			// x = x - floor(x);
+			//y = y - floor(y);
+			// use const for clamping instead
+			x = x - floor(bundle->texMods[j].scroll[0]);
+			y = y - floor(bundle->texMods[j].scroll[1]);
+
+			//check for cordinates not getting larger and larger
+			//Ren_Print("cordinates %i  %i \n",x,y);
 
 			MatrixMultiplyTranslation(matrix, x, y, 0.0);
 			break;
