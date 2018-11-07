@@ -979,7 +979,8 @@ qboolean ShaderRequiresCPUDeforms(const shader_t *shader)
 			case DEFORM_WAVE:
 			case DEFORM_BULGE:
 				// need CPU deforms at high level-times to avoid floating point percision loss
-				return (backEnd.refdef.floatTime != (float)backEnd.refdef.floatTime); // tess.shaderTime?!
+				// compare against real time if tess.shaderTime keeps up
+				return (qboolean)(backEnd.refdef.time != (float)tess.shaderTime); // tess.shaderTime?!
 			case DEFORM_MOVE:
 				break;
 			default:
@@ -1118,8 +1119,15 @@ void RB_CalcTexMatrix(const textureBundle_t *bundle, mat4_t matrix)
 
 			// clamp so coordinates don't continuously get larger, causing problems
 			// with hardware limits
-			x = x - floor(x);
-			y = y - floor(y);
+			// x = x - floor(x);
+			//y = y - floor(y);
+			// use const for clamping instead 
+            // see render 1  RB_CalcScrollTexCoords, scrolls should be const if we look at header there
+			x = x - floor(bundle->texMods[j].scroll[0]);
+			y = y - floor(bundle->texMods[j].scroll[1]);
+
+			//check for cordinates not getting larger and larger
+			//Ren_Print("cordinates %i  %i \n",x,y);
 
 			MatrixMultiplyTranslation(matrix, x, y, 0.0);
 			break;
