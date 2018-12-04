@@ -971,7 +971,7 @@ qboolean ShaderRequiresCPUDeforms(const shader_t *shader)
 		return qfalse;
 	}
 
-	if (shader->numDeforms == 1)
+	if (shader->numDeforms > 0)
 	{
 		const deformStage_t *ds = &shader->deforms[0];
 
@@ -983,6 +983,11 @@ qboolean ShaderRequiresCPUDeforms(const shader_t *shader)
 			default:
 				return qtrue;
 		}
+	}
+	else
+	//there still isnt any
+	{
+		return qfalse;
 	}
 }
 
