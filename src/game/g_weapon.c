@@ -2446,17 +2446,66 @@ weapengineergoto3:
 	return NULL;
 }
 
+void artilleryThink(gentity_t *ent);
+
 /**
  * @brief G_AirStrikeExplode
  * @param[in,out] self
  */
 void G_AirStrikeExplode(gentity_t *self)
 {
-	self->r.svFlags &= ~SVF_NOCLIENT;
-	self->r.svFlags |= SVF_BROADCAST;
+//	self->r.svFlags &= ~SVF_NOCLIENT;
+//	self->r.svFlags |= SVF_BROADCAST;
 
-	self->think     = G_ExplodeMissile;
-	self->nextthink = level.time + 50;
+//	self->think     = G_ExplodeMissile;
+//	self->nextthink = level.time + 50;
+
+	if (self->count > 0)
+	{
+		gentity_t *bomb, *bomb2;
+		vec3_t    bomboffset;
+
+		bomboffset[0] = crandom() * 250;
+		bomboffset[1] = crandom() * 250;
+		bomboffset[2] = 0;
+
+		VectorAdd(self->s.origin2, bomboffset, bomboffset);
+
+		bomb = G_Spawn();
+		G_PreFilledMissileEntity(bomb, WP_ARTY, WP_ARTY,
+		                         self->r.ownerNum, self->s.teamNum, self->s.clientNum,
+		                         self->parent,
+		                         bomboffset,
+		                         tv(0.f, 0.f, 0.f));    // might need to change this
+
+		// classname 'air strike'
+//		bomb->think      = G_AirStrikeExplode;
+		bomb->free = G_AirStrikeExplode;
+//		bomb->nextthink += 2000 + crandom() * 800;
+		bomb->count     = self->count - 1;
+		bomb->nextthink = 0;
+
+		VectorCopy(self->s.origin2, bomb->s.origin2);
+
+		// build arty falling sound effect in front of bomb drop
+		bomb2               = G_Spawn();
+		bomb2->think        = artilleryThink;
+		bomb2->s.eType      = ET_MISSILE;
+		bomb2->s.weapon     = WP_NONE;
+		bomb2->r.svFlags    = SVF_NOCLIENT;
+		bomb2->r.ownerNum   = self->s.number;
+		bomb2->parent       = self;
+		bomb2->s.teamNum    = self->s.teamNum;
+		bomb2->damage       = 0;
+		bomb2->nextthink    = level.time;
+		bomb2->classname    = "arty_sound_effect";
+		bomb2->clipmask     = MASK_MISSILESHOT;
+		bomb2->s.pos.trType = TR_GRAVITY; // was TR_GRAVITY,  might wanna go back to this and drop from height
+		bomb2->s.pos.trTime = level.time;    // move a bit on the very first frame
+		VectorCopy(bomb->s.pos.trBase, bomb2->s.pos.trBase);
+		VectorCopy(bomb->s.pos.trDelta, bomb2->s.pos.trDelta);
+		VectorCopy(bomb->s.pos.trBase, bomb2->r.currentOrigin);
+	}
 }
 
 /**
@@ -2753,9 +2802,9 @@ void weapon_callAirStrike(gentity_t *ent)
 			                         ent->s.number, ent->s.teamNum, -1,
 			                         ent->parent, tv(0.f, 0.f, 0.f), tv(0.f, 0.f, 0.f));     // might wanna change this
 
-			bomb->nextthink           = (int)(level.time + i * 100 + crandom() * 50 + 1000 + (j * 2000)); // overwrite, 1000 for aircraft flyby, other term for tumble stagger
-			bomb->think               = G_AirStrikeExplode;
-			bomb->s.pos.trTime        = 0; // overwrite due to previous impl : //bomb->s.pos.trTime = level.time;      // move a bit on the very first frame
+			bomb->nextthink    = (int)(level.time + i * 100 + crandom() * 50 + 1000 + (j * 2000));        // overwrite, 1000 for aircraft flyby, other term for tumble stagger
+			bomb->think        = G_AirStrikeExplode;
+			bomb->s.pos.trTime = 0;        // overwrite due to previous impl : //bomb->s.pos.trTime = level.time;      // move a bit on the very first frame
 
 			bomboffset[0] = crandom() * .5f * BOMBSPREAD;
 			bomboffset[1] = crandom() * .5f * BOMBSPREAD;
@@ -2856,9 +2905,11 @@ void artillerySpotterThink(gentity_t *ent)
 	vec3_t    tmpdir;
 	int       i;
 
-	ent->think     = G_ExplodeMissile;
-	ent->nextthink = level.time + 1;
-	SnapVector(ent->s.pos.trBase);
+//	ent->think     = G_ExplodeMissile;
+//	ent->nextthink = level.time + 1;
+//	SnapVector(ent->s.pos.trBase);
+
+	G_AirStrikeExplode(ent);
 
 	for (i = 0; i < 7; i++)
 	{
@@ -2909,9 +2960,7 @@ void G_GlobalClientEvent(entity_event_t event, int param, int client)
 void Weapon_Artillery(gentity_t *ent)
 {
 	trace_t   trace;
-	int       i, count;
-	vec3_t    muzzlePoint, end, bomboffset, pos, fallaxis;
-	float     traceheight, bottomtraceheight;
+	vec3_t    muzzlePoint, end, bomboffset, pos;
 	gentity_t *bomb, *bomb2;
 
 	if (ent->client->ps.stats[STAT_PLAYER_CLASS] != PC_FIELDOPS)
@@ -2976,93 +3025,68 @@ void Weapon_Artillery(gentity_t *ent)
 	G_GlobalClientEvent(EV_ARTYMESSAGE, 2, ent - g_entities);
 
 	VectorCopy(trace.endpos, bomboffset);
-	traceheight       = bomboffset[2];
-	bottomtraceheight = traceheight - MAX_TRACE;
+	bomboffset[0] = 0;
+	bomboffset[1] = 0;
+
+	VectorAdd(pos, bomboffset, pos);
+
+	// spotter round is always dead on (OK, unrealistic but more fun)
+	bomboffset[0] = crandom() * 50; // was 0; changed per id request to prevent spotter round assassinations
+	bomboffset[1] = crandom() * 50; // was 0;
+	bomboffset[2] = 0;
+
+	VectorAdd(pos, bomboffset, bomboffset);
+
+	bomb = G_Spawn();
+	G_PreFilledMissileEntity(bomb, WP_ARTY, WP_ARTY,
+	                         ent->s.number, ent->client->sess.sessionTeam, ent->client->sess.sessionTeam,
+	                         ent,
+	                         bomboffset,
+	                         tv(0.f, 0.f, 0.f));    // might need to change this
+
+	bomb->think             = artillerySpotterThink;
+	bomb->free              = artillerySpotterThink;
+	bomb->s.eFlags          = EF_NONE;                  // overwrite
+	bomb->nextthink         = level.time + 5000;        // overwrite
+	bomb->r.svFlags         = SVF_BROADCAST;            // overwrite
+	bomb->classname         = "props_explosion";        // overwrite, was "air strike"
+	bomb->splashDamage      = 90;                       // overwrite
+	bomb->splashRadius      = 50;                       // overwrite
+	bomb->count2            = 1000;
+	bomb->delay             = 300;
+	bomb->s.otherEntityNum2 = 1;                        // first bomb
+
+	VectorCopy(pos, bomb->s.origin2);
 
 	// "spotter" round (i == 0)
 	// i == 1->4 is regular explosives
 	if (ent->client->sess.skill[SK_SIGNALS] >= 3)
 	{
-		count = 9;
+		bomb->count = 8;
 	}
 	else
 	{
-		count = 5;
+		bomb->count = 4;
 	}
 
-	for (i = 0; i < count; i++)
-	{
-		bomb = G_Spawn();
-		G_PreFilledMissileEntity(bomb, WP_ARTY, WP_ARTY,
-		                         ent->s.number, ent->client->sess.sessionTeam, ent->client->sess.sessionTeam,
-		                         ent,
-		                         tv(0.f, 0.f, 0.f),
-		                         tv(0.f, 0.f, 0.f));    // might need to change this
-
-		if (i == 0)
-		{
-			bomb->think             = artillerySpotterThink;
-			bomb->s.eFlags          = EF_NONE;                  // overwrite
-			bomb->nextthink         = level.time + 5000;        // overwrite
-			bomb->r.svFlags         = SVF_BROADCAST;            // overwrite
-			bomb->classname         = "props_explosion";        // overwrite, was "air strike"
-			bomb->splashDamage      = 90;                       // overwrite
-			bomb->splashRadius      = 50;                       // overwrite
-			bomb->count             = 7;
-			bomb->count2            = 1000;
-			bomb->delay             = 300;
-			bomb->s.otherEntityNum2 = 1;                        // first bomb
-
-			// spotter round is always dead on (OK, unrealistic but more fun)
-			bomboffset[0] = crandom() * 50; // was 0; changed per id request to prevent spotter round assassinations
-			bomboffset[1] = crandom() * 50; // was 0;
-		}
-		else
-		{
-			// classname 'air strike'
-			bomb->think      = G_AirStrikeExplode;
-			bomb->nextthink += 2000 * i + crandom() * 800;
-
-			bomboffset[0] = crandom() * 250;
-			bomboffset[1] = crandom() * 250;
-		}
-		bomboffset[2] = 0;
-
-		VectorAdd(pos, bomboffset, bomb->s.pos.trBase);
-
-		VectorCopy(bomb->s.pos.trBase, bomboffset);  // make sure bombs fall "on top of" nonuniform scenery
-		bomboffset[2] = traceheight;
-
-		VectorCopy(bomboffset, fallaxis);
-		fallaxis[2] = bottomtraceheight;
-
-		trap_Trace(&trace, bomboffset, NULL, NULL, fallaxis, ent->s.number, MASK_SHOT);
-		if (trace.fraction != 1.0f)
-		{
-			VectorCopy(trace.endpos, bomb->s.pos.trBase);
-		}
-
-		VectorCopy(bomb->s.pos.trBase, bomb->r.currentOrigin);
-
-		// build arty falling sound effect in front of bomb drop
-		bomb2               = G_Spawn();
-		bomb2->think        = artilleryThink;
-		bomb2->s.eType      = ET_MISSILE;
-		bomb2->s.weapon     = WP_NONE;
-		bomb2->r.svFlags    = SVF_NOCLIENT;
-		bomb2->r.ownerNum   = ent->s.number;
-		bomb2->parent       = ent;
-		bomb2->s.teamNum    = ent->s.teamNum;
-		bomb2->damage       = 0;
-		bomb2->nextthink    = bomb->nextthink - 600;
-		bomb2->classname    = "arty_sound_effect";
-		bomb2->clipmask     = MASK_MISSILESHOT;
-		bomb2->s.pos.trType = TR_STATIONARY; // was TR_GRAVITY,  might wanna go back to this and drop from height
-		bomb2->s.pos.trTime = level.time;    // move a bit on the very first frame
-		VectorCopy(bomb->s.pos.trBase, bomb2->s.pos.trBase);
-		VectorCopy(bomb->s.pos.trDelta, bomb2->s.pos.trDelta);
-		VectorCopy(bomb->s.pos.trBase, bomb2->r.currentOrigin);
-	}
+	// build arty falling sound effect in front of bomb drop
+	bomb2               = G_Spawn();
+	bomb2->think        = artilleryThink;
+	bomb2->s.eType      = ET_MISSILE;
+	bomb2->s.weapon     = WP_NONE;
+	bomb2->r.svFlags    = SVF_NOCLIENT;
+	bomb2->r.ownerNum   = ent->s.number;
+	bomb2->parent       = ent;
+	bomb2->s.teamNum    = ent->s.teamNum;
+	bomb2->damage       = 0;
+	bomb2->nextthink    = bomb->nextthink - 600;
+	bomb2->classname    = "arty_sound_effect";
+	bomb2->clipmask     = MASK_MISSILESHOT;
+	bomb2->s.pos.trType = TR_GRAVITY; // was TR_GRAVITY,  might wanna go back to this and drop from height
+	bomb2->s.pos.trTime = level.time;    // move a bit on the very first frame
+	VectorCopy(bomb->s.pos.trBase, bomb2->s.pos.trBase);
+	VectorCopy(bomb->s.pos.trDelta, bomb2->s.pos.trDelta);
+	VectorCopy(bomb->s.pos.trBase, bomb2->r.currentOrigin);
 
 	if (ent->client->sess.skill[SK_SIGNALS] >= 2)
 	{
@@ -3277,14 +3301,14 @@ gentity_t *Bullet_Fire(gentity_t *ent)
 	}
 	else if (GetWeaponTableData(ent->s.weapon)->type & WEAPON_TYPE_MG)
 	{
-        if ((GetWeaponTableData(ent->s.weapon)->type & WEAPON_TYPE_SETTABLE) && ((ent->client->ps.pm_flags & PMF_DUCKED) || (ent->client->ps.eFlags & EF_PRONE)))
-        {
-            spread *= .6f;
-        }
-        else
-        {
-            spread *= .05f;   
-        }
+		if ((GetWeaponTableData(ent->s.weapon)->type & WEAPON_TYPE_SETTABLE) && ((ent->client->ps.pm_flags & PMF_DUCKED) || (ent->client->ps.eFlags & EF_PRONE)))
+		{
+			spread *= .6f;
+		}
+		else
+		{
+			spread *= .05f;
+		}
 	}
 
 	Bullet_Endpos(ent, spread, &end);
@@ -3707,7 +3731,7 @@ gentity_t *weapon_antitank_fire(gentity_t *ent)
 	VectorCopy(forward, dir);
 	VectorNormalize(dir);
 	VectorScale(dir, 2500, dir);
-    
+
 	rocket = fire_missile(ent, muzzleEffect, dir, ent->s.weapon);
 
 	if (ent->client)
@@ -4042,6 +4066,7 @@ qboolean G_PlayerCanBeSeenByOthers(gentity_t *ent)
 	return qfalse;
 }
 
+// *INDENT-OFF*
 weapFireTable_t weapFireTable[] =
 {
     // weapon                  fire                         think                       free           eType                  eFlags                      svFlags                       content          trType          trTime boundingBox                                      clipMask          nextThink accuracy health timeStamp
@@ -4059,7 +4084,7 @@ weapFireTable_t weapFireTable[] =
 	{ WP_STEN,                 Bullet_Fire,                 NULL,                       NULL,          ET_GENERAL,            EF_NONE,                    SVF_NONE,                     CONTENTS_NONE,   TR_LINEAR,      0,     { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_SHOT,        0,        0,       0,     0,        },      
 	{ WP_MEDIC_SYRINGE,        Weapon_Syringe,              NULL,                       NULL,          ET_GENERAL,            EF_NONE,                    SVF_NONE,                     CONTENTS_NONE,   TR_LINEAR,      0,     { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_SHOT,        0,        0,       0,     0,        },     
 	{ WP_AMMO,                 Weapon_MagicAmmo,            MagicSink,                  NULL,          ET_ITEM,               EF_NONE,                    SVF_NONE,                     CONTENTS_NONE,   TR_GRAVITY,     0,     { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_SHOT,        30000,    0,       0,     0,        },
-	{ WP_ARTY,                 NULL,                        G_AirStrikeExplode,         NULL,          ET_MISSILE,            EF_SMOKINGBLACK,            SVF_NOCLIENT,                 CONTENTS_NONE,   TR_STATIONARY,  1,     { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_MISSILESHOT, 8950,     2,       0,     0,        },     
+	{ WP_ARTY,                 NULL,                        G_AirStrikeExplode,         NULL,          ET_MISSILE,            EF_SMOKINGBLACK,            SVF_NOCLIENT,                 CONTENTS_CORPSE, TR_GRAVITY,     1,     { { -24.f, -24.f, 0.f }, { 24.f, 24.f, 40.f } }, MASK_MISSILESHOT, 8950,     2,       0,     0,        },     
 	{ WP_SILENCER,             Bullet_Fire,                 NULL,                       NULL,          ET_GENERAL,            EF_NONE,                    SVF_NONE,                     CONTENTS_NONE,   TR_LINEAR,      0,     { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_SHOT,        0,        0,       0,     0,        },      
 	{ WP_DYNAMITE,             weapon_grenadelauncher_fire, DynaSink,                   DynaFree,      ET_MISSILE,            EF_BOUNCE_HALF | EF_BOUNCE, SVF_BROADCAST,                CONTENTS_CORPSE, TR_GRAVITY,     -50,   { { -12.f, -12.f, 0.f }, { 12.f, 12.f, 20.f } }, MASK_MISSILESHOT, 15000,    0,       5,     16500,    },
 	{ WP_SMOKETRAIL,           NULL,                        artilleryGoAway,            NULL,          ET_MISSILE,            EF_BOUNCE,                  SVF_NONE,                     CONTENTS_NONE,   TR_GRAVITY,     1,     { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_MISSILESHOT, 1000,     0,       0,     0,        },     
@@ -4107,6 +4132,7 @@ weapFireTable_t weapFireTable[] =
 	{ WP_BAZOOKA,              weapon_antitank_fire,        G_ExplodeMissile,           NULL,          ET_MISSILE,            EF_NONE,                    SVF_BROADCAST,                CONTENTS_NONE,   TR_LINEAR,      -50,   { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_MISSILESHOT, 20000,    4,       0,     0,        },  
 	{ WP_MP34,                 Bullet_Fire,                 NULL,                       NULL,          ET_GENERAL,            EF_NONE,                    SVF_NONE,                     CONTENTS_NONE,   TR_LINEAR,      0,     { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_SHOT,        0,        0,       0,     0,        },      
 };
+// *INDENT-ON*
 
 /**
  * @brief FireWeapon
