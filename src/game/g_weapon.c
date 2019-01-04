@@ -3020,7 +3020,7 @@ void Weapon_Artillery(gentity_t *ent)
 
 	VectorCopy(trace.endpos, pos);
 	VectorCopy(pos, bomboffset);
-	bomboffset[2] += 4096;
+	bomboffset[2] += BG_GetSkyHeightAtPoint(pos);
 
 	trap_Trace(&trace, pos, NULL, NULL, bomboffset, ent->s.number, MASK_SHOT);
 	if (trace.fraction < 1.0f && !(trace.surfaceFlags & SURF_NOIMPACT)) // was SURF_SKY
