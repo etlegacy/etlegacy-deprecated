@@ -2852,120 +2852,99 @@ void artilleryGoAway(gentity_t *ent)
  */
 void G_ArtilleryExplode(gentity_t *ent)
 {
-	gentity_t *bomb;
-	vec3_t    tmpdir;
-	int       i;
-
-	for (i = 0; i < 7; i++)
+	// is first bomb ?
+	if (ent->count == 1)
 	{
-		tmpdir[0] = crandom();
-		tmpdir[1] = crandom();
-		tmpdir[2] = 1;
-		VectorNormalize(tmpdir);
-		tmpdir[2] = 1;           // extra up
-		VectorScale(tmpdir, 500 + random() * 500, tmpdir);
+		gentity_t *bomb;
+		vec3_t    tmpdir;
+		int       i;
 
-		bomb = G_Spawn();
-		G_PreFilledMissileEntity(bomb, WP_SMOKETRAIL, WP_SMOKETRAIL,
-		                         ent->s.number, ent->s.teamNum, -1,
-		                         ent,
-		                         ent->r.currentOrigin, tmpdir);
+		for (i = 0; i < 7; i++)
+		{
+			tmpdir[0] = crandom();
+			tmpdir[1] = crandom();
+			tmpdir[2] = 1;
+			VectorNormalize(tmpdir);
+			tmpdir[2] = 1;           // extra up
+			VectorScale(tmpdir, 500 + random() * 500, tmpdir);
 
-		bomb->nextthink        += random() * 300;
-		bomb->think             = artilleryGoAway;
-		bomb->s.otherEntityNum2 = ent->s.otherEntityNum2;
+			bomb = fire_missile(ent, ent->r.currentOrigin, tmpdir, WP_SMOKETRAIL);
+
+			// add randomness
+			bomb->nextthink += random() * 300;
+		}
 	}
 }
 
 /**
- * @brief Generates some smoke debris
+ * @brief Dropping the artillery bomb
  * @param[in,out] ent
  */
 void artillerySpotterThink(gentity_t *ent)
 {
-//	ent->think = G_ExplodeMissile;
-//	ent->nextthink = level.time + 1;
-//	SnapVector(ent->s.pos.trBase);
+	gentity_t *bomb, *bomb2;
+	vec3_t    bomboffset;
 
-	if (ent->count > 0)
+	// is first bomb dropped ?
+	if (ent->count2 == 1)
 	{
-		gentity_t *bomb, *bomb2;
-		vec3_t    bomboffset;
-		ent->count -= 1;
+		// spotter round is always dead on (OK, unrealistic but more fun)
+		bomboffset[0] = crandom() * 50;     // was 0; changed per id request to prevent spotter round assassinations
+		bomboffset[1] = crandom() * 50;     // was 0;
+		bomboffset[2] = 0;
+		VectorAdd(bomboffset, ent->s.pos.trBase, bomboffset);
 
-		// is first bomb launched ?
-		if (ent->count2 == 1)
-		{
-			// spotter round is always dead on (OK, unrealistic but more fun)
-			bomboffset[0] = crandom() * 50; // was 0; changed per id request to prevent spotter round assassinations
-			bomboffset[1] = crandom() * 50; // was 0;
-			bomboffset[2] = 0;
-			VectorAdd(bomboffset, ent->s.pos.trBase, bomboffset);
+		bomb = fire_missile(ent->parent ? ent->parent : ent, bomboffset, tv(0.f, 0.f, -1.f), ent->s.weapon);
 
-			bomb = G_Spawn();
-			G_PreFilledMissileEntity(bomb, ent->s.weapon, ent->s.weapon,
-			                         ent->r.ownerNum, ent->s.teamNum, ent->s.clientNum,
-			                         ent,
-			                         bomboffset,
-			                         tv(0.f, 0.f, -1.f));    // might need to change this
+		bomb->nextthink    = level.time + 3950; // overwrite
+		bomb->splashDamage = 90;                // overwrite
+		bomb->splashRadius = 50;                // overwrite
+		bomb->count        = 1;                 // first bomb
 
-			bomb->free              = G_ArtilleryExplode;
-			bomb->s.eFlags          = EF_NONE;                  // overwrite
-			bomb->nextthink         = 0;                        // overwrite
-			bomb->classname         = "props_explosion";        // overwrite, was "air strike"
-			bomb->splashDamage      = 90;                       // overwrite
-			bomb->splashRadius      = 50;                       // overwrite
-			bomb->count             = 7;
-			bomb->count2            = 1000;
-			bomb->delay             = 300;
-			bomb->s.otherEntityNum2 = 1;                        // first bomb
-
-			// first bomb launched
-			ent->count2    = 0;
-			ent->nextthink = level.time + 3950 + crandom() * 800;
-		}
-		else
-		{
-			bomboffset[0] = crandom() * 250;
-			bomboffset[1] = crandom() * 250;
-			bomboffset[2] = 0;
-			VectorAdd(bomboffset, ent->s.pos.trBase, bomboffset);
-
-			bomb = G_Spawn();
-			G_PreFilledMissileEntity(bomb, ent->s.weapon, ent->s.weapon,
-			                         ent->r.ownerNum, ent->s.teamNum, ent->s.clientNum,
-			                         ent,
-			                         bomboffset,
-			                         tv(0.f, 0.f, -1.f));    // might need to change this
-
-			// next bomb launched
-			ent->nextthink  = bomb->nextthink + crandom() * 800;
-			bomb->nextthink = 0;    // overwrite
-            bomb->s.eFlags          = EF_NONE;
-		}
-
-		// build arty falling sound effect in front of bomb drop
-		bomb2               = G_Spawn();
-		bomb2->think        = artilleryThink;
-		bomb2->s.eType      = ET_MISSILE;
-		bomb2->s.weapon     = WP_NONE;
-		bomb2->r.svFlags    = SVF_NOCLIENT;
-		bomb2->r.ownerNum   = ent->s.number;
-		bomb2->parent       = ent;
-		bomb2->s.teamNum    = ent->s.teamNum;
-		bomb2->damage       = 0;
-		bomb2->nextthink    = level.time;
-		bomb2->classname    = "arty_sound_effect";
-		bomb2->clipmask     = MASK_MISSILESHOT;
-		bomb2->s.pos.trType = TR_GRAVITY; // was TR_GRAVITY,  might wanna go back to this and drop from height
-		bomb2->s.pos.trTime = level.time;    // move a bit on the very first frame
-		VectorCopy(bomb->s.pos.trBase, bomb2->s.pos.trBase);
-		VectorCopy(bomb->s.pos.trDelta, bomb2->s.pos.trDelta);
-		VectorCopy(bomb->s.pos.trBase, bomb2->r.currentOrigin);
+		// first bomb dropped
+		ent->count2 = 0;
 	}
 	else
 	{
-		G_FreeEntity(ent);
+		bomboffset[0] = crandom() * 250;
+		bomboffset[1] = crandom() * 250;
+		bomboffset[2] = 0;
+		VectorAdd(bomboffset, ent->s.pos.trBase, bomboffset);
+
+		bomb = fire_missile(ent->parent ? ent->parent : ent, bomboffset, tv(0.f, 0.f, -1.f), ent->s.weapon);
+	}
+
+	// build arty falling sound effect in front of bomb drop
+	bomb2               = G_Spawn();
+	bomb2->think        = artilleryThink;
+	bomb2->s.eType      = ET_MISSILE;
+	bomb2->s.weapon     = WP_NONE;
+	bomb2->r.svFlags    = SVF_NOCLIENT;
+	bomb2->r.ownerNum   = ent->s.number;
+	bomb2->parent       = ent;
+	bomb2->s.teamNum    = ent->s.teamNum;
+	bomb2->damage       = 0;
+	bomb2->nextthink    = level.time;
+	bomb2->classname    = "arty_sound_effect";
+	bomb2->clipmask     = MASK_MISSILESHOT;
+	bomb2->s.pos.trType = TR_GRAVITY;
+	bomb2->s.pos.trTime = level.time;        // move a bit on the very first frame
+	VectorCopy(bomb->s.pos.trBase, bomb2->s.pos.trBase);
+	VectorCopy(bomb->s.pos.trDelta, bomb2->s.pos.trDelta);
+	VectorCopy(bomb->s.pos.trBase, bomb2->r.currentOrigin);
+
+	// bomb dropped
+	ent->count    -= 1;
+	ent->nextthink = bomb->nextthink + crandom() * 800;     // next bomb drop
+
+	// overwrite, spotter is thinking for next bomb
+	bomb->nextthink = 0;
+
+	// no more bomb to drop
+	if (ent->count <= 0)
+	{
+		ent->freeAfterEvent = qtrue;
+		trap_LinkEntity(ent);
 	}
 }
 
@@ -3065,17 +3044,17 @@ void Weapon_Artillery(gentity_t *ent)
 	G_GlobalClientEvent(EV_ARTYMESSAGE, 2, ent - g_entities);
 
 	// spotter
-	spotter                    = G_Spawn();
-	spotter->think             = artillerySpotterThink;
-	spotter->s.weapon          = WP_ARTY;
-	spotter->s.teamNum         = ent->client ? ent->client->sess.sessionTeam : TEAM_FREE;
-	spotter->s.clientNum       = ent->client->sess.sessionTeam;
-	spotter->r.ownerNum        = ent->client ? ent->client->ps.clientNum : -1;
-	spotter->nextthink         = level.time + 5000;
-	spotter->r.svFlags         = SVF_BROADCAST;
-	spotter->count2            = 1;
-	spotter->s.otherEntityNum2 = 1;                        // first bomb
-	spotter->s.pos.trType      = TR_STATIONARY;
+	spotter               = G_Spawn();
+	spotter->parent       = ent;
+	spotter->think        = artillerySpotterThink;
+	spotter->s.weapon     = WP_ARTY;
+	spotter->s.teamNum    = ent->client ? ent->client->sess.sessionTeam : TEAM_FREE;
+	spotter->s.clientNum  = ent->client->sess.sessionTeam;
+	spotter->r.ownerNum   = ent->client ? ent->client->ps.clientNum : -1;
+	spotter->nextthink    = level.time + 5000;
+	spotter->r.svFlags    = SVF_BROADCAST;
+	spotter->count2       = 1;                      // first bomb
+	spotter->s.pos.trType = TR_STATIONARY;
 	VectorCopy(pos, spotter->r.currentOrigin);
 	VectorCopy(pos, spotter->s.pos.trBase);
 
@@ -4086,7 +4065,7 @@ weapFireTable_t weapFireTable[] =
 	{ WP_STEN,                 Bullet_Fire,                 NULL,                       NULL,               ET_GENERAL,            EF_NONE,                    SVF_NONE,                     CONTENTS_NONE,   TR_LINEAR,      0,     { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_SHOT,        0,        0,       0,     0,        },      
 	{ WP_MEDIC_SYRINGE,        Weapon_Syringe,              NULL,                       NULL,               ET_GENERAL,            EF_NONE,                    SVF_NONE,                     CONTENTS_NONE,   TR_LINEAR,      0,     { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_SHOT,        0,        0,       0,     0,        },     
 	{ WP_AMMO,                 Weapon_MagicAmmo,            MagicSink,                  NULL,               ET_ITEM,               EF_NONE,                    SVF_NONE,                     CONTENTS_NONE,   TR_GRAVITY,     0,     { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_SHOT,        30000,    0,       0,     0,        },
-	{ WP_ARTY,                 NULL,                        NULL,                       NULL,               ET_MISSILE,            EF_SMOKINGBLACK,            SVF_BROADCAST,                CONTENTS_CORPSE, TR_GRAVITY,     1,     { { -24.f, -24.f, 0.f }, { 24.f, 24.f, 40.f } }, MASK_MISSILESHOT, 2000,     2,       0,     0,        },     
+	{ WP_ARTY,                 NULL,                        NULL,                       G_ArtilleryExplode, ET_MISSILE,            EF_NONE,                    SVF_BROADCAST,                CONTENTS_NONE,   TR_GRAVITY,     1,     { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_MISSILESHOT, 2000,     2,       0,     0,        },     
 	{ WP_SILENCER,             Bullet_Fire,                 NULL,                       NULL,               ET_GENERAL,            EF_NONE,                    SVF_NONE,                     CONTENTS_NONE,   TR_LINEAR,      0,     { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_SHOT,        0,        0,       0,     0,        },      
 	{ WP_DYNAMITE,             weapon_grenadelauncher_fire, DynaSink,                   DynaFree,           ET_MISSILE,            EF_BOUNCE_HALF | EF_BOUNCE, SVF_BROADCAST,                CONTENTS_CORPSE, TR_GRAVITY,     -50,   { { -12.f, -12.f, 0.f }, { 12.f, 12.f, 20.f } }, MASK_MISSILESHOT, 15000,    0,       5,     16500,    },
 	{ WP_SMOKETRAIL,           NULL,                        artilleryGoAway,            NULL,               ET_MISSILE,            EF_BOUNCE,                  SVF_NONE,                     CONTENTS_NONE,   TR_GRAVITY,     1,     { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_MISSILESHOT, 1000,     0,       0,     0,        },     
