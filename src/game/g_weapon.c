@@ -2798,42 +2798,29 @@ void weapon_callAirStrike(gentity_t *ent)
 
 /**
  * @brief Sound effect for spotter round, had to do this as half-second bomb warning
+ * @details Sound is played when the bomb is close enough to the ground
  * @param[in,out] ent
- */
-void artilleryThink_real(gentity_t *ent)
-{
-	ent->freeAfterEvent = qtrue;
-	trap_LinkEntity(ent);
-
-	switch (rand() % 3)
-	{
-	case 0:
-		G_AddEvent(ent, EV_GENERAL_SOUND_VOLUME, GAMESOUND_WPN_ARTILLERY_FLY_1);
-		ent->s.onFireStart = 255;
-		break;
-	case 1:
-		G_AddEvent(ent, EV_GENERAL_SOUND_VOLUME, GAMESOUND_WPN_ARTILLERY_FLY_2);
-		ent->s.onFireStart = 255;
-		break;
-	case 2:
-		G_AddEvent(ent, EV_GENERAL_SOUND_VOLUME, GAMESOUND_WPN_ARTILLERY_FLY_3);
-		ent->s.onFireStart = 255;
-		break;
-	default:
-		break;
-	}
-}
-
-/**
- * @brief artilleryThink
- * @param[out] ent
  */
 void artilleryThink(gentity_t *ent)
 {
-	ent->think     = artilleryThink_real;
-	ent->nextthink = level.time + FRAMETIME;
+	float groundHeight;
 
-	ent->r.svFlags = SVF_BROADCAST;
+	groundHeight = BG_GetGroundHeightAtPoint(ent->r.currentOrigin);
+
+	// are we enough close to the ground to produce shelling sound
+	if (ent->r.currentOrigin[2] - groundHeight < 1024 /*4096*/)
+	{
+		int i;
+
+		i = rand() % 3;
+
+		G_AddEvent(ent, EV_GENERAL_SOUND_VOLUME, GAMESOUND_WPN_ARTILLERY_FLY_1 + i);
+		ent->s.onFireStart = 255;   // sound control
+
+		return;
+	}
+
+	ent->nextthink = level.time + FRAMETIME;
 }
 
 /**
@@ -2868,7 +2855,7 @@ void G_ArtilleryExplode(gentity_t *ent)
 			tmpdir[2] = 1;           // extra up
 			VectorScale(tmpdir, 500 + random() * 500, tmpdir);
 
-			bomb = fire_missile(ent, ent->r.currentOrigin, tmpdir, WP_SMOKETRAIL);
+			bomb = fire_missile(ent->parent ? ent->parent : ent, ent->r.currentOrigin, tmpdir, WP_SMOKETRAIL);
 
 			// add randomness
 			bomb->nextthink += random() * 300;
@@ -2879,11 +2866,16 @@ void G_ArtilleryExplode(gentity_t *ent)
 /**
  * @brief Dropping the artillery bomb
  * @param[in,out] ent
+ * @note arty nextthink is used to store delay between each shelling bomb, it is overwrite
+ * to play the shelling sound once the bomb is enough close to the ground
  */
 void artillerySpotterThink(gentity_t *ent)
 {
 	gentity_t *bomb, *bomb2;
 	vec3_t    bomboffset;
+
+	// spotter, bomb dropped
+	ent->count -= 1;
 
 	// is first bomb dropped ?
 	if (ent->count2 == 1)
@@ -2896,12 +2888,12 @@ void artillerySpotterThink(gentity_t *ent)
 
 		bomb = fire_missile(ent->parent ? ent->parent : ent, bomboffset, tv(0.f, 0.f, -1.f), ent->s.weapon);
 
-		bomb->nextthink    = level.time + 3950; // overwrite
-		bomb->splashDamage = 90;                // overwrite
-		bomb->splashRadius = 50;                // overwrite
-		bomb->count        = 1;                 // first bomb
+		bomb->nextthink   += 1950;  // overwrite, add delay between 1st bomb and 2nd one
+		bomb->splashDamage = 90;    // overwrite
+		bomb->splashRadius = 50;    // overwrite
+		bomb->count        = 1;     // first bomb
 
-		// first bomb dropped
+		// spotter, first bomb dropped
 		ent->count2 = 0;
 	}
 	else
@@ -2914,37 +2906,19 @@ void artillerySpotterThink(gentity_t *ent)
 		bomb = fire_missile(ent->parent ? ent->parent : ent, bomboffset, tv(0.f, 0.f, -1.f), ent->s.weapon);
 	}
 
-	// build arty falling sound effect in front of bomb drop
-	bomb2               = G_Spawn();
-	bomb2->think        = artilleryThink;
-	bomb2->s.eType      = ET_MISSILE;
-	bomb2->s.weapon     = WP_NONE;
-	bomb2->r.svFlags    = SVF_NOCLIENT;
-	bomb2->r.ownerNum   = ent->s.number;
-	bomb2->parent       = ent;
-	bomb2->s.teamNum    = ent->s.teamNum;
-	bomb2->damage       = 0;
-	bomb2->nextthink    = level.time;
-	bomb2->classname    = "arty_sound_effect";
-	bomb2->clipmask     = MASK_MISSILESHOT;
-	bomb2->s.pos.trType = TR_GRAVITY;
-	bomb2->s.pos.trTime = level.time;        // move a bit on the very first frame
-	VectorCopy(bomb->s.pos.trBase, bomb2->s.pos.trBase);
-	VectorCopy(bomb->s.pos.trDelta, bomb2->s.pos.trDelta);
-	VectorCopy(bomb->s.pos.trBase, bomb2->r.currentOrigin);
+	// next bomb drop, add randomness
+	ent->nextthink = bomb->nextthink + crandom() * 800;
 
-	// bomb dropped
-	ent->count    -= 1;
-	ent->nextthink = bomb->nextthink + crandom() * 800;     // next bomb drop
-
-	// overwrite, spotter is thinking for next bomb
-	bomb->nextthink = 0;
+	// overwrite, spotter is thinking for next bomb so let think for shelling sound
+	bomb->nextthink = level.time + FRAMETIME;
 
 	// no more bomb to drop
 	if (ent->count <= 0)
 	{
 		ent->freeAfterEvent = qtrue;
 		trap_LinkEntity(ent);
+
+		return;
 	}
 }
 
@@ -3032,10 +3006,6 @@ void Weapon_Artillery(gentity_t *ent)
 		return;
 	}
 
-	// keep traceheight
-	pos[2] += trace.endpos[2];
-	SnapVector(pos)
-
 	// arty/airstrike rate limiting.
 	G_AddArtilleryToCounters(ent);
 
@@ -3055,8 +3025,9 @@ void Weapon_Artillery(gentity_t *ent)
 	spotter->r.svFlags    = SVF_BROADCAST;
 	spotter->count2       = 1;                      // first bomb
 	spotter->s.pos.trType = TR_STATIONARY;
-	VectorCopy(pos, spotter->r.currentOrigin);
-	VectorCopy(pos, spotter->s.pos.trBase);
+	SnapVector(bomboffset);
+	VectorCopy(bomboffset, spotter->r.currentOrigin);
+	VectorCopy(bomboffset, spotter->s.pos.trBase);
 
 	// "spotter" round (i == 0)
 	// i == 1->4 is regular explosives
@@ -4065,7 +4036,7 @@ weapFireTable_t weapFireTable[] =
 	{ WP_STEN,                 Bullet_Fire,                 NULL,                       NULL,               ET_GENERAL,            EF_NONE,                    SVF_NONE,                     CONTENTS_NONE,   TR_LINEAR,      0,     { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_SHOT,        0,        0,       0,     0,        },      
 	{ WP_MEDIC_SYRINGE,        Weapon_Syringe,              NULL,                       NULL,               ET_GENERAL,            EF_NONE,                    SVF_NONE,                     CONTENTS_NONE,   TR_LINEAR,      0,     { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_SHOT,        0,        0,       0,     0,        },     
 	{ WP_AMMO,                 Weapon_MagicAmmo,            MagicSink,                  NULL,               ET_ITEM,               EF_NONE,                    SVF_NONE,                     CONTENTS_NONE,   TR_GRAVITY,     0,     { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_SHOT,        30000,    0,       0,     0,        },
-	{ WP_ARTY,                 NULL,                        NULL,                       G_ArtilleryExplode, ET_MISSILE,            EF_NONE,                    SVF_BROADCAST,                CONTENTS_NONE,   TR_GRAVITY,     1,     { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_MISSILESHOT, 2000,     2,       0,     0,        },     
+	{ WP_ARTY,                 NULL,                        artilleryThink,             G_ArtilleryExplode, ET_MISSILE,            EF_NONE,                    SVF_BROADCAST,                CONTENTS_NONE,   TR_GRAVITY,     1,     { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_MISSILESHOT, 2000,     2,       0,     0,        },     
 	{ WP_SILENCER,             Bullet_Fire,                 NULL,                       NULL,               ET_GENERAL,            EF_NONE,                    SVF_NONE,                     CONTENTS_NONE,   TR_LINEAR,      0,     { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_SHOT,        0,        0,       0,     0,        },      
 	{ WP_DYNAMITE,             weapon_grenadelauncher_fire, DynaSink,                   DynaFree,           ET_MISSILE,            EF_BOUNCE_HALF | EF_BOUNCE, SVF_BROADCAST,                CONTENTS_CORPSE, TR_GRAVITY,     -50,   { { -12.f, -12.f, 0.f }, { 12.f, 12.f, 20.f } }, MASK_MISSILESHOT, 15000,    0,       5,     16500,    },
 	{ WP_SMOKETRAIL,           NULL,                        artilleryGoAway,            NULL,               ET_MISSILE,            EF_BOUNCE,                  SVF_NONE,                     CONTENTS_NONE,   TR_GRAVITY,     1,     { { 0, 0, 0 }, { 0, 0, 0 } },                    MASK_MISSILESHOT, 1000,     0,       0,     0,        },     
