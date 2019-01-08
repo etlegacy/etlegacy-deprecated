@@ -2857,12 +2857,13 @@ void G_ArtilleryExplode(gentity_t *ent)
 	// is first bomb ?
 	if (ent->count == 1)
 	{
-		gentity_t *bomb;
-		vec3_t    tmpdir;
 		int       i;
 
 		for (i = 0; i < 7; i++)
 		{
+            gentity_t *bomb;
+            vec3_t    tmpdir;
+            
 			tmpdir[0] = crandom();
 			tmpdir[1] = crandom();
 			tmpdir[2] = 1;
@@ -2886,7 +2887,7 @@ void G_ArtilleryExplode(gentity_t *ent)
  */
 void artillerySpotterThink(gentity_t *ent)
 {
-	gentity_t *bomb, *bomb2;
+	gentity_t *bomb;
 	vec3_t    bomboffset;
 
 	// spotter, bomb dropped
