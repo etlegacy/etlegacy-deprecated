@@ -2754,6 +2754,17 @@ void weapon_callAirStrike(gentity_t *ent)
 		return;
 	}
 
+    do 
+    {
+        trap_Trace(&tr, tr.endpos, NULL, NULL, bomboffset, ent->s.number, MASK_SHOT);
+    }
+    while (tr.fraction >= 1.0f && (tr.surfaceFlags & SURF_NOIMPACT) && tr.endpos[2] < bomboffset[2]);
+    
+    if (bomboffset[2] > tr.endpos[2])
+    {
+        bomboffset[2] = tr.endpos[2];
+    }
+    
 	G_HQSay(ent->parent, COLOR_YELLOW, "Pilot: ", "Affirmative, on my way!");
 
 	G_GlobalClientEvent(EV_AIRSTRIKEMESSAGE, 2, ent->parent - g_entities);
@@ -2784,7 +2795,7 @@ void weapon_callAirStrike(gentity_t *ent)
 		plane               = G_Spawn();
 		plane->parent       = ent;
 		plane->think        = G_AirStrikeThink;
-		plane->s.weapon     = WP_SMOKE_MARKER;
+		plane->s.weapon     = ent->s.weapon;
 		plane->s.teamNum    = ent->s.teamNum;
 		plane->s.clientNum  = ent->s.clientNum;
 		plane->r.ownerNum   = ent->r.ownerNum;
@@ -2953,7 +2964,7 @@ void G_GlobalClientEvent(entity_event_t event, int param, int client)
  */
 void Weapon_Artillery(gentity_t *ent)
 {
-	trace_t   trace;
+	trace_t   tr;
 	vec3_t    muzzlePoint, end, bomboffset, pos;
 	gentity_t *spotter;
 
@@ -2990,19 +3001,19 @@ void Weapon_Artillery(gentity_t *ent)
 	muzzlePoint[2] += ent->client->ps.viewheight;
 
 	VectorMA(muzzlePoint, 8192, forward, end);
-	trap_Trace(&trace, muzzlePoint, NULL, NULL, end, ent->s.number, MASK_SHOT);
+	trap_Trace(&tr, muzzlePoint, NULL, NULL, end, ent->s.number, MASK_SHOT);
 
-	if (trace.surfaceFlags & SURF_NOIMPACT)
+	if (tr.surfaceFlags & SURF_NOIMPACT)
 	{
 		return;
 	}
 
-	VectorCopy(trace.endpos, pos);
+	VectorCopy(tr.endpos, pos);
 	VectorCopy(pos, bomboffset);
 	bomboffset[2] += BG_GetSkyHeightAtPoint(pos);
 
-	trap_Trace(&trace, pos, NULL, NULL, bomboffset, ent->s.number, MASK_SHOT);
-	if (trace.fraction < 1.0f && !(trace.surfaceFlags & SURF_NOIMPACT)) // was SURF_SKY
+	trap_Trace(&tr, pos, NULL, NULL, bomboffset, ent->s.number, MASK_SHOT);
+	if (tr.fraction < 1.0f && !(tr.surfaceFlags & SURF_NOIMPACT)) // was SURF_SKY
 	{
 		G_HQSay(ent, COLOR_YELLOW, "Fire Mission: ", "Aborting, can't see target.");
 
@@ -3010,6 +3021,19 @@ void Weapon_Artillery(gentity_t *ent)
 
 		return;
 	}
+    
+    do 
+    {
+        trap_Trace(&tr, tr.endpos, NULL, NULL, bomboffset, ent->s.number, MASK_SHOT);
+    }
+    while (tr.fraction >= 1.0f && (tr.surfaceFlags & SURF_NOIMPACT) && tr.endpos[2] < bomboffset[2]);
+    
+    if (bomboffset[2] > tr.endpos[2])
+    {
+        bomboffset[2] = tr.endpos[2];
+    }
+    
+    bomboffset[2] = tr.endpos[2];
 
 	// arty/airstrike rate limiting.
 	G_AddArtilleryToCounters(ent);
