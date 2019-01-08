@@ -2807,7 +2807,7 @@ void G_PreFilledMissileEntity(gentity_t *ent, int weaponNum, int realWeapon, int
 	ent->splashRadius        = GetWeaponTableData(realWeapon)->splashRadius;  // blast radius proportional to damage for ALL weapons
 
 	// state
-	ent->s.weapon    = realWeapon;
+	ent->s.weapon    = weaponNum;
 	ent->s.teamNum   = teamNum;
 	ent->s.clientNum = clientNum;
 

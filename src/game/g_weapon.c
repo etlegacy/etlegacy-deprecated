@@ -2656,12 +2656,11 @@ void weapon_callAirStrike(gentity_t *ent)
 {
 	int       i, j;
 	vec3_t    bombaxis, lookaxis, pos, bomboffset, fallaxis, temp, dir, skypoint;
-	gentity_t *bomb;
 	trace_t   tr;
 	float     traceheight, bottomtraceheight;
 
 	VectorCopy(ent->s.pos.trBase, bomboffset);
-	bomboffset[2] += 4096.f;
+	bomboffset[2] += BG_GetSkyHeightAtPoint(ent->s.pos.trBase);
 
 	// turn off smoke grenade
 	ent->think     = G_ExplodeMissile;
@@ -2713,10 +2712,10 @@ void weapon_callAirStrike(gentity_t *ent)
 
 	G_GlobalClientEvent(EV_AIRSTRIKEMESSAGE, 2, ent->parent - g_entities);
 
-	VectorCopy(tr.endpos, bomboffset);
-	VectorCopy(tr.endpos, skypoint);
+//	VectorCopy(tr.endpos, bomboffset);
+//	VectorCopy(tr.endpos, skypoint);
 	traceheight       = bomboffset[2];
-	bottomtraceheight = traceheight - MAX_TRACE;
+//	bottomtraceheight = traceheight - MAX_TRACE;
 
 	VectorSubtract(ent->s.pos.trBase, ent->parent->client->ps.origin, lookaxis);
 	lookaxis[2] = 0;
@@ -2724,7 +2723,7 @@ void weapon_callAirStrike(gentity_t *ent)
 
 	dir[0] = 0;
 	dir[1] = 0;
-	dir[2] = crandom(); // generate either up or down vector
+	dir[2] = crandom();     // generate either up or down vector
 	VectorNormalize(dir);   // which adds randomness to pass direction below
 
 	if (ent->parent->client && ent->parent->client->sess.skill[SK_SIGNALS] >= 3)
@@ -2748,15 +2747,30 @@ void weapon_callAirStrike(gentity_t *ent)
 
 		for (i = 0; i < NUMBOMBS; i++)
 		{
+            gentity_t *bomb;
+            
+			bomboffset[0] = crandom() * .5f * BOMBSPREAD;
+			bomboffset[1] = crandom() * .5f * BOMBSPREAD;
+			bomboffset[2] = 0.f;
+			VectorAdd(pos, bomboffset, bomboffset);
+			bomboffset[2] = traceheight;
+
+            SnapVector(bomboffset);
+            
 			bomb = G_Spawn();
+            
 			G_PreFilledMissileEntity(bomb, WP_ARTY, ent->s.weapon,
-			                         ent->s.number, ent->s.teamNum, -1,
-			                         ent->parent, tv(0.f, 0.f, 0.f), tv(0.f, 0.f, 0.f));     // might wanna change this
+			                         ent->r.ownerNum, ent->s.teamNum, ent->s.clientNum,
+			                         ent->parent, bomboffset, tv(0.f, 0.f, -1.f) /*bombaxis*/);           
+            
+			//bomb->nextthink    = (int)(level.time + i * 100 + crandom() * 50 + 1000 + (j * 2000));        // overwrite, 1000 for aircraft flyby, other term for tumble stagger
+            //bomb->s.pos.trType = TR_STATIONARY;          
+            bomb->free         = NULL;
+			bomb->think        = NULL;
+			bomb->nextthink    = 0;
+			//bomb->s.pos.trTime = 0;        // overwrite due to previous impl : //bomb->s.pos.trTime = level.time;      // move a bit on the very first frame
 
-			bomb->nextthink    = (int)(level.time + i * 100 + crandom() * 50 + 1000 + (j * 2000));        // overwrite, 1000 for aircraft flyby, other term for tumble stagger
-			bomb->think        = G_AirStrikeExplode;
-			bomb->s.pos.trTime = 0;        // overwrite due to previous impl : //bomb->s.pos.trTime = level.time;      // move a bit on the very first frame
-
+			/*
 			bomboffset[0] = crandom() * .5f * BOMBSPREAD;
 			bomboffset[1] = crandom() * .5f * BOMBSPREAD;
 			bomboffset[2] = 0.f;
@@ -2765,30 +2779,31 @@ void weapon_callAirStrike(gentity_t *ent)
 			VectorCopy(bomb->s.pos.trBase, bomboffset);   // make sure bombs fall "on top of" nonuniform scenery
 			bomboffset[2] = traceheight;
 
-			VectorCopy(bomboffset, fallaxis);
+			VectorCopy(bomboffset, fallaxis);z 
 			fallaxis[2] = bottomtraceheight;
 
 			trap_Trace(&tr, bomboffset, NULL, NULL, fallaxis, ent - g_entities, bomb->clipmask);
 			if (tr.fraction != 1.0f)
 			{
-				VectorCopy(tr.endpos, bomb->s.pos.trBase);
+			    VectorCopy(tr.endpos, bomb->s.pos.trBase);
 
-				// Snap origin!
-				VectorMA(bomb->s.pos.trBase, 2.f, tr.plane.normal, temp);
-				SnapVectorTowards(bomb->s.pos.trBase, temp);            // save net bandwidth
+			    // Snap origin!
+			    VectorMA(bomb->s.pos.trBase, 2.f, tr.plane.normal, temp);
+			    SnapVectorTowards(bomb->s.pos.trBase, temp);            // save net bandwidth
 
-				// G_RailTrail( skypoint, bomb->s.pos.trBase );
-				trap_TraceNoEnts(&tr, skypoint, NULL, NULL, bomb->s.pos.trBase, 0, CONTENTS_SOLID);
-				if (tr.fraction < 1.f)
-				{
-					G_FreeEntity(bomb);
-					// move pos for next bomb
-					VectorAdd(pos, bombaxis, pos);
-					continue;
-				}
+			    // G_RailTrail( skypoint, bomb->s.pos.trBase );
+			    trap_TraceNoEnts(&tr, skypoint, NULL, NULL, bomb->s.pos.trBase, 0, CONTENTS_SOLID);
+			    if (tr.fraction < 1.f)
+			    {
+			        G_FreeEntity(bomb);
+			        // move pos for next bomb
+			        VectorAdd(pos, bombaxis, pos);
+			        continue;
+			    }
 			}
 
 			VectorCopy(bomb->s.pos.trBase, bomb->r.currentOrigin);
+			*/
 
 			// move pos for next bomb
 			VectorAdd(pos, bombaxis, pos);
