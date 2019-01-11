@@ -2593,15 +2593,6 @@ void weapon_callPlane(gentity_t *ent)
  */
 qboolean weapon_checkAirStrike(gentity_t *ent)
 {
-	if (ent->s.teamNum == TEAM_AXIS)
-	{
-		level.numActiveAirstrikes[0]++;
-	}
-	else
-	{
-		level.numActiveAirstrikes[1]++;
-	}
-
 	// cancel the airstrike if FF off and player joined spec
 	// FIXME: this is a stupid workaround. Just store the parent team in the enitity itself and use that - no need to look up the parent
 	if (!g_friendlyFire.integer && ent->parent->client && ent->parent->client->sess.sessionTeam == TEAM_SPECTATOR)
@@ -2611,14 +2602,7 @@ qboolean weapon_checkAirStrike(gentity_t *ent)
 		ent->nextthink    = (int)(level.time + crandom() * 50);
 
 		ent->active = qfalse;
-		if (ent->s.teamNum == TEAM_AXIS)
-		{
-			level.numActiveAirstrikes[0]--;
-		}
-		else
-		{
-			level.numActiveAirstrikes[1]--;
-		}
+
 		return qfalse; // do nothing, don't hurt anyone
 	}
 
@@ -2631,11 +2615,13 @@ qboolean weapon_checkAirStrike(gentity_t *ent)
 			G_GlobalClientEvent(EV_AIRSTRIKEMESSAGE, 0, ent->parent - g_entities);
 
 			ent->active = qfalse;
-			level.numActiveAirstrikes[ent->s.teamNum - 1]--;
 
 			return qfalse;
 		}
+
+		level.numActiveAirstrikes[ent->s.teamNum - 1]++;
 	}
+
 	return qtrue;
 }
 
@@ -2671,7 +2657,6 @@ void G_AirStrikeThink(gentity_t *ent)
 	// move pos for next bomb
 	VectorAdd(ent->s.pos.trBase, ent->s.pos.trDelta, ent->s.pos.trBase);
 
-	// 1000 for aircraft flyby, other term for tumble stagger
 	ent->nextthink = (int)(level.time + 100 + crandom() * 50);
 
 	// bomb dropped
@@ -2715,8 +2700,6 @@ void weapon_callAirStrike(gentity_t *ent)
 	VectorCopy(ent->s.pos.trBase, bomboffset);
 	bomboffset[2] += BG_GetSkyHeightAtPoint(ent->s.pos.trBase);
 
-	G_AddAirstrikeToCounters(ent->parent);
-
 	trap_Trace(&tr, ent->s.pos.trBase, NULL, NULL, bomboffset, ent->s.number, MASK_SHOT);
 	if ((tr.fraction < 1.0f) && (!(tr.surfaceFlags & SURF_NOIMPACT)))           //SURF_SKY)) ) { // changed for trenchtoast foggie prollem
 	{
@@ -2732,24 +2715,11 @@ void weapon_callAirStrike(gentity_t *ent)
 
 		G_GlobalClientEvent(EV_AIRSTRIKEMESSAGE, 1, ent->parent - g_entities);
 
-		if (ent->s.teamNum == TEAM_AXIS)
+		if (ent->s.teamNum == TEAM_AXIS || ent->s.teamNum == TEAM_ALLIES)
 		{
-			level.numActiveAirstrikes[0]--;
-			level.axisBombCounter -= team_airstrikeTime.integer * 1000;
-			if (level.axisBombCounter < 0)
-			{
-				level.axisBombCounter = 0;
-			}
+			level.numActiveAirstrikes[ent->s.teamNum - 1]--;
 		}
-		else
-		{
-			level.numActiveAirstrikes[1]--;
-			level.alliedBombCounter -= team_airstrikeTime.integer * 1000;
-			if (level.alliedBombCounter < 0)
-			{
-				level.alliedBombCounter = 0;
-			}
-		}
+
 		ent->active = qfalse;
 		return;
 	}
@@ -2765,6 +2735,8 @@ void weapon_callAirStrike(gentity_t *ent)
 	{
 		bomboffset[2] = tr.endpos[2];
 	}
+
+	G_AddAirstrikeToCounters(ent->parent);
 
 	G_HQSay(ent->parent, COLOR_YELLOW, "Pilot: ", "Affirmative, on my way!");
 
@@ -2801,7 +2773,7 @@ void weapon_callAirStrike(gentity_t *ent)
 		plane->s.teamNum    = ent->s.teamNum;
 		plane->s.clientNum  = ent->s.clientNum;
 		plane->r.ownerNum   = ent->r.ownerNum;
-		plane->nextthink    = level.time + 1000 + (i * 2000);
+		plane->nextthink    = level.time + 1000 + (i * 2000);   // 1000 for aircraft flyby, other term for tumble stagger
 		plane->r.svFlags    = SVF_BROADCAST;
 		plane->count        = NUMBOMBS;
 		plane->count2       = 1;            // first bomb
