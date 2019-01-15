@@ -746,11 +746,11 @@ typedef struct weaponInfo_s
 
 	qhandle_t weaponIcon[2];            ///< [0] is weap icon, [1] is highlight icon
 	int weaponIconScale;
-    
-    qhandle_t weaponCardIcon;
-    vec2_t weaponCardScale;
-    vec2_t weaponCardPointS;
-    vec2_t weaponCardPointT;
+
+	qhandle_t weaponCardIcon;
+	vec2_t weaponCardScale;
+	vec2_t weaponCardPointS;
+	vec2_t weaponCardPointT;
 
 	qhandle_t missileModel;
 	qhandle_t missileAlliedSkin;
@@ -1484,6 +1484,8 @@ typedef struct
 
 	qhandle_t flamebarrel;
 	qhandle_t mg42muzzleflash;
+
+	qhandle_t airstrikePlane[2];
 
 	qhandle_t waterSplashModel;
 	qhandle_t waterSplashShader;
@@ -2979,7 +2981,7 @@ void CG_AddToNotify(const char *str);
 const char *CG_LocalizeServerCommand(const char *buf);
 void CG_wstatsParse_cmd(void);
 
-void CG_parseWeaponStats_cmd(void (txt_dump) (const char *));
+void CG_parseWeaponStats_cmd(void(txt_dump) (const char *));
 //void CG_parseBestShotsStats_cmd(qboolean doTop, void(txt_dump) (const char *));
 //void CG_parseTopShotsStats_cmd(qboolean doTop, void(txt_dump) (const char *));
 //void CG_scores_cmd(void);

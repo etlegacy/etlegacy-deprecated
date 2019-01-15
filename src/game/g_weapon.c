@@ -2754,17 +2754,18 @@ void weapon_callAirStrike(gentity_t *ent)
 		return;
 	}
 
-    do 
-    {
-        trap_Trace(&tr, tr.endpos, NULL, NULL, bomboffset, ent->s.number, MASK_SHOT);
-    }
-    while (tr.fraction >= 1.0f && (tr.surfaceFlags & SURF_NOIMPACT) && tr.endpos[2] < bomboffset[2]);
-    
-    if (bomboffset[2] > tr.endpos[2])
-    {
-        bomboffset[2] = tr.endpos[2];
-    }
-    
+	// FIXME: uncomment it once plane are draw (comment for test purpose)
+//    do
+//    {
+//        trap_Trace(&tr, tr.endpos, NULL, NULL, bomboffset, ent->s.number, MASK_SHOT);
+//    }
+//    while (tr.fraction >= 1.0f && (tr.surfaceFlags & SURF_NOIMPACT) && tr.endpos[2] < bomboffset[2]);
+
+	if (bomboffset[2] > tr.endpos[2])
+	{
+		bomboffset[2] = tr.endpos[2];
+	}
+
 	G_HQSay(ent->parent, COLOR_YELLOW, "Pilot: ", "Affirmative, on my way!");
 
 	G_GlobalClientEvent(EV_AIRSTRIKEMESSAGE, 2, ent->parent - g_entities);
@@ -2795,6 +2796,7 @@ void weapon_callAirStrike(gentity_t *ent)
 		plane               = G_Spawn();
 		plane->parent       = ent;
 		plane->think        = G_AirStrikeThink;
+		plane->classname    = "plane";
 		plane->s.weapon     = ent->s.weapon;
 		plane->s.teamNum    = ent->s.teamNum;
 		plane->s.clientNum  = ent->s.clientNum;
@@ -2803,7 +2805,9 @@ void weapon_callAirStrike(gentity_t *ent)
 		plane->r.svFlags    = SVF_BROADCAST;
 		plane->count        = NUMBOMBS;
 		plane->count2       = 1;            // first bomb
+		plane->s.eType      = ET_AIRSTRIKE_PLANE;
 		plane->s.pos.trType = TR_STATIONARY;
+
 		SnapVector(pos);
 		VectorCopy(pos, plane->r.currentOrigin);
 		VectorCopy(pos, plane->s.pos.trBase);
@@ -3021,19 +3025,19 @@ void Weapon_Artillery(gentity_t *ent)
 
 		return;
 	}
-    
-    do 
-    {
-        trap_Trace(&tr, tr.endpos, NULL, NULL, bomboffset, ent->s.number, MASK_SHOT);
-    }
-    while (tr.fraction >= 1.0f && (tr.surfaceFlags & SURF_NOIMPACT) && tr.endpos[2] < bomboffset[2]);
-    
-    if (bomboffset[2] > tr.endpos[2])
-    {
-        bomboffset[2] = tr.endpos[2];
-    }
-    
-    bomboffset[2] = tr.endpos[2];
+
+	do
+	{
+		trap_Trace(&tr, tr.endpos, NULL, NULL, bomboffset, ent->s.number, MASK_SHOT);
+	}
+	while (tr.fraction >= 1.0f && (tr.surfaceFlags & SURF_NOIMPACT) && tr.endpos[2] < bomboffset[2]);
+
+	if (bomboffset[2] > tr.endpos[2])
+	{
+		bomboffset[2] = tr.endpos[2];
+	}
+
+	bomboffset[2] = tr.endpos[2];
 
 	// arty/airstrike rate limiting.
 	G_AddArtilleryToCounters(ent);

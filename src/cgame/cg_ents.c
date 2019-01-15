@@ -1509,6 +1509,7 @@ static void CG_Mover(centity_t *cent)
 	ent.skinNum  = 0;
 
 	// get the model, either as a bmodel or a modelindex
+
 	if (s1->solid == SOLID_BMODEL)
 	{
 		ent.hModel = cgs.inlineDrawModel[s1->modelindex];
@@ -1617,6 +1618,69 @@ static void CG_Mover(centity_t *cent)
 		trap_R_AddRefEntityToScene(&ent);
 	}
 }
+
+/**
+ * @brief CG_MovePlane
+ * @param[in] cent
+ */
+void CG_MovePlane(centity_t *cent)
+{
+	refEntity_t   ent;
+	entityState_t *s1 = &cent->currentState;
+	vec3_t        origin, origin2;
+
+//	BG_EvaluateTrajectory(&s1->pos, cg.time, origin, qfalse, s1->effect1Time);
+//	BG_EvaluateTrajectory(&s1->apos, cg.time, origin2, qfalse, s1->effect2Time);
+
+//	// create the render entity
+//	Com_Memset(&ent, 0, sizeof(ent));
+
+//	VectorCopy(origin, ent.origin);
+//	VectorCopy(origin2, ent.oldorigin);
+
+//	CG_Printf( "O: %i %i %i OO: %i %i %i\n", (int)origin[0], (int)origin[1], (int)origin[2], (int)origin2[0], (int)origin2[1], (int)origin2[2] );
+//	AxisClear(ent.axis);
+//	ent.reType       = RT_MODEL;
+//	ent.customShader = cgs.media.plane;
+
+	// set frame
+//	ent.frame    = s1->frame;
+//	ent.oldframe = ent.frame;
+//	ent.backlerp = 0;
+
+//	if (ent.frame)
+//	{
+//		ent.oldframe -= 1;
+//		ent.backlerp  = 1 - cg.frameInterpolation;
+
+//		if (cent->currentState.time)
+//		{
+//			ent.fadeStartTime = cent->currentState.time;
+//			ent.fadeEndTime   = cent->currentState.time2;
+//		}
+//	}
+
+//	if (s1->teamNum == TEAM_AXIS)
+//	{
+//		ent.hModel = cgs.media.airstrikePlane[0];
+//	}
+//	else
+//	{
+//		ent.hModel = cgs.media.airstrikePlane[1];
+//	}
+
+//	VectorCopy(cent->lerpOrigin, ent.origin);
+//	VectorCopy(ent.origin, ent.oldorigin);
+//	VectorCopy(ent.origin, ent.lightingOrigin);
+//	ent.lightingOrigin[2] += 16;
+//	ent.renderfx          |= RF_MINLIGHT;
+//	AnglesToAxis(cent->lerpAngles, ent.axis);
+
+
+	// add to refresh list
+//	trap_R_AddRefEntityToScene(&ent);
+}
+
 
 /**
  * @brief CG_Mover_PostProcess
@@ -2315,6 +2379,9 @@ static void CG_ProcessEntity(centity_t *cent)
 		break;
 	case ET_SMOKER:
 		CG_Smoker(cent);
+		break;
+	case ET_AIRSTRIKE_PLANE:
+		CG_MovePlane(cent);
 		break;
 	}
 }
