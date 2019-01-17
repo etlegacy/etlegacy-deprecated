@@ -2643,7 +2643,7 @@ void G_AirStrikeThink(gentity_t *ent)
 	bomboffset[0] = crandom() * .5f * BOMBSPREAD;
 	bomboffset[1] = crandom() * .5f * BOMBSPREAD;
 	bomboffset[2] = 0.f;
-	VectorAdd(ent->s.pos.trBase, bomboffset, bomboffset);
+	VectorAdd(ent->r.currentOrigin, bomboffset, bomboffset);
 
 	SnapVector(bomboffset);
 
@@ -2653,9 +2653,6 @@ void G_AirStrikeThink(gentity_t *ent)
 	                         ent->parent, bomboffset, tv(0.f, 0.f, -1.f) /*bombaxis*/);
 
 	bomb->nextthink = level.time + FRAMETIME;   // overwrite
-
-	// move pos for next bomb
-	VectorAdd(ent->s.pos.trBase, ent->s.pos.trDelta, ent->s.pos.trBase);
 
 	ent->nextthink = (int)(level.time + 100 + crandom() * 50);
 
@@ -2681,7 +2678,6 @@ void weapon_callAirStrike(gentity_t *ent)
 	int       i;
 	vec3_t    bombaxis, lookaxis, pos, bomboffset, dir;
 	trace_t   tr;
-	float     traceheight;
 	gentity_t *plane;
 
 	if (ent->parent->client && ent->parent->client->sess.skill[SK_SIGNALS] >= 3)
@@ -2742,8 +2738,6 @@ void weapon_callAirStrike(gentity_t *ent)
 
 	G_GlobalClientEvent(EV_AIRSTRIKEMESSAGE, 2, ent->parent - g_entities);
 
-	traceheight = bomboffset[2];
-
 	VectorSubtract(ent->s.pos.trBase, ent->parent->client->ps.origin, lookaxis);
 	lookaxis[2] = 0;
 	VectorNormalize(lookaxis);
@@ -2761,8 +2755,8 @@ void weapon_callAirStrike(gentity_t *ent)
 		VectorCopy(bombaxis, pos);
 		VectorScale(pos, (-.5f * BOMBSPREAD * NUMBOMBS), pos);
 		VectorAdd(ent->s.pos.trBase, pos, pos);   // first bomb position
-		VectorScale(bombaxis, BOMBSPREAD, bombaxis);   // bomb drop direction offset
-		pos[2] = traceheight;
+		VectorScale(bombaxis, BOMBSPREAD * NUMBOMBS, bombaxis);   // bomb drop direction offset
+		pos[2] = bomboffset[2];
 
 		// spotter
 		plane               = G_Spawn();
@@ -2777,14 +2771,17 @@ void weapon_callAirStrike(gentity_t *ent)
 		plane->count        = NUMBOMBS;
 		plane->count2       = 1;            // first bomb
 		plane->s.eType      = ET_AIRSTRIKE_PLANE;
-		plane->s.pos.trType = TR_STATIONARY;
-		plane->s.pos.trTime = -50;
-		plane->clipmask     = MASK_SOLID;
+		plane->s.pos.trType = TR_LINEAR;
+		plane->s.pos.trTime = level.time + 1000;
+		VectorCopy(tv(-48.f, -48.f, 0.f), plane->r.mins);
+		VectorCopy(tv(48.f, 48.f, 60.f), plane->r.maxs);
+		plane->clipmask = MASK_SOLID;
 
 		SnapVector(pos);
+		SnapVector(bombaxis);
 		VectorCopy(pos, plane->r.currentOrigin);
 		VectorCopy(pos, plane->s.pos.trBase);
-		//VectorCopy(bombaxis, plane->s.pos.trDelta);
+		VectorCopy(bombaxis, plane->s.pos.trDelta);
 	}
 }
 
