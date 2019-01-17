@@ -2650,7 +2650,7 @@ void G_AirStrikeThink(gentity_t *ent)
 	bomb = G_Spawn();
 	G_PreFilledMissileEntity(bomb, WP_ARTY, ent->s.weapon,
 	                         ent->r.ownerNum, ent->s.teamNum, ent->s.clientNum,
-	                         ent->parent, bomboffset, tv(0.f, 0.f, -1.f) /*bombaxis*/);
+	                         ent->parent, bomboffset, tv(0.f, 1.f, -1.f) /*bombaxis*/);
 
 	bomb->nextthink = level.time + FRAMETIME;   // overwrite
 

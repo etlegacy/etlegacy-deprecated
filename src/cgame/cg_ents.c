@@ -1629,45 +1629,30 @@ void CG_MovePlane(centity_t *cent)
 	entityState_t *s1 = &cent->currentState;
 	vec3_t        origin, origin2;
 
-	// create the render entity
-	Com_Memset(&ent, 0, sizeof(ent));
-
+	Com_Memset(&ent, 0, sizeof(refEntity_t));
 
 	BG_EvaluateTrajectory(&s1->pos, cg.time, origin, qfalse, s1->effect1Time);
 	BG_EvaluateTrajectory(&s1->apos, cg.time, origin2, qfalse, s1->effect2Time);
 
 	VectorCopy(origin, ent.origin);
 	VectorCopy(origin2, ent.oldorigin);
-/*
-    CG_Printf( "O: %i %i %i OO: %i %i %i\n", (int)origin[0], (int)origin[1], (int)origin[2], (int)origin2[0], (int)origin2[1], (int)origin2[2] );
-    AxisClear(ent.axis);
-    ent.reType       = RT_MODEL;
-    ent.customShader = cgs.media.plane;
-*/
 
-	// set frame
-//	ent.frame    = s1->frame;
-//	ent.oldframe = ent.frame;
-//	ent.backlerp = 0;
-
-//	if (ent.frame)
-//	{
-//		ent.oldframe -= 1;
-//		ent.backlerp  = 1 - cg.frameInterpolation;
-
-//		if (cent->currentState.time)
-//		{
-//			ent.fadeStartTime = cent->currentState.time;
-//			ent.fadeEndTime   = cent->currentState.time2;
-//		}
-//	}
-
-//    VectorCopy(cent->lerpOrigin, ent.origin);
+//	VectorCopy(cent->lerpOrigin, ent.origin);
 //	VectorCopy(cent->lerpOrigin, ent.oldorigin);
-//	//VectorCopy( ent.origin, cent->lerpOrigin);
-//	AnglesToAxis(cent->lerpAngles, ent.axis);
+	AnglesToAxis(cent->lerpAngles, ent.axis);
+
+	VectorScale(ent.axis[0], 50, ent.axis[0]);
+	VectorScale(ent.axis[1], 50, ent.axis[1]);
+	VectorScale(ent.axis[2], 50, ent.axis[2]);
 
 	ent.renderfx |= RF_MINLIGHT;
+
+	ent.nonNormalizedAxes = qtrue;
+
+	if (cent->currentState.apos.trType)
+	{
+		ent.reFlags |= REFLAG_ORIENT_LOD;
+	}
 
 	if (s1->teamNum == TEAM_AXIS)
 	{
@@ -1680,8 +1665,6 @@ void CG_MovePlane(centity_t *cent)
 
 	// add to refresh list
 	trap_R_AddRefEntityToScene(&ent);
-
-	CG_Printf("Draw A Wonderful Plane\n");
 }
 
 
