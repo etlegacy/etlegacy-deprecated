@@ -4944,7 +4944,8 @@ void G_RunEntity(gentity_t *ent, int msec)
 	case ET_AIRSTRIKE_PLANE:
 		// get current position
 		BG_EvaluateTrajectory(&ent->s.pos, level.time, ent->r.currentOrigin, qfalse, ent->s.effect2Time);
-        G_RunThink(ent);
+		trap_LinkEntity(ent);
+		G_RunThink(ent);
 		return;
 	default:
 		break;
