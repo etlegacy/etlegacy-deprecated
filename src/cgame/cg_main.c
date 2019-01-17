@@ -1868,8 +1868,8 @@ static void CG_RegisterGraphics(void)
 	cgs.media.flamebarrel           = trap_R_RegisterModel("models/furniture/barrel/barrel_a.md3");
 	cgs.media.mg42muzzleflash       = trap_R_RegisterModel("models/weapons2/machinegun/mg42_flash.md3");
 
-	cgs.media.airstrikePlane[0] = trap_R_RegisterModel("models/multiplayer/mapobjects/etl_plane/junker88.md3"); // axis
-	cgs.media.airstrikePlane[1] = trap_R_RegisterModel("models/multiplayer/mapobjects/etl_plane/b-25.md3");     // allies
+	cgs.media.airstrikePlane[0] = trap_R_RegisterModel("models/mapobjects/etl_plane/junker88.md3"); // axis
+	cgs.media.airstrikePlane[1] = trap_R_RegisterModel("models/mapobjects/etl_plane/b-25.md3");     // allies
 
 	// shards
 	cgs.media.shardGlass1 = trap_R_RegisterModel("models/shards/glass1.md3");
