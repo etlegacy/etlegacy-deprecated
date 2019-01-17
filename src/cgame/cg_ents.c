@@ -1628,22 +1628,22 @@ void CG_MovePlane(centity_t *cent)
 	refEntity_t   ent;
 	entityState_t *s1 = &cent->currentState;
 	vec3_t        origin, origin2;
-    
-    // create the render entity
+
+	// create the render entity
 	Com_Memset(&ent, 0, sizeof(ent));
-    
-/*
+
+
 	BG_EvaluateTrajectory(&s1->pos, cg.time, origin, qfalse, s1->effect1Time);
 	BG_EvaluateTrajectory(&s1->apos, cg.time, origin2, qfalse, s1->effect2Time);
 
 	VectorCopy(origin, ent.origin);
 	VectorCopy(origin2, ent.oldorigin);
-
-	CG_Printf( "O: %i %i %i OO: %i %i %i\n", (int)origin[0], (int)origin[1], (int)origin[2], (int)origin2[0], (int)origin2[1], (int)origin2[2] );
-	AxisClear(ent.axis);
-	ent.reType       = RT_MODEL;
-	ent.customShader = cgs.media.plane;
-*/    
+/*
+    CG_Printf( "O: %i %i %i OO: %i %i %i\n", (int)origin[0], (int)origin[1], (int)origin[2], (int)origin2[0], (int)origin2[1], (int)origin2[2] );
+    AxisClear(ent.axis);
+    ent.reType       = RT_MODEL;
+    ent.customShader = cgs.media.plane;
+*/
 
 	// set frame
 //	ent.frame    = s1->frame;
@@ -1661,14 +1661,14 @@ void CG_MovePlane(centity_t *cent)
 //			ent.fadeEndTime   = cent->currentState.time2;
 //		}
 //	}
-    
-    VectorCopy(cent->lerpOrigin, ent.origin);
-	VectorCopy(cent->lerpOrigin, ent.oldorigin);
-	//VectorCopy( ent.origin, cent->lerpOrigin);
-	AnglesToAxis(cent->lerpAngles, ent.axis);
 
-    ent.renderfx |= RF_MINLIGHT;
-    
+//    VectorCopy(cent->lerpOrigin, ent.origin);
+//	VectorCopy(cent->lerpOrigin, ent.oldorigin);
+//	//VectorCopy( ent.origin, cent->lerpOrigin);
+//	AnglesToAxis(cent->lerpAngles, ent.axis);
+
+	ent.renderfx |= RF_MINLIGHT;
+
 	if (s1->teamNum == TEAM_AXIS)
 	{
 		ent.hModel = cgs.media.airstrikePlane[0];
@@ -1680,6 +1680,8 @@ void CG_MovePlane(centity_t *cent)
 
 	// add to refresh list
 	trap_R_AddRefEntityToScene(&ent);
+
+	CG_Printf("Draw A Wonderful Plane\n");
 }
 
 
