@@ -2768,7 +2768,6 @@ void weapon_callAirStrike(gentity_t *ent)
 		plane               = G_Spawn();
 		plane->parent       = ent;
 		plane->think        = G_AirStrikeThink;
-		plane->classname    = "plane";
 		plane->s.weapon     = ent->s.weapon;
 		plane->s.teamNum    = ent->s.teamNum;
 		plane->s.clientNum  = ent->s.clientNum;
@@ -2779,11 +2778,13 @@ void weapon_callAirStrike(gentity_t *ent)
 		plane->count2       = 1;            // first bomb
 		plane->s.eType      = ET_AIRSTRIKE_PLANE;
 		plane->s.pos.trType = TR_STATIONARY;
+		plane->s.pos.trTime = -50;
+		plane->clipmask     = MASK_SOLID;
 
 		SnapVector(pos);
 		VectorCopy(pos, plane->r.currentOrigin);
 		VectorCopy(pos, plane->s.pos.trBase);
-		VectorCopy(bombaxis, plane->s.pos.trDelta);
+		//VectorCopy(bombaxis, plane->s.pos.trDelta);
 	}
 }
 
