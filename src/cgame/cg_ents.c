@@ -1677,9 +1677,6 @@ void CG_MovePlane(centity_t *cent)
 	{
 		ent.hModel = cgs.media.airstrikePlane[1];
 	}
-    
-    
-    CG_Printf("%3")
 
 	// add to refresh list
 	trap_R_AddRefEntityToScene(&ent);
