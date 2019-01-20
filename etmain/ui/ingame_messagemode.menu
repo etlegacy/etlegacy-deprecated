@@ -35,7 +35,7 @@ menuDef {
 
 // Subwindows //
 #define SUBWINDOW_WIDTH		320
-#define SUBWINDOW_HEIGHT	64
+#define SUBWINDOW_HEIGHT	32
 #define SUBWINDOW_X			.5*(WINDOW_WIDTH-SUBWINDOW_WIDTH)
 #define SUBWINDOW_Y			320	// .5*(WINDOW_HEIGHT-SUBWINDOW_HEIGHT)
 
@@ -44,7 +44,7 @@ menuDef {
 	itemDef {
 		name		"efleftbackSay:"
 		group		GROUP_NAME
-		rect		$evalfloat((SUBWINDOW_X+4)+24+6) $evalfloat(SUBWINDOW_Y+16) $evalfloat((SUBWINDOW_WIDTH)-8-24-6) $evalfloat(10)
+		rect		$evalfloat(SUBWINDOW_X+2) $evalfloat(SUBWINDOW_Y+16) $evalfloat((SUBWINDOW_WIDTH)-8-24-6) $evalfloat(10)
 		style		WINDOW_STYLE_FILLED
 		backcolor	.5 .5 .5 .2
 		visible		1
@@ -52,11 +52,11 @@ menuDef {
 	}
 
 #ifdef LEGACY
-	EDITFIELDLEFT( SUBWINDOW_X+4, SUBWINDOW_Y+16, (SUBWINDOW_WIDTH)-12, 10, _("Say:"), .2, 8, "cg_messageText" onEsc { close ingame_messagemode ; } onEnter { close ingame_messagemode ; exec messageSend ; } onTab { exec "toggle cg_messageType 1 2 3" ; }, 128, 128, _("Enter text here - press ESCAPE twice to cancel") )
+	EDITFIELDLEFT( SUBWINDOW_X+2, SUBWINDOW_Y+16, (SUBWINDOW_WIDTH)-12, 10, _(""), .2, 8, "cg_messageText" onEsc { close ingame_messagemode ; } onEnter { close ingame_messagemode ; exec messageSend ; } onTab { exec "toggle cg_messageType 1 2 3" ; }, 128, 128, _("Enter text here - press ESCAPE twice to cancel") )
 #else
-	EDITFIELDLEFT( SUBWINDOW_X+4, SUBWINDOW_Y+16, (SUBWINDOW_WIDTH)-12, 10, _("Say:"), .2, 8, "cg_messageText" onEsc { close ingame_messagemode ; } onEnter { close ingame_messagemode ; exec messageSend ; }, 128, 128, _("Enter text here - press ESCAPE twice to cancel") )
+	EDITFIELDLEFT( SUBWINDOW_X+2, SUBWINDOW_Y+16, (SUBWINDOW_WIDTH)-12, 10, _(""), .2, 8, "cg_messageText" onEsc { close ingame_messagemode ; } onEnter { close ingame_messagemode ; exec messageSend ; }, 128, 128, _("Enter text here - press ESCAPE twice to cancel") )
 #endif
-	MULTILEFT( SUBWINDOW_X+4, SUBWINDOW_Y+28, (SUBWINDOW_WIDTH)-12, 10, _("To:"), .2, 8, "cg_messageType", cvarFloatList { "All" 1 "Team" 2 "Fireteam" 3 }, _("Select the destination of your message") )
-	BUTTON( SUBWINDOW_X+6, SUBWINDOW_Y+SUBWINDOW_HEIGHT-24, .5*(SUBWINDOW_WIDTH-18), 18, _("CANCEL"), .3, 14, close ingame_messagemode ; )
-	BUTTON( SUBWINDOW_X+6+.5*(SUBWINDOW_WIDTH-18)+6, SUBWINDOW_Y+SUBWINDOW_HEIGHT-24, .5*(SUBWINDOW_WIDTH-18), 18, _("SEND"), .3, 14, close ingame_messagemode ; exec messageSend ; )
+	MULTILEFT( SUBWINDOW_X+128, SUBWINDOW_Y+4, (SUBWINDOW_WIDTH)-12, 10, _("To:"), .2, 8, "cg_messageType", cvarFloatList { _("All") 1 _("Team") 2 _("Fireteam") 3 }, _("Select the destination of your message") )
+	//BUTTON( SUBWINDOW_X+6, SUBWINDOW_Y+SUBWINDOW_HEIGHT-24, .5*(SUBWINDOW_WIDTH-18), 18, _("CANCEL"), .3, 14, close ingame_messagemode ; )
+	BUTTON( SUBWINDOW_X+6+.5*(SUBWINDOW_WIDTH-18)+32, SUBWINDOW_Y+SUBWINDOW_HEIGHT-4, .5*(SUBWINDOW_WIDTH-18), 18, _("SEND"), .3, 14, close ingame_messagemode ; exec messageSend ; )
 }

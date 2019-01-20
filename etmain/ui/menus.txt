@@ -14,10 +14,12 @@
 	loadMenu { "ui/playonline_connecttoip.menu" }
 	loadMenu { "ui/playonline_serverinfo.menu" }
 	loadMenu { "ui/playonline_deletefavs.menu" }
+	loadMenu { "ui/favorites_serverinfo.menu" }
 	loadMenu { "ui/hostgame.menu" }
 	loadMenu { "ui/hostgame_advanced.menu" }
 	loadMenu { "ui/hostgame_extended.menu" }
 	loadMenu { "ui/hostgame_advanced_default.menu" }
+	loadMenu { "ui/hostgame_extended_default.menu" }	
 	loadMenu { "ui/hostgame_dedicated_warning.menu" }
 	loadMenu { "ui/mods.menu" }
 	loadMenu { "ui/viewreplay.menu" }
@@ -49,7 +51,6 @@
 	loadMenu { "ui/popup_autoupdate.menu" }
 	loadMenu { "ui/popup_password.menu" }
 	loadMenu { "ui/popup_serverredirect.menu"}
-	loadMenu { "ui/popup_addfavs.menu"}
 
 	// video confirmation
 	loadMenu { "ui/vid_restart.menu" }
@@ -61,10 +62,6 @@
 	loadMenu { "ui/wm_quickmessageAlt.menu" }
 	loadMenu { "ui/wm_ftquickmessage.menu" }
 	loadMenu { "ui/wm_ftquickmessageAlt.menu" }
-
-	// class menu
-	loadMenu { "ui/wm_class.menu" }
-	loadMenu { "ui/wm_classAlt.menu" }
 
 	// ingame
 	loadMenu { "ui/ingame_main.menu" }

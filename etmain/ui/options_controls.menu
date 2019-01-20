@@ -6,6 +6,7 @@
 #define WINDOW_Y		16
 #define WINDOW_WIDTH	608
 #define WINDOW_HEIGHT	448
+#define SHIFT 			39
 #define GROUP_NAME		"grpOptionsControls"
 
 // Subwindows //
@@ -16,19 +17,30 @@ menuDef {
 	name		"options_controls"
 	visible		0
 	fullscreen	0
-	rect		WINDOW_X WINDOW_Y WINDOW_WIDTH WINDOW_HEIGHT
+	rect		WINDOW_X WINDOW_Y 824 464
 	style		WINDOW_STYLE_FILLED
 
 	onESC {
 		close options_controls ;
-		open options
+		open main
 	}
+	
+// Menu Logo //
+	itemDef {
+		name		"etl_logo_small"
+		rect		4 12 54 27		// 16, 16 offset!!
+		style		WINDOW_STYLE_SHADER
+		background	"ui/assets/etl_logo.tga"
+		forecolor	1 1 1 1
+		visible		1
+		decoration
+	}	
 
 // Window //
 	WINDOW( _("CONTROLS"), 90 )
 
 // Move //
-#define MOVE_Y 32
+#define MOVE_Y 32 + SHIFT
 	SUBWINDOW( 6, MOVE_Y, (SUBWINDOW_WIDTH), 148, _("MOVE") )
 	BIND( 8, MOVE_Y+16, (SUBWINDOW_WIDTH)-4, 10, _("Forward:"), .2, 8, "+forward", "" )
 	BIND( 8, MOVE_Y+28, (SUBWINDOW_WIDTH)-4, 10, _("Back:"), .2, 8, "+back", "" )
@@ -43,7 +55,7 @@ menuDef {
 	BIND( 8, MOVE_Y+136, (SUBWINDOW_WIDTH)-4, 10, _("Sprint:"), .2, 8, "+sprint", "" )
 
 // Use Weapons //
-#define USEWEAPONS_Y 186
+#define USEWEAPONS_Y 183 + SHIFT
 	SUBWINDOW( 6, USEWEAPONS_Y, (SUBWINDOW_WIDTH), 88, _("USE WEAPONS") )
 	BIND( 8, USEWEAPONS_Y+16, (SUBWINDOW_WIDTH)-4, 10, _("Attack:"), .2, 8, "+attack", "" )
 	BIND( 8, USEWEAPONS_Y+28, (SUBWINDOW_WIDTH)-4, 10, _("Switch to Alternate:"), .2, 8, "weapalt", "" )
@@ -53,7 +65,7 @@ menuDef {
 	BIND( 8, USEWEAPONS_Y+76, (SUBWINDOW_WIDTH)-4, 10, _("Selfkill:"), .2, 8, "kill", "" )
 
 // Pop-Ups //
-#define POPUPS_Y 280
+#define POPUPS_Y 274 + SHIFT
 	SUBWINDOW( 6, POPUPS_Y, (SUBWINDOW_WIDTH), 124, _("POP-UPS") )
 	BIND( 8, POPUPS_Y+16, (SUBWINDOW_WIDTH)-4, 10, _("Show Scores:"), .2, 8, "+scores", "" )
 	BIND( 8, POPUPS_Y+28, (SUBWINDOW_WIDTH)-4, 10, _("Show Limbo Menu:"), .2, 8, "OpenLimboMenu", "" )
@@ -66,8 +78,8 @@ menuDef {
 	BIND( 8, POPUPS_Y+112, (SUBWINDOW_WIDTH)-4, 10, _("Multiview:"), .2, 8, "mvactivate", "" )
 
 // Select Weapons //
-#define SELECTWEAPONS_Y 32
-	SUBWINDOW( 6+(SUBWINDOW_WIDTH)+6, SELECTWEAPONS_Y, (SUBWINDOW_WIDTH), 148, _("SELECT CLASS AND WEAPONS") )
+#define SELECTWEAPONS_Y 32 + SHIFT
+	SUBWINDOW( 6+(SUBWINDOW_WIDTH)+6, SELECTWEAPONS_Y, (SUBWINDOW_WIDTH), 136, _("SELECT WEAPONS") )
 	BIND( 6+(SUBWINDOW_WIDTH)+6+2, SELECTWEAPONS_Y+16, (SUBWINDOW_WIDTH)-4, 10, _("Next Weapon:"), .2, 8, "weapnext", "" )
 	BIND( 6+(SUBWINDOW_WIDTH)+6+2, SELECTWEAPONS_Y+28, (SUBWINDOW_WIDTH)-4, 10, _("Previous Weapon:"), .2, 8, "weapprev", "" )
 	BIND( 6+(SUBWINDOW_WIDTH)+6+2, SELECTWEAPONS_Y+40, (SUBWINDOW_WIDTH)-4, 10, _("Slot 1 - Melee:"), .2, 8, "weaponbank 1", "" )
@@ -78,10 +90,9 @@ menuDef {
 	BIND( 6+(SUBWINDOW_WIDTH)+6+2, SELECTWEAPONS_Y+100, (SUBWINDOW_WIDTH)-4, 10, _("Slot 6 - Special 2:"), .2, 8, "weaponbank 6", "" )
 	BIND( 6+(SUBWINDOW_WIDTH)+6+2, SELECTWEAPONS_Y+112, (SUBWINDOW_WIDTH)-4, 10, _("Slot 7 - Special 3:"), .2, 8, "weaponbank 7", "" )
 	BIND( 6+(SUBWINDOW_WIDTH)+6+2, SELECTWEAPONS_Y+124, (SUBWINDOW_WIDTH)-4, 10, _("Slot 8 - Binoculars:"), .2, 8, "weaponbank 8", "" )
-	BIND( 6+(SUBWINDOW_WIDTH)+6+2, SELECTWEAPONS_Y+136, (SUBWINDOW_WIDTH)-4, 10, _("Class selection:"), .2, 8, "classmenu", "" )
 
 // Chat //
-#define CHAT_Y 186
+#define CHAT_Y 172 + SHIFT
 	SUBWINDOW( 6+(SUBWINDOW_WIDTH)+6, CHAT_Y, (SUBWINDOW_WIDTH), 76, _("CHAT") )
 	BIND( 6+(SUBWINDOW_WIDTH)+6+2, CHAT_Y+16, (SUBWINDOW_WIDTH)-4, 10, _("Chat:"), .2, 8, "messagemode", "" )
 	BIND( 6+(SUBWINDOW_WIDTH)+6+2, CHAT_Y+28, (SUBWINDOW_WIDTH)-4, 10, _("Team Chat:"), .2, 8, "messagemode2", "" )
@@ -90,16 +101,16 @@ menuDef {
 	BIND( 6+(SUBWINDOW_WIDTH)+6+2, CHAT_Y+64, (SUBWINDOW_WIDTH)-4, 10, _("Fireteam Quick Chat:"), .2, 8, "mp_fireteammsg", "" )
 
 // Input //
-#define INPUT_Y 268
+#define INPUT_Y 254 + SHIFT
 	SUBWINDOW( 6+(SUBWINDOW_WIDTH)+6, INPUT_Y, (SUBWINDOW_WIDTH), 52, _("INPUT") )
 	CHECKBOXALIGNXACTION(  6+(SUBWINDOW_WIDTH)+6+2, INPUT_Y+16, .5*((SUBWINDOW_WIDTH)-6), 10,_("Invert Mouse:"), .2, 24, 8, "ui_mousePitch", uiScript update ui_mousePitch, _("Inverts mouse pitch") )
 	CHECKBOXALIGNX( 6+(SUBWINDOW_WIDTH)+6+2+(.5*((SUBWINDOW_WIDTH)-6))+2, INPUT_Y+16, .5*((SUBWINDOW_WIDTH)-6), 10, _("Smooth Mouse:"), .2, 24, 8, "m_filter", _("Smooths out the mouse using interpolation") )
 	CVARFLOATLABEL( 6+(SUBWINDOW_WIDTH)+6+2, INPUT_Y+28, (SUBWINDOW_WIDTH)-4, 10, "sensitivity", .2, ITEM_ALIGN_RIGHT, $evalfloat((SUBWINDOW_WIDTH)-6), 8 )
 	SLIDER( 6+(SUBWINDOW_WIDTH)+6+2, INPUT_Y+28, (SUBWINDOW_WIDTH)-4, 10, _("Mouse Sensitivity:"), .2, 8, "sensitivity" 5 1 30, _("Use the slider to increase or decrease mouse sensitivity") )
-	MULTI( 6+(SUBWINDOW_WIDTH)+6+2, INPUT_Y+40, (SUBWINDOW_WIDTH)-4, 10, _("Mouse Pitch:"), .2, 8, "m_pitch", cvarFloatList { "0.015 (lowest allowed)" 0.0151 "0.016" 0.016 "0.017" 0.017 "0.018" 0.018 "0.019" 0.019 "0.020" 0.020 "0.021" 0.021 "0.022 (default)" 0.022 }, _("Up-Down Motion Of The Crosshair While Moving.") )
+	MULTI( 6+(SUBWINDOW_WIDTH)+6+2, INPUT_Y+40, (SUBWINDOW_WIDTH)-4, 10, _("Mouse Pitch:"), .2, 8, "m_pitch", cvarFloatList { _("0.015 (lowest allowed)") 0.0151 "0.016" 0.016 "0.017" 0.017 "0.018" 0.018 "0.019" 0.019 "0.020" 0.020 "0.021" 0.021 _("0.022 (default)") 0.022 }, _("Up-Down Motion Of The Crosshair While Moving.") )
 
 // Miscellaneous //
-#define MISC_Y 326
+#define MISC_Y 310 + SHIFT
 	SUBWINDOW( 6+(SUBWINDOW_WIDTH)+6, MISC_Y, (SUBWINDOW_WIDTH), 88, _("MISCELLANEOUS") )
 	BIND( 6+(SUBWINDOW_WIDTH)+6+2, MISC_Y+16, (SUBWINDOW_WIDTH)-4, 10, _("Vote Yes:"), .2, 8, "vote yes", "" )
 	BIND( 6+(SUBWINDOW_WIDTH)+6+2, MISC_Y+28, (SUBWINDOW_WIDTH)-4, 10, _("Vote No:"), .2, 8, "vote no", "" )
@@ -110,7 +121,27 @@ menuDef {
 
 
 // Buttons //
-	BUTTON( 6, WINDOW_HEIGHT-24, .33*(WINDOW_WIDTH-24), 18, _("BACK"), .3, 14, close options_controls ; open options )
-	BUTTON( 6+.33*(WINDOW_WIDTH-24)+6, WINDOW_HEIGHT-24, .34*(WINDOW_WIDTH-24), 18, _("ADVANCED"), .3, 14, close options_controls ; open options_controls_advanced )
-	BUTTON( 6+.33*(WINDOW_WIDTH-24)+6+.34*(WINDOW_WIDTH-24)+6, WINDOW_HEIGHT-24, .33*(WINDOW_WIDTH-24), 18, _("DEFAULT"), .3, 14, open options_controls_default )
+	//BUTTON( 6, WINDOW_HEIGHT-24, .33*(WINDOW_WIDTH-24), 18, _("BACK"), .3, 14, close options_controls ; open options )
+	BUTTON( 6+.33*(WINDOW_WIDTH-24)+6, WINDOW_HEIGHT-400, .34*(WINDOW_WIDTH-24), 18, _("ADVANCED"), .3, 14, close options_controls ; open options_controls_advanced )
+	BUTTON( 6+.33*(WINDOW_WIDTH-24)+6+.34*(WINDOW_WIDTH-24)+6, WINDOW_HEIGHT-400, .33*(WINDOW_WIDTH-24), 18, _("DEFAULT"), .3, 14, open options_controls_default )
+	
+// Buttons //
+        BUTTON ( 70, 16, 80, 18, _("GAME"), .3, 14, close options_controls ; open options_customise_game )
+        BUTTON ( 150, 16, 80, 18, _("VIEW"), .3, 14, close options_controls ; open options_customise_hud )
+        BUTTON ( 240, 16, 90, 18, _("CONTROLS"), .3, 14, close options_controls ; open options_controls )
+        BUTTON ( 345, 16, 88, 18, _("SYSTEM"), .3, 14, close options_controls ; open options_system )
+        BUTTON ( 435, 16, 88, 18, _("CLEAN"), .3, 14, close ooptions_controls; open options_clean )
+
+
+	#ifdef FUI
+
+		BUTTON_LOGO( 0, 16, 62, 18, _(""), .3, 14, close options_controls; open main, _("Home") )
+	
+	// welcome back
+		LABELWHITE( 4, 0, 128, 128, "Welcome back, " , .2, ITEM_ALIGN_LEFT, 0, 8 )
+		CVARLABEL( 82, 0, 128, 128, "name", .2, ITEM_ALIGN_LEFT, 0, 8 )
+	#else
+
+		BUTTON_LOGO( 0, 16, 62, 18, _(""), .3, 14, options_controls; open ingame_main )	
+	#endif // FUI		
 }

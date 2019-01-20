@@ -6,6 +6,7 @@
 #define WINDOW_Y		16
 #define WINDOW_WIDTH	608
 #define WINDOW_HEIGHT	448
+#define SHIFT 			39
 #define GROUP_NAME		"grpViewReplay"
 
 // View Replay Menu //
@@ -13,7 +14,7 @@ menuDef {
 	name		"viewreplay"
 	visible		0
 	fullscreen	0
-	rect		WINDOW_X WINDOW_Y WINDOW_WIDTH WINDOW_HEIGHT
+	rect		WINDOW_X WINDOW_Y  824 464
 	style		WINDOW_STYLE_FILLED
 
 	onOpen {
@@ -24,6 +25,17 @@ menuDef {
 		close viewreplay ;
 		open main
 	}
+	
+// Menu Logo //
+	itemDef {
+		name		"etl_logo_small"
+		rect		4 12 54 27		// 16, 16 offset!!
+		style		WINDOW_STYLE_SHADER
+		background	"ui/assets/etl_logo.tga"
+		forecolor	1 1 1 1
+		visible		1
+		decoration
+	}	
 
 // Window //
 	WINDOW( _("REPLAYS"), 150 )
@@ -32,7 +44,7 @@ menuDef {
 	itemDef {
 		name			"demoList"
 		group			GROUP_NAME
-		rect			6 32 596 386
+		rect			6 71 596 347
 		type			ITEM_TYPE_LISTBOX
 		textfont		UI_FONT_COURBD_21
 		textscale		.2
@@ -55,9 +67,30 @@ menuDef {
 	}
 
 // Buttons //
-	BUTTON( 6, WINDOW_HEIGHT-24, .33*(WINDOW_WIDTH-24), 18, _("BACK"), .3, 14, close viewreplay ; open main )
-	BUTTON( 6+.33*(WINDOW_WIDTH-24)+6, WINDOW_HEIGHT-24, .34*(WINDOW_WIDTH-24), 18, _("DELETE"), .3, 14, conditionalScript ValidReplaySelected 2
+	BUTTON( 6, WINDOW_HEIGHT-26, .33*(WINDOW_WIDTH-24), 18, _("BACK"), .3, 14, close viewreplay ; open main )
+	BUTTON( 6+.33*(WINDOW_WIDTH-24)+6, WINDOW_HEIGHT-26, .34*(WINDOW_WIDTH-24), 18, _("DELETE"), .3, 14, conditionalScript ValidReplaySelected 2
 		( "clearFocus ; open viewreplay_delete" )
 		( "clearFocus" ) )
-	BUTTON( 6+.33*(WINDOW_WIDTH-24)+6+.34*(WINDOW_WIDTH-24)+6, WINDOW_HEIGHT-24, .33*(WINDOW_WIDTH-24), 18, _("VIEW"), .3, 14, uiScript RunDemo )
+	BUTTON( 6+.33*(WINDOW_WIDTH-24)+6+.34*(WINDOW_WIDTH-24)+6, WINDOW_HEIGHT-26, .33*(WINDOW_WIDTH-24), 18, _("VIEW"), .3, 14, uiScript RunDemo )
+	
+// Buttons //
+	BUTTON_LOGO( 0, 16, 62, 18, _(""), .3, 14, close viewreplay ; open main, _("Home") )
+	
+	BUTTON( 70, 16, 62, 18, _("PLAY"), .3, 14, close viewreplay ; /*close backgroundmusic ; open backgroundmusic_server ;*/ uiScript UpdateFilter ; uiScript ServerSortDown 4 ; open playonline )
+	BUTTON( 130, 16, 62, 18, _("HOST"), .3, 14, close viewreplay ; /*close backgroundmusic ; open backgroundmusic_server ;*/ uiScript loadArenas ; uiScript initHostGameFeatures ; open hostgame )
+	BUTTON( 200, 16, 62, 18, _("WATCH"), .3, 14, close viewreplay ; open viewreplay )
+	BUTTON( 270, 16, 78, 18, _("OPTIONS"), .3, 14, close viewreplay ; open options )
+	
+	
+	BUTTON( 420, 16, 78, 18, _("PROFILE"), .3, 14, cclose viewreplay ; open profile )
+	BUTTON( 500, 16, 62, 18, _("MODS"), .3, 14, close viewreplay ; open mods )
+	
+	
+	BUTTON( 720, 16, 62, 18, _("EXIT"), .3, 14, clearFocus ; open quit )
+
+// welcome back
+	LABELWHITE( 4, 0, 128, 128, "Welcome back, " , .2, ITEM_ALIGN_LEFT, 0, 8 )
+	CVARLABEL( 82, 0, 128, 128, "name", .2, ITEM_ALIGN_LEFT, 0, 8 )			
+	
+
 }

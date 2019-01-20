@@ -6,6 +6,7 @@
 #define WINDOW_Y		16
 #define WINDOW_WIDTH	608
 #define WINDOW_HEIGHT	448
+#define SHIFT 			39
 #define GROUP_NAME		"grpOptionsClean"
 
 // Subwindows //
@@ -18,19 +19,30 @@ menuDef {
 	name		"options_clean"
 	visible		0
 	fullscreen	0
-	rect		WINDOW_X WINDOW_Y WINDOW_WIDTH WINDOW_HEIGHT
+	rect		WINDOW_X WINDOW_Y 824 464
 	style		WINDOW_STYLE_FILLED
 
 	onESC {
 		close options_clean ;
-		open options
+		open main
 	}
+	
+// Menu Logo //
+	itemDef {
+		name		"etl_logo_small"
+		rect		4 12 54 27		// 16, 16 offset!!
+		style		WINDOW_STYLE_SHADER
+		background	"ui/assets/etl_logo.tga"
+		forecolor	1 1 1 1
+		visible		1
+		decoration
+	}	
 
 // Window //
 	WINDOW( _("CLEAN"), 94 )
 
 // Homepath cleanup //
-#define HOMEPATH_Y 32
+#define HOMEPATH_Y 32 + SHIFT
 	SUBWINDOW( 6, HOMEPATH_Y, WINDOW_WIDTH-12, 180, _("HOMEPATH CLEAN UP") )
 	LABEL( 8, HOMEPATH_Y+28, SUBWINDOW_WIDTH-4, 10, _("This will delete all unnecessary files from you fs_homepath."), .2, ITEM_ALIGN_CENTER, .5*((SUBWINDOW_WIDTH)-4), 8 )
 	LABEL( 8, HOMEPATH_Y+52, SUBWINDOW_WIDTH-4, 10, _("A simple clean will remove tmp and custom pk3 files."), .2, ITEM_ALIGN_CENTER, .5*((SUBWINDOW_WIDTH)-4), 8 )
@@ -39,10 +51,30 @@ menuDef {
 	LABEL( 8, HOMEPATH_Y+128, SUBWINDOW_WIDTH-4, 10, _("Consult our wiki for documentation."), .2, ITEM_ALIGN_CENTER, .5*((SUBWINDOW_WIDTH)-4), 8 )
 	LABEL( 8, HOMEPATH_Y+142, SUBWINDOW_WIDTH-4, 10, _("Press '^7ABORT^9' if you don't know what you are doing here."), .2, ITEM_ALIGN_CENTER, .5*((SUBWINDOW_WIDTH)-4), 8 )
 
-	BUTTONEXT( 10+2, 192, .33*(SUBWINDOW_WIDTH-18), 14, _("ABORT"), .24, 11, close options_clean ; open options, tooltip _("Abort operation") )
-	BUTTONEXT( 10+.33*(SUBWINDOW_WIDTH-18)+6, 192, .33*(SUBWINDOW_WIDTH-18), 14, _("SIMPLE CLEAN"), .24, 11, exec "exec clean_simple.cfg" ; close options_clean ; open options, tooltip _("Remove tmp and custom pk3 files") )
-	BUTTONEXT( 10+.33*(SUBWINDOW_WIDTH-18)+6+.33*(SUBWINDOW_WIDTH-18)+6, 192, .33*(SUBWINDOW_WIDTH-18), 14, _("FULL CLEAN"), .24, 11, exec "exec clean_full.cfg" ; close options_clean ; open options, tooltip _("Remove all maps and campaigns files") )
+	BUTTONEXT( 10+2, 192 + SHIFT, .33*(SUBWINDOW_WIDTH-18), 14, _("ABORT"), .24, 11, close options_clean ; open options, tooltip _("Abort operation") )
+	BUTTONEXT( 10+.33*(SUBWINDOW_WIDTH-18)+6, 192 + SHIFT, .33*(SUBWINDOW_WIDTH-18), 14, _("SIMPLE CLEAN"), .24, 11, exec "exec clean_simple.cfg" ; close options_clean ; open options, tooltip _("Remove tmp and custom pk3 files") )
+	BUTTONEXT( 10+.33*(SUBWINDOW_WIDTH-18)+6+.33*(SUBWINDOW_WIDTH-18)+6, 192 + SHIFT, .33*(SUBWINDOW_WIDTH-18), 14, _("FULL CLEAN"), .24, 11, exec "exec clean_full.cfg" ; close options_clean ; open options, tooltip _("Remove all maps and campaigns files") )
 
 // Buttons //
-	BUTTON( 6, WINDOW_HEIGHT-24, WINDOW_WIDTH-12, 18, _("BACK"), .3, 14, close options_clean ; open options )
+	//BUTTON( 6, WINDOW_HEIGHT-24, WINDOW_WIDTH-12, 18, _("BACK"), .3, 14, close options_clean ; open options )
+	
+// Buttons //
+        BUTTON ( 70, 16, 80, 18, _("GAME"), .3, 14, close options_clean ; open options_customise_game )
+        BUTTON ( 150, 16, 80, 18, _("VIEW"), .3, 14, close options_clean ; open options_customise_hud )
+        BUTTON ( 240, 16, 90, 18, _("CONTROLS"), .3, 14, close options_clean ; open options_controls )
+        BUTTON ( 345, 16, 88, 18, _("SYSTEM"), .3, 14, close options_clean ; open options_system )
+        BUTTON ( 435, 16, 88, 18, _("CLEAN"), .3, 14, close options_clean; open options_clean )
+
+
+	#ifdef FUI
+
+		BUTTON_LOGO( 0, 16, 62, 18, _(""), .3, 14, close options_clean; open main, _("Home") )
+	
+	// welcome back
+		LABELWHITE( 4, 0, 128, 128, "Welcome back, " , .2, ITEM_ALIGN_LEFT, 0, 8 )
+		CVARLABEL( 82, 0, 128, 128, "name", .2, ITEM_ALIGN_LEFT, 0, 8 )
+	#else
+
+		BUTTON_LOGO( 0, 16, 62, 18, _(""), .3, 14, options_clean; open ingame_main )	
+	#endif // FUI		
 }

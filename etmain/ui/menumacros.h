@@ -3,7 +3,7 @@
  * Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
  *
  * ET: Legacy
- * Copyright (C) 2012-2018 ET:Legacy team <mail@etlegacy.com>
+ * Copyright (C) 2012-2016 ET:Legacy team <mail@etlegacy.com>
  *
  * This file is part of ET: Legacy - http://www.etlegacy.com
  *
@@ -36,10 +36,10 @@
 #ifndef INCLUDE_MENUMACROS_H
 #define INCLUDE_MENUMACROS_H
 
-#define LEGACY_RESOLUTIONS cvarFloatList { "desktop resolution" - 2 "custom resolution" - 1 "640*480" 3 "800*600" 4 "960*720" 5 "1024*768" 6 "1152*864" 7 "1280*1024" 8 "1600*1200" 9 "2048*1536" 10 "856*480 (16:9)" 11 "1366x768 (16:9)" 12 "1440x900 (16:10)" 13 "1680x1050 (16:10)" 14 "1600x1200" 15 "1920x1080 (16:9)" 16 "1920x1200 (16:10)" 17 "2560x1440 (16:9)" 18 "2560x1600 (16:10)" 19 "3840x2160 (16:9)" 20 }
+#define LEGACY_RESOLUTIONS cvarFloatList { "desktop resolution" - 2 "640*480" 3 "800*600" 4 "960*720" 5 "1024*768" 6 "1152*864" 7 "1280*1024" 8 "1600*1200" 9 "2048*1536" 10 "856*480 Wide Screen" 11 "1366x768 (16:9)" 12 "1440x900 (16:10)" 13 "1680x1050 (16:10)" 14 "1600x1200" 15 "1920x1080 (16:9)" 16 "1920x1200 (16:10)" 17 "2560x1440 (16:9)" 18 "2560x1600 (16:10)" 19 "3840x2160 (16:9)" 20 }
 #define LEGACY_WINDOWMODES cvarFloatList { "Windowed" 0 "Fullscreen" 1 "Windowed Fullscreen" 2 }
-#define LEGACY_LANGUAGES   cvarStrList { "English (default)  "; "en"; "Български"; "bg"; "Čeština"; "cs"; "Deutsch"; "de"; "Español"; "es"; "Suomi"; "fi"; "Français"; "fr"; "Magyar"; "hu"; "Italiano"; "it"; "Nederlands"; "nl"; "Norsk"; "no"; "Polski"; "pl"; "Português"; "pt"; "Русский"; "ru"; "Српски"; "sr"; "Svenska"; "sv"; "Türkçe"; "tr"; }
-#define LEGACY_RENDERERS   cvarStrList { "Vanilla (default)  "; "opengl1"; /*"ET: Legacy"; "opengl2"*/ }
+#define LEGACY_LANGUAGES   cvarStrList { "English (default)  "; "en"; "French"; "fr"; "German"; "de"; "Polish"; "pl"; "Russian"; "ru"; "Dutch"; "nl"; "Czech"; "cs"; "Finnish"; "fi"; "Norwegian"; "no"; "Spanish"; "es"; "Italian"; "it" }
+#define LEGACY_RENDERERS   cvarStrList { "Vanilla (default)  "; "opengl1"; "ET: Legacy"; "opengl2" }
 
 // Marks text as translatable
 #define _(x) x
@@ -48,11 +48,11 @@
 	itemDef {                                                                                                   \
 		name        "window"                                                                                    \
 		group GROUP_NAME                                                                                  \
-		rect        0 0 WINDOW_WIDTH WINDOW_HEIGHT                                                              \
+		rect        0 42 WINDOW_WIDTH 400                                                              \
 		style WINDOW_STYLE_FILLED                                                                         \
-		backcolor   0 0 0 .2                                                                                    \
+		backcolor   0.458 0.768 1 0.15                                                                                     \
 		border WINDOW_BORDER_FULL                                                                          \
-		bordercolor .5 .5 .5 .5                                                                                 \
+		bordercolor 0.0 0.0 0.0 0.0                                                                                  \
 		visible     1                                                                                           \
 		decoration                                                                                              \
 	}                                                                                                           \
@@ -60,9 +60,9 @@
 	itemDef {                                                                                                   \
 		name        "titlebar"                                                                                  \
 		group GROUP_NAME                                                                                  \
-		rect        2 2 GRADIENT_START_OFFSET 24                                                                \
+		rect        2 44 GRADIENT_START_OFFSET 24                                                                \
 		style WINDOW_STYLE_FILLED                                                                         \
-		backcolor   .16 .2 .17 .8                                                                               \
+		backcolor   0.8 0.09 0.0 0.6                                                                                \
 		visible     1                                                                                           \
 		decoration                                                                                              \
 	}                                                                                                           \
@@ -70,9 +70,9 @@
 	itemDef {                                                                                                   \
 		name        "titlebargradient"                                                                          \
 		group GROUP_NAME                                                                                  \
-		rect $evalint(GRADIENT_START_OFFSET + 2) 2 $evalint(WINDOW_WIDTH - (GRADIENT_START_OFFSET + 4)) 24     \
-		style WINDOW_STYLE_GRADIENT                                                                       \
-		backcolor   .16 .2 .17 .8                                                                               \
+		rect $evalint(GRADIENT_START_OFFSET + 2) 44 $evalint(WINDOW_WIDTH - (GRADIENT_START_OFFSET + 4)) 24     \
+		style WINDOW_STYLE_FILLED                                                                       \
+		backcolor    0.8 0.09 0.0 0.6                                                                                \
 		visible     1                                                                                           \
 		decoration                                                                                              \
 	}                                                                                                           \
@@ -80,15 +80,16 @@
 	itemDef {                                                                                                   \
 		name        "windowtitle"                                                                               \
 		group GROUP_NAME                                                                                  \
-		rect        2 2 $evalint(WINDOW_WIDTH - 4) 24                                                             \
+		rect        2 44 $evalint(WINDOW_WIDTH - 4) 24                                                             \
 		text WINDOW_TEXT                                                                                 \
-		textfont UI_FONT_ARIBLK_27                                                                           \
+		textfont UI_FONT_COURBD_21   		\
+		textstyle ITEM_TEXTSTYLE_SHADOWED \
 		textscale   .4                                                                                          \
 		textalignx  3                                                                                           \
 		textaligny  20                                                                                          \
-		forecolor   .6 .6 .6 1                                                                                  \
-		border WINDOW_BORDER_FULL                                                                          \
-		bordercolor .1 .1 .1 .2                                                                                 \
+		forecolor   1.0 1.0 1.0 1                                                                                  \
+		border WINDOW_BORDER_FULL                                                                        \
+		bordercolor .0 .0 .0 0.0                                                                                 \
 		visible     1                                                                                           \
 		decoration                                                                                              \
 	}
@@ -97,11 +98,11 @@
 	itemDef {                                                                                                   \
 		name        "window"                                                                                    \
 		group GROUP_NAME                                                                                  \
-		rect        0 0 WINDOW_WIDTH WINDOW_HEIGHT                                                              \
+		rect        0 12 WINDOW_WIDTH 240                                                              \
 		style WINDOW_STYLE_FILLED                                                                         \
-		backcolor   0 0 0 .9                                                                                    \
+		backcolor   0.458 0.768 1 0.15                                                                                     \
 		border WINDOW_BORDER_FULL                                                                          \
-		bordercolor .5 .5 .5 .5                                                                                 \
+		bordercolor 1.0 1.0 1.0 1.0                                                                                  \
 		visible     1                                                                                           \
 		decoration                                                                                              \
 	}                                                                                                           \
@@ -109,9 +110,9 @@
 	itemDef {                                                                                                   \
 		name        "titlebar"                                                                                  \
 		group GROUP_NAME                                                                                  \
-		rect        2 2 GRADIENT_START_OFFSET 24                                                                \
+		rect        2 14 GRADIENT_START_OFFSET 24                                                                \
 		style WINDOW_STYLE_FILLED                                                                         \
-		backcolor   .16 .2 .17 .8                                                                               \
+		backcolor   0.8 0.09 0.0 0.6                                                                                \
 		visible     1                                                                                           \
 		decoration                                                                                              \
 	}                                                                                                           \
@@ -119,9 +120,9 @@
 	itemDef {                                                                                                   \
 		name        "titlebargradient"                                                                          \
 		group GROUP_NAME                                                                                  \
-		rect $evalint(GRADIENT_START_OFFSET + 2) 2 $evalint(WINDOW_WIDTH - (GRADIENT_START_OFFSET + 4)) 24     \
-		style WINDOW_STYLE_GRADIENT                                                                       \
-		backcolor   .16 .2 .17 .8                                                                               \
+		rect $evalint(GRADIENT_START_OFFSET + 2) 14 $evalint(WINDOW_WIDTH - (GRADIENT_START_OFFSET + 4)) 24     \
+		style WINDOW_STYLE_FILLED                                                                       \
+		backcolor    0.8 0.09 0.0 0.6                                                                                \
 		visible     1                                                                                           \
 		decoration                                                                                              \
 	}                                                                                                           \
@@ -129,15 +130,16 @@
 	itemDef {                                                                                                   \
 		name        "windowtitle"                                                                               \
 		group GROUP_NAME                                                                                  \
-		rect        2 2 $evalint(WINDOW_WIDTH - 4) 24                                                             \
+		rect        2 14 $evalint(WINDOW_WIDTH - 4) 24                                                             \
 		text WINDOW_TEXT                                                                                 \
-		textfont UI_FONT_ARIBLK_27                                                                           \
+		textfont UI_FONT_COURBD_21   		\
+		textstyle ITEM_TEXTSTYLE_SHADOWED \
 		textscale   .4                                                                                          \
 		textalignx  3                                                                                           \
 		textaligny  20                                                                                          \
-		forecolor   .6 .6 .6 1                                                                                  \
-		border WINDOW_BORDER_FULL                                                                          \
-		bordercolor .1 .1 .1 .2                                                                                 \
+		forecolor   1.0 1.0 1.0 1                                                                                  \
+		border WINDOW_BORDER_FULL                                                                        \
+		bordercolor .0 .0 .0 0.0                                                                                 \
 		visible     1                                                                                           \
 		decoration                                                                                              \
 	}
@@ -148,7 +150,61 @@
 #define WINDOW WINDOW_INGAME
 #endif
 
-#define SUBWINDOW(SUBWINDOW_X, SUBWINDOW_Y, SUBWINDOW_W, SUBWINDOW_H, SUBWINDOW_TEXT) \
+                                                                                                        \
+                                                                                                                \
+#define WINDOW_FAVOURITES(WINDOW_TEXT, GRADIENT_START_OFFSET)                                                        \
+	itemDef {                                                                                                   \
+		name        "window"                                                                                    \
+		group GROUP_NAME                                                                                  \
+		rect        0 42 320 191                                                             \
+		style WINDOW_STYLE_FILLED                                                                         \
+		backcolor   0.458 0.768 1 0.15                                                                                     \
+		border WINDOW_BORDER_FULL                                                                          \
+		bordercolor 0.0 0.0 0.0 0.0                                                                                  \
+		visible     1                                                                                           \
+		decoration                                                                                              \
+	}                                                                                                           \
+                                                                                                                \
+	itemDef {                                                                                                   \
+		name        "titlebar"                                                                                  \
+		group GROUP_NAME                                                                                  \
+		rect        2 44 GRADIENT_START_OFFSET 24                                                                \
+		style WINDOW_STYLE_FILLED                                                                         \
+		backcolor   0.8 0.09 0.0 0.6                                                                                \
+		visible     1                                                                                           \
+		decoration                                                                                              \
+	}                                                                                                           \
+                                                                                                                \
+	itemDef {                                                                                                   \
+		name        "titlebargradient"                                                                          \
+		group GROUP_NAME                                                                                  \
+		rect $evalint(GRADIENT_START_OFFSET + 2) 44 $evalint(320 - (GRADIENT_START_OFFSET + 4)) 24     \
+		style WINDOW_STYLE_FILLED                                                                       \
+		backcolor    0.8 0.09 0.0 0.6                                                                                \
+		visible     1                                                                                           \
+		decoration                                                                                              \
+	}                                                                                                           \
+                                                                                                                \
+	itemDef {                                                                                                   \
+		name        "windowtitle"                                                                               \
+		group GROUP_NAME                                                                                  \
+		rect        2 44 $evalint(WINDOW_WIDTH - 4) 24                                                             \
+		text WINDOW_TEXT                                                                                 \
+		textfont UI_FONT_COURBD_21   		\
+		textstyle ITEM_TEXTSTYLE_SHADOWED \
+		textscale   .4                                                                                          \
+		textalignx  3                                                                                           \
+		textaligny  20                                                                                          \
+		forecolor   1.0 1.0 1.0 1                                                                                  \
+		border WINDOW_BORDER_FULL                                                                        \
+		bordercolor .0 .0 .0 0.0                                                                                 \
+		visible     1                                                                                           \
+		decoration                                                                                              \
+	}
+	
+	
+
+#define SUBWINDOW_PROFIL(SUBWINDOW_X, SUBWINDOW_Y, SUBWINDOW_W, SUBWINDOW_H, SUBWINDOW_TEXT) \
 	itemDef {                                                                                                   \
 		name        "subwindow" ## SUBWINDOW_TEXT                                                                 \
 		group GROUP_NAME                                                                                  \
@@ -156,7 +212,7 @@
 		style WINDOW_STYLE_FILLED                                                                         \
 		backcolor   0 0 0 .2                                                                                    \
 		border WINDOW_BORDER_FULL                                                                          \
-		bordercolor .5 .5 .5 .5                                                                                 \
+		bordercolor .15 .10 .15 .6                                                                                 \
 		visible     1                                                                                           \
 		decoration                                                                                              \
 	}                                                                                                           \
@@ -166,13 +222,44 @@
 		group GROUP_NAME                                                                                  \
 		rect $evalfloat((SUBWINDOW_X)+2) $evalfloat((SUBWINDOW_Y)+2) $evalfloat((SUBWINDOW_W)-4) 12      \
 		text SUBWINDOW_TEXT                                                                              \
-		textfont UI_FONT_ARIBLK_16                                                                           \
+		textstyle ITEM_TEXTSTYLE_SHADOWED  \
+		textfont UI_FONT_COURBD_21                                                                           \
 		textscale   .19                                                                                         \
 		textalignx  3                                                                                           \
-		textaligny  10                                                                                          \
+		textaligny  9                                                                                          \
+		style WINDOW_STYLE_GRADIENT                                                                         \
+		backcolor   1.0 0.09 0.0 0.5                                                                           \
+		forecolor  1.0 1.0 1.0 1                                                                                  \
+		visible     1                                                                                           \
+		decoration                                                                                              \
+	}
+
+#define SUBWINDOW(SUBWINDOW_X, SUBWINDOW_Y, SUBWINDOW_W, SUBWINDOW_H, SUBWINDOW_TEXT) \
+	itemDef {                                                                                                   \
+		name        "subwindow" ## SUBWINDOW_TEXT                                                                 \
+		group GROUP_NAME                                                                                  \
+		rect $evalfloat(SUBWINDOW_X) $evalfloat(SUBWINDOW_Y) $evalfloat(SUBWINDOW_W) $evalfloat(SUBWINDOW_H) \
 		style WINDOW_STYLE_FILLED                                                                         \
-		backcolor   .16 .2 .17 .8                                                                               \
-		forecolor   .6 .6 .6 1                                                                                  \
+		backcolor   0.0 0.0 0.0 0.4                                                                                      \
+		border WINDOW_BORDER_FULL                                                                          \
+		bordercolor .0 .0 .0 0.0                                                                                \
+		visible     1                                                                                           \
+		decoration                                                                                              \
+	}                                                                                                           \
+                                                                                                                \
+	itemDef {                                                                                                   \
+		name        "subwindowtitle" ## SUBWINDOW_TEXT                                                            \
+		group GROUP_NAME                                                                                  \
+		rect $evalfloat((SUBWINDOW_X)+2) $evalfloat((SUBWINDOW_Y)+2) $evalfloat((SUBWINDOW_W)-4) 12      \
+		text SUBWINDOW_TEXT                                                                              \
+		textfont UI_FONT_COURBD_21         		\
+		textstyle ITEM_TEXTSTYLE_SHADOWED  \
+		textscale   .19                                                                                         \
+		textalignx  3                                                                                           \
+		textaligny  9                                                                                          \
+		style WINDOW_STYLE_FILLED                                                                        \
+		backcolor   0.0 0.0 0.0 0.05                                                                           \
+		forecolor  1.0 1.0 1.0 1.0                                                                                  \
 		visible     1                                                                                           \
 		decoration                                                                                              \
 	}
@@ -183,9 +270,9 @@
 		group GROUP_NAME                                                                                  \
 		rect $evalfloat(SUBWINDOWBLACK_X) $evalfloat(SUBWINDOWBLACK_Y) $evalfloat(SUBWINDOWBLACK_W) $evalfloat(SUBWINDOWBLACK_H) \
 		style WINDOW_STYLE_FILLED                                                                         \
-		backcolor   0 0 0 .85                                                                                   \
+		backcolor   0 0 0 0.9                                                                                   \
 		border WINDOW_BORDER_FULL                                                                          \
-		bordercolor .5 .5 .5 .5                                                                                 \
+		bordercolor .0 .0 .0 .0                                                                                 \
 		visible     1                                                                                           \
 		decoration                                                                                              \
 	}                                                                                                           \
@@ -196,17 +283,94 @@
 		rect $evalfloat((SUBWINDOWBLACK_X)+2) $evalfloat((SUBWINDOWBLACK_Y)+2) $evalfloat((SUBWINDOWBLACK_W)-4) 12       \
 		text SUBWINDOWBLACK_TEXT                                                                         \
 		textfont UI_FONT_ARIBLK_16                                                                           \
+		textstyle ITEM_TEXTSTYLE_SHADOWED  																		\
 		textscale   .19                                                                                         \
 		textalignx  3                                                                                           \
 		textaligny  10                                                                                          \
-		style WINDOW_STYLE_FILLED                                                                         \
-		backcolor   .16 .2 .17 .8                                                                               \
-		forecolor   .6 .6 .6 1                                                                                  \
+		style WINDOW_STYLE_FILLED                                                                     \
+		backcolor   0.458 0.768 1 0.3                                                                           \
+		forecolor  1.0 1.0 1.0 1                                                                              \
 		visible     1                                                                                           \
 		decoration                                                                                              \
 	}
 
 #define BUTTON(BUTTON_X, BUTTON_Y, BUTTON_W, BUTTON_H, BUTTON_TEXT, BUTTON_TEXT_SCALE, BUTTON_TEXT_ALIGN_Y, BUTTON_ACTION)                    \
+	itemDef {                                                           \
+		name        "bttn" ## BUTTON_TEXT                                 \
+		group GROUP_NAME                                          \
+		rect $evalfloat(BUTTON_X) $evalfloat(BUTTON_Y) $evalfloat(BUTTON_W) $evalfloat(BUTTON_H)                 \
+		type ITEM_TYPE_BUTTON                                    \
+		text BUTTON_TEXT                                         \
+		textstyle ITEM_TEXTSTYLE_NORMAL   \
+		textfont UI_FONT_COURBD_30                                   \
+		textscale BUTTON_TEXT_SCALE                                   \
+		textalign ITEM_ALIGN_CENTER                                   \
+		textalignx $evalfloat(0.5 * (BUTTON_W))                          \
+		textaligny BUTTON_TEXT_ALIGN_Y                                 \
+		style WINDOW_STYLE_FILLED                                 \
+		backcolor   .3 .3 .3 .0                                         \
+		forecolor   1.0 1.0 1.0 0.8                                          \
+		border WINDOW_BORDER_FULL                                  \
+		bordercolor .1 .1 .1 .0      		\
+		visible     1                                                   \
+                                                                        \
+		mouseEnter {                                                    \
+			setitemcolor "bttn" ## BUTTON_TEXT forecolor 0.0 0.0 0.0 1.0 ;     \
+			setitemcolor "bttn" ## BUTTON_TEXT backcolor 1.0 1.0 1.0 1.0      \
+		}                                                               \
+                                                                        \
+		mouseExit {                                                     \
+			setitemcolor "bttn" ## BUTTON_TEXT forecolor  1.0 1.0 1.0 0.8 ;     \
+			setitemcolor "bttn" ## BUTTON_TEXT backcolor .3 .3 .3 .0      \
+		}                                                               \
+                                                                        \
+		action {                                                        \
+			setitemcolor "bttn" ## BUTTON_TEXT forecolor 0.764 0.015 0.109 1.0 ;     \
+			setitemcolor "bttn" ## BUTTON_TEXT backcolor .3 .3 .3 .4 ;    \
+			play "sound/menu/select.wav" ;                              \
+			BUTTON_ACTION                                               \
+		}                                                               \
+	}
+	
+#define BUTTON_INGAME(BUTTON_X, BUTTON_Y, BUTTON_W, BUTTON_H, BUTTON_TEXT, BUTTON_TEXT_SCALE, BUTTON_TEXT_ALIGN_Y, BUTTON_ACTION)                    \
+	itemDef {                                                           \
+		name        "bttn" ## BUTTON_TEXT                                 \
+		group GROUP_NAME                                          \
+		rect $evalfloat(BUTTON_X) $evalfloat(BUTTON_Y) $evalfloat(BUTTON_W) $evalfloat(BUTTON_H)                 \
+		type ITEM_TYPE_BUTTON                                    \
+		text BUTTON_TEXT                                         \
+		textstyle ITEM_TEXTSTYLE_NORMAL  \
+		textfont UI_FONT_COURBD_30                                   \
+		textscale BUTTON_TEXT_SCALE                                   \
+		textalign ITEM_ALIGN_CENTER                                   \
+		textalignx $evalfloat(0.5 * (BUTTON_W))                          \
+		textaligny BUTTON_TEXT_ALIGN_Y                                 \
+		style WINDOW_STYLE_FILLED                                 \
+		backcolor   .3 .3 .3 .0                                         \
+		forecolor   1.0 1.0 1.0 1.0                                          \
+		border WINDOW_BORDER_FULL                                  \
+		bordercolor .1 .1 .1 .0      		\
+		visible     1                                                   \
+                                                                        \
+		mouseEnter {                                                    \
+			setitemcolor "bttn" ## BUTTON_TEXT forecolor 0.0 0.0 0.0 1.0 ;     \
+			setitemcolor "bttn" ## BUTTON_TEXT backcolor 1.0 1.0 1.0 1.0 ;     \
+		}                                                               \
+                                                                        \
+		mouseExit {                                                     \
+			setitemcolor "bttn" ## BUTTON_TEXT forecolor  1.0 1.0 1.0 1.0 ;     \
+			setitemcolor "bttn" ## BUTTON_TEXT backcolor .3 .3 .3 .0      \
+		}                                                               \
+                                                                        \
+		action {                                                        \
+			setitemcolor "bttn" ## BUTTON_TEXT forecolor 0.764 0.015 0.109 1.0 ;     \
+			setitemcolor "bttn" ## BUTTON_TEXT backcolor .3 .3 .3 .4 ;    \
+			play "sound/menu/select.wav" ;                              \
+			BUTTON_ACTION                                               \
+		}                                                               \
+	}
+	
+#define BUTTON_LOGO(BUTTON_X, BUTTON_Y, BUTTON_W, BUTTON_H, BUTTON_TEXT, BUTTON_TEXT_SCALE, BUTTON_TEXT_ALIGN_Y, BUTTON_ACTION, BUTTONLOGO_TOOLTIP )                    \
 	itemDef {                                                           \
 		name        "bttn" ## BUTTON_TEXT                                 \
 		group GROUP_NAME                                          \
@@ -219,24 +383,25 @@
 		textalignx $evalfloat(0.5 * (BUTTON_W))                          \
 		textaligny BUTTON_TEXT_ALIGN_Y                                 \
 		style WINDOW_STYLE_FILLED                                 \
-		backcolor   .3 .3 .3 .4                                         \
-		forecolor   .6 .6 .6 1                                          \
+		backcolor   .3 .3 .3 .0                                         \
+		forecolor   1.0 1.0 1.0 0.8                                          \
 		border WINDOW_BORDER_FULL                                  \
-		bordercolor .1 .1 .1 .5                                         \
+		bordercolor .1 .1 .1 .0                                         \
+		tooltip BUTTONLOGO_TOOLTIP 										\
 		visible     1                                                   \
                                                                         \
 		mouseEnter {                                                    \
-			setitemcolor "bttn" ## BUTTON_TEXT forecolor .9 .9 .9 1 ;     \
-			setitemcolor "bttn" ## BUTTON_TEXT backcolor .5 .5 .5 .4      \
+			setitemcolor "bttn" ## BUTTON_TEXT forecolor 0.1 0.1 0.1 1.0 ;     \
+			setitemcolor "bttn" ## BUTTON_TEXT backcolor 1.0 1.0 1.0 0.2      \
 		}                                                               \
                                                                         \
 		mouseExit {                                                     \
-			setitemcolor "bttn" ## BUTTON_TEXT forecolor .6 .6 .6 1 ;     \
-			setitemcolor "bttn" ## BUTTON_TEXT backcolor .3 .3 .3 .4      \
+			setitemcolor "bttn" ## BUTTON_TEXT forecolor  1.0 1.0 1.0 0.8 ;     \
+			setitemcolor "bttn" ## BUTTON_TEXT backcolor .3 .3 .3 .0      \
 		}                                                               \
                                                                         \
 		action {                                                        \
-			setitemcolor "bttn" ## BUTTON_TEXT forecolor .6 .6 .6 1 ;     \
+			setitemcolor "bttn" ## BUTTON_TEXT forecolor 0.764 0.015 0.109 1.0 ;     \
 			setitemcolor "bttn" ## BUTTON_TEXT backcolor .3 .3 .3 .4 ;    \
 			play "sound/menu/select.wav" ;                              \
 			BUTTON_ACTION                                               \
@@ -256,25 +421,25 @@
 		textalignx $evalfloat(0.5 * (BUTTONEXT_W))                       \
 		textaligny BUTTONEXT_TEXT_ALIGN_Y                              \
 		style WINDOW_STYLE_FILLED                                 \
-		backcolor   .3 .3 .3 .4                                         \
-		forecolor   .6 .6 .6 1                                          \
+		backcolor   .3 .3 .3 .0                                         \
+		forecolor   1.0 1.0 1.0 1.0                                          \
 		border WINDOW_BORDER_FULL                                  \
-		bordercolor .1 .1 .1 .5                                         \
+		bordercolor .1 .1 .1 .0                                         \
 		visible     1                                                   \
                                                                         \
 		mouseEnter {                                                    \
-			setitemcolor "bttnext" ## BUTTONEXT_TEXT forecolor .9 .9 .9 1 ;       \
-			setitemcolor "bttnext" ## BUTTONEXT_TEXT backcolor .5 .5 .5 .4        \
+			setitemcolor "bttnext" ## BUTTONEXT_TEXT forecolor 0.0 0.0 0.0 1.0  ;       \
+			setitemcolor "bttnext" ## BUTTONEXT_TEXT backcolor 1.0 1.0 1.0 1.0         \
 		}                                                               \
                                                                         \
 		mouseExit {                                                     \
-			setitemcolor "bttnext" ## BUTTONEXT_TEXT forecolor .6 .6 .6 1 ;       \
-			setitemcolor "bttnext" ## BUTTONEXT_TEXT backcolor .3 .3 .3 .4        \
+			setitemcolor "bttnext" ## BUTTONEXT_TEXT forecolor 1.0 1.0 1.0 1.0 ;       \
+			setitemcolor "bttnext" ## BUTTONEXT_TEXT backcolor .3 .3 .3 .0        \
 		}                                                               \
                                                                         \
 		action {                                                        \
-			setitemcolor "bttnext" ## BUTTONEXT_TEXT forecolor .6 .6 .6 1 ;       \
-			setitemcolor "bttnext" ## BUTTONEXT_TEXT backcolor .3 .3 .3 .4 ;  \
+			setitemcolor "bttnext" ## BUTTONEXT_TEXT forecolor 0.764 0.015 0.109 1.0 ;       \
+			setitemcolor "bttnext" ## BUTTONEXT_TEXT backcolor .3 .3 .3 .0 ;  \
 			play "sound/menu/select.wav" ;                              \
 			BUTTONEXT_ACTION                                            \
 		}                                                               \
@@ -363,7 +528,7 @@
 		name        "efback" ## EDITFIELD_TEXT                            \
 		group GROUP_NAME                                          \
 		rect $evalfloat((EDITFIELD_X)+.5 * (EDITFIELD_W)+6) $evalfloat(EDITFIELD_Y) $evalfloat(.5 * (EDITFIELD_W)-6) $evalfloat(EDITFIELD_H) \
-		style WINDOW_STYLE_FILLED                                 \
+		style WINDOW_STYLE_FILLED		\
 		backcolor   .5 .5 .5 .2                                         \
 		visible     1                                                   \
 		decoration                                                      \
@@ -381,20 +546,12 @@
 		textalign ITEM_ALIGN_RIGHT                                \
 		textalignx $evalfloat(0.5 * (EDITFIELD_W))                   \
 		textaligny EDITFIELD_TEXT_ALIGN_Y                          \
-		forecolor       .6 .6 .6 1                                      \
+		forecolor       1.0 1.0 1.0 1                                      \
 		cvar EDITFIELD_CVAR                                  \
 		maxChars EDITFIELD_MAXCHARS                              \
 		maxPaintChars EDITFIELD_MAXPAINTCHARS                         \
 		visible         1                                               \
 		tooltip EDITFIELD_TOOLTIP                               \
-                                                                        \
-		mouseEnter {                                                    \
-			setitemcolor "ef" ## EDITFIELD_TEXT forecolor .9 .9 .9 1 ;    \
-		}                                                               \
-                                                                        \
-		mouseExit {                                                     \
-			setitemcolor "ef" ## EDITFIELD_TEXT forecolor .6 .6 .6 1 ;    \
-		}                                                               \
 	}
 
 #define EDITFIELDLEFT(EDITFIELDLEFT_X, EDITFIELDLEFT_Y, EDITFIELDLEFT_W, EDITFIELDLEFT_H, EDITFIELDLEFT_TEXT, EDITFIELDLEFT_TEXT_SCALE, EDITFIELDLEFT_TEXT_ALIGN_Y, EDITFIELDLEFT_CVAR, EDITFIELDLEFT_MAXCHARS, EDITFIELDLEFT_MAXPAINTCHARS, EDITFIELDLEFT_TOOLTIP)   \
@@ -408,25 +565,17 @@
 		textstyle ITEM_TEXTSTYLE_SHADOWED                         \
 		textscale EDITFIELDLEFT_TEXT_SCALE                        \
 		textaligny EDITFIELDLEFT_TEXT_ALIGN_Y                      \
-		forecolor       .6 .6 .6 1                                      \
+		forecolor       1.0 1.0 1.0 1                                      \
 		cvar EDITFIELDLEFT_CVAR                              \
 		maxChars EDITFIELDLEFT_MAXCHARS                          \
 		maxPaintChars EDITFIELDLEFT_MAXPAINTCHARS                     \
 		visible         1                                               \
 		tooltip EDITFIELDLEFT_TOOLTIP                           \
-                                                                        \
-		mouseEnter {                                                    \
-			setitemcolor "efleft" ## EDITFIELDLEFT_TEXT forecolor .9 .9 .9 1 ;    \
-		}                                                               \
-                                                                        \
-		mouseExit {                                                     \
-			setitemcolor "efleft" ## EDITFIELDLEFT_TEXT forecolor .6 .6 .6 1 ;    \
-		}                                                               \
 	}
 
 #define EDITFIELDLEFTACTION(EDITFIELDLEFTACTION_X, EDITFIELDLEFTACTION_Y, EDITFIELDLEFTACTION_W, EDITFIELDLEFTACTION_H, EDITFIELDLEFTACTION_TEXT, EDITFIELDLEFTACTION_TEXT_SCALE, EDITFIELDLEFTACTION_TEXT_ALIGN_Y, EDITFIELDLEFTACTION_CVAR, EDITFIELDLEFTACTION_MAXCHARS, EDITFIELDLEFTACTION_MAXPAINTCHARS, EDITFIELDLEFTACTION_ACTION, EDITFIELDLEFTACTION_TOOLTIP)   \
 	itemDef {                                                           \
-		name            "efleftaction" ## EDITFIELDLEFTACTION_TEXT                    \
+		name            "efleft" ## EDITFIELDLEFTACTION_TEXT                    \
 		group GROUP_NAME                                      \
 		rect $evalfloat(EDITFIELDLEFTACTION_X) $evalfloat(EDITFIELDLEFTACTION_Y) $evalfloat(EDITFIELDLEFTACTION_W) $evalfloat(EDITFIELDLEFTACTION_H) \
 		type ITEM_TYPE_EDITFIELD                             \
@@ -444,14 +593,6 @@
 		accept {                                                        \
 			EDITFIELDLEFTACTION_ACTION                               \
 		}                                                            \
-                                                                        \
-		mouseEnter {                                                    \
-			setitemcolor "efleftaction" ## EDITFIELDLEFTACTION_TEXT forecolor .9 .9 .9 1 ;    \
-		}                                                               \
-                                                                        \
-		mouseExit {                                                     \
-			setitemcolor "efleftaction" ## EDITFIELDLEFTACTION_TEXT forecolor .6 .6 .6 1 ;    \
-		}                                                               \
 	}
 
 #define EDITFIELDSIMPLE(EDITFIELDSIMPLE_X, EDITFIELDSIMPLE_Y, EDITFIELDSIMPLE_W, EDITFIELDSIMPLE_H, EDITFIELDSIMPLE_TEXT, EDITFIELDSIMPLE_TEXT_SCALE, EDITFIELDSIMPLE_TEXT_ALIGN_Y, EDITFIELDSIMPLE_CVAR, EDITFIELDSIMPLE_MAXCHARS, EDITFIELDSIMPLE_MAXPAINTCHARS, EDITFIELDSIMPLE_ACCEPT, EDITFIELDSIMPLE_TOOLTIP)   \
@@ -485,14 +626,6 @@
 		accept {                                                        \
 			EDITFIELDSIMPLE_ACCEPT                               \
 		}                                                         \
-                                                                        \
-		mouseEnter {                                                    \
-			setitemcolor "efsimple" ## EDITFIELDSIMPLE_TEXT forecolor .9 .9 .9 1 ;    \
-		}                                                               \
-                                                                        \
-		mouseExit {                                                     \
-			setitemcolor "efsimple" ## EDITFIELDSIMPLE_TEXT forecolor .6 .6 .6 1 ;    \
-		}                                                               \
 	}
 
 #define NUMERICFIELD(NUMERICFIELD_X, NUMERICFIELD_Y, NUMERICFIELD_W, NUMERICFIELD_H, NUMERICFIELD_TEXT, NUMERICFIELD_TEXT_SCALE, NUMERICFIELD_TEXT_ALIGN_Y, NUMERICFIELD_CVAR, NUMERICFIELD_MAXCHARS, NUMERICFIELD_TOOLTIP)   \
@@ -518,19 +651,11 @@
 		textalign ITEM_ALIGN_RIGHT                                \
 		textalignx $evalfloat(0.5 * (NUMERICFIELD_W))                \
 		textaligny NUMERICFIELD_TEXT_ALIGN_Y                       \
-		forecolor       .6 .6 .6 1                                      \
+		forecolor       1.0 1.0 1.0 1                                      \
 		cvar NUMERICFIELD_CVAR                               \
 		maxChars NUMERICFIELD_MAXCHARS                           \
 		visible         1                                               \
 		tooltip NUMERICFIELD_TOOLTIP                            \
-                                                                        \
-		mouseEnter {                                                    \
-			setitemcolor "nf" ## NUMERICFIELD_TEXT forecolor .9 .9 .9 1 ;    \
-		}                                                               \
-                                                                        \
-		mouseExit {                                                     \
-			setitemcolor "nf" ## NUMERICFIELD_TEXT forecolor .6 .6 .6 1 ;    \
-		}                                                               \
 	}
 
 #define NUMERICFIELDLEFTEXT(NUMERICFIELDLEFTEXT_X, NUMERICFIELDLEFTEXT_Y, NUMERICFIELDLEFTEXT_W, NUMERICFIELDLEFTEXT_H, NUMERICFIELDLEFTEXT_TEXT, NUMERICFIELDLEFTEXT_TEXT_SCALE, NUMERICFIELDLEFTEXT_TEXT_ALIGN_Y, NUMERICFIELDLEFTEXT_CVAR, NUMERICFIELDLEFTEXT_MAXCHARS, NUMERICFIELDLEFTEXT_EXT, NUMERICFIELDLEFTEXT_TOOLTIP) \
@@ -550,14 +675,6 @@
 		visible         1                                               \
 		tooltip NUMERICFIELDLEFTEXT_TOOLTIP                     \
                                                                         \
-		mouseEnter {                                                    \
-			setitemcolor "nfleftext" ## NUMERICFIELDLEFTEXT_TEXT forecolor .9 .9 .9 1 ;    \
-		}                                                               \
-                                                                        \
-		mouseExit {                                                     \
-			setitemcolor "nfleftext" ## NUMERICFIELDLEFTEXT_TEXT forecolor .6 .6 .6 1 ;    \
-		}                                                               \
-                                                                        \
 		NUMERICFIELDLEFTEXT_EXT                                         \
 	}
 
@@ -574,17 +691,17 @@
 		textalign ITEM_ALIGN_RIGHT                                \
 		textalignx $evalfloat(0.5 * (YESNO_W))                       \
 		textaligny YESNO_TEXT_ALIGN_Y                              \
-		forecolor       .6 .6 .6 1                                      \
+		forecolor       1.0 1.0 1.0 1                                      \
 		cvar YESNO_CVAR                                      \
 		visible         1                                               \
 		tooltip YESNO_TOOLTIP                                   \
                                                                         \
 		mouseEnter {                                                    \
-			setitemcolor "yn" ## YESNO_TEXT forecolor .9 .9 .9 1 ;        \
+			setitemcolor "yn" ## YESNO_TEXT forecolor 0.458 0.768 1 1.0  ;        \
 		}                                                               \
                                                                         \
 		mouseExit {                                                     \
-			setitemcolor "yn" ## YESNO_TEXT forecolor .6 .6 .6 1 ;        \
+			setitemcolor "yn" ## YESNO_TEXT forecolor 1.0 1.0 1.0 1 ;        \
 		}                                                               \
                                                                         \
 		action {                                                        \
@@ -699,17 +816,17 @@
 		textalign ITEM_ALIGN_RIGHT                                \
 		textalignx $evalfloat(0.5 * (CHECKBOXALIGNX_W) + CHECKBOXALIGNX_TEXT_ALIGN_X)                  \
 		textaligny CHECKBOXALIGNX_TEXT_ALIGN_Y                         \
-		forecolor       .6 .6 .6 1                                      \
+		forecolor       1.0 1.0 1.0 1                                      \
 		cvar CHECKBOXALIGNX_CVAR                                 \
 		visible         1                                               \
 		tooltip CHECKBOXALIGNX_TOOLTIP                          \
                                                                         \
 		mouseEnter {                                                    \
-			setitemcolor "checkalx" ## CHECKBOXALIGNX_TEXT forecolor .9 .9 .9 1 ; \
+			setitemcolor "checkalx" ## CHECKBOXALIGNX_TEXT forecolor 0.458 0.768 1 1.0  ; \
 		}                                                               \
                                                                         \
 		mouseExit {                                                     \
-			setitemcolor "checkalx" ## CHECKBOXALIGNX_TEXT forecolor .6 .6 .6 1 ; \
+			setitemcolor "checkalx" ## CHECKBOXALIGNX_TEXT forecolor 1.0 1.0 1.0 1 ; \
 		}                                                               \
                                                                         \
 		action {                                                        \
@@ -729,11 +846,11 @@
 		tooltip CHECKBOXNOTEXT_TOOLTIP                          \
                                                                         \
 		mouseEnter {                                                    \
-			setitemcolor CHECKBOXNOTEXT_NAME forecolor .9 .9 .9 1 ;     \
+			setitemcolor CHECKBOXNOTEXT_NAME forecolor 0.458 0.768 1 1.0 ;     \
 		}                                                               \
                                                                         \
 		mouseExit {                                                     \
-			setitemcolor CHECKBOXNOTEXT_NAME forecolor .6 .6 .6 1 ;     \
+			setitemcolor CHECKBOXNOTEXT_NAME forecolor 1.0 1.0 1.0 1 ;     \
 		}                                                               \
                                                                         \
 		action {                                                        \
@@ -753,11 +870,11 @@
 		tooltip CHECKBOXNOTEXTACTION_TOOLTIP                    \
                                                                         \
 		mouseEnter {                                                    \
-			setitemcolor CHECKBOXNOTEXTACTION_NAME forecolor .9 .9 .9 1 ;       \
+			setitemcolor CHECKBOXNOTEXTACTION_NAME forecolor 0.458 0.768 1 1.0  ;       \
 		}                                                               \
                                                                         \
 		mouseExit {                                                     \
-			setitemcolor CHECKBOXNOTEXTACTION_NAME forecolor .6 .6 .6 1 ;       \
+			setitemcolor CHECKBOXNOTEXTACTION_NAME forecolor 1.0 1.0 1.0 1 ;       \
 		}                                                               \
                                                                         \
 		action {                                                        \
@@ -811,17 +928,17 @@
 		textalign ITEM_ALIGN_RIGHT                                \
 		textalignx $evalfloat(0.5 * (CHECKBOXALIGNXACTION_W) + CHECKBOXALIGNXACTION_TEXT_ALIGN_X)              \
 		textaligny CHECKBOXALIGNXACTION_TEXT_ALIGN_Y                       \
-		forecolor       .6 .6 .6 1                                      \
+		forecolor       1.0 1.0 1.0 1                                      \
 		cvar CHECKBOXALIGNXACTION_CVAR                               \
 		visible         1                                               \
 		tooltip CHECKBOXALIGNXACTION_TOOLTIP                            \
                                                                         \
 		mouseEnter {                                                    \
-			setitemcolor "checkactionalx" ## CHECKBOXALIGNXACTION_TEXT forecolor .9 .9 .9 1 ; \
+			setitemcolor "checkactionalx" ## CHECKBOXALIGNXACTION_TEXT forecolor 0.458 0.768 1 1.0 ; \
 		}                                                               \
                                                                         \
 		mouseExit {                                                     \
-			setitemcolor "checkactionalx" ## CHECKBOXALIGNXACTION_TEXT forecolor .6 .6 .6 1 ; \
+			setitemcolor "checkactionalx" ## CHECKBOXALIGNXACTION_TEXT forecolor 1.0 1.0 1.0 1 ; \
 		}                                                               \
                                                                         \
 		action {                                                        \
@@ -908,18 +1025,18 @@
 		textalign ITEM_ALIGN_RIGHT                                \
 		textalignx $evalfloat(0.5 * (TRICHECKBOXACTIONMULTI_W))      \
 		textaligny TRICHECKBOXACTIONMULTI_TEXT_ALIGN_Y             \
-		forecolor       .6 .6 .6 1                                      \
+		forecolor       1.0 1.0 1.0 1                                      \
 		cvar TRICHECKBOXACTIONMULTI_CVAR                     \
 		TRICHECKBOXACTIONMULTI_CVARLIST                                 \
 		visible         1                                               \
 		tooltip TTRICHECKBOXACTIONMULTI_TOOLTIP                 \
                                                                         \
 		mouseEnter {                                                    \
-			setitemcolor "tricheckactionmulti" ## TRICHECKBOXACTIONMULTI_CVAR forecolor .9 .9 .9 1 ;  \
+			setitemcolor "tricheckactionmulti" ## TRICHECKBOXACTIONMULTI_CVAR forecolor 0.458 0.768 1 1.0   ;  \
 		}                                                               \
                                                                         \
 		mouseExit {                                                     \
-			setitemcolor "tricheckactionmulti" ## TRICHECKBOXACTIONMULTI_CVAR forecolor .6 .6 .6 1 ;  \
+			setitemcolor "tricheckactionmulti" ## TRICHECKBOXACTIONMULTI_CVAR forecolor 1.0 1.0 1.0 1 ;  \
 		}                                                               \
                                                                         \
 		action {                                                        \
@@ -941,18 +1058,18 @@
 		textalign ITEM_ALIGN_RIGHT                                \
 		textalignx $evalfloat(0.5 * (MULTI_W))                       \
 		textaligny MULTI_TEXT_ALIGN_Y                              \
-		forecolor       .6 .6 .6 1                                      \
+		forecolor       1.0 1.0 1.0 1                                      \
 		cvar MULTI_CVAR                                      \
 		MULTI_CVARLIST                                                  \
 		visible         1                                               \
 		tooltip MULTI_TOOLTIP                                   \
                                                                         \
 		mouseEnter {                                                    \
-			setitemcolor "multi" ## MULTI_TEXT forecolor .9 .9 .9 1 ;     \
+			setitemcolor "multi" ## MULTI_TEXT forecolor 0.458 0.768 1 1.0     \
 		}                                                               \
                                                                         \
 		mouseExit {                                                     \
-			setitemcolor "multi" ## MULTI_TEXT forecolor .6 .6 .6 1 ;     \
+			setitemcolor "multi" ## MULTI_TEXT forecolor 1.0 1.0 1.0 1      \
 		}                                                               \
                                                                         \
 		action {                                                        \
@@ -1003,18 +1120,18 @@
 		textalign ITEM_ALIGN_RIGHT                                \
 		textalignx $evalfloat(0.5 * (MULTIACTION_W))                 \
 		textaligny MULTIACTION_TEXT_ALIGN_Y                        \
-		forecolor       .6 .6 .6 1                                      \
+		forecolor       1.0 1.0 1.0 1                                      \
 		cvar MULTIACTION_CVAR                                \
 		MULTIACTION_CVARLIST                                            \
 		visible         1                                               \
 		tooltip MULTIACTION_TOOLTIP                             \
                                                                         \
 		mouseEnter {                                                    \
-			setitemcolor "multiaction" ## MULTIACTION_TEXT forecolor .9 .9 .9 1 ;     \
+			setitemcolor "multiaction" ## MULTIACTION_TEXT forecolor 0.458 0.768 1 1.0 ;     \
 		}                                                               \
                                                                         \
 		mouseExit {                                                     \
-			setitemcolor "multiaction" ## MULTIACTION_TEXT forecolor .6 .6 .6 1 ;     \
+			setitemcolor "multiaction" ## MULTIACTION_TEXT forecolor 1.0 1.0 1.0 1 ;     \
 		}                                                               \
                                                                         \
 		action {                                                        \
@@ -1034,18 +1151,18 @@
 		textstyle ITEM_TEXTSTYLE_SHADOWED                         \
 		textscale MULTIACTIONLEFT_TEXT_SCALE                      \
 		textaligny MULTIACTIONLEFT_TEXT_ALIGN_Y                    \
-		forecolor       .6 .6 .6 1                                      \
+		forecolor       1.0 1.0 1.0 1                                      \
 		cvar MULTIACTIONLEFT_CVAR                            \
 		MULTIACTIONLEFT_CVARLIST                                        \
 		visible         1                                               \
 		tooltip MULTIACTIONLEFT_TOOLTIP                         \
                                                                         \
 		mouseEnter {                                                    \
-			setitemcolor "multiactionleft" ## MULTIACTIONLEFT_TEXT forecolor .9 .9 .9 1 ;     \
+			setitemcolor "multiactionleft" ## MULTIACTIONLEFT_TEXT forecolor 0.458 0.768 1 1.0  ;     \
 		}                                                               \
                                                                         \
 		mouseExit {                                                     \
-			setitemcolor "multiactionleft" ## MULTIACTIONLEFT_TEXT forecolor .6 .6 .6 1 ;     \
+			setitemcolor "multiactionleft" ## MULTIACTIONLEFT_TEXT forecolor 1.0 1.0 1.0 1 ;     \
 		}                                                               \
                                                                         \
 		action {                                                        \
@@ -1067,17 +1184,17 @@
 		textalign ITEM_ALIGN_RIGHT                                \
 		textalignx $evalfloat(0.5 * (SLIDER_W))                      \
 		textaligny SLIDER_TEXT_ALIGN_Y                             \
-		forecolor       .6 .6 .6 1                                      \
+		forecolor       1.0 1.0 1.0 1                                      \
 		cvarFloat SLIDER_CVARFLOAT                                \
 		visible         1                                               \
 		tooltip SLIDER_TOOLTIP                                  \
                                                                         \
 		mouseEnter {                                                    \
-			setitemcolor "slider" ## SLIDER_TEXT forecolor .9 .9 .9 1 ;       \
+			setitemcolor "slider" ## SLIDER_TEXT forecolor 0.458 0.768 1 1.0  ;       \
 		}                                                               \
                                                                         \
 		mouseExit {                                                     \
-			setitemcolor "slider" ## SLIDER_TEXT forecolor .6 .6 .6 1 ;       \
+			setitemcolor "slider" ## SLIDER_TEXT forecolor 1.0 1.0 1.0 1 ;       \
 		}                                                               \
 	}
 
@@ -1094,17 +1211,17 @@
 		textalign ITEM_ALIGN_RIGHT                                \
 		textalignx $evalfloat(0.5 * (BIND_W))                        \
 		textaligny BIND_TEXT_ALIGN_Y                               \
-		forecolor       .6 .6 .6 1                                      \
+		forecolor       1.0 1.0 1.0 1                                      \
 		cvar BIND_CVAR                                       \
 		visible         1                                               \
 		tooltip BIND_TOOLTIP                                    \
                                                                         \
 		mouseEnter {                                                    \
-			setitemcolor "bind" ## BIND_TEXT forecolor .9 .9 .9 1 ;       \
+			setitemcolor "bind" ## BIND_TEXT forecolor 0.458 0.768 1 1.0 ;       \
 		}                                                               \
                                                                         \
 		mouseExit {                                                     \
-			setitemcolor "bind" ## BIND_TEXT forecolor .6 .6 .6 1 ;       \
+			setitemcolor "bind" ## BIND_TEXT forecolor 1.0 1.0 1.0 1 ;       \
 		}                                                               \
                                                                         \
 		action {                                                        \
@@ -1125,7 +1242,7 @@
 		textalign LABEL_TEXT_ALIGN                                \
 		textalignx $evalfloat(LABEL_TEXT_ALIGN_X)                  \
 		textaligny $evalfloat(LABEL_TEXT_ALIGN_Y)                  \
-		forecolor       .6 .6 .6 1                                      \
+		forecolor       1.0 1.0 1.0 1                                      \
 		visible         1                                               \
 		decoration                                                      \
 		autowrapped                                                     \
@@ -1162,7 +1279,7 @@
 		textalign CVARLABEL_TEXT_ALIGN                            \
 		textalignx $evalfloat(CVARLABEL_TEXT_ALIGN_X)                          \
 		textaligny $evalfloat(CVARLABEL_TEXT_ALIGN_Y)                          \
-		forecolor       .6 .6 .6 1                                      \
+		forecolor       .8 .8 .8 1                                      \
 		cvar CVARLABEL_CVAR                                  \
 		visible         1                                               \
 		decoration                                                      \
@@ -1201,21 +1318,20 @@
 		textalign ITEM_ALIGN_RIGHT                                \
 		textalignx $evalfloat(0.5 * (COMBO_W))                 \
 		textaligny COMBO_TEXT_ALIGN_Y                        \
-		forecolor       .6 .6 .6 1                                      \
+		forecolor       1.0 1.0 1.0 1                                      \
 		cvar COMBO_CVAR                                \
 		COMBO_CVARLIST                                            \
 		visible         1                                               \
+		backcolor   0.0 0.0 0.0 1.0                             \
 		bordercolor .5 .5 .5 .5                             \
 		tooltip COMBO_TOOLTIP                             \
                                                                         \
 		mouseEnter {                                                    \
-			setitemcolor "combo" ## COMBO_TEXT forecolor .9 .9 .9 1 ;     \
-			setitemcolor "combo" ## COMBO_TEXT backcolor 0 0 0 .8 ;   \
+			setitemcolor "combo" ## COMBO_TEXT forecolor 1.0 1.0 1.0 1 ;     \
 		}                                                               \
                                                                         \
 		mouseExit {                                                     \
-			setitemcolor "combo" ## COMBO_TEXT forecolor .6 .6 .6 1 ;     \
-			setitemcolor "combo" ## COMBO_TEXT backcolor 0 0 0 0 ;   \
+			setitemcolor "combo" ## COMBO_TEXT forecolor 1.0 1.0 1.0 1 ;     \
 		}                                                               \
                                                                         \
 		accept {                                                        \
@@ -1244,17 +1360,16 @@
 		cvar COMBOLEFT_CVAR                                \
 		COMBOLEFT_CVARLIST                                            \
 		visible         1                                               \
+		backcolor   0 0 0 .8                             \
 		bordercolor .5 .5 .5 .5                             \
 		tooltip COMBOLEFT_TOOLTIP                             \
                                                                         \
 		mouseEnter {                                                    \
 			setitemcolor "combo" ## COMBOLEFT_TEXT forecolor .9 .9 .9 1 ;     \
-			setitemcolor "combo" ## COMBOLEFT_TEXT backcolor 0 0 0 0.8 ;  \
 		}                                                               \
                                                                         \
 		mouseExit {                                                     \
 			setitemcolor "combo" ## COMBOLEFT_TEXT forecolor .6 .6 .6 1 ;     \
-			setitemcolor "combo" ## COMBOLEFT_TEXT backcolor 0 0 0 0 ;  \
 		}                                                               \
                                                                         \
 		accept {                                                        \
