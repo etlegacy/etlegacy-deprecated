@@ -1625,42 +1625,27 @@ static void CG_Mover(centity_t *cent)
  */
 void CG_MovePlane(centity_t *cent)
 {
-	refEntity_t   ent;
-	entityState_t *s1 = &cent->currentState;
-	vec3_t        origin, origin2;
+	refEntity_t ent;
 
-	Com_Memset(&ent, 0, sizeof(refEntity_t));
-
-	BG_EvaluateTrajectory(&s1->pos, cg.time, origin, qfalse, s1->effect1Time);
-	BG_EvaluateTrajectory(&s1->apos, cg.time, origin2, qfalse, s1->effect2Time);
-
-	VectorCopy(origin, ent.origin);
-	VectorCopy(origin2, ent.oldorigin);
-
-//	VectorCopy(cent->lerpOrigin, ent.origin);
-//	VectorCopy(cent->lerpOrigin, ent.oldorigin);
+	Com_Memset(&ent, 0, sizeof(ent));
+	VectorCopy(cent->lerpOrigin, ent.origin);
+	VectorCopy(cent->lastLerpOrigin, ent.oldorigin);
 	AnglesToAxis(cent->lerpAngles, ent.axis);
 
-	VectorScale(ent.axis[0], 50, ent.axis[0]);
-	VectorScale(ent.axis[1], 50, ent.axis[1]);
-	VectorScale(ent.axis[2], 50, ent.axis[2]);
-
-	ent.renderfx |= RF_MINLIGHT;
-
+	VectorScale(ent.axis[0], 100, ent.axis[0]);
+	VectorScale(ent.axis[1], 100, ent.axis[1]);
+	VectorScale(ent.axis[2], 100, ent.axis[2]);
 	ent.nonNormalizedAxes = qtrue;
 
-	if (cent->currentState.apos.trType)
-	{
-		ent.reFlags |= REFLAG_ORIENT_LOD;
-	}
-
-	if (s1->teamNum == TEAM_AXIS)
+	if (cent->currentState.teamNum == TEAM_AXIS)
 	{
 		ent.hModel = cgs.media.airstrikePlane[0];
+		//ent.customShader = cgs.media.airstrikePlaneShader[0];
 	}
 	else
 	{
 		ent.hModel = cgs.media.airstrikePlane[1];
+		//ent.customShader = cgs.media.airstrikePlaneShader[1];
 	}
 
 	// add to refresh list

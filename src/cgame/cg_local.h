@@ -1486,6 +1486,7 @@ typedef struct
 	qhandle_t mg42muzzleflash;
 
 	qhandle_t airstrikePlane[2];
+	qhandle_t airstrikePlaneShader[2];
 
 	qhandle_t waterSplashModel;
 	qhandle_t waterSplashShader;
@@ -2981,7 +2982,7 @@ void CG_AddToNotify(const char *str);
 const char *CG_LocalizeServerCommand(const char *buf);
 void CG_wstatsParse_cmd(void);
 
-void CG_parseWeaponStats_cmd(void(txt_dump) (const char *));
+void CG_parseWeaponStats_cmd(void (txt_dump) (const char *));
 //void CG_parseBestShotsStats_cmd(qboolean doTop, void(txt_dump) (const char *));
 //void CG_parseTopShotsStats_cmd(qboolean doTop, void(txt_dump) (const char *));
 //void CG_scores_cmd(void);

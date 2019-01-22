@@ -1870,6 +1870,9 @@ static void CG_RegisterGraphics(void)
 
 	cgs.media.airstrikePlane[0] = trap_R_RegisterModel("models/mapobjects/etl_plane/junker88.md3"); // axis
 	cgs.media.airstrikePlane[1] = trap_R_RegisterModel("models/mapobjects/etl_plane/b-25.md3");     // allies
+    
+    cgs.media.airstrikePlaneShader[0] = trap_R_RegisterShader("models/mapobjects/etl_plane/body");  // axis
+    cgs.media.airstrikePlaneShader[1] = trap_R_RegisterShader("models/mapobjects/etl_plane/bbdoy"); // allies
 
 	// shards
 	cgs.media.shardGlass1 = trap_R_RegisterModel("models/shards/glass1.md3");

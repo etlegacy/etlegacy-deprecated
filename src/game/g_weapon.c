@@ -2650,7 +2650,7 @@ void G_AirStrikeThink(gentity_t *ent)
 	bomb = G_Spawn();
 	G_PreFilledMissileEntity(bomb, WP_ARTY, ent->s.weapon,
 	                         ent->r.ownerNum, ent->s.teamNum, ent->s.clientNum,
-	                         ent->parent, bomboffset, tv(0.f, 1.f, -1.f) /*bombaxis*/);
+	                         ent->parent, bomboffset, tv(0, 1.f, 0));
 
 	bomb->nextthink = level.time + FRAMETIME;   // overwrite
 
@@ -2676,7 +2676,7 @@ void G_AirStrikeThink(gentity_t *ent)
 void weapon_callAirStrike(gentity_t *ent)
 {
 	int       i;
-	vec3_t    bombaxis, lookaxis, pos, bomboffset, dir;
+	vec3_t    bombaxis, lookaxis, pos, bomboffset, dir, angle;
 	trace_t   tr;
 	gentity_t *plane;
 
@@ -2720,12 +2720,11 @@ void weapon_callAirStrike(gentity_t *ent)
 		return;
 	}
 
-	// FIXME: uncomment it once plane are draw (comment for test purpose)
-//    do
-//    {
-//        trap_Trace(&tr, tr.endpos, NULL, NULL, bomboffset, ent->s.number, MASK_SHOT);
-//    }
-//    while (tr.fraction >= 1.0f && (tr.surfaceFlags & SURF_NOIMPACT) && tr.endpos[2] < bomboffset[2]);
+	do
+	{
+		trap_Trace(&tr, tr.endpos, NULL, NULL, bomboffset, ent->s.number, MASK_SHOT);
+	}
+	while (tr.fraction >= 1.0f && (tr.surfaceFlags & SURF_NOIMPACT) && tr.endpos[2] < bomboffset[2]);
 
 	if (bomboffset[2] > tr.endpos[2])
 	{
@@ -2752,11 +2751,14 @@ void weapon_callAirStrike(gentity_t *ent)
 		RotatePointAroundVector(bombaxis, dir, lookaxis, 90 + crandom() * 30);   // munge the axis line a bit so it's not totally perpendicular
 		VectorNormalize(bombaxis);
 
-		VectorCopy(bombaxis, pos);
-		VectorScale(pos, (-.5f * BOMBSPREAD * NUMBOMBS), pos);
+		VectorScale(bombaxis, (-.5f * BOMBSPREAD * NUMBOMBS), pos);
 		VectorAdd(ent->s.pos.trBase, pos, pos);   // first bomb position
 		VectorScale(bombaxis, BOMBSPREAD * NUMBOMBS, bombaxis);   // bomb drop direction offset
 		pos[2] = bomboffset[2];
+
+		// NOTE: work but ugly, need rework
+		vectoangles(bombaxis, angle);
+		angle[1] += 90;
 
 		// spotter
 		plane               = G_Spawn();
@@ -2772,15 +2774,19 @@ void weapon_callAirStrike(gentity_t *ent)
 		plane->count2       = 1;            // first bomb
 		plane->s.eType      = ET_AIRSTRIKE_PLANE;
 		plane->s.pos.trType = TR_LINEAR;
-		plane->s.pos.trTime = level.time + 1000;
-		VectorCopy(tv(-48.f, -48.f, 0.f), plane->r.mins);
-		VectorCopy(tv(48.f, 48.f, 60.f), plane->r.maxs);
+		plane->s.pos.trTime = plane->nextthink;
+		VectorCopy(tv(-100.f, -100.f, 0.f), plane->r.mins);
+		VectorCopy(tv(100.f, 100.f, 80.f), plane->r.maxs);
 		plane->clipmask = MASK_SOLID;
 
 		SnapVector(pos);
 		SnapVector(bombaxis);
+		SnapVector(angle);
+
 		VectorCopy(pos, plane->r.currentOrigin);
 		VectorCopy(pos, plane->s.pos.trBase);
+		VectorCopy(angle, plane->r.currentAngles);
+		VectorCopy(angle, plane->s.apos.trBase);
 		VectorCopy(bombaxis, plane->s.pos.trDelta);
 	}
 }
