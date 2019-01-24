@@ -2579,11 +2579,6 @@ void weapon_callPlane(gentity_t *ent)
 	te->r.svFlags  |= SVF_BROADCAST;
 
 	--ent->count2;
-
-	if (ent->count2 > 0)
-	{
-		ent->nextthink = level.time + 1000;
-	}
 }
 
 /**
@@ -2640,17 +2635,21 @@ void G_AirStrikeThink(gentity_t *ent)
 		weapon_callPlane(ent);
 	}
 
-	bomboffset[0] = crandom() * .5f * BOMBSPREAD;
-	bomboffset[1] = crandom() * .5f * BOMBSPREAD;
-	bomboffset[2] = 0.f;
-	VectorAdd(ent->r.currentOrigin, bomboffset, bomboffset);
+	// plane see the target ?
+	if (ent->active)
+	{
+		bomboffset[0] = crandom() * .5f * BOMBSPREAD;
+		bomboffset[1] = crandom() * .5f * BOMBSPREAD;
+		bomboffset[2] = 0.f;
+		VectorAdd(ent->r.currentOrigin, bomboffset, bomboffset);
 
-	SnapVector(bomboffset);
+		SnapVector(bomboffset);
 
-	bomb = G_Spawn();
-	G_PreFilledMissileEntity(bomb, ent->s.weapon, ent->s.weapon,
-	                         ent->r.ownerNum, ent->s.teamNum, ent->s.clientNum,
-	                         ent->parent, bomboffset, tv(0, 1.f, 0));
+		bomb = G_Spawn();
+		G_PreFilledMissileEntity(bomb, ent->s.weapon, ent->s.weapon,
+		                         ent->r.ownerNum, ent->s.teamNum, ent->s.clientNum,
+		                         ent->parent, bomboffset, tv(0, 1.f, 0));
+	}
 
 	ent->nextthink = (int)(level.time + 100 + crandom() * 50);
 
@@ -2697,14 +2696,6 @@ void weapon_callAirStrike(gentity_t *ent)
 	trap_Trace(&tr, ent->s.pos.trBase, NULL, NULL, bomboffset, ent->s.number, MASK_SHOT);
 	if ((tr.fraction < 1.0f) && (!(tr.surfaceFlags & SURF_NOIMPACT)))           //SURF_SKY)) ) { // changed for trenchtoast foggie prollem
 	{
-		plane = G_Spawn();
-
-		plane->think     = weapon_callPlane;
-		plane->nextthink = level.time;
-		plane->count2    = ent->count;
-
-		ent->active = qtrue;
-
 		G_HQSay(ent->parent, COLOR_YELLOW, "Pilot: ", "Aborting, can't see target.");
 
 		G_GlobalClientEvent(EV_AIRSTRIKEMESSAGE, 1, ent->parent - g_entities);
@@ -2714,26 +2705,29 @@ void weapon_callAirStrike(gentity_t *ent)
 			level.numActiveAirstrikes[ent->s.teamNum - 1]--;
 		}
 
-		ent->active = qfalse;
-		return;
+		ent->active = qfalse;   // plane arrive and shell is abort
 	}
-
-	do
+	else
 	{
-		trap_Trace(&tr, tr.endpos, NULL, NULL, bomboffset, ent->s.number, MASK_SHOT);
+		do
+		{
+			trap_Trace(&tr, tr.endpos, NULL, NULL, bomboffset, ent->s.number, MASK_SHOT);
+		}
+		while (tr.fraction >= 1.0f && (tr.surfaceFlags & SURF_NOIMPACT) && tr.endpos[2] < bomboffset[2]);
+
+		if (bomboffset[2] > tr.endpos[2])
+		{
+			bomboffset[2] = tr.endpos[2];
+		}
+
+		G_AddAirstrikeToCounters(ent->parent);
+
+		G_HQSay(ent->parent, COLOR_YELLOW, "Pilot: ", "Affirmative, on my way!");
+
+		G_GlobalClientEvent(EV_AIRSTRIKEMESSAGE, 2, ent->parent - g_entities);
+
+		ent->active = qtrue;
 	}
-	while (tr.fraction >= 1.0f && (tr.surfaceFlags & SURF_NOIMPACT) && tr.endpos[2] < bomboffset[2]);
-
-	if (bomboffset[2] > tr.endpos[2])
-	{
-		bomboffset[2] = tr.endpos[2];
-	}
-
-	G_AddAirstrikeToCounters(ent->parent);
-
-	G_HQSay(ent->parent, COLOR_YELLOW, "Pilot: ", "Affirmative, on my way!");
-
-	G_GlobalClientEvent(EV_AIRSTRIKEMESSAGE, 2, ent->parent - g_entities);
 
 	VectorSubtract(ent->s.pos.trBase, ent->parent->client->ps.origin, lookaxis);
 	lookaxis[2] = 0;
