@@ -2756,6 +2756,7 @@ void weapon_callAirStrike(gentity_t *ent)
 		plane               = G_Spawn();
 		plane->parent       = ent;
 		plane->think        = G_AirStrikeThink;
+		plane->active       = ent->active;
 		plane->s.weapon     = WP_SHELL;
 		plane->s.teamNum    = ent->s.teamNum;
 		plane->s.clientNum  = ent->s.clientNum;
