@@ -1632,20 +1632,13 @@ void CG_MovePlane(centity_t *cent)
 	VectorCopy(cent->lastLerpOrigin, ent.oldorigin);
 	AnglesToAxis(cent->lerpAngles, ent.axis);
 
-	VectorScale(ent.axis[0], 100, ent.axis[0]);
-	VectorScale(ent.axis[1], 100, ent.axis[1]);
-	VectorScale(ent.axis[2], 100, ent.axis[2]);
-	ent.nonNormalizedAxes = qtrue;
-
 	if (cent->currentState.teamNum == TEAM_AXIS)
 	{
 		ent.hModel = cgs.media.airstrikePlane[0];
-		//ent.customShader = cgs.media.airstrikePlaneShader[0];
 	}
 	else
 	{
 		ent.hModel = cgs.media.airstrikePlane[1];
-		//ent.customShader = cgs.media.airstrikePlaneShader[1];
 	}
 
 	// add to refresh list

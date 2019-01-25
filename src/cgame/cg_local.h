@@ -1486,7 +1486,6 @@ typedef struct
 	qhandle_t mg42muzzleflash;
 
 	qhandle_t airstrikePlane[2];
-	qhandle_t airstrikePlaneShader[2];
 
 	qhandle_t waterSplashModel;
 	qhandle_t waterSplashShader;
