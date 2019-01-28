@@ -166,11 +166,11 @@ qboolean COM_CompareExtension(const char *in, const char *ext)
  * @param[in] in
  * @param[out] out
  */
-void COM_StripFilename(const char *in, char *out)
+void COM_StripFilename(const char *in, char *out, size_t outsize)
 {
 	char *end;
 
-	Q_strncpyz(out, in, strlen(in) + 1);
+	Q_strncpyz(out, in, outsize);
 	end  = COM_SkipPath(out);
 	*end = 0;
 }

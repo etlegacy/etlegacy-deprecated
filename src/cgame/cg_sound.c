@@ -1327,7 +1327,7 @@ qboolean CG_SpeakerEditor_NoiseEdit_KeyDown(panel_button_t *button, int key)
 			int  i, numfiles, filelen;
 			char *fileptr;
 
-			COM_StripFilename(button->text, dirname);
+			COM_StripFilename(button->text, dirname, sizeof(dirname));
 			Q_strncpyz(filename, COM_SkipPath(button->text), sizeof(filename));
 
 			if (!Q_stricmp(button->text, dirname))
