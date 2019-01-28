@@ -2678,7 +2678,7 @@ void weapon_callAirStrike(gentity_t *ent)
 
 	// turn off smoke grenade
 	ent->think     = G_ExplodeMissile;
-	ent->nextthink = (int)(level.time + 950 + NUMBOMBS * 100 + crandom() * 50); // 950 offset is for aircraft flyby
+	ent->nextthink = (int)(level.time + 950 + (ent->count * 2000) + NUMBOMBS * 100 + crandom() * 50); // 950 offset is for aircraft flyby + plane count
 
 	VectorCopy(ent->s.pos.trBase, bomboffset);
 	bomboffset[2] += BG_GetSkyHeightAtPoint(ent->s.pos.trBase);
