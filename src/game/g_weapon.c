@@ -2566,22 +2566,6 @@ void weapon_checkAirStrikeThink(gentity_t *ent)
 }
 
 /**
- * @brief weapon_callPlane
- * @param[out] ent
- */
-void weapon_callPlane(gentity_t *ent)
-{
-	gentity_t *te;
-
-	te = G_TempEntityNotLinked(EV_GLOBAL_SOUND);
-
-	te->s.eventParm = GAMESOUND_WPN_AIRSTRIKE_PLANE;
-	te->r.svFlags  |= SVF_BROADCAST;
-
-	--ent->count2;
-}
-
-/**
  * @brief weapon_checkAirStrike
  * @param[in,out] ent
  * @return
@@ -2622,18 +2606,12 @@ qboolean weapon_checkAirStrike(gentity_t *ent)
 
 /**
  * @brief G_AirStrikeExplode
- * @param ent
+ * @param[in,out] ent
  */
 void G_AirStrikeThink(gentity_t *ent)
 {
 	gentity_t *bomb;
 	vec3_t    bomboffset;
-
-	// first bomb ?
-	if (ent->count2 == 1)
-	{
-		weapon_callPlane(ent);
-	}
 
 	// plane see the target ?
 	if (ent->active)
@@ -2663,6 +2641,18 @@ void G_AirStrikeThink(gentity_t *ent)
 		trap_LinkEntity(ent);
 		return;
 	}
+}
+
+/**
+ * @brief weapon_callPlane
+ * @param[in,out] ent
+ */
+void weapon_callPlane(gentity_t *ent)
+{
+	G_AddEvent(ent, EV_GLOBAL_SOUND, GAMESOUND_WPN_AIRSTRIKE_PLANE);
+
+	G_AirStrikeThink(ent);
+	ent->think = G_AirStrikeThink;
 }
 
 /**
@@ -2755,7 +2745,7 @@ void weapon_callAirStrike(gentity_t *ent)
 		// spotter
 		plane               = G_Spawn();
 		plane->parent       = ent;
-		plane->think        = G_AirStrikeThink;
+		plane->think        = weapon_callPlane;
 		plane->active       = ent->active;
 		plane->s.weapon     = WP_SHELL;
 		plane->s.teamNum    = ent->s.teamNum;
@@ -2764,7 +2754,6 @@ void weapon_callAirStrike(gentity_t *ent)
 		plane->nextthink    = level.time + 1000 + (i * 2000);   // 1000 for aircraft flyby, other term for tumble stagger
 		plane->r.svFlags    = SVF_BROADCAST;
 		plane->count        = NUMBOMBS;
-		plane->count2       = 1;            // first bomb
 		plane->s.eType      = ET_AIRSTRIKE_PLANE;
 		plane->s.pos.trType = TR_LINEAR;
 		plane->s.pos.trTime = plane->nextthink;
