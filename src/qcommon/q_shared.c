@@ -81,17 +81,16 @@ void COM_FixPath(char *pathname)
  */
 char *COM_SkipPath(char *pathname)
 {
-	char *last = pathname;
+	char *last = strrchr(pathname, '/');
 
-	while (*pathname)
+	if (last)
 	{
-		if (*pathname == '/')
-		{
-			last = pathname + 1;
-		}
-		pathname++;
+		return last + 1;
 	}
-	return last;
+	else
+	{
+		return pathname;
+	}
 }
 
 /**
