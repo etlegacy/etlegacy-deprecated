@@ -4785,14 +4785,6 @@ void G_DrawEntBBox(gentity_t *ent)
 		VectorCopy(ent->r.maxs, maxs);
 		VectorCopy(ent->r.mins, mins);
 		break;
-	case ET_AIRSTRIKE_PLANE:
-		if (g_debugHitboxes.integer != 15)
-		{
-			return;
-		}
-		VectorCopy(ent->r.maxs, maxs);
-		VectorCopy(ent->r.mins, mins);
-		break;
 	default:
 		return;
 	}
