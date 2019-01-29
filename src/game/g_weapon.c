@@ -2610,23 +2610,18 @@ qboolean weapon_checkAirStrike(gentity_t *ent)
  */
 void G_AirStrikeThink(gentity_t *ent)
 {
-	gentity_t *bomb;
-	vec3_t    bomboffset;
-
 	// plane see the target ?
 	if (ent->active)
 	{
+		vec3_t bomboffset;
+
 		bomboffset[0] = crandom() * .5f * BOMBSPREAD;
 		bomboffset[1] = crandom() * .5f * BOMBSPREAD;
 		bomboffset[2] = 0.f;
 		VectorAdd(ent->r.currentOrigin, bomboffset, bomboffset);
 
-		SnapVector(bomboffset);
-
-		bomb = G_Spawn();
-		G_PreFilledMissileEntity(bomb, ent->s.weapon, ent->s.weapon,
-		                         ent->r.ownerNum, ent->s.teamNum, ent->s.clientNum,
-		                         ent->parent, bomboffset, tv(0, 1.f, 0));
+		// TODO: rework bomb orientation
+		fire_missile(ent, bomboffset, tv(-1, -1, -1), ent->s.weapon);
 	}
 
 	ent->nextthink = (int)(level.time + 100 + crandom() * 50);
