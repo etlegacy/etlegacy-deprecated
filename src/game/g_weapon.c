@@ -2733,9 +2733,7 @@ void weapon_callAirStrike(gentity_t *ent)
 		VectorScale(bombaxis, BOMBSPREAD * NUMBOMBS, bombaxis);   // bomb drop direction offset
 		pos[2] = bomboffset[2];
 
-		// NOTE: work but ugly, need rework
 		vectoangles(bombaxis, angle);
-		angle[1] += 90;
 
 		// spotter
 		plane               = G_Spawn();
