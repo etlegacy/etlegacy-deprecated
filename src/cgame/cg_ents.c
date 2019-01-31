@@ -1619,6 +1619,9 @@ static void CG_Mover(centity_t *cent)
 	}
 }
 
+#define NUM_FRAME_PROPELLER 10
+#define TIME_FRAME_PROPELLER (1000 / NUM_FRAME_PROPELLER)
+
 /**
  * @brief CG_MovePlane
  * @param[in] cent
@@ -1631,6 +1634,53 @@ void CG_MovePlane(centity_t *cent)
 	VectorCopy(cent->lerpOrigin, ent.origin);
 	VectorCopy(cent->lastLerpOrigin, ent.oldorigin);
 	AnglesToAxis(cent->lerpAngles, ent.axis);
+
+	// set frame
+	if (cg.time >= cent->lerpFrame.frameTime)
+	{
+		cent->lerpFrame.oldFrameTime = cent->lerpFrame.frameTime;
+		cent->lerpFrame.oldFrame     = cent->lerpFrame.frame;
+
+		while (cg.time >= cent->lerpFrame.frameTime)
+		{
+			cent->lerpFrame.frameTime += TIME_FRAME_PROPELLER;
+			cent->lerpFrame.frame++;
+
+			if (cent->lerpFrame.frame >= NUM_FRAME_PROPELLER)
+			{
+				cent->lerpFrame.frame = 0;
+			}
+		}
+	}
+
+	if (cent->lerpFrame.frameTime == cent->lerpFrame.oldFrameTime)
+	{
+		cent->lerpFrame.backlerp = 0;
+	}
+	else
+	{
+		cent->lerpFrame.backlerp = 1.0f - (float)(cg.time - cent->lerpFrame.oldFrameTime) / (cent->lerpFrame.frameTime - cent->lerpFrame.oldFrameTime);
+	}
+
+	ent.frame = cent->lerpFrame.frame + cent->currentState.frame; // offset
+	if (ent.frame >= NUM_FRAME_PROPELLER)
+	{
+		ent.frame -= NUM_FRAME_PROPELLER;
+	}
+
+	ent.oldframe = cent->lerpFrame.oldFrame + cent->currentState.frame;   // offset
+	if (ent.oldframe >= NUM_FRAME_PROPELLER)
+	{
+		ent.oldframe -= NUM_FRAME_PROPELLER;
+	}
+
+	ent.backlerp = cent->lerpFrame.backlerp;
+
+	if (cent->currentState.time)
+	{
+		ent.fadeStartTime = cent->currentState.time;
+		ent.fadeEndTime   = cent->currentState.time2;
+	}
 
 	if (cent->currentState.teamNum == TEAM_AXIS)
 	{

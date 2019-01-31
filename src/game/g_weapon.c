@@ -2613,15 +2613,17 @@ void G_AirStrikeThink(gentity_t *ent)
 	// plane see the target ?
 	if (ent->active)
 	{
-		vec3_t bomboffset;
+		gentity_t *bomb;
+		vec3_t    bomboffset;
 
 		bomboffset[0] = crandom() * .5f * BOMBSPREAD;
 		bomboffset[1] = crandom() * .5f * BOMBSPREAD;
 		bomboffset[2] = 0.f;
 		VectorAdd(ent->r.currentOrigin, bomboffset, bomboffset);
+		bomboffset[2] = BG_GetGroundHeightAtPoint(bomboffset);
 
 		// TODO: rework bomb orientation
-		fire_missile(ent, bomboffset, tv(-1, -1, -1), ent->s.weapon);
+		bomb = fire_missile(ent, ent->r.currentOrigin, tv(-1, -1, -1) /*bomboffset*/, ent->s.weapon);
 	}
 
 	ent->nextthink = (int)(level.time + 100 + crandom() * 50);
@@ -2632,9 +2634,13 @@ void G_AirStrikeThink(gentity_t *ent)
 	// no more bomb to drop
 	if (ent->count <= 0)
 	{
-		ent->freeAfterEvent = qtrue;
-		trap_LinkEntity(ent);
-		return;
+		ent->think     = G_FreeEntity;
+		ent->nextthink = level.time + 1500;
+		ent->s.time    = level.time;
+		ent->s.time2   = ent->nextthink;
+
+//		ent->freeAfterEvent = qtrue;
+//		trap_LinkEntity(ent);
 	}
 }
 
