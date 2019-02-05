@@ -2635,12 +2635,9 @@ void G_AirStrikeThink(gentity_t *ent)
 	if (ent->count <= 0)
 	{
 		ent->think     = G_FreeEntity;
-		ent->nextthink = level.time + 1500;
-		ent->s.time    = level.time;
-		ent->s.time2   = ent->nextthink;
-
-//		ent->freeAfterEvent = qtrue;
-//		trap_LinkEntity(ent);
+		ent->nextthink = level.time + 1000;
+		ent->s.time    = level.time;        // fade effect
+		ent->s.time2   = ent->nextthink;    // fade effect
 	}
 }
 
@@ -2653,7 +2650,9 @@ void weapon_callPlane(gentity_t *ent)
 	G_AddEvent(ent, EV_GLOBAL_SOUND, GAMESOUND_WPN_AIRSTRIKE_PLANE);
 
 	G_AirStrikeThink(ent);
-	ent->think = G_AirStrikeThink;
+	ent->think   = G_AirStrikeThink;
+	ent->s.time  = 0;   // stop fade effect
+	ent->s.time2 = 0;   // stop fade effect
 }
 
 /**
@@ -2756,6 +2755,8 @@ void weapon_callAirStrike(gentity_t *ent)
 		plane->s.eType      = ET_AIRSTRIKE_PLANE;
 		plane->s.pos.trType = TR_LINEAR;
 		plane->s.pos.trTime = plane->nextthink;
+		plane->s.time       = plane->nextthink; // fade effect
+		plane->s.time2      = level.time;       // fade effect
 
 		SnapVector(pos);
 		SnapVector(bombaxis);

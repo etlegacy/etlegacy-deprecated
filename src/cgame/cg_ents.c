@@ -1676,19 +1676,23 @@ void CG_MovePlane(centity_t *cent)
 
 	ent.backlerp = cent->lerpFrame.backlerp;
 
+	// fade effect
 	if (cent->currentState.time)
 	{
-		ent.fadeStartTime = cent->currentState.time;
-		ent.fadeEndTime   = cent->currentState.time2;
+		ent.shaderRGBA[3] = (byte)(255.f * (float)(cent->currentState.time2 - cg.time) / (float)(cent->currentState.time2 - cent->currentState.time));
 	}
 
+	// model
+	// explicit shader to apply fade effect
 	if (cent->currentState.teamNum == TEAM_AXIS)
 	{
-		ent.hModel = cgs.media.airstrikePlane[0];
+		ent.hModel       = cgs.media.airstrikePlane[0];
+		ent.customShader = cgs.media.airstrikePlaneShader[0];
 	}
 	else
 	{
-		ent.hModel = cgs.media.airstrikePlane[1];
+		ent.hModel       = cgs.media.airstrikePlane[1];
+		ent.customShader = cgs.media.airstrikePlaneShader[1];
 	}
 
 	// add to refresh list
