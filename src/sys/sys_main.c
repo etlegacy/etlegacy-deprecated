@@ -1038,10 +1038,19 @@ int main(int argc, char **argv)
 		int quarantine_status = 0;
 
 		quarantine_status = needsOSXQuarantineFix();
-		if(quarantine_status == 1) {
+		if(quarantine_status == 1)
+		{
 			//app restarts itself under the right path
 			Sys_Exit(EXIT_SUCCESS);
-		} else if (quarantine_status >=2) {
+		}
+		else if (quarantine_status == 4)
+		{
+			//user canceled the dialog box
+			Sys_Dialog(DT_ERROR, "Running ET Legacy with enabled App Translocation isn't possible. Please remove the quarantine flag by using the following command in the terminal and restart the game:\r\n\r\nxattr -cr /Applications/ET\\ Legacy/", "App Translocation detected");
+			Sys_Exit(EXIT_FAILURE);
+		}
+		else if (quarantine_status >= 2)
+		{
 			Sys_Dialog(DT_ERROR, "An error occured while removing the app quarantine flag automatically. Please read the installation instructions on removing the app quarantine on the ET Legacy wiki:\r\n\r\nhttps://dev.etlegacy.com/projects/etlegacy/wiki/Mac_OS_X", "Can't remove app quarantine");
 			Sys_Exit(EXIT_FAILURE);
 		}
