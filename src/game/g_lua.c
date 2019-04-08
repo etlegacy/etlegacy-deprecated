@@ -889,6 +889,29 @@ static int _et_RemoveWeaponFromPlayer(lua_State *L)
 	return 1;
 }
 
+// et.GetCurrentPlayerWeapon( clientNum ) -> weapon, ammo, ammoclip
+static int _et_GetCurrentWeapon(lua_State *L)
+{
+	gentity_t *ent;
+	gclient_t *client;
+	int clientNum, ammo, ammoclip;
+	clientNum = luaL_checkinteger(L, 1);
+	if (clientNum < 0 || clientNum >= MAX_CLIENTS)
+		luaL_error(L, "\"clientNum\" is out of bounds: %d", clientNum);
+	ent = g_entities + clientNum;
+	if (!ent->client)
+		luaL_error(L, "\"clientNum\" \"%d\" is not a client entity", clientNum);
+	client = ent->client;
+	ammo = client->ps.ammo[GetWeaponTableData(client->ps.weapon)->ammoIndex];
+	ammoclip = client->ps.ammoclip[GetWeaponTableData(client->ps.weapon)->clipIndex];
+
+	lua_pushinteger(L, client->ps.weapon);
+	lua_pushinteger(L, ammo);
+	lua_pushinteger(L, ammoclip);
+
+	return 3;
+}
+
 // Entities
 // client entity fields
 static const gentity_field_t gclient_fields[] =
@@ -946,7 +969,7 @@ static const gentity_field_t gclient_fields[] =
 	_et_gclient_addfield(pers.lastrevive_client,            FIELD_INT,                 FIELD_FLAG_READONLY),
 	_et_gclient_addfield(pers.lastkiller_client,            FIELD_INT,                 FIELD_FLAG_READONLY),
 	_et_gclient_addfield(pers.lastammo_client,              FIELD_INT,                 FIELD_FLAG_READONLY),
-	_et_gclient_addfield(pers.lasthealth_client,            FIELD_INT,                 FIELD_FLAG_READONLY),
+	_et_gclient_addfield(pers.lasthealth_client,            FIELD_INT,                 0),
 	_et_gclient_addfield(pers.lastteambleed_client,         FIELD_INT,                 FIELD_FLAG_READONLY),
 	_et_gclient_addfield(pers.lastteambleed_dmg,            FIELD_INT,                 FIELD_FLAG_READONLY),
 	_et_gclient_addfield(pers.playerStats.hitRegions,       FIELD_INT_ARRAY,           FIELD_FLAG_READONLY),
@@ -957,6 +980,7 @@ static const gentity_field_t gclient_fields[] =
 
 	_et_gclient_addfield(ps.pm_flags,                       FIELD_INT,                 FIELD_FLAG_READONLY),
 	_et_gclient_addfield(ps.pm_time,                        FIELD_INT,                 FIELD_FLAG_READONLY),
+	_et_gclient_addfield(ps.pm_type,                        FIELD_INT,                 FIELD_FLAG_READONLY),
 	_et_gclient_addfield(ps.eFlags,                         FIELD_INT,                 FIELD_FLAG_READONLY),
 	_et_gclient_addfield(ps.weapon,                         FIELD_INT,                 FIELD_FLAG_READONLY),
 	_et_gclient_addfield(ps.weaponstate,                    FIELD_INT,                 FIELD_FLAG_READONLY),
@@ -970,6 +994,9 @@ static const gentity_field_t gclient_fields[] =
 	_et_gclient_addfield(ps.ammo,                           FIELD_INT_ARRAY,           0),
 	_et_gclient_addfield(ps.ammoclip,                       FIELD_INT_ARRAY,           0),
 	_et_gclient_addfield(ps.classWeaponTime,                FIELD_INT,                 0),
+	_et_gclient_addfield(ps.viewheight,                     FIELD_INT,                 FIELD_FLAG_READONLY),
+	_et_gclient_addfield(ps.leanf,                          FIELD_FLOAT,               FIELD_FLAG_READONLY),
+
 
 	// same order as in g_local.h
 	_et_gclient_addfield(sess.sessionTeam,                  FIELD_INT,                 0),
@@ -1823,6 +1850,120 @@ static int _et_G_SetGlobalFog(lua_State *L)
 	return 1;
 }
 
+static void _et_getclipplane(lua_State *L, cplane_t *plane)
+{
+	lua_newtable(L);
+	_et_gentity_getvec3(L, plane->normal);
+	lua_setfield(L, -2, "normal");
+	lua_pushnumber(L, plane->dist);
+	lua_setfield(L, -2, "dist");
+	lua_pushinteger(L, plane->type);
+	lua_setfield(L, -2, "type");
+	lua_pushinteger(L, plane->signbits);
+	lua_setfield(L, -2, "signbits");
+	lua_newtable(L);
+	lua_pushinteger(L, plane->pad[0]);
+	lua_rawseti(L, -2, 1);
+	lua_pushinteger(L, plane->pad[1]);
+	lua_rawseti(L, -2, 2);
+	lua_setfield(L, -2, "pad");
+}
+
+static void _et_gettrace(lua_State *L, trace_t *tr)
+{
+	lua_newtable(L);
+	lua_pushboolean(L, tr->allsolid);
+	lua_setfield(L, -2, "allsolid");
+	lua_pushboolean(L, tr->startsolid);
+	lua_setfield(L, -2, "startsolid");
+	lua_pushnumber(L, tr->fraction);
+	lua_setfield(L, -2, "fraction");
+	_et_gentity_getvec3(L, tr->endpos);
+	lua_setfield(L, -2, "endpos");
+	_et_getclipplane(L, &tr->plane);
+	lua_setfield(L, -2, "plane");
+	lua_pushinteger(L, tr->surfaceFlags);
+	lua_setfield(L, -2, "surfaceFlags");
+	lua_pushinteger(L, tr->contents);
+	lua_setfield(L, -2, "contents");
+	lua_pushinteger(L, tr->entityNum);
+	lua_setfield(L, -2, "entityNum");
+}
+
+static vec3_t* _etH_toVec3(lua_State *L, int inx)
+{
+	static vec3_t vec;
+	lua_pushvalue(L, inx);
+	_et_gentity_setvec3(L, &vec);
+	lua_pop(L, 1);
+	return &vec;
+}
+
+// et.trap_Trace( start, mins, maxs, end, entNum, mask )
+static int _et_trap_Trace(lua_State *L)
+{
+	trace_t tr;
+	vec3_t start, end, mins, maxs;
+	vec3_t *minsPtr = NULL, *maxsPtr = NULL;
+	int entNum, mask;
+	if (!lua_istable(L, 1))
+		luaL_error(L, "trap_Trace: \"start\" argument should be an instance of table");
+	VectorCopy(*_etH_toVec3(L, 1), start);
+	if (lua_istable(L, 2))
+	{
+		VectorCopy(*_etH_toVec3(L, 2), mins);
+		minsPtr = &mins;
+	}
+	if (lua_istable(L, 3))
+	{
+		VectorCopy(*_etH_toVec3(L, 3), maxs);
+		maxsPtr = &maxs;
+	}
+	if (!lua_istable(L, 4))
+		luaL_error(L, "trap_Trace: \"end\" should be an instance of table");
+	VectorCopy(*_etH_toVec3(L, 4), end);
+	entNum = luaL_checkinteger(L, 5);
+	mask = luaL_checkinteger(L, 6);
+	trap_Trace(&tr, start, *minsPtr, *maxsPtr, end, entNum, mask);
+	_et_gettrace(L, &tr);
+	return 1;
+}
+
+// et.G_HistoricalTrace( ent, start, mins, maxs, end, entNum, mask )
+static int _et_G_HistoricalTrace(lua_State *L)
+{
+	gentity_t *gent;
+	trace_t tr;
+	vec3_t start, mins, maxs, end;
+	vec3_t *minsPtr = NULL, *maxsPtr = NULL;
+	int entNum, mask, ent;
+	ent = luaL_checkinteger(L, 1);
+	if (ent < 0 || ent >= MAX_GENTITIES)
+		luaL_error(L, "G_HistoricalTrace: \"ent\" is out of bounds");
+	gent = g_entities + ent;
+	if (!lua_istable(L, 2))
+		luaL_error(L, "G_HistoricalTrace: \"start\" argument should be an instance of table");
+	VectorCopy(*_etH_toVec3(L, 2), start);
+	if (lua_istable(L, 3))
+	{
+		VectorCopy(*_etH_toVec3(L, 3), mins);
+		minsPtr = &mins;
+	}
+	if (lua_istable(L, 4))
+	{
+		VectorCopy(*_etH_toVec3(L, 4), maxs);
+		maxsPtr = &maxs;
+	}
+	if (!lua_istable(L, 5))
+		luaL_error(L, "G_HistoricalTrace: \"end\" should be an instance of table");
+	VectorCopy(*_etH_toVec3(L, 5), end);
+	entNum = luaL_checkinteger(L, 6);
+	mask = luaL_checkinteger(L, 7);
+	G_HistoricalTrace(gent, &tr, start, *minsPtr, *maxsPtr, end, entNum, mask);
+	_et_gettrace(L, &tr);
+	return 1;
+}
+
 /** @}*/ // doxygen addtogroup lua_etfncs
 
 // et library initialisation array
@@ -1890,6 +2031,7 @@ static const luaL_Reg etlib[] =
 	{ "G_ResetXP",               _et_G_ResetXP               },
 	{ "AddWeaponToPlayer",       _et_AddWeaponToPlayer       },
 	{ "RemoveWeaponFromPlayer",  _et_RemoveWeaponFromPlayer  },
+	{ "GetCurrentWeapon",        _et_GetCurrentWeapon        },
 	// Entities
 	{ "G_CreateEntity",          _et_G_Lua_CreateEntity      },
 	{ "G_DeleteEntity",          _et_G_Lua_DeleteEntity      },
@@ -1909,6 +2051,9 @@ static const luaL_Reg etlib[] =
 	{ "G_ResetRemappedShaders",  _et_G_ResetRemappedShaders  },
 	{ "G_ShaderRemapFlush",      _et_G_ShaderRemapFlush      },
 	{ "G_SetGlobalFog",          _et_G_SetGlobalFog          },
+	{ "trap_Trace",              _et_trap_Trace              },
+	{ "G_HistoricalTrace",       _et_G_HistoricalTrace       },
+	
 	{ NULL },
 };
 
@@ -2480,6 +2625,13 @@ static void registerConstants(lua_vm_t *vm)
 	lua_regconstinteger(vm->L, SAY_TEAMNL);
 
 	lua_regconststring(vm->L, HOSTARCH);
+
+	// pmtype_t
+	lua_regconstinteger(vm->L, PM_NORMAL);
+	lua_regconstinteger(vm->L, PM_NOCLIP);
+	lua_regconstinteger(vm->L, PM_SPECTATOR);
+	lua_regconstinteger(vm->L, PM_FREEZE);
+	lua_regconstinteger(vm->L, PM_INTERMISSION);
 
 	// cs, weapon and MOD constants
 	registerConfigstringConstants(vm);
@@ -3323,6 +3475,48 @@ qboolean G_LuaHook_Damage(int target, int attacker, int damage, int dflags, mean
 			{
 				return qtrue;
 			}
+		}
+	}
+	return qfalse;
+}
+
+// G_LuaHook_WeaponFire
+// et_WeaponFire( clientNum, weapon )
+qboolean G_LuaHook_WeaponFire(int clientNum, weapon_t weapon, gentity_t **pFiredShot)
+{
+	int      i;
+	lua_vm_t *vm;
+
+	for (i = 0; i < LUA_NUM_VM; i++)
+	{
+		vm = lVM[i];
+		if (vm)
+		{
+			if (vm->id < 0 /*|| vm->err*/)
+			{
+				continue;
+			}
+			if (!G_LuaGetNamedFunction(vm, "et_WeaponFire"))
+			{
+				continue;
+			}
+			// Arguments
+			lua_pushinteger(vm->L, clientNum);
+			lua_pushinteger(vm->L, weapon);
+			// Call
+			if (!G_LuaCall(vm, "et_WeaponFire", 2, 2))
+			{
+				continue;
+			}
+			// Return values
+			if (lua_tointeger(vm->L, -2) == 1)
+			{
+				if (lua_isinteger(vm->L, -1))
+					*pFiredShot = g_entities + lua_tointeger(vm->L, -1);
+				lua_pop(vm->L, 2);
+				return qtrue;
+			}
+			lua_pop(vm->L, 2);
 		}
 	}
 	return qfalse;

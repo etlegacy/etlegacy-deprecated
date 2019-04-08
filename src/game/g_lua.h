@@ -160,6 +160,7 @@ qboolean G_LuaHook_Obituary(int victim, int killer, int meansOfDeath);
 qboolean G_LuaHook_Damage(int target, int attacker, int damage, int dflags, meansOfDeath_t mod);
 void G_LuaHook_SpawnEntitiesFromString();
 qboolean G_ScriptAction_Delete(gentity_t *ent, char *params);
+qboolean G_LuaHook_WeaponFire(int clientNum, weapon_t weapon, gentity_t **pFiredShot);
 
 #endif // #ifndef INCLUDE_G_LUA_H
 

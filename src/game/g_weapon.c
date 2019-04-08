@@ -34,6 +34,7 @@
  */
 
 #include "g_local.h"
+#include "g_lua.h"
 
 #ifdef FEATURE_OMNIBOT
 #include "g_etbot_interface.h"
@@ -451,6 +452,7 @@ gentity_t *Weapon_Syringe(gentity_t *ent)
 	vec3_t    end;
 	trace_t   tr;
 	gentity_t *traceEnt;
+	qboolean usedSyringe = qfalse;
 
 	AngleVectors(ent->client->ps.viewangles, forward, right, up);
 	CalcMuzzlePointForActivate(ent, forward, right, up, muzzleTrace);
@@ -482,8 +484,6 @@ gentity_t *Weapon_Syringe(gentity_t *ent)
 
 	if (traceEnt->client->ps.pm_type == PM_DEAD)
 	{
-		qboolean usedSyringe;
-
 		if (traceEnt->client->sess.sessionTeam != ent->client->sess.sessionTeam)
 		{
 			return NULL;
@@ -513,54 +513,12 @@ gentity_t *Weapon_Syringe(gentity_t *ent)
 		{
 			CalculateRanks();
 		}
-
-		// If the medicine wasn't used, give back the ammo
-		if (!usedSyringe)
-		{
-			ent->client->ps.ammoclip[GetWeaponTableData(WP_MEDIC_SYRINGE)->clipIndex] += 1;
-		}
 	}
-	else if (g_misc.integer & G_MISC_MEDIC_SYRINGE_HEAL) //  FIXME: clarify ammo restore
+
+	// If the medicine wasn't used, give back the ammo
+	if (!usedSyringe)
 	{
-		if (traceEnt->client->sess.sessionTeam != ent->client->sess.sessionTeam)
-		{
-			// this doesn't heal enemy but ammo is gone :D FIXME?
-			return NULL;
-		}
-
-		if (traceEnt->health > (traceEnt->client->ps.stats[STAT_MAX_HEALTH] * 0.25f))
-		{
-			// this doesn't heal enemy but ammo is gone :D FIXME?
-			return NULL;
-		}
-
-		{
-			int healamt;
-
-			// check the skill of the needle-bearer
-			if (ent->client->sess.skill[SK_FIRST_AID] >= 3) // full revive
-			{
-				healamt = traceEnt->client->ps.stats[STAT_MAX_HEALTH];
-			}
-			else
-			{
-				healamt = (int)(traceEnt->client->ps.stats[STAT_MAX_HEALTH] * 0.5);
-			}
-
-			traceEnt->health = healamt;
-		}
-		G_Sound(traceEnt, GAMESOUND_MISC_REVIVE);
-
-		//ent->client->sess.team_hits -= 2.f;
-
-		// set lasthealth_client also when a player was healed with syringe
-		traceEnt->client->pers.lasthealth_client = ent->s.clientNum;
-
-		if (!traceEnt->isProp)      // flag for if they were teamkilled or not
-		{
-			G_AddSkillPoints(ent, SK_FIRST_AID, 2.f);
-			G_DebugAddSkillPoints(ent, SK_FIRST_AID, 2.f, "syringe heal a player");
-		}
+		ent->client->ps.ammoclip[GetWeaponTableData(WP_MEDIC_SYRINGE)->clipIndex] += 1;
 	}
 
 	return NULL;
@@ -4165,9 +4123,11 @@ void FireWeapon(gentity_t *ent)
 	// fire the specific weapon
 	if (weapFireTable[ent->s.weapon].fire)
 	{
-		gentity_t *pFiredShot;       // Omni-bot To tell bots about projectiles
-
-		pFiredShot = weapFireTable[ent->s.weapon].fire(ent);
+		gentity_t *pFiredShot = NULL;       // Omni-bot To tell bots about projectiles
+		if (!G_LuaHook_WeaponFire(ent->s.number, ent->s.weapon, &pFiredShot))
+		{
+			pFiredShot = weapFireTable[ent->s.weapon].fire(ent);
+		}
 
 #ifdef FEATURE_OMNIBOT
 		// Omni-bot - Send a fire event.
