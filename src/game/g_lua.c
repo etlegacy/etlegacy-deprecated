@@ -3033,7 +3033,6 @@ void G_LuaHook_InitGame(int levelTime, int randomSeed, int restart)
 				//G_LuaStopVM(vm);
 				continue;
 			}
-			// Return values
 		}
 	}
 }
@@ -3068,7 +3067,6 @@ void G_LuaHook_ShutdownGame(int restart)
 				//G_LuaStopVM(vm);
 				continue;
 			}
-			// Return values
 		}
 	}
 }
@@ -3103,7 +3101,6 @@ void G_LuaHook_RunFrame(int levelTime)
 				//G_LuaStopVM(vm);
 				continue;
 			}
-			// Return values
 		}
 	}
 }
@@ -3144,8 +3141,10 @@ qboolean G_LuaHook_ClientConnect(int clientNum, qboolean firstTime, qboolean isB
 			if (lua_isstring(vm->L, -1))
 			{
 				Q_strncpyz(reason, lua_tostring(vm->L, -1), MAX_STRING_CHARS);
+				lua_pop(vm->L, 1);
 				return qtrue;
 			}
+			lua_pop(vm->L, 1);
 		}
 	}
 	return qfalse;
@@ -3181,7 +3180,6 @@ void G_LuaHook_ClientDisconnect(int clientNum)
 				//G_LuaStopVM(vm);
 				continue;
 			}
-			// Return values
 		}
 	}
 }
@@ -3216,7 +3214,6 @@ void G_LuaHook_ClientBegin(int clientNum)
 				//G_LuaStopVM(vm);
 				continue;
 			}
-			// Return values
 		}
 	}
 }
@@ -3251,7 +3248,6 @@ void G_LuaHook_ClientUserinfoChanged(int clientNum)
 				//G_LuaStopVM(vm);
 				continue;
 			}
-			// Return values
 		}
 	}
 }
@@ -3289,7 +3285,6 @@ void G_LuaHook_ClientSpawn(int clientNum, qboolean revived, qboolean teamChange,
 				//G_LuaStopVM(vm);
 				continue;
 			}
-			// Return values
 		}
 	}
 }
@@ -3330,9 +3325,11 @@ qboolean G_LuaHook_ClientCommand(int clientNum, char *command)
 			{
 				if (lua_tointeger(vm->L, -1) == 1)
 				{
+					lua_pop(vm->L, 1);
 					return qtrue;
 				}
 			}
+			lua_pop(vm->L, 1);
 		}
 	}
 	return qfalse;
@@ -3373,9 +3370,11 @@ qboolean G_LuaHook_ConsoleCommand(char *command)
 			{
 				if (lua_tointeger(vm->L, -1) == 1)
 				{
+					lua_pop(vm->L, 1);
 					return qtrue;
 				}
 			}
+			lua_pop(vm->L, 1);
 		}
 	}
 	return qfalse;
@@ -3417,9 +3416,11 @@ qboolean G_LuaHook_UpgradeSkill(int cno, skillType_t skill)
 			{
 				if (lua_tointeger(vm->L, -1) == -1)
 				{
+					lua_pop(vm->L, 1);
 					return qtrue;
 				}
 			}
+			lua_pop(vm->L, 1);
 		}
 	}
 	return qfalse;
@@ -3461,9 +3462,11 @@ qboolean G_LuaHook_SetPlayerSkill(int cno, skillType_t skill)
 			{
 				if (lua_tointeger(vm->L, -1) == -1)
 				{
+					lua_pop(vm->L, 1);
 					return qtrue;
 				}
 			}
+			lua_pop(vm->L, 1);
 		}
 	}
 	return qfalse;
@@ -3551,8 +3554,10 @@ qboolean G_LuaHook_Obituary(int victim, int killer, int meansOfDeath)
 			// Return values
 			if (lua_isstring(vm->L, -1))
 			{
+				lua_pop(vm->L, 1);
 				return qtrue;
 			}
+			lua_pop(vm->L, 1);
 		}
 	}
 	return qfalse;
@@ -3593,8 +3598,10 @@ qboolean G_LuaHook_Damage(int target, int attacker, int damage, int dflags, mean
 			// Return values
 			if (lua_tointeger(vm->L, -1) == 1)
 			{
+				lua_pop(vm->L, 1);
 				return qtrue;
 			}
+			lua_pop(vm->L, 1);
 		}
 	}
 	return qfalse;
