@@ -20,50 +20,44 @@
 
 -- local constants
 
-local G_MISC_MEDIC_SYRINGE_HEAL = 2
-local CH_REVIVE_DIST = 64
-local M_TAU_F = 6.28318530717958647693
-local PITCH = 1 -- up / down
-local YAW = 2 -- left / right
-local ROLL = 3 -- fall over
-local CONTENTS_SOLID = 0x00000001
-local CONTENTS_BODY = 0x02000000
-local CONTENTS_CORPSE = 0x04000000
-local MASK_SHOT = (CONTENTS_SOLID | CONTENTS_BODY | CONTENTS_CORPSE)
-local STAT_MAX_HEALTH = 4
-local GAMESOUND_MISC_REVIVE = 8
-
-local medicSyringeHealEnabled = false
+local CH_REVIVE_DIST = 64 -- import as et constant?
+local SKILL_POINTS_ADD = 2 -- xp added to a healer
 
 -- vector math
 
+local PITCH = 1 -- up / down
+local YAW = 2 -- left / right
+local ROLL = 3 -- fall over
+
 function toAngleVectors(angles)
-	local forward = {} 
-	local right = {}
-	local up = {}	
-	local angle = angles[YAW] * (M_TAU_F / 360)
+	local TAU = math.pi * 2
+	local angle = angles[YAW] * (TAU / 360)
 	local sy = math.sin(angle)
 	local cy = math.cos(angle)
 
-	angle = angles[PITCH] * (M_TAU_F / 360)
+	angle = angles[PITCH] * (TAU / 360)
 	local sp = math.sin(angle)
 	local cp = math.cos(angle)
 
-	angle = angles[ROLL] * (M_TAU_F / 360)
+	angle = angles[ROLL] * (TAU / 360)
 	local sr = math.sin(angle)
 	local cr = math.cos(angle)
 
-	forward[1] = cp * cy
-	forward[2] = cp * sy
-	forward[3] = -sp
-
-	right[1] = (-1 * sr * sp * cy + -1 * cr * -sy)
-	right[2] = (-1 * sr * sp * sy + -1 * cr * cy)
-	right[3] = -1 * sr * cp
-
-	up[1] = (cr * sp * cy + -sr * -sy)
-	up[2] = (cr * sp * sy + -sr * cy)
-	up[3] = cr * cp
+	local forward = { 
+		cp * cy, 
+		cp * sy, 
+		-sp 
+	}
+	local right = {
+		(-1 * sr * sp * cy + -1 * cr * -sy),
+		(-1 * sr * sp * sy + -1 * cr * cy),
+		-1 * sr * cp
+	}
+	local up = {
+		(cr * sp * cy + -sr * -sy),
+		(cr * sp * sy + -sr * cy),
+		cr * cp
+	}
 
 	return forward, right, up
 end
@@ -75,7 +69,6 @@ end
 function multAddVector(v, s, b)
 	return { v[1] + b[1] * s, v[2] + b[2] * s, v[3] + b[3] * s }
 end
-
 
 function copyVector(v)
 	return { v[1], v[2], v[3] }
@@ -99,78 +92,61 @@ end
 
 -- syringe handling
 
-function revokeSyringe(entNum)
-	-- todo: implement et.GetPlayerWeapon(entNum, WP_MEDIC_SYRINGE) ?
-	local weapon, ammo, ammoclip = et.GetCurrentWeapon(entNum)
-	et.AddWeaponToPlayer(entNum, weapon, ammo, ammoclip + 1, 0)
+function revokeSyringe(clientNum)
+	-- todo: implement et.GetPlayerWeapon(clientNum, WP_MEDIC_SYRINGE) ?
+	local weapon, ammo, ammoclip = et.GetCurrentWeapon(clientNum)
+	et.AddWeaponToPlayer(clientNum, weapon, ammo, ammoclip + 1, 0)
 end
  
-function checkMedicSyringeHeal(entNum)
-	local angles = et.gentity_get(entNum, "ps.viewangles")
-	local viewHeight = et.gentity_get(entNum, "ps.viewheight")
-	local leanValue = et.gentity_get(entNum, "ps.leanf")
-	local trPos = et.gentity_get(entNum, "s.pos")
+function checkMedicSyringeHeal(healer)
+	local angles = et.gentity_get(healer, "ps.viewangles")
+	local viewHeight = et.gentity_get(healer, "ps.viewheight")
+	local leanValue = et.gentity_get(healer, "ps.leanf")
+	local trPos = et.gentity_get(healer, "s.pos")
 	local forward, right, up = toAngleVectors(angles)
-	local muzzleOrigin = calcMuzzlePoint(trPos.trBase, viewHeight, leanValue, right)
-	local endPos = multAddVector(muzzleOrigin, CH_REVIVE_DIST, forward)
-	local result = et.G_HistoricalTrace(entNum, muzzleOrigin, nil, nil, endPos, entNum, MASK_SHOT)
+	local muzzlept = calcMuzzlePoint(trPos.trBase, viewHeight, leanValue, right)
+	local endpt = multAddVector(muzzlept, CH_REVIVE_DIST, forward)
+	local result = et.G_HistoricalTrace(healer, muzzlept, nil, nil, endpt, healer, et.MASK_SHOT)
 	-- stuck in solid, offset the origin forward
 	if result.startsolid then
-		endPos = multAddVector(muzzleOrigin, 8, forward)
-		result = et.trap_Trace(muzzleOrigin, nil, nil, entNum, MASK_SHOT)
+		endpt = multAddVector(muzzlept, 8, forward)
+		result = et.trap_Trace(muzzlept, nil, nil, healer, et.MASK_SHOT)
 	end
 	-- no hit give back syringe
-	if result.fraction == 1.0 then
-		revokeSyringe(entNum)
+	if result.fraction == 1.0 or result.entityNum >= et.MAX_CLIENTS then
+		revokeSyringe(healer)
 		return 1
 	end
-	-- miss (refactor)
-	if result.entityNum > et.MAX_CLIENTS then
-		revokeSyringe(entNum)
-		return 1
-	end
-	local reviveeNum = result.entityNum
-	local pm_type = et.gentity_get(reviveeNum, "ps.pm_type")
-	-- don't handle limbo players
+	local healee = result.entityNum
+	local pm_type = et.gentity_get(healee, "ps.pm_type")
+	-- limbo players are handled by the game
 	if pm_type ~= et.PM_NORMAL then
-		return 0
+		return 0 -- pass control to game
 	end
-	local reviveeTeam = et.gentity_get(reviveeNum, "sess.sessionTeam")
-	local reviverTeam = et.gentity_get(entNum, "sess.sessionTeam")
-	if reviveeTeam ~= reviverTeam then
-		revokeSyringe(entNum)
+	local healeeTeam = et.gentity_get(healee, "sess.sessionTeam")
+	local healerTeam = et.gentity_get(healer, "sess.sessionTeam")
+	if healeeTeam ~= healerTeam then
+		revokeSyringe(healer)
 		return 1
 	end
-	local reviveeHealth = et.gentity_get(reviveeNum, "health")
-	local reviveeMaxHealth = et.gentity_get(reviveeNum, "ps.stats", 3)
-	if reviveeHealth > reviveeMaxHealth * 0.25 then
-		revokeSyringe(entNum)
+	local healeeHealth = et.gentity_get(healee, "health")
+	local healeeMaxHealth = et.gentity_get(healee, "ps.stats", et.STAT_MAX_HEALTH)
+	if healeeHealth > healeeMaxHealth * 0.25 then
+		revokeSyringe(healer)
 		return 1
 	end
-	local finalHealth = 0
-	local reviverMedSkill = et.gentity_get(entNum, "sess.skill", et.SK_FIRST_AID)
-	if reviverMedSkill >= 3 then
-		finalHealth = reviveeMaxHealth
-	else
-		finalHealth = reviveeMaxHealth * 0.5
-	end
-	et.gentity_set(reviveeNum, "health", finalHealth)
-	et.G_Sound(reviveeNum, GAMESOUND_MISC_REVIVE) -- todo: export as et constants?
-	et.gentity_set(reviveeNum, "pers.lasthealth_client", entNum)
-	if not et.gentity_get(reviveeNum, "isProp") then
-		et.G_AddSkillPoints(entNum, et.SK_FIRST_AID, 2)
-	end
+	local healerMedSkill = et.gentity_get(healer, "sess.skill", et.SK_FIRST_AID)
+	local finalHealth = healeeMaxHealth * (healerMedSkill >= 3 and 1 or 0.5)
+	et.gentity_set(healee, "health", finalHealth)
+	et.G_Sound(healee, 8) -- GAMESOUND_MISC_REVIVE, import?
+	et.gentity_set(healee, "pers.lasthealth_client", healer) 
+	et.G_AddSkillPoints(healer, et.SK_FIRST_AID, SKILL_POINTS_ADD)
 	return 1
 end
 
 function et_WeaponFire(clientNum, weapNum)
-	if weapNum == et.WP_MEDIC_SYRINGE and medicSyringeHealEnabled then
+	if weapNum == et.WP_MEDIC_SYRINGE then
 		return checkMedicSyringeHeal(clientNum)
 	end
-	return 0
-end
-
-function et_InitGame()
-	local g_misc = tonumber(et.trap_Cvar_Get("g_misc"))
-	medicSyringeHealEnabled = (g_misc & G_MISC_MEDIC_SYRINGE_HEAL) ~= 0
+	return 0 -- pass control to game
 end

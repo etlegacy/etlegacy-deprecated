@@ -445,7 +445,6 @@ qboolean ReviveEntity(gentity_t *ent, gentity_t *traceEnt)
 * @param[in,out] ent
 * @param[out] firedShot - unused
 *
-* @note Currently medic player can get out of syringe ammo when G_MISC_MEDIC_SYRINGE_HEAL is set
 */
 gentity_t *Weapon_Syringe(gentity_t *ent)
 {
@@ -502,7 +501,7 @@ gentity_t *Weapon_Syringe(gentity_t *ent)
 
 		G_LogPrintf("Medic_Revive: %d %d\n", (int)(ent - g_entities), (int)(traceEnt - g_entities));
 
-		if (!traceEnt->isProp)     // flag for if they were teamkilled or not
+		if (!traceEnt->isProp)     // flag for if they were teamkilled or not	
 		{
 			G_AddSkillPoints(ent, SK_FIRST_AID, 4.f);
 			G_DebugAddSkillPoints(ent, SK_FIRST_AID, 4.f, "reviving a player");
