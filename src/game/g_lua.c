@@ -2210,9 +2210,6 @@ qboolean G_LuaInit(void)
 		G_Printf("%s API: %sno Lua files set\n", LUA_VERSION, S_COLOR_BLUE);
 	}
 
-	if (g_misc.integer & G_MISC_MEDIC_SYRINGE_HEAL)
-		G_LuaRunIsolated("lua_modules/medic_syringe_heal.lua");
-
 	return qtrue;
 }
 
