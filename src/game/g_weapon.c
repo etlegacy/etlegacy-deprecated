@@ -481,13 +481,9 @@ gentity_t *Weapon_Syringe(gentity_t *ent)
 		return NULL;
 	}
 
-	if (traceEnt->client->ps.pm_type == PM_DEAD)
+	if (traceEnt->client->ps.pm_type == PM_DEAD && 
+		traceEnt->client->sess.sessionTeam == ent->client->sess.sessionTeam)
 	{
-		if (traceEnt->client->sess.sessionTeam != ent->client->sess.sessionTeam)
-		{
-			return NULL;
-		}
-
 		// moved all the revive stuff into its own function
 		usedSyringe = ReviveEntity(ent, traceEnt);
 
