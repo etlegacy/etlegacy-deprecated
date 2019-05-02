@@ -2295,7 +2295,7 @@ static void CG_DrawSpectatorMessage(void)
 		return;
 	}
 
-	if (!((cg.snap->ps.pm_flags & PMF_LIMBO) || (cg.snap->ps.pm_flags & PMF_FOLLOW) || cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR))
+	if (!((cg.snap->ps.pm_flags & PMF_LIMBO) || cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR))
 	{
 		return;
 	}
@@ -3225,6 +3225,7 @@ static void CG_DrawTimedMenus(void)
 void CG_Fade(int r, int g, int b, int a, int time, int duration)
 {
 	// incorporate this into the current fade scheme
+
 	cgs.fadeAlpha     = (float)a / 255.0f;
 	cgs.fadeStartTime = time;
 	cgs.fadeDuration  = duration;
@@ -3281,6 +3282,7 @@ static void CG_ScreenFade(void)
 		}
 
 		CG_FillRect(0, 0, Ccg_WideX(SCREEN_WIDTH), SCREEN_HEIGHT, cg.fadeColor1);
+
 	}
 	else
 	{
@@ -3336,6 +3338,7 @@ void CG_DrawDemoRecording(void)
 	else
 	{
 		Q_strncpyz(demostatus, "", sizeof(demostatus));
+
 	}
 
 	if (cl_waverecording.integer)

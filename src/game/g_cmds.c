@@ -1246,7 +1246,7 @@ void G_DropItems(gentity_t *self)
 
 		flag = LaunchItem(item, origin, launchvel, self->s.number);
 
-		flag->s.modelindex2 = self->s.otherEntityNum2; // FIXME: set player->otherentitynum2 with old modelindex2 from flag and restore here
+		flag->s.modelindex2 = self->s.otherEntityNum2; // FIXME set player->otherentitynum2 with old modelindex2 from flag and restore here
 		flag->message       = self->message; // also restore item name
 
 #ifdef OMNIBOTS
@@ -1320,6 +1320,7 @@ qboolean SetTeam(gentity_t *ent, const char *s, qboolean force, weapon_t w1, wea
 				CP("cp \"The Allies have too many players.\n\"");
 				return qfalse; // ignore the request
 			}
+
 			// It's ok, the team we are switching to has less or same number of players
 		}
 	}
@@ -1452,7 +1453,7 @@ qboolean SetTeam(gentity_t *ent, const char *s, qboolean force, weapon_t w1, wea
 	}
 
 	// get and distribute relevent paramters
-	G_UpdateCharacter(client);              // FIXME: doesn't ClientBegin take care of this already?
+	G_UpdateCharacter(client);              // FIXME : doesn't ClientBegin take care of this already?
 	ClientUserinfoChanged(clientNum);
 
 	ClientBegin(clientNum);
@@ -2177,7 +2178,6 @@ void Cmd_Follow_f(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
 		{
 			return;
 		}
-
 		if ((ent->client->sess.sessionTeam == TEAM_AXIS ||
 		     ent->client->sess.sessionTeam == TEAM_ALLIES) &&
 		    ent->client->sess.sessionTeam != i)
@@ -2237,11 +2237,10 @@ void Cmd_Follow_f(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
 		return;
 	}
 
-	// FIXME: Remove this, if we allow following during limbo
-	/*if (level.clients[i].ps.pm_flags & PMF_LIMBO)
+	if (level.clients[i].ps.pm_flags & PMF_LIMBO)
 	{
 		return;
-	}*/
+	}
 
 	// can't follow a player on a speclocked team, unless allowed
 	if (!G_allowFollow(ent, level.clients[i].sess.sessionTeam))
@@ -2316,28 +2315,23 @@ void Cmd_FollowCycle_f(gentity_t *ent, int dir, qboolean skipBots)
 			continue;
 		}
 
-		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+		// couple extra checks for limbo mode
+		if (ent->client->ps.pm_flags & PMF_LIMBO)
 		{
-			// couple extra checks for limbo mode
-			if (ent->client->ps.pm_flags & PMF_LIMBO)
+			if (level.clients[clientnum].ps.pm_flags & PMF_LIMBO)
 			{
-				if (level.clients[clientnum].ps.pm_flags & PMF_LIMBO)
-				{
-					continue;
-				}
-
-				if (level.clients[clientnum].sess.sessionTeam != ent->client->sess.sessionTeam)
-				{
-					continue;
-				}
+				continue;
+			}
+			if (level.clients[clientnum].sess.sessionTeam != ent->client->sess.sessionTeam)
+			{
+				continue;
 			}
 		}
 
-		// FIXME: Remove this, if we allow following during limbo
-		/*if (level.clients[clientnum].ps.pm_flags & PMF_LIMBO)
+		if (level.clients[clientnum].ps.pm_flags & PMF_LIMBO)
 		{
 			continue;
-		}*/
+		}
 
 		if (!G_desiredFollow(ent, level.clients[clientnum].sess.sessionTeam))
 		{
@@ -2372,7 +2366,6 @@ qboolean G_FollowSame(gentity_t *ent)
 	{
 		return qfalse;
 	}
-
 	if (clientnum < 0)
 	{
 		return qfalse;
@@ -3374,6 +3367,7 @@ void Cmd_Vote_f(gentity_t *ent)
 			fireteamData_t *ft;
 
 			trap_SendServerCommand(ent - g_entities, "aftj -2");
+
 
 			ft = G_FindFreePublicFireteam(ent->client->sess.sessionTeam);
 			if (ft)
