@@ -228,6 +228,7 @@ vmCvar_t g_lms_currentMatch;
 vmCvar_t g_lms_lockTeams;
 vmCvar_t g_lms_followTeamOnly;
 
+vmCvar_t mod_version;
 vmCvar_t mod_url;
 vmCvar_t url;
 
@@ -270,8 +271,8 @@ vmCvar_t g_campaignFile;
 vmCvar_t g_countryflags; // GeoIP
 
 // arty/airstrike rate limiting
-vmCvar_t team_airstrikeTime;
-vmCvar_t team_artyTime;
+vmCvar_t team_maxAirstrikes;
+vmCvar_t team_maxArtillery;
 
 // team class/weapon limiting
 // classes
@@ -283,8 +284,8 @@ vmCvar_t team_maxCovertops;
 // weapons
 vmCvar_t team_maxMortars;
 vmCvar_t team_maxFlamers;
-vmCvar_t team_maxMg42s;
-vmCvar_t team_maxPanzers;
+vmCvar_t team_maxMachineguns;
+vmCvar_t team_maxRockets;
 vmCvar_t team_maxRiflegrenades;
 vmCvar_t team_maxLandmines;
 // skills
@@ -345,7 +346,7 @@ vmCvar_t g_skillRating;
 vmCvar_t g_multiview; // 0 - off, other - enabled
 #endif
 
-vmCvar_t g_stickyCharge; 
+vmCvar_t g_stickyCharge;
 
 cvarTable_t gameCvarTable[] =
 {
@@ -499,7 +500,7 @@ cvarTable_t gameCvarTable[] =
 	{ &vote_allow_restartcampaign,          "vote_allow_restartcampaign",          "1",                          0,                                               0, qfalse, qfalse },
 	{ &vote_allow_nextcampaign,             "vote_allow_nextcampaign",             "1",                          0,                                               0, qfalse, qfalse },
 	{ &vote_allow_poll,                     "vote_allow_poll",                     "1",                          0,                                               0, qfalse, qfalse },
-	{ &vote_allow_maprestart,				"vote_allow_maprestart",               "1",                          0,                                               0, qfalse, qfalse },
+	{ &vote_allow_maprestart,               "vote_allow_maprestart",               "1",                          0,                                               0, qfalse, qfalse },
 
 	{ &g_voting,                            "g_voting",                            "0",                          0,                                               0, qfalse, qfalse },
 
@@ -540,6 +541,7 @@ cvarTable_t gameCvarTable[] =
 	{ &g_currentCampaign,                   "g_currentCampaign",                   "",                           CVAR_WOLFINFO | CVAR_ROM,                        0, qfalse, qfalse },
 	{ &g_currentCampaignMap,                "g_currentCampaignMap",                "0",                          CVAR_WOLFINFO | CVAR_ROM,                        0, qfalse, qfalse },
 
+	{ &mod_version,                         "mod_version",                         ETLEGACY_VERSION,             CVAR_SERVERINFO | CVAR_ROM,                      0, qfalse, qfalse },
 	// points to the URL for mod information, should not be modified by server admin
 	{ &mod_url,                             "mod_url",                             "www.etlegacy.com",           CVAR_SERVERINFO | CVAR_ROM,                      0, qfalse, qfalse },
 	// configured by the server admin, points to the web pages for the server
@@ -566,7 +568,7 @@ cvarTable_t gameCvarTable[] =
 	{ &g_protect,                           "g_protect",                           "0",                          CVAR_ARCHIVE,                                    0, qfalse, qfalse },
 	{ &g_dropHealth,                        "g_dropHealth",                        "0",                          0,                                               0, qfalse, qfalse },
 	{ &g_dropAmmo,                          "g_dropAmmo",                          "0",                          0,                                               0, qfalse, qfalse },
-	{ &g_shove,                             "g_shove",                             "80",                         0,                                               0, qfalse, qfalse },
+	{ &g_shove,                             "g_shove",                             "60",                         0,                                               0, qfalse, qfalse },
 
 	// MAPVOTE
 	{ &g_mapVoteFlags,                      "g_mapVoteFlags",                      "0",                          0,                                               0, qfalse, qfalse },
@@ -579,8 +581,8 @@ cvarTable_t gameCvarTable[] =
 
 	{ &g_countryflags,                      "g_countryflags",                      "1",                          CVAR_LATCH | CVAR_ARCHIVE,                       0, qfalse, qfalse },
 
-	{ &team_airstrikeTime,                  "team_airstrikeTime",                  "20",                         0,                                               0, qfalse, qfalse },
-	{ &team_artyTime,                       "team_artyTime",                       "20",                         0,                                               0, qfalse, qfalse },
+	{ &team_maxAirstrikes,                  "team_maxAirstrikes",                  "0",                          0,                                               0, qfalse, qfalse },
+	{ &team_maxArtillery,                   "team_maxArtillery",                   "0",                          0,                                               0, qfalse, qfalse },
 	// team class/weapon limiting
 	//classes
 	{ &team_maxSoldiers,                    "team_maxSoldiers",                    "-1",                         0,                                               0, qfalse, qfalse },
@@ -591,8 +593,10 @@ cvarTable_t gameCvarTable[] =
 	//weapons
 	{ &team_maxMortars,                     "team_maxMortars",                     "-1",                         0,                                               0, qfalse, qfalse },
 	{ &team_maxFlamers,                     "team_maxFlamers",                     "-1",                         0,                                               0, qfalse, qfalse },
-	{ &team_maxMg42s,                       "team_maxMg42s",                       "-1",                         0,                                               0, qfalse, qfalse },
-	{ &team_maxPanzers,                     "team_maxPanzers",                     "-1",                         0,                                               0, qfalse, qfalse },
+	{ &team_maxMachineguns,                 "team_maxMachineguns",                 "-1",                         0,                                               0, qfalse, qfalse },
+	{ &team_maxRockets,                     "team_maxRockets",                     "-1",                         0,                                               0, qfalse, qfalse },
+	{ &team_maxMachineguns,                 "team_maxMg42s",                       "-1",                         0,                                               0, qfalse, qfalse }, // keep ETPro compatibility
+	{ &team_maxRockets,                     "team_maxPanzers",                     "-1",                         0,                                               0, qfalse, qfalse }, // keep ETPro compatibility
 	{ &team_maxRiflegrenades,               "team_maxRiflegrenades",               "-1",                         0,                                               0, qfalse, qfalse },
 	{ &team_maxLandmines,                   "team_maxLandmines",                   "10",                         0,                                               0, qfalse, qfalse },
 	//Skills
@@ -610,7 +614,7 @@ cvarTable_t gameCvarTable[] =
 	{ &g_mapConfigs,                        "g_mapConfigs",                        "",                           0,                                               0, qfalse, qfalse },
 	{ &g_customConfig,                      "g_customConfig",                      "defaultpublic",              CVAR_ARCHIVE,                                    0, qfalse, qfalse },
 	{ &g_moverScale,                        "g_moverScale",                        "1.0",                        0,                                               0, qfalse, qfalse },
-	{ &g_fixedphysics,                      "g_fixedphysics",                      "0",                          CVAR_ARCHIVE | CVAR_SERVERINFO,                  0, qfalse, qfalse },
+	{ &g_fixedphysics,                      "g_fixedphysics",                      "1",                          CVAR_ARCHIVE | CVAR_SERVERINFO,                  0, qfalse, qfalse },
 	{ &g_fixedphysicsfps,                   "g_fixedphysicsfps",                   "125",                        CVAR_ARCHIVE | CVAR_SERVERINFO,                  0, qfalse, qfalse },
 	{ &g_pronedelay,                        "g_pronedelay",                        "0",                          CVAR_ARCHIVE | CVAR_SERVERINFO,                  0, qfalse, qfalse },
 	// Debug
@@ -1752,9 +1756,9 @@ void G_RegisterCvars(void)
 		trap_Cvar_Set("g_gametype", va("%i", GT_WOLF));
 		trap_Cvar_Update(&g_gametype);
 		// FIXME: auto restart?
-		// g_gametype is latched and won't use the above value for current game. but running legacy with invalid gametype is resulting in bad behaviour 
+		// g_gametype is latched and won't use the above value for current game. but running legacy with invalid gametype is resulting in bad behaviour
 		// let's drop the game... (unfortunately we can't immediately restart the server here (exec map_restart isn't working)
-		G_Error("Invalid game type %i detected - defaulting to %s (%i). Start your server again with no gametype set!\n", g_gametype.integer, gameNames[GT_WOLF] , GT_WOLF);
+		G_Error("Invalid game type %i detected - defaulting to %s (%i). Start your server again with no gametype set!\n", g_gametype.integer, gameNames[GT_WOLF], GT_WOLF);
 	}
 
 	trap_SetConfigstring(CS_SERVERTOGGLES, va("%d", level.server_settings));
@@ -1923,7 +1927,7 @@ void G_UpdateCvars(void)
 						trap_Cvar_Set(cv->cvarName, "33");
 					}
 				}
-				else if (cv->vmCvar == &team_maxSoldiers || cv->vmCvar == &team_maxMedics || cv->vmCvar == &team_maxEngineers || cv->vmCvar == &team_maxFieldops || cv->vmCvar == &team_maxCovertops || cv->vmCvar == &team_maxMortars || cv->vmCvar == &team_maxFlamers || cv->vmCvar == &team_maxMg42s || cv->vmCvar == &team_maxPanzers || cv->vmCvar == &team_maxRiflegrenades || cv->vmCvar == &team_maxplayers)
+				else if (cv->vmCvar == &team_maxSoldiers || cv->vmCvar == &team_maxMedics || cv->vmCvar == &team_maxEngineers || cv->vmCvar == &team_maxFieldops || cv->vmCvar == &team_maxCovertops || cv->vmCvar == &team_maxMortars || cv->vmCvar == &team_maxFlamers || cv->vmCvar == &team_maxMachineguns || cv->vmCvar == &team_maxRockets || cv->vmCvar == &team_maxRiflegrenades || cv->vmCvar == &team_maxplayers)
 				{
 					clsweaprestriction = qtrue;
 				}
@@ -2037,8 +2041,8 @@ void G_UpdateCvars(void)
 		Info_SetValueForKey(cs, "c4", team_maxCovertops.string);
 		Info_SetValueForKey(cs, "w0", team_maxMortars.string);
 		Info_SetValueForKey(cs, "w1", team_maxFlamers.string);
-		Info_SetValueForKey(cs, "w2", team_maxMg42s.string);
-		Info_SetValueForKey(cs, "w3", team_maxPanzers.string);
+		Info_SetValueForKey(cs, "w2", team_maxMachineguns.string);
+		Info_SetValueForKey(cs, "w3", team_maxRockets.string);
 		Info_SetValueForKey(cs, "w4", team_maxRiflegrenades.string);
 		Info_SetValueForKey(cs, "m", team_maxplayers.string);
 		trap_SetConfigstring(CS_TEAMRESTRICTIONS, cs);
@@ -2231,8 +2235,11 @@ void G_GetMapXP(void)
  */
 void G_InitGame(int levelTime, int randomSeed, int restart, int legacyServer, int serverVersion)
 {
-	int  i;
-	char cs[MAX_INFO_STRING];
+	int    i;
+	char   cs[MAX_INFO_STRING];
+	time_t aclock;
+	char   timeFt[32];
+	char   *logDate;
 
 	G_Printf("------- Game Initialization -------\ngamename: %s\ngamedate: %s\n", GAMEVERSION, __DATE__);
 
@@ -2338,8 +2345,8 @@ void G_InitGame(int levelTime, int randomSeed, int restart, int legacyServer, in
 	Info_SetValueForKey(cs, "c4", team_maxCovertops.string);
 	Info_SetValueForKey(cs, "w0", team_maxMortars.string);
 	Info_SetValueForKey(cs, "w1", team_maxFlamers.string);
-	Info_SetValueForKey(cs, "w2", team_maxMg42s.string);
-	Info_SetValueForKey(cs, "w3", team_maxPanzers.string);
+	Info_SetValueForKey(cs, "w2", team_maxMachineguns.string);
+	Info_SetValueForKey(cs, "w3", team_maxRockets.string);
 	Info_SetValueForKey(cs, "w4", team_maxRiflegrenades.string);
 	Info_SetValueForKey(cs, "m", team_maxplayers.string);
 	trap_SetConfigstring(CS_TEAMRESTRICTIONS, cs);
@@ -2380,6 +2387,11 @@ void G_InitGame(int levelTime, int randomSeed, int restart, int legacyServer, in
 	// array acces check is done in G_RegisterCvars - we won't execute this with invalid gametype
 	G_Printf("gametype: %s\n", gameNames[g_gametype.integer]);
 
+	// time
+	time(&aclock);
+	strftime(timeFt, sizeof(timeFt), "%a %b %d %X %Y", localtime(&aclock));
+	G_Printf("gametime: %s\n", timeFt);
+
 	G_ParseCampaigns();
 	if (g_gametype.integer == GT_WOLF_CAMPAIGN)
 	{
@@ -2410,6 +2422,19 @@ void G_InitGame(int levelTime, int randomSeed, int restart, int legacyServer, in
 
 	if (g_log.string[0])
 	{
+		// ensure log file is always created if it does not exist
+		// as 'append' fails to do so on some unix platforms
+		if (trap_FS_FOpenFile(g_log.string, &level.logFile, FS_READ) <= 0)
+		{
+			if (trap_FS_FOpenFile(g_log.string, &level.logFile, FS_WRITE) >= 0)
+			{
+				logDate = va("logfile opened on %s\n", timeFt);
+
+				trap_FS_Write(logDate, strlen(logDate), level.logFile);
+				trap_FS_FCloseFile(level.logFile);
+			}
+		}
+
 		if (g_logSync.integer)
 		{
 			trap_FS_FOpenFile(g_log.string, &level.logFile, FS_APPEND_SYNC);
@@ -2418,6 +2443,7 @@ void G_InitGame(int levelTime, int randomSeed, int restart, int legacyServer, in
 		{
 			trap_FS_FOpenFile(g_log.string, &level.logFile, FS_APPEND);
 		}
+
 		if (!level.logFile)
 		{
 			G_Printf("WARNING: Couldn't open logfile: %s\n", g_log.string);
@@ -2544,6 +2570,11 @@ void G_InitGame(int levelTime, int randomSeed, int restart, int legacyServer, in
 	// MAPVOTE
 	level.mapsSinceLastXPReset = 0;
 
+	// init objective indicator
+	level.flagIndicator   = 0;
+	level.redFlagCounter  = 0;
+	level.blueFlagCounter = 0;
+
 #ifdef FEATURE_RATING
 	// check and initialize db
 	if (g_skillRating.integer && G_SkillRatingDB_Init() != 0)
@@ -2629,6 +2660,9 @@ void G_InitGame(int levelTime, int randomSeed, int restart, int legacyServer, in
  */
 void G_ShutdownGame(int restart)
 {
+	time_t aclock;
+	char   timeFt[32];
+
 #ifdef FEATURE_LUA
 	G_LuaHook_ShutdownGame(restart);
 	G_LuaShutdown();
@@ -2651,6 +2685,11 @@ void G_ShutdownGame(int restart)
 	}
 
 	G_Printf("==== ShutdownGame (%i - %s) ====\n", restart, level.rawmapname);
+
+	// time
+	time(&aclock);
+	strftime(timeFt, sizeof(timeFt), "%a %b %d %X %Y", localtime(&aclock));
+	G_Printf("gametime: %s\n", timeFt);
 
 #ifdef FEATURE_OMNIBOT
 	if (!Bot_Interface_Shutdown())
@@ -3085,10 +3124,13 @@ void MoveClientToIntermission(gentity_t *ent)
 		G_LeaveTank(ent, qfalse);
 	}
 
-	// MAPVOTING initialize the vars
-	ent->client->sess.mapVotedFor[0] = -1;
-	ent->client->sess.mapVotedFor[1] = -1;
-	ent->client->sess.mapVotedFor[2] = -1;
+	// initialize vars
+	if (g_gametype.integer == GT_WOLF_MAPVOTE)
+	{
+		ent->client->sess.mapVotedFor[0] = -1;
+		ent->client->sess.mapVotedFor[1] = -1;
+		ent->client->sess.mapVotedFor[2] = -1;
+	}
 
 	ent->client->ps.eFlags = 0;
 	ent->s.eFlags          = 0;
@@ -4792,6 +4834,14 @@ void G_DrawEntBBox(gentity_t *ent)
 		VectorCopy(ent->r.maxs, maxs);
 		VectorCopy(ent->r.mins, mins);
 		break;
+	case ET_AIRSTRIKE_PLANE:
+		if (g_debugHitboxes.integer != 15)
+		{
+			return;
+		}
+		VectorCopy(ent->r.maxs, maxs);
+		VectorCopy(ent->r.mins, mins);
+		break;
 	default:
 		return;
 	}
@@ -4940,6 +4990,12 @@ void G_RunEntity(gentity_t *ent, int msec)
 		VectorSubtract(ent->r.currentOrigin, ent->oldOrigin, ent->instantVelocity);
 		VectorScale(ent->instantVelocity, 1000.0f / msec, ent->instantVelocity);
 		return;
+	case ET_AIRSTRIKE_PLANE:
+		// get current position
+		BG_EvaluateTrajectory(&ent->s.pos, level.time, ent->r.currentOrigin, qfalse, ent->s.effect2Time);
+		trap_LinkEntity(ent);
+		G_RunThink(ent);
+		return;
 	default:
 		break;
 	}
@@ -5044,27 +5100,27 @@ void G_RunFrame(int levelTime)
 
 	msec = level.time - level.previousTime;
 
-	level.axisBombCounter   -= msec;
-	level.alliedBombCounter -= msec;
-	level.axisArtyCounter   -= msec;
-	level.alliedArtyCounter -= msec;
+	level.axisAirstrikeCounter   -= msec;
+	level.alliedAirstrikeCounter -= msec;
+	level.axisArtilleryCounter   -= msec;
+	level.alliedArtilleryCounter -= msec;
 
-	if (level.axisBombCounter < 0)
+	if (level.axisAirstrikeCounter < 0)
 	{
-		level.axisBombCounter = 0;
+		level.axisAirstrikeCounter = 0;
 	}
-	if (level.alliedBombCounter < 0)
+	if (level.alliedAirstrikeCounter < 0)
 	{
-		level.alliedBombCounter = 0;
+		level.alliedAirstrikeCounter = 0;
 	}
 
-	if (level.axisArtyCounter < 0)
+	if (level.axisArtilleryCounter < 0)
 	{
-		level.axisArtyCounter = 0;
+		level.axisArtilleryCounter = 0;
 	}
-	if (level.alliedArtyCounter < 0)
+	if (level.alliedArtilleryCounter < 0)
 	{
-		level.alliedArtyCounter = 0;
+		level.alliedArtilleryCounter = 0;
 	}
 
 	// get any cvar changes

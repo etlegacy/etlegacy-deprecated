@@ -943,7 +943,7 @@ static void CG_DrawWeapRecharge(rectDef_t *rect)
 	default:           chargeTime = cg.soldierChargeTime[cg.snap->ps.persistant[PERS_TEAM] - 1];   break;
 	}
 
-	// display colored charbar if charge bar isn't full enough
+	// display colored charge bar if charge bar isn't full enough
 	if (GetWeaponTableData(cg.predictedPlayerState.weapon)->attributes & WEAPON_ATTRIBUT_CHARGE_TIME)
 	{
 		skillType_t skill = GetWeaponTableData(cg.predictedPlayerState.weapon)->skillBased;
@@ -954,7 +954,8 @@ static void CG_DrawWeapRecharge(rectDef_t *rect)
 			charge = qfalse;
 		}
 	}
-	else if (cg.predictedPlayerState.weapon == WP_BINOCULARS && cgs.clientinfo[cg.snap->ps.clientNum].cls == PC_FIELDOPS)
+	else if ((cg.predictedPlayerState.eFlags & EF_ZOOMING || cg.predictedPlayerState.weapon == WP_BINOCULARS)
+		&& cgs.clientinfo[cg.snap->ps.clientNum].cls == PC_FIELDOPS)
 	{
 		skillType_t skill = GetWeaponTableData(WP_ARTY)->skillBased;
 		float       coeff = GetWeaponTableData(WP_ARTY)->chargeTimeCoeff[cgs.clientinfo[cg.clientNum].skill[skill]];
@@ -992,13 +993,17 @@ static void CG_DrawWeapRecharge(rectDef_t *rect)
 
 	if (cg.snap->ps.stats[STAT_PLAYER_CLASS] == PC_FIELDOPS)
 	{
-		if ((cg.predictedPlayerState.weapon == WP_SMOKE_MARKER && (cg.snap->ps.ammo[WP_ARTY] & NO_AIRSTRIKE)))
+		if (cg.snap->ps.ammo[WP_ARTY] & NO_AIRSTRIKE && cg.snap->ps.ammo[WP_ARTY] & NO_ARTILLERY)
 		{
 			trap_R_SetColor(colorRed);
 		}
-		else if ((cg.predictedPlayerState.weapon != WP_SMOKE_MARKER && (cg.snap->ps.ammo[WP_ARTY] & NO_ARTILLERY)))
+		else if (cg.snap->ps.ammo[WP_ARTY] & NO_AIRSTRIKE)
 		{
-			trap_R_SetColor(colorRed);
+			trap_R_SetColor(colorOrange);
+		}
+		else if (cg.snap->ps.ammo[WP_ARTY] & NO_ARTILLERY)
+		{
+			trap_R_SetColor(colorYellow);
 		}
 		CG_DrawPic(rect->x + (rect->w * 0.25f) - 1, rect->y + rect->h + 4, (rect->w * 0.5f) + 2, rect->w + 2, cgs.media.hudPowerIcon);
 		trap_R_SetColor(NULL);
@@ -1250,6 +1255,90 @@ static void CG_DrawPowerUps(rectDef_t rect)
 		color[3] *= 0.5 + 0.5 * sin(cg.time / 150.0);
 		trap_R_SetColor(color);
 		CG_DrawPic(rect.x, rect.y, rect.w, rect.h, cgs.media.hudAdrenaline);
+		trap_R_SetColor(NULL);
+	}
+	else
+	{
+		// draw objective info icon (if teammates or enemies are carrying one)
+		vec4_t color = { 1.f, 1.f, 1.f, 1.f };
+		color[3] *= 0.67 + 0.33 * sin(cg.time / 200.0);
+		trap_R_SetColor(color);
+
+		if (cg.flagIndicator & (1 << PW_REDFLAG) && cg.flagIndicator & (1 << PW_BLUEFLAG))
+		{
+			if (cg.redFlagCounter > 0 && cg.blueFlagCounter > 0)
+			{
+				// both own and enemy flags stolen
+				CG_DrawPic(rect.x, rect.y, rect.w, rect.h, cgs.media.objectiveBothTEShader);
+			}
+			else if (cg.redFlagCounter > 0 && !cg.blueFlagCounter)
+			{
+				// own flag stolen and enemy flag dropped
+				CG_DrawPic(rect.x, rect.y, rect.w, rect.h, ps->persistant[PERS_TEAM] == TEAM_AXIS ? cgs.media.objectiveBothTDShader : cgs.media.objectiveBothDEShader);
+			}
+			else if (!cg.redFlagCounter && cg.blueFlagCounter > 0)
+			{
+				// own flag dropped and enemy flag stolen
+				CG_DrawPic(rect.x, rect.y, rect.w, rect.h, ps->persistant[PERS_TEAM] == TEAM_ALLIES ? cgs.media.objectiveBothTDShader : cgs.media.objectiveBothDEShader);
+			}
+			else
+			{
+				// both own and enemy flags dropped
+				CG_DrawPic(rect.x, rect.y, rect.w, rect.h, cgs.media.objectiveDroppedShader);
+			}
+			trap_R_SetColor(NULL);
+
+			// display team flag
+			color[3] = 1.f;
+			trap_R_SetColor(color);
+			CG_DrawPic(rect.x + rect.w / 2 - 20, rect.y + 28, 12, 8, ps->persistant[PERS_TEAM] == TEAM_AXIS ? cgs.media.axisFlag : cgs.media.alliedFlag);
+			CG_DrawPic(rect.x + rect.w / 2 + 8,  rect.y + 28, 12, 8, ps->persistant[PERS_TEAM] == TEAM_AXIS ? cgs.media.alliedFlag : cgs.media.axisFlag);
+		}
+		else if (cg.flagIndicator & (1 << PW_REDFLAG))
+		{
+			if (cg.redFlagCounter > 0)
+			{
+				CG_DrawPic(rect.x, rect.y, rect.w, rect.h, ps->persistant[PERS_TEAM] == TEAM_ALLIES ? cgs.media.objectiveTeamShader : cgs.media.objectiveEnemyShader);
+			}
+			else
+			{
+				CG_DrawPic(rect.x, rect.y, rect.w, rect.h, cgs.media.objectiveDroppedShader);
+			}
+			trap_R_SetColor(NULL);
+
+			// display team flag
+			color[3] = 1.f;
+			trap_R_SetColor(color);
+			CG_DrawPic(rect.x + rect.w / 2 + (ps->persistant[PERS_TEAM] == TEAM_AXIS ? 8 : -20),  rect.y + 28, 12, 8, cgs.media.alliedFlag);
+		}
+		else if (cg.flagIndicator & (1 << PW_BLUEFLAG))
+		{
+			if (cg.blueFlagCounter > 0)
+			{
+				CG_DrawPic(rect.x, rect.y, rect.w, rect.h, ps->persistant[PERS_TEAM] == TEAM_AXIS ? cgs.media.objectiveTeamShader : cgs.media.objectiveEnemyShader);
+			}
+			else
+			{
+				CG_DrawPic(rect.x, rect.y, rect.w, rect.h, cgs.media.objectiveDroppedShader);
+			}
+			trap_R_SetColor(NULL);
+
+			// display team flag
+			color[3] = 1.f;
+			trap_R_SetColor(color);
+			CG_DrawPic(rect.x + rect.w / 2 + (ps->persistant[PERS_TEAM] == TEAM_ALLIES ? 8 : -20),  rect.y + 28, 12, 8, cgs.media.axisFlag);
+		}
+
+		// display active flag counter
+		if (cg.redFlagCounter > 1)
+		{
+			CG_Text_Paint_Ext(rect.x + rect.w / 2 + (ps->persistant[PERS_TEAM] == TEAM_ALLIES ? -16 : 12), rect.y + 38, 0.18, 0.18, colorWhite, va("%i", cg.redFlagCounter), 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont1);
+		}
+		if (cg.blueFlagCounter > 1)
+		{
+			CG_Text_Paint_Ext(rect.x + rect.w / 2 + (ps->persistant[PERS_TEAM] == TEAM_AXIS ? -16 : 12), rect.y + 38, 0.18, 0.18, colorWhite, va("%i", cg.blueFlagCounter), 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont1);
+		}
+
 		trap_R_SetColor(NULL);
 	}
 }
@@ -2065,7 +2154,8 @@ static void CG_DrawTimersAlt(rectDef_t *respawn, rectDef_t *spawntimer, rectDef_
 		{
 			int reinfTime = CG_CalculateReinfTime(qfalse);
 
-			rt = va("%s%d%s", (reinfTime <= 2 && cgs.clientinfo[cg.clientNum].health == 0) ? "^3" : "^F", reinfTime, ((cgs.timelimit <= 0.0f) ? "" : " "));
+			rt = va("%s%d%s", (reinfTime <= 2 && cgs.clientinfo[cg.clientNum].health == 0 &&
+				!(cg.snap->ps.pm_flags & PMF_FOLLOW)) ? "^3" : "^F", reinfTime, ((cgs.timelimit <= 0.0f) ? "" : " "));
 		}
 		else
 		{
@@ -2170,7 +2260,8 @@ static float CG_DrawTimerNormal(float y)
 		{
 			int reinfTime = CG_CalculateReinfTime(qfalse);
 
-			rt = va("%s%d%s", (reinfTime <= 2 && cgs.clientinfo[cg.clientNum].health == 0) ? "^3" : "^F", reinfTime, ((cgs.timelimit <= 0.0f) ? "" : " "));
+			rt = va("%s%d%s", (reinfTime <= 2 && cgs.clientinfo[cg.clientNum].health == 0 &&
+				!(cg.snap->ps.pm_flags & PMF_FOLLOW)) ? "^3" : "^F", reinfTime, ((cgs.timelimit <= 0.0f) ? "" : " "));
 		}
 		else
 		{
@@ -2321,7 +2412,7 @@ void CG_AddLagometerSnapshotInfo(snapshot_t *snap)
 	// compute server framerate
 	index = cgs.sampledStat.count;
 
-	if (cgs.sampledStat.count <= LAG_SAMPLES)
+	if (cgs.sampledStat.count < LAG_SAMPLES)
 	{
 		cgs.sampledStat.count++;
 	}

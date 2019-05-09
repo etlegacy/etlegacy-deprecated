@@ -230,6 +230,7 @@ void QDECL NET_OutOfBandData(netsrc_t sock, netadr_t adr, const char *format, in
 qboolean NET_CompareAdr(netadr_t a, netadr_t b);
 qboolean NET_CompareBaseAdr(netadr_t a, netadr_t b);
 qboolean NET_IsLocalAddress(netadr_t adr);
+qboolean NET_IsLocalAddressString(const char *address);
 qboolean NET_IsIPXAddress(const char *buf);
 const char *NET_AdrToString(netadr_t a);
 const char *NET_AdrToStringNoPort(netadr_t a);
@@ -946,6 +947,7 @@ void FS_HomeRemove(const char *homePath);
 qboolean FS_FileInPathExists(const char *testpath);
 
 #if defined(FEATURE_PAKISOLATION) && !defined(DEDICATED)
+void FS_InitWhitelist(void);
 const char *FS_Basename(const char *path);
 const char *FS_Dirpath(const char *path);
 void FS_CreateContainerName(const char *id, char *output);

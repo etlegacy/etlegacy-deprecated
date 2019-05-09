@@ -597,13 +597,13 @@ static void CG_MessageMode_f(void)
  */
 static void CG_MessageSend_f(void)
 {
-	char messageText[256];
+	char messageText[MAX_SAY_TEXT];
 	int  messageType;
 
 	// get values
-	trap_Cvar_VariableStringBuffer("cg_messageType", messageText, 256);
+	trap_Cvar_VariableStringBuffer("cg_messageType", messageText, MAX_SAY_TEXT);
 	messageType = atoi(messageText);
-	trap_Cvar_VariableStringBuffer("cg_messageText", messageText, 256);
+	trap_Cvar_VariableStringBuffer("cg_messageText", messageText, MAX_SAY_TEXT);
 
 	// reset values
 	trap_Cvar_Set("cg_messageText", "");
@@ -1285,46 +1285,12 @@ qboolean CG_IsClassFull(int playerType, team_t team)
 	classCount  = CG_LimboPanel_ClassCount(team, playerType);
 	playerCount = CG_LimboPanel_TeamCount(-1);
 
-	switch (playerType)
+	if (classCount >= CG_LimboPanel_MaxCount(playerCount, cg.maxPlayerClasses[playerType]))
 	{
-		case PC_SOLDIER:
-			if (classCount >= CG_LimboPanel_MaxCount(playerCount, cg.maxSoldiers))
-			{
-				CG_PriorityCenterPrint(CG_TranslateString("^1Soldier^7 is not available! Choose another class!"), 400, cg_fontScaleCP.value, -1);
-				return qtrue;
-			}
-			break;
-		case PC_MEDIC:
-			if (classCount >= CG_LimboPanel_MaxCount(playerCount, cg.maxMedics))
-			{
-				CG_PriorityCenterPrint(CG_TranslateString("^1Medic^7 is not available! Choose another class!"), 400, cg_fontScaleCP.value, -1);
-				return qtrue;
-			}
-			break;
-		case PC_ENGINEER:
-			if (classCount >= CG_LimboPanel_MaxCount(playerCount, cg.maxEngineers))
-			{
-				CG_PriorityCenterPrint(CG_TranslateString("^1Engineer^7 is not available! Choose another class!"), 400, cg_fontScaleCP.value, -1);
-				return qtrue;
-			}
-			break;
-		case PC_FIELDOPS:
-			if (classCount >= CG_LimboPanel_MaxCount(playerCount, cg.maxFieldops))
-			{
-				CG_PriorityCenterPrint(CG_TranslateString("^1Field Ops^7 is not available! Choose another class!"), 400, cg_fontScaleCP.value, -1);
-				return qtrue;
-			}
-			break;
-		case PC_COVERTOPS:
-			if (classCount >= CG_LimboPanel_MaxCount(playerCount, cg.maxCovertops))
-			{
-				CG_PriorityCenterPrint(CG_TranslateString("^1Covert Ops^7 is not available! Choose another class!"), 400, cg_fontScaleCP.value, -1);
-				return qtrue;
-			}
-			break;
-		default:
-			break;
+		CG_PriorityCenterPrint(CG_TranslateString(va("^1%s^7 is not available! Choose another class!", BG_ClassnameForNumber(playerType))), 400, cg_fontScaleCP.value, -1);
+		return qtrue;
 	}
+
 	return qfalse;
 }
 
@@ -1533,7 +1499,14 @@ static void CG_Class_f(void)
 	{
 		trap_Argv(3, cls, 64);
 		weapon2 = atoi(cls);
-		weapon2 = CG_GetSecondaryWeapon(weapon2, team, playerclass);
+		if (weapon2 <= 0 || weapon2 > MAX_WEAPS_PER_CLASS)
+		{
+			weapon2 = classinfo->classSecondaryWeapons[0].weapon;
+		}
+		else
+		{
+			weapon2 = CG_GetSecondaryWeapon(weapon2 - 1, team, playerclass);
+		}
 	}
 	else
 	{
@@ -1555,6 +1528,23 @@ static void CG_Class_f(void)
 	}
 	// Send the switch command to the server
 	trap_SendClientCommand(va("team %s %i %i %i\n", classtype, playerclass, weapon1, weapon2));
+}
+
+/**
+ * @brief team change menu
+ */
+static void CG_TeamMenu_f(void)
+{
+	CG_EventHandling(CGAME_EVENT_NONE, qfalse);
+
+	if (cg_quickMessageAlt.integer)
+	{
+		trap_UI_Popup(UIMENU_WM_TEAMALT);
+	}
+	else
+	{
+		trap_UI_Popup(UIMENU_WM_TEAM);
+	}
 }
 
 /**
@@ -1942,6 +1932,7 @@ static consoleCommand_t commands[] =
 	{ "resetTimer",          CG_TimerReset_f           }, // keep ETPro compatibility
 	{ "class",               CG_Class_f                },
 	{ "classmenu",           CG_ClassMenu_f            },
+	{ "teammenu",            CG_TeamMenu_f             },
 	{ "readhuds",            CG_ReadHuds_f             },
 #ifdef FEATURE_EDV
 	{ "+freecam_turnleft",   CG_FreecamTurnLeftDown_f  },

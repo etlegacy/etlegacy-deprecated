@@ -746,11 +746,11 @@ typedef struct weaponInfo_s
 
 	qhandle_t weaponIcon[2];            ///< [0] is weap icon, [1] is highlight icon
 	int weaponIconScale;
-    
-    qhandle_t weaponCardIcon;
-    vec2_t weaponCardScale;
-    vec2_t weaponCardPointS;
-    vec2_t weaponCardPointT;
+
+	qhandle_t weaponCardIcon;
+	vec2_t weaponCardScale;
+	vec2_t weaponCardPointS;
+	vec2_t weaponCardPointT;
 
 	qhandle_t missileModel;
 	qhandle_t missileAlliedSkin;
@@ -1222,11 +1222,8 @@ typedef struct
 	int medicChargeTime[2];
 	int covertopsChargeTime[2];
 
-	char maxSoldiers[MAX_QPATH];
-	char maxMedics[MAX_QPATH];
-	char maxEngineers[MAX_QPATH];
-	char maxFieldops[MAX_QPATH];
-	char maxCovertops[MAX_QPATH];
+	char maxPlayerClasses[NUM_PLAYER_CLASSES][MAX_QPATH];
+
 	char maxMortars[MAX_QPATH];
 	char maxFlamers[MAX_QPATH];
 	char maxMg42s[MAX_QPATH];
@@ -1296,10 +1293,16 @@ typedef struct
 
 	specName_t specOnScreenNames[MAX_CLIENTS];
 
+	vec3_t airstrikePlaneScale[2];
+
+	// objective indicator
+	int flagIndicator;
+	int redFlagCounter;
+	int blueFlagCounter;
+
 #ifdef FEATURE_RATING
 	// skill rating
 	float rating[MAX_CLIENTS];
-	float deltaRating[MAX_CLIENTS];
 	float axisProb;
 	float alliesProb;
 
@@ -1365,6 +1368,12 @@ typedef struct
 	qhandle_t voiceChatShader;
 	qhandle_t balloonShader;
 	qhandle_t objectiveShader;
+	qhandle_t objectiveTeamShader;
+	qhandle_t objectiveDroppedShader;
+	qhandle_t objectiveEnemyShader;
+	qhandle_t objectiveBothTEShader;
+	qhandle_t objectiveBothTDShader;
+	qhandle_t objectiveBothDEShader;
 	qhandle_t readyShader;
 
 	qhandle_t destroyShader;
@@ -1485,6 +1494,8 @@ typedef struct
 
 	qhandle_t flamebarrel;
 	qhandle_t mg42muzzleflash;
+
+	qhandle_t airstrikePlane[2];
 
 	qhandle_t waterSplashModel;
 	qhandle_t waterSplashShader;
@@ -1871,6 +1882,16 @@ typedef struct oidInfo_s
 	vec3_t origin;
 } oidInfo_t;
 
+// Popup filters
+enum
+{
+	POPUP_FILTER_CONNECT  = BIT(0),
+	POPUP_FILTER_TEAMJOIN = BIT(1),
+	POPUP_FILTER_MISSION  = BIT(2),
+	POPUP_FILTER_PICKUP   = BIT(3),
+	POPUP_FILTER_DEATH    = BIT(4),
+};
+
 /// Locations
 #define MAX_C_LOCATIONS 1024
 
@@ -1949,9 +1970,9 @@ typedef struct
 } clientLocation_t;
 
 #ifdef FEATURE_RATING
-#define NUM_ENDGAME_AWARDS     20   ///< total number of endgame awards
+#define NUM_ENDGAME_AWARDS     21   ///< total number of endgame awards
 #else
-#define NUM_ENDGAME_AWARDS     19   ///< total number of endgame awards
+#define NUM_ENDGAME_AWARDS     20   ///< total number of endgame awards
 #endif
 #define NUMSHOW_ENDGAME_AWARDS 14   ///< number of awards to display that will fit on screen
 
@@ -2252,6 +2273,7 @@ typedef struct cgs_s
 	int dbPlayerListOffset;
 	int dbWeaponListOffset;
 	cg_weaponstats_t dbWeaponStats[WS_MAX];
+	int dbHitRegions[HR_NUM_HITREGIONS];
 	int dbChatMode;
 
 	int tdbAxisMapsXP[SK_NUM_SKILLS][MAX_MAPS_PER_CAMPAIGN];
@@ -2292,6 +2314,7 @@ typedef struct cgs_s
 	int dbSelectedMap;
 	int dbSelectedMapTime;
 	qboolean dbMapListReceived;
+	qboolean dbVoteTallyReceived;
 	qboolean dbMapMultiVote;
 	int dbMapVotedFor[3];
 	int mapVoteMapX;
@@ -2503,6 +2526,7 @@ extern vmCvar_t cl_wavefilename;
 extern vmCvar_t cl_waveoffset;
 extern vmCvar_t cg_recording_statusline;
 
+extern vmCvar_t cg_announcer;
 extern vmCvar_t cg_hitSounds;
 extern vmCvar_t cg_locations;
 
@@ -2525,6 +2549,7 @@ extern vmCvar_t cg_drawTime;
 
 extern vmCvar_t cg_popupFadeTime;
 extern vmCvar_t cg_popupStayTime;
+extern vmCvar_t cg_popupFilter;
 extern vmCvar_t cg_graphicObituaries;
 
 extern vmCvar_t cg_fontScaleTP;
@@ -2548,6 +2573,8 @@ extern vmCvar_t cg_scoreboard;
 extern vmCvar_t cg_quickchat;
 
 extern vmCvar_t cg_drawspeed;
+
+extern vmCvar_t cg_visualEffects;  ///< turn invisible (0) / visible (1) visual effect (i.e airstrike plane, debris ...)
 
 // local clock flags
 #define LOCALTIME_ON                0x01
@@ -2980,7 +3007,7 @@ void CG_AddToNotify(const char *str);
 const char *CG_LocalizeServerCommand(const char *buf);
 void CG_wstatsParse_cmd(void);
 
-void CG_parseWeaponStats_cmd(void (txt_dump) (const char *));
+void CG_parseWeaponStats_cmd(void(txt_dump) (const char *));
 //void CG_parseBestShotsStats_cmd(qboolean doTop, void(txt_dump) (const char *));
 //void CG_parseTopShotsStats_cmd(qboolean doTop, void(txt_dump) (const char *));
 //void CG_scores_cmd(void);
@@ -3508,13 +3535,14 @@ qboolean CG_Debriefing_Draw(void);
 void CG_ChatPanel_Setup(void);
 
 void CG_Debriefing_ChatEditFinish(panel_button_t *button);
+void CG_Debriefing_VoteButton_Draw(panel_button_t *button);
 void CG_Debriefing_NextButton_Draw(panel_button_t *button);
 void CG_Debriefing_ChatButton_Draw(panel_button_t *button);
 void CG_Debriefing_ReadyButton_Draw(panel_button_t *button);
 qboolean CG_Debriefing_ChatButton_KeyDown(panel_button_t *button, int key);
-qboolean CG_Debriefing_BackButton_KeyDown(panel_button_t *button, int key);
 qboolean CG_Debriefing_ReadyButton_KeyDown(panel_button_t *button, int key);
 qboolean CG_Debriefing_QCButton_KeyDown(panel_button_t *button, int key);
+qboolean CG_Debriefing_VoteButton_KeyDown(panel_button_t *button, int key);
 qboolean CG_Debriefing_NextButton_KeyDown(panel_button_t *button, int key);
 
 void CG_PanelButtonsRender_Button_Ext(rectDef_t *r, const char *text);
@@ -3530,6 +3558,7 @@ void CG_Debriefing_PlayerSR_Draw(panel_button_t *button);
 void CG_Debriefing_PlayerACC_Draw(panel_button_t *button);
 void CG_Debriefing_PlayerHS_Draw(panel_button_t *button);
 void CG_Debriefing_PlayerSkills_Draw(panel_button_t *button);
+void CG_Debriefing_PlayerHitRegions_Draw(panel_button_t *button);
 
 void CG_DebriefingPlayerWeaponStats_Draw(panel_button_t *button);
 

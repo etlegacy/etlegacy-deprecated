@@ -40,7 +40,7 @@ extern void CG_Tracer(vec3_t source, vec3_t dest, int sparks);
 //==========================================================================
 
 static vec3_t OB_YELLOW = { 1.f, 1.f, 0.f };
-static vec3_t OB_RED = { 1.f, 0.f, 0.f };
+static vec3_t OB_RED    = { 1.f, 0.f, 0.f };
 
 /**
  * @brief CG_GetObituaryIcon
@@ -340,7 +340,7 @@ static void CG_ItemPickup(int itemNum)
 		}
 		else
 		{
-			giType = PM_MESSAGE;
+			giType = PM_WEAPONPICKUP;
 		}
 		break;
 	case IT_HEALTH:
@@ -367,8 +367,11 @@ static void CG_ItemPickup(int itemNum)
 	// see if it should be the grabbed weapon
 	if (item->giType == IT_WEAPON)
 	{
-		// select the weapon the server says we are using
-		cg.weaponSelect = cg.snap->ps.weapon;
+		// we just drop current weapon
+		if (!COM_BitCheck(cg.snap->ps.weapons, cg.weaponSelect))
+		{
+			cg.weaponSelect = WP_NONE;
+		}
 
 		if (cg_autoswitch.integer && cg.predictedPlayerState.weaponstate != WEAPON_RELOADING)
 		{
@@ -1822,7 +1825,7 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 	{
 		CG_Printf("time:%i ent:%3i  event:%3i ", cg.time, es->number, event);
 
-		if (event < EV_NONE || event > EV_MAX_EVENTS)
+		if (event < EV_NONE || event >= EV_MAX_EVENTS)
 		{
 			CG_Printf("UNKNOWN\n");
 		}
@@ -2281,7 +2284,7 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 		vec3_t dir;
 
 		ByteToDir(es->eventParm, dir);
-		if (es->weapon == WP_ARTY || es->weapon == WP_SMOKE_MARKER)
+		if (es->weapon == WP_ARTY || es->weapon == WP_AIRSTRIKE || es->weapon == WP_SMOKE_MARKER)
 		{
 			CG_MissileHitWall(es->weapon, PS_FX_NONE, position, dir, 0);           // modified to send missilehitwall surface parameters
 		}
@@ -2878,7 +2881,11 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 		default:     // shouldn't happen
 			break;
 		}
-
+	break;
+	case EV_FLAG_INDICATOR:
+		cg.flagIndicator   = es->eventParm;
+		cg.redFlagCounter  = es->otherEntityNum;
+		cg.blueFlagCounter = es->otherEntityNum2;
 		break;
 
 	default:

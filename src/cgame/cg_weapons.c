@@ -116,7 +116,7 @@ void CG_MachineGunEjectBrass(centity_t *cent)
 	localEntity_t *le;
 	refEntity_t   *re;
 	vec3_t        velocity, xvelocity;
-	vec3_t        offset, xoffset;
+	vec3_t        offset = { 0, 0, 0 };
 	float         waterScale = 1.0f;
 	vec3_t        v[3], end;
 	qboolean      isFirstPerson = ((cent->currentState.clientNum == cg.snap->ps.clientNum) && !cg.renderingThirdPerson);
@@ -197,6 +197,8 @@ void CG_MachineGunEjectBrass(centity_t *cent)
 
 	if ((cent->currentState.eFlags & EF_MG42_ACTIVE) || (cent->currentState.eFlags & EF_AAGUN_ACTIVE) || !isFirstPerson)
 	{
+		vec3_t xoffset;
+
 		xoffset[0] = offset[0] * v[0][0] + offset[1] * v[1][0] + offset[2] * v[2][0];
 		xoffset[1] = offset[0] * v[0][1] + offset[1] * v[1][1] + offset[2] * v[2][1];
 		xoffset[2] = offset[0] * v[0][2] + offset[1] * v[1][2] + offset[2] * v[2][2];
@@ -1851,7 +1853,7 @@ static void CG_SetWeapLerpFrameAnimation(weaponInfo_t *wi, lerpFrame_t *lf, int 
 	lf->animation     = anim;
 	lf->animationTime = lf->frameTime + anim->initialLerp;
 
-	if (cg_debugAnim.integer & 2)
+	if (cg_debugAnim.integer == 2)
 	{
 		CG_Printf("Weap Anim: %d\n", newAnimation);
 	}
@@ -3589,74 +3591,84 @@ void CG_AltWeapon_f(void)
 		return;
 	}
 
-	// some alt vsays, don't check for weapon with alternative weapon
-	// 0 - disabled
-	// 1 - team
-	// 2 - fireteam
-	if (cg_quickchat.integer && !GetWeaponTableData(cg.weaponSelect)->weapAlts)
+	// don't check for weapon with alternative weapon, instead check special action
+	if (!GetWeaponTableData(cg.weaponSelect)->weapAlts)
 	{
-		char *cmd;
-
-		if (cg_quickchat.integer == 2)
+		if (cg_weapaltReloads.integer && GetWeaponTableData(cg.weaponSelect)->useClip)
 		{
-			cmd = va("vsay_buddy -1 %s", CG_BuildSelectedFirteamString());
+			//TODO: This is a horrible way of doing it but theres not other way atm.
+			trap_SendConsoleCommand("+reload\n");
+			trap_SendConsoleCommand("-reload\n");
 		}
-		else
+		// some alt vsays,
+		// 0 - disabled
+		// 1 - team
+		// 2 - fireteam
+		else if (cg_quickchat.integer)
 		{
-			cmd = "vsay_team";
-		}
+			char *cmd;
 
-		switch (cg.weaponSelect)
-		{
-		case WP_DYNAMITE:
-			trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "FTExploreArea"));
-			break;     //return;
-		case WP_SMOKE_BOMB:
-			switch ((rand() % 2))
+			if (cg_quickchat.integer == 2)
 			{
-			case 0:
-				trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "FTGoUndercover"));
-				break;
-			case 1:
-				trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "FTInfiltrate"));
+				cmd = va("vsay_buddy -1 %s", CG_BuildSelectedFirteamString());
+			}
+			else
+			{
+				cmd = "vsay_team";
+			}
+
+			switch (cg.weaponSelect)
+			{
+			case WP_DYNAMITE:
+				trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "FTExploreArea"));
+				break;     //return;
+			case WP_SMOKE_BOMB:
+				switch ((rand() % 2))
+				{
+				case 0:
+					trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "FTGoUndercover"));
+					break;
+				case 1:
+					trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "FTInfiltrate"));
+					break;
+				}
+				break;     //return;
+			case WP_SMOKE_MARKER:
+			case WP_GRENADE_LAUNCHER:
+			case WP_GRENADE_PINEAPPLE:
+				trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "FireInTheHole"));
+				break;     //return;
+			case WP_PLIERS:
+				switch ((rand() % 3))
+				{
+				case 0:
+					trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "CoverMe"));
+					break;
+				case 1:
+					trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "NeedBackup"));
+					break;
+				case 2:
+					trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "ClearPath"));
+					break;
+				}
+				break;     //return;
+			case WP_SATCHEL:
+				trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "LetsGo"));
+				break;     //return;
+			case WP_MEDKIT:
+			case WP_MEDIC_SYRINGE:
+				trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "IamMedic"));
+				break;     //return;
+			case WP_AMMO:
+				trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "IamFieldOps"));
+				break;     // return;
+			// add others ...
+			//case WP_POISON_SYRINGE:
+			//trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "EnemyWeak"));
+			//return;
+			default:
 				break;
 			}
-			break;     //return;
-		case WP_SMOKE_MARKER:
-		case WP_GRENADE_LAUNCHER:
-		case WP_GRENADE_PINEAPPLE:
-			trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "FireInTheHole"));
-			break;     //return;
-		case WP_PLIERS:
-			switch ((rand() % 3))
-			{
-			case 0:
-				trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "CoverMe"));
-				break;
-			case 1:
-				trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "NeedBackup"));
-				break;
-			case 2:
-				trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "ClearPath"));
-				break;
-			}
-			break;     //return;
-		case WP_SATCHEL:
-			trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "LetsGo"));
-			break;     //return;
-		case WP_MEDKIT:
-		case WP_MEDIC_SYRINGE:
-			trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "IamMedic"));
-			break;     //return;
-		case WP_AMMO:
-			trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "IamFieldOps"));
-			break;     // return;
-		// add others ...
-		//case WP_POISON_SYRINGE:
-		//trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "EnemyWeak"));
-		//return;
-		default:
-			break;
 		}
 
 		return;
@@ -3739,6 +3751,12 @@ void CG_AltWeapon_f(void)
 	if (CG_WeaponSelectable(GetWeaponTableData(cg.weaponSelect)->weapAlts))        // new weapon is valid
 	{
 		CG_FinishWeaponChange(cg.weaponSelect, GetWeaponTableData(cg.weaponSelect)->weapAlts);
+	}
+	else if (cg_weapaltReloads.integer)
+	{
+		//TODO: This is a horrible way of doing it but theres not other way atm.
+		trap_SendConsoleCommand("+reload\n");
+		trap_SendConsoleCommand("-reload\n");
 	}
 }
 
@@ -4356,7 +4374,7 @@ void CG_OutOfAmmoChange(qboolean allowForceSwitch)
 	// int bank = 0, cycle = 0;
 
 	// trivial switching
-	if (cg.weaponSelect == WP_PLIERS || (cg.weaponSelect == WP_SATCHEL_DET && cg.predictedPlayerState.ammo[WP_SATCHEL_DET]))
+	if (cg.weaponSelect == WP_PLIERS || (cg.weaponSelect == WP_SATCHEL_DET && cg.predictedPlayerState.ammoclip[WP_SATCHEL_DET]))
 	{
 		return;
 	}
@@ -4908,6 +4926,11 @@ void CG_AddDebris(vec3_t origin, vec3_t dir, int speed, int duration, int count,
 		return;
 	}
 
+	if (!cg_visualEffects.integer)
+	{
+		return;
+	}
+
 	for (i = 0; i < count; i++)
 	{
 		le = CG_AllocLocalEntity();
@@ -5415,12 +5438,12 @@ void CG_MissileHitWall(int weapon, int missileEffect, vec3_t origin, vec3_t dir,
 			CG_AddDebris(origin, dir, 280, 1400, 7 + rand() % 2, &trace);
 		}
 	}
-	else if ((GetWeaponTableData(weapon)->type & WEAPON_TYPE_PANZER) || weapon == VERYBIGEXPLOSION || weapon == WP_ARTY || weapon == WP_SMOKE_MARKER)
+	else if ((GetWeaponTableData(weapon)->type & WEAPON_TYPE_PANZER) || weapon == VERYBIGEXPLOSION || weapon == WP_ARTY || weapon == WP_AIRSTRIKE || weapon == WP_SMOKE_MARKER)
 	{
 		sfx  = cgs.media.sfx_rockexp;
 		sfx2 = cgs.media.sfx_rockexpDist;
 
-		if (weapon == VERYBIGEXPLOSION || weapon == WP_ARTY)
+		if (weapon == VERYBIGEXPLOSION || weapon == WP_ARTY || weapon == WP_AIRSTRIKE)
 		{
 			sfx  = cgs.media.sfx_artilleryExp[rand() % 3];
 			sfx2 = cgs.media.sfx_artilleryDist;
@@ -5964,19 +5987,9 @@ void CG_DrawBulletTracer(vec3_t pstart, vec3_t pend, int sourceEntityNum, int ot
 		return; // Only others tracers
 	}
 
-	if (otherEntityNum >= 0 && otherEntityNum != ENTITYNUM_NONE)
+	if (sourceEntityNum >= 0 && sourceEntityNum != ENTITYNUM_NONE && cg_tracers.integer <= 3)
 	{
-		if (cg_tracers.integer == 1 || cg_tracers.integer == 3)
-		{
-			CG_SpawnTracer(otherEntityNum, pstart, pend);
-		}
-	}
-	else
-	{
-		if (cg_tracers.integer <= 2)
-		{
-			CG_SpawnTracer(sourceEntityNum, pstart, pend);
-		}
+		CG_SpawnTracer(sourceEntityNum, pstart, pend);
 	}
 }
 

@@ -43,7 +43,7 @@ int QDECL CG_SortPlayersByXP(const void *a, const void *b);
 panel_button_text_t debriefPlayerHeadingSmallerFont =
 {
 	0.2f,                  0.2f,
-	{ 0.6f,                0.6f,0.6f,    1.f },
+	{ 0.6f,                0.6f, 0.6f,    1.f },
 	0,                     0,
 	&cgs.media.limboFont2,
 };
@@ -505,7 +505,7 @@ panel_button_t debriefPlayerListScroll =
 panel_button_text_t debriefPlayerInfoFont =
 {
 	0.2f,                  0.2f,
-	{ 0.6f,                0.6f,0.6f,    1.f },
+	{ 0.6f,                0.6f, 0.6f,    1.f },
 	0,                     0,
 	&cgs.media.limboFont2,
 };
@@ -638,15 +638,28 @@ panel_button_t debriefPlayerInfoHS =
 	0
 };
 
+panel_button_t debriefPlayerInfoHitRegions =
+{
+	NULL,
+	NULL,
+	{ 146,                      156, 0, 0 },
+	{ 0,                        0,  0, 0, 0, 0, 0, 0 },
+	&debriefPlayerInfoFont,     // font
+	NULL,                       // keyDown
+	NULL,                       // keyUp
+	CG_Debriefing_PlayerHitRegions_Draw,
+	NULL,
+};
+
 #define PLAYERHEADER_SKILLS(number)           \
 	panel_button_t debriefPlayerInfoSkills ## number = {      \
 		NULL,                                       \
 		NULL,                                       \
-		{ 18 + (94 * (number % 2)),      140 + (number / 2 * 24),                       12, 12 }, \
-		{ number,                        0,                                             0,  0, 0, 0, 0, 0},            \
+		{ 24,                            136 + (number * 14),  12, 12 }, \
+		{ number,                        0,                     0,  0, 0, 0, 0, 0},  \
 		&debriefPlayerInfoFont,          /* font     */  \
-		NULL,                            /* keyDown    */                  \
-		NULL,                            /* keyUp  */                      \
+		NULL,                            /* keyDown  */  \
+		NULL,                            /* keyUp    */  \
 		CG_Debriefing_PlayerSkills_Draw,            \
 		NULL,                                       \
 		0,                                       \
@@ -678,6 +691,7 @@ panel_button_t *debriefPanelButtons[] =
 	&debriefPlayerInfoSkills4,
 	&debriefPlayerInfoSkills5,
 	&debriefPlayerInfoSkills6,
+	&debriefPlayerInfoHitRegions,
 	&debriefPlayerWeaponStatsHeader,&debriefPlayerWeaponStatsNameHeader,  &debriefPlayerWeaponStatsShotsHeader,&debriefPlayerWeaponStatsHitsHeader,  &debriefPlayerWeaponStatsKillsHeader,
 	&debriefPlayerWeaponStatsList,  &debriefPlayerWeaponStatsListScroll,
 
@@ -788,7 +802,7 @@ panel_button_t chatPanelWindow =
 {
 	NULL,
 	"CHAT",
-	{ 10,                        SCREEN_HEIGHT - 120,620, 110 },
+	{ 10,                        SCREEN_HEIGHT - 122,620, 112 },
 	{ 0,                         0,                  0,   0, 0, 0, 0, 0},
 	NULL,                        // font
 	NULL,                        // keyDown
@@ -802,7 +816,7 @@ panel_button_t chatPanelText =
 {
 	NULL,
 	NULL,
-	{ 18,                      SCREEN_HEIGHT - 34,  SCREEN_WIDTH - 36, TEAMCHAT_HEIGHT },
+	{ 14,                      SCREEN_HEIGHT - 33,  SCREEN_WIDTH - 28, TEAMCHAT_HEIGHT },
 	{ 0,                       0,                   0,                 0, 0, 0, 0, 0   },
 	NULL,                      // font
 	NULL,                      // keyDown
@@ -826,12 +840,26 @@ panel_button_t chatPanelNextButton =
 	0
 };
 
+panel_button_t chatPanelVoteButton =
+{
+	NULL,
+	"MAP VOTE",
+	{ SCREEN_WIDTH - 10 - 60 - 4 - 60 - 4, SCREEN_HEIGHT - 30,               60, 16 },
+	{ 0,                          0,                                         0,  0, 0, 0, 0, 0},
+	NULL,                         // font
+	CG_Debriefing_VoteButton_KeyDown,// keyDown
+	NULL,                         // keyUp
+	CG_Debriefing_VoteButton_Draw,
+	NULL,
+	0
+};
+
 panel_button_t chatPanelQCButton =
 {
 	NULL,
 	"QUICK CHAT",
-	{ SCREEN_WIDTH - 10 - 60 - 4 - 60 - 4 - 80 - 4,SCREEN_HEIGHT - 30,                                    80, 16 },
-	{ 0,                         0,                                                     0,  0, 0, 0, 0, 0},
+	{ SCREEN_WIDTH - 10 - 60 - 4 - 60 - 4 - 80 - 4, SCREEN_HEIGHT - 30,      80, 16 },
+	{ 0,                         0,                                          0,  0, 0, 0, 0, 0},
 	NULL,                        // font
 	CG_Debriefing_QCButton_KeyDown,// keyDown
 	NULL,                        // keyUp
@@ -844,8 +872,8 @@ panel_button_t chatPanelReadyButton =
 {
 	NULL,
 	"READY",
-	{ SCREEN_WIDTH - 10 - 60 - 4 - 60 - 4 - 80 - 4 - 60 - 4,SCREEN_HEIGHT - 30,                                                  60, 16 },
-	{ 0,                           0,                                                                   0,  0, 0, 0, 0, 0},
+	{ SCREEN_WIDTH - 10 - 60 - 4 - 60 - 4 - 80 - 4 - 60 - 4, SCREEN_HEIGHT - 30, 60, 16 },
+	{ 0,                           0,                                            0,  0, 0, 0, 0, 0},
 	NULL,                          // font
 	CG_Debriefing_ReadyButton_KeyDown,// keyDown
 	NULL,                          // keyUp
@@ -1464,12 +1492,11 @@ void CG_Debriefing_ChatBox_Draw(panel_button_t *button)
 panel_button_t *chatPanelButtons[] =
 {
 	&chatPanelWindow,       &chatPanelText,
-	&chatPanelNextButton,   &chatPanelQCButton,&chatTypeButton,  &chatPanelReadyButton,
+	&chatPanelNextButton,   &chatPanelVoteButton, &chatPanelQCButton, &chatTypeButton, &chatPanelReadyButton,
 	&charPanelEditSurround, &charPanelEdit,
 	NULL
 };
 
-// MAPVOTE
 panel_button_t *mapVoteButtons[] =
 {
 	&debriefTitleWindow,     &mapVoteWindow,    &mapVoteHeadingName, &mapVoteHeadingVotes,
@@ -1519,14 +1546,18 @@ void CG_Debriefing_Startup(void)
 	cgs.dbLastRequestTime = 0;
 	cgs.dbSelectedClient  = cg.clientNum;
 
-	// MAPVOTE
-	cgs.dbSelectedMap     = -1;
-	cgs.dbMapListReceived = qfalse;
-	cgs.dbMapVotedFor[0]  = -1;
-	cgs.dbMapVotedFor[1]  = -1;
-	cgs.dbMapVotedFor[2]  = -1;
+	// mapvote
+	cgs.dbSelectedMap       = -1;
+	cgs.dbMapListReceived   = qfalse;
+	cgs.dbVoteTallyReceived = qfalse;
+	cgs.dbMapVotedFor[0]    = -1;
+	cgs.dbMapVotedFor[1]    = -1;
+	cgs.dbMapVotedFor[2]    = -1;
 
 	cgs.dbAwardsParsed = qfalse;
+
+	// display results first
+	cgs.dbMode = 0;
 
 	s   = CG_ConfigString(CS_MULTI_MAPWINNER);
 	buf = Info_ValueForKey(s, "w");
@@ -1544,9 +1575,6 @@ void CG_Debriefing_Startup(void)
 	{
 		trap_S_StartLocalSound(trap_S_RegisterSound("sound/music/axis_win.wav", qfalse), CHAN_LOCAL_SOUND);
 	}
-
-	// 3 : display first
-	cgs.dbMode = cgs.gametype == GT_WOLF_MAPVOTE ? 3 : 0;
 }
 
 /**
@@ -1570,10 +1598,15 @@ void CG_Debriefing_InfoRequests(void)
 	}
 	cgs.dbLastRequestTime = cg.time;
 
-	// MAPVOTE
 	if (!cgs.dbMapListReceived && cgs.gametype == GT_WOLF_MAPVOTE)
 	{
 		trap_SendClientCommand("immaplist");
+		return;
+	}
+
+	if (!cgs.dbVoteTallyReceived && cgs.gametype == GT_WOLF_MAPVOTE)
+	{
+		trap_SendClientCommand("imvotetally");
 		return;
 	}
 
@@ -2088,11 +2121,16 @@ void CG_Debriefing_ParseWeaponStats(void)
 {
 	int i;
 
+	cgs.dbHitRegions[HR_HEAD] = atoi(CG_Argv(1));
+	cgs.dbHitRegions[HR_ARMS] = atoi(CG_Argv(2));
+	cgs.dbHitRegions[HR_BODY] = atoi(CG_Argv(3));
+	cgs.dbHitRegions[HR_LEGS] = atoi(CG_Argv(4));
+
 	for (i = 0; i < WS_MAX; i++)
 	{
-		cgs.dbWeaponStats[i].numShots = atoi(CG_Argv((i * 3) + 1));
-		cgs.dbWeaponStats[i].numHits  = atoi(CG_Argv((i * 3) + 2));
-		cgs.dbWeaponStats[i].numKills = atoi(CG_Argv((i * 3) + 3));
+		cgs.dbWeaponStats[i].numShots = atoi(CG_Argv((i * 3) + 5));
+		cgs.dbWeaponStats[i].numHits  = atoi(CG_Argv((i * 3) + 6));
+		cgs.dbWeaponStats[i].numKills = atoi(CG_Argv((i * 3) + 7));
 	}
 
 	cgs.dbWeaponStatsRecieved = qtrue;
@@ -2528,12 +2566,10 @@ void CG_Debriefing_PlayerSkills_Draw(panel_button_t *button)
 
 	ci = CG_Debriefing_GetSelectedClientInfo();
 
-	CG_Text_Paint_Ext(button->rect.x, button->rect.y - 2, button->font->scalex, button->font->scaley, button->font->colour, GetSkillTableData(button->data[0])->skillNames, 0, 0, ITEM_TEXTSTYLE_SHADOWED, button->font->font);
-
 	x = button->rect.x;
 	CG_DrawPic(x, button->rect.y, button->rect.w, button->rect.h, cgs.media.skillPics[button->data[0]]);
 
-	x += button->rect.w + 2;
+	x += button->rect.w + 8;
 	for (i = ci->skill[button->data[0]]; i > 0; i--)
 	{
 
@@ -2552,6 +2588,106 @@ void CG_Debriefing_PlayerSkills_Draw(panel_button_t *button)
 
 			x += button->rect.w + 2;
 		}
+		trap_R_SetColor(NULL);
+	}
+}
+
+qhandle_t img;
+qhandle_t imgH;
+qhandle_t imgA;
+qhandle_t imgB;
+qhandle_t imgL;
+
+/**
+ * @brief
+ */
+void CG_Debriefing_PlayerHitRegions_Draw(panel_button_t* button)
+{
+	int    totalHits = cgs.dbHitRegions[HR_HEAD] + cgs.dbHitRegions[HR_ARMS] + cgs.dbHitRegions[HR_BODY] + cgs.dbHitRegions[HR_LEGS];
+	float  hitsHead  = (totalHits && cgs.dbHitRegions[HR_HEAD]) ? (cgs.dbHitRegions[HR_HEAD]/(float)totalHits) : 0.0f;
+	float  hitsArms  = (totalHits && cgs.dbHitRegions[HR_ARMS]) ? (cgs.dbHitRegions[HR_ARMS]/(float)totalHits) : 0.0f;
+	float  hitsBody  = (totalHits && cgs.dbHitRegions[HR_BODY]) ? (cgs.dbHitRegions[HR_BODY]/(float)totalHits) : 0.0f;
+	float  hitsLegs  = (totalHits && cgs.dbHitRegions[HR_LEGS]) ? (cgs.dbHitRegions[HR_LEGS]/(float)totalHits) : 0.0f;
+	float  alphaH    = hitsHead > 0.f ? (hitsHead * 0.8f) + 0.2f : 0.0f;
+	float  alphaA    = hitsArms > 0.f ? (hitsArms * 0.8f) + 0.2f : 0.0f;
+	float  alphaB    = hitsBody > 0.f ? (hitsBody * 0.8f) + 0.2f : 0.0f;
+	float  alphaL    = hitsLegs > 0.f ? (hitsLegs * 0.8f) + 0.2f : 0.0f;
+	float  w;
+	vec4_t colorH, colorA, colorB, colorL;
+
+	w = CG_Text_Width_Ext("Head: ", button->font->scalex, 0, button->font->font);
+
+	// register hitregions only once (when required)
+	if (img == 0)
+	{
+		img = trap_R_RegisterShaderNoMip("gfx/misc/hitregions.tga");
+	}
+	if (imgH == 0)
+	{
+		imgH = trap_R_RegisterShaderNoMip("gfx/misc/hitregion_head.tga");
+	}
+	if (imgA == 0)
+	{
+		imgA = trap_R_RegisterShaderNoMip("gfx/misc/hitregion_arms.tga");
+	}
+	if (imgB == 0)
+	{
+		imgB = trap_R_RegisterShaderNoMip("gfx/misc/hitregion_body.tga");
+	}
+	if (imgL == 0)
+	{
+		imgL = trap_R_RegisterShaderNoMip("gfx/misc/hitregion_legs.tga");
+	}
+
+	CG_Text_Paint_Ext(button->rect.x - w, button->rect.y, button->font->scalex, button->font->scaley, button->font->colour, "Region Hits:", 0, 0, ITEM_TEXTSTYLE_SHADOWED, button->font->font);
+
+	CG_Text_Paint_Ext(button->rect.x - w, button->rect.y + 2 * 12, button->font->scalex, button->font->scaley, button->font->colour, "Head:", 0, 0, ITEM_TEXTSTYLE_SHADOWED, button->font->font);
+	CG_Text_Paint_Ext(button->rect.x, button->rect.y + 2 * 12, button->font->scalex, button->font->scaley, button->font->colour, va("%2.0f%%", hitsHead * 100), 0, 0, ITEM_TEXTSTYLE_SHADOWED, button->font->font);
+
+	w = CG_Text_Width_Ext("Arms: ", button->font->scalex, 0, button->font->font);
+	CG_Text_Paint_Ext(button->rect.x - w, button->rect.y + 3 * 12, button->font->scalex, button->font->scaley, button->font->colour, "Arms:", 0, 0, ITEM_TEXTSTYLE_SHADOWED, button->font->font);
+	CG_Text_Paint_Ext(button->rect.x, button->rect.y + 3 * 12, button->font->scalex, button->font->scaley, button->font->colour, va("%2.0f%%", hitsArms * 100), 0, 0, ITEM_TEXTSTYLE_SHADOWED, button->font->font);
+
+	w = CG_Text_Width_Ext("Body: ", button->font->scalex, 0, button->font->font);
+	CG_Text_Paint_Ext(button->rect.x - w, button->rect.y + 4 * 12, button->font->scalex, button->font->scaley, button->font->colour, "Body:", 0, 0, ITEM_TEXTSTYLE_SHADOWED, button->font->font);
+	CG_Text_Paint_Ext(button->rect.x, button->rect.y + 4 * 12, button->font->scalex, button->font->scaley, button->font->colour, va("%2.0f%%", hitsBody * 100), 0, 0, ITEM_TEXTSTYLE_SHADOWED, button->font->font);
+
+	w = CG_Text_Width_Ext("Legs: ", button->font->scalex, 0, button->font->font);
+	CG_Text_Paint_Ext(button->rect.x - w, button->rect.y + 5 * 12, button->font->scalex, button->font->scaley, button->font->colour, "Legs:", 0, 0, ITEM_TEXTSTYLE_SHADOWED, button->font->font);
+	CG_Text_Paint_Ext(button->rect.x, button->rect.y + 5 * 12, button->font->scalex, button->font->scaley, button->font->colour, va("%2.0f%%", hitsLegs * 100), 0, 0, ITEM_TEXTSTYLE_SHADOWED, button->font->font);
+
+	// draw the image of a puppet, indicating red++ colors for higher hit-ratios per region
+	CG_DrawPic(button->rect.x + 4, button->rect.y + 12, 54, 54, img);
+
+	if (alphaH)
+	{
+		Vector4Set(colorH, 1.0f, 0.f, 0.f, alphaH);
+		trap_R_SetColor(colorH);
+		CG_DrawPic(button->rect.x + 4, button->rect.y + 12, 54, 54, imgH);
+		trap_R_SetColor(NULL);
+	}
+
+	if (alphaA)
+	{
+		Vector4Set(colorA, 1.0f, 0.f, 0.f, alphaA );
+		trap_R_SetColor(colorA);
+		CG_DrawPic(button->rect.x + 4, button->rect.y + 12, 54, 54, imgA);
+		trap_R_SetColor(NULL);
+	}
+
+	if (alphaB)
+	{
+		Vector4Set(colorB, 1.0f, 0.f, 0.f, alphaB);
+		trap_R_SetColor(colorB);
+		CG_DrawPic(button->rect.x + 4, button->rect.y + 12, 54, 54, imgB);
+		trap_R_SetColor(NULL);
+	}
+
+	if (alphaL)
+	{
+		Vector4Set(colorL, 1.0f, 0.f, 0.f, alphaL);
+		trap_R_SetColor(colorL);
+		CG_DrawPic(button->rect.x + 4, button->rect.y + 12, 54, 54, imgL);
 		trap_R_SetColor(NULL);
 	}
 }
@@ -2915,6 +3051,30 @@ qboolean CG_Debriefing_QCButton_KeyDown(panel_button_t *button, int key)
 }
 
 /**
+ * @brief CG_Debriefing_VoteButton_KeyDown
+ * @param button - unused
+ * @param[in] key
+ * @return
+ */
+qboolean CG_Debriefing_VoteButton_KeyDown(panel_button_t *button, int key)
+{
+	if (key == K_MOUSE1)
+	{
+		cgs.dbMode = 3;
+
+		// failsafe
+		if (cgs.gametype != GT_WOLF_MAPVOTE && cgs.dbMode == 3)
+		{
+			cgs.dbMode = 0;
+		}
+
+		return qtrue;
+	}
+
+	return qfalse;
+}
+
+/**
  * @brief CG_Debriefing_NextButton_KeyDown
  * @param button - unused
  * @param[in] key
@@ -2935,6 +3095,20 @@ qboolean CG_Debriefing_NextButton_KeyDown(panel_button_t *button, int key)
 	}
 
 	return qfalse;
+}
+
+/**
+ * @brief CG_Debriefing_VoteButton_Draw
+ * @param[in] button
+ */
+void CG_Debriefing_VoteButton_Draw(panel_button_t *button)
+{
+	if (cgs.gametype != GT_WOLF_MAPVOTE)
+	{
+		return;
+	}
+
+	CG_PanelButtonsRender_Button(button);
 }
 
 /**
@@ -3087,7 +3261,9 @@ void CG_PanelButtonsRender_Button_Ext(rectDef_t *r, const char *text)
 
 	if (text)
 	{
-		float w = CG_Text_Width_Ext(text, 0.2f, 0, &cgs.media.limboFont2);
+		float w;
+
+		w = CG_Text_Width_Ext(text, 0.2f, 0, &cgs.media.limboFont2);
 
 		CG_Text_Paint_Ext(r->x + ((r->w + 2) - w) * 0.5f, r->y + 11, 0.19f, 0.19f, hilight ? clrTxt_hi : clrTxtBck, text, 0, 0, 0, &cgs.media.limboFont2);
 	}
@@ -3233,6 +3409,21 @@ void CG_Debriefing_MissionTitle_Draw(panel_button_t *button)
 		w = CG_Text_Width_Ext(s, 0.25f, 0, &cgs.media.limboFont1);
 		CG_Text_Paint_Ext(button->rect.x + (button->rect.w - w) * 0.5f, button->rect.y + 16, 0.25f, 0.25f, clrTxtBck, s, 0, 0, 0, &cgs.media.limboFont1);
 	}
+	else if (cg_gameType.integer == GT_WOLF_MAPVOTE)
+	{
+		CG_PanelButtonsRender_Window_Ext(&button->rect, CG_Debriefing_WinStringForTeam(CG_Debriefing_FindWinningTeamForMap()), 0, 18, 0.25f, 16);
+
+		if (cgs.dbMapVotedFor[0] != -1 || cgs.dbMapVotedFor[1] != -1  || cgs.dbMapVotedFor[2] != -1)
+		{
+			s = va("^2%s", CG_TranslateString("VOTED"));
+		}
+		else
+		{
+			s = va("^3%s", CG_TranslateString("VOTE NOW"));
+		}
+		w = CG_Text_Width_Ext(s, 0.25f, 0, &cgs.media.limboFont1);
+		CG_Text_Paint_Ext(button->rect.x + (button->rect.w - w) * 0.5f, button->rect.y + 16, 0.25f, 0.25f, clrTxtBck, s, 0, 0, 0, &cgs.media.limboFont1);
+	}
 	else
 	{
 		CG_PanelButtonsRender_Window_Ext(&button->rect, CG_Debriefing_WinStringForTeam(CG_Debriefing_FindOveralWinningTeam()), 0, 18, 0.25f, 16);
@@ -3274,6 +3465,7 @@ const char *awardNames[NUM_ENDGAME_AWARDS] =
 	"Highest Accuracy",
 	"Highest Headshots Percentage",
 	"Best Survivor",
+	"Most Damage Given",
 	"Most Gibs",
 	"Most Selfkills",
 	"Most Deaths",
@@ -3318,7 +3510,7 @@ void CG_Debriefing_Awards_Draw(panel_button_t *button)
 		case TEAM_SPECTATOR: // fall through
 		default:
 			CG_DrawPic(button->rect.x + 6, y + 2, 18, 12, cgs.media.limboTeamButtonBack_on);
-			CG_DrawPic(button->rect.x + 6, y + 2, 18, 12, cgs.media.limboTeamButtonSpec); // TEAM_FREE shouldn't occure
+			CG_DrawPic(button->rect.x + 6, y + 2, 18, 12, cgs.media.limboTeamButtonSpec); // TEAM_FREE shouldn't occur
 			break;
 		}
 
@@ -3917,5 +4109,8 @@ void CG_parseMapVoteTally()
 	{
 		cgs.dbMapVotes[i] = atoi(CG_Argv(i + 1));
 	}
+
+	cgs.dbVoteTallyReceived = qtrue;
+
 	return;
 }

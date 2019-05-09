@@ -301,6 +301,7 @@ vmCvar_t cl_wavefilename;
 vmCvar_t cl_waveoffset;
 vmCvar_t cg_recording_statusline;
 
+vmCvar_t cg_announcer;
 vmCvar_t cg_hitSounds;
 vmCvar_t cg_locations;
 
@@ -326,6 +327,7 @@ vmCvar_t cg_drawTime;
 
 vmCvar_t cg_popupFadeTime;
 vmCvar_t cg_popupStayTime;
+vmCvar_t cg_popupFilter;
 vmCvar_t cg_graphicObituaries;
 
 vmCvar_t cg_fontScaleTP; // top print
@@ -345,6 +347,8 @@ vmCvar_t cg_scoreboard;
 vmCvar_t cg_quickchat;
 
 vmCvar_t cg_drawspeed;
+
+vmCvar_t cg_visualEffects;
 
 typedef struct
 {
@@ -446,7 +450,7 @@ cvarTable_t cvarTable[] =
 	// the following variables are created in other parts of the system,
 	// but we also reference them here
 
-	{ &cg_buildScript,            "com_buildScript",           "0",           0,                            0 }, // force loading of all possible data amd error on failures
+	{ &cg_buildScript,            "com_buildScript",           "0",           0,                            0 }, // force loading of all possible data and error on failures
 	{ &cg_paused,                 "cl_paused",                 "0",           CVAR_ROM,                     0 },
 
 	{ &cg_blood,                  "cg_showblood",              "1",           CVAR_ARCHIVE,                 0 },
@@ -550,8 +554,9 @@ cvarTable_t cvarTable[] =
 	{ &cl_waveoffset,             "cl_waveoffset",             "0",           CVAR_ROM,                     0 },
 	{ &cg_recording_statusline,   "cg_recording_statusline",   "9",           CVAR_ARCHIVE,                 0 },
 
+	{ &cg_announcer,              "cg_announcer",              "1",           CVAR_ARCHIVE,                 0 },
 	{ &cg_hitSounds,              "cg_hitSounds",              "1",           CVAR_ARCHIVE,                 0 },
-	{ &cg_locations,              "cg_locations",              "7",           CVAR_ARCHIVE,                 0 },
+	{ &cg_locations,              "cg_locations",              "3",           CVAR_ARCHIVE,                 0 },
 
 	{ &cg_spawnTimer_set,         "cg_spawnTimer_set",         "-1",          CVAR_TEMP,                    0 },
 
@@ -569,6 +574,7 @@ cvarTable_t cvarTable[] =
 	{ &cg_drawTime,               "cg_drawTime",               "0",           CVAR_ARCHIVE,                 0 },
 	{ &cg_popupFadeTime,          "cg_popupFadeTime",          "2500",        CVAR_ARCHIVE,                 0 },
 	{ &cg_popupStayTime,          "cg_popupStayTime",          "2000",        CVAR_ARCHIVE,                 0 },
+	{ &cg_popupFilter,            "cg_popupFilter",            "0",           CVAR_ARCHIVE,                 0 },
 	{ &cg_graphicObituaries,      "cg_graphicObituaries",      "0",           CVAR_ARCHIVE,                 0 },
 	{ &cg_weapaltReloads,         "cg_weapaltReloads",         "0",           CVAR_ARCHIVE,                 0 },
 
@@ -586,7 +592,9 @@ cvarTable_t cvarTable[] =
 
 	{ &cg_quickchat,              "cg_quickchat",              "0",           CVAR_ARCHIVE,                 0 },
 
-	{ &cg_drawspeed,              "cg_drawspeed",              "0",           CVAR_ARCHIVE,                 0 }
+	{ &cg_drawspeed,              "cg_drawspeed",              "0",           CVAR_ARCHIVE,                 0 },
+
+	{ &cg_visualEffects,          "cg_visualEffects",          "1",           CVAR_ARCHIVE,                 0 }  // Draw visual effects (i.e : airstrike plane, debris ...)
 };
 
 const unsigned int cvarTableSize = sizeof(cvarTable) / sizeof(cvarTable[0]);
@@ -1772,8 +1780,14 @@ static void CG_RegisterGraphics(void)
 	cgs.media.voiceChatShader = trap_R_RegisterShader("sprites/voiceChat");
 	cgs.media.balloonShader   = trap_R_RegisterShader("sprites/balloon3");
 
-	cgs.media.objectiveShader = trap_R_RegisterShader("sprites/objective");
-	cgs.media.readyShader     = trap_R_RegisterShader("sprites/ready");
+	cgs.media.objectiveShader        = trap_R_RegisterShader("sprites/objective");
+	cgs.media.objectiveTeamShader    = trap_R_RegisterShaderNoMip("sprites/objective_team");
+	cgs.media.objectiveDroppedShader = trap_R_RegisterShaderNoMip("sprites/objective_dropped");
+	cgs.media.objectiveEnemyShader   = trap_R_RegisterShaderNoMip("sprites/objective_enemy");
+	cgs.media.objectiveBothTEShader  = trap_R_RegisterShaderNoMip("sprites/objective_both_te");
+	cgs.media.objectiveBothTDShader  = trap_R_RegisterShaderNoMip("sprites/objective_both_td");
+	cgs.media.objectiveBothDEShader  = trap_R_RegisterShaderNoMip("sprites/objective_both_de");
+	cgs.media.readyShader            = trap_R_RegisterShader("sprites/ready");
 
 	//cgs.media.bloodExplosionShader = trap_R_RegisterShader("bloodExplosion"); // unused FIXME: remove from shader def
 

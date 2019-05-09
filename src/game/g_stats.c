@@ -191,7 +191,8 @@ extern void AddWeaponToPlayer(gclient_t *client, weapon_t weapon, int ammo, int 
  */
 void G_UpgradeSkill(gentity_t *ent, skillType_t skill)
 {
-	int i;
+	int              i;
+	bg_playerclass_t *classInfo;
 
 #ifdef FEATURE_LUA
 	// *LUA* API callbacks
@@ -261,14 +262,17 @@ void G_UpgradeSkill(gentity_t *ent, skillType_t skill)
 
 	ClientUserinfoChanged(ent - g_entities);
 
+	classInfo = BG_GetPlayerClassInfo(ent->client->sess.sessionTeam, ent->client->sess.playerType);
+
 	// Give em rightaway
-	if (skill == SK_BATTLE_SENSE && ent->client->sess.skill[skill] == 1)
+	for (i = 0; i < MAX_WEAPS_PER_CLASS && classInfo->classMiscWeapons[i].weapon; i++)
 	{
-		AddWeaponToPlayer(ent->client, WP_BINOCULARS, 1, 0, qfalse);
-	}
-	else if (skill == SK_FIRST_AID && ent->client->sess.playerType == PC_MEDIC && ent->client->sess.skill[skill] == 4)
-	{
-		AddWeaponToPlayer(ent->client, WP_MEDIC_ADRENALINE, ent->client->ps.ammo[GetWeaponTableData(WP_MEDIC_ADRENALINE)->ammoIndex], ent->client->ps.ammoclip[GetWeaponTableData(WP_MEDIC_ADRENALINE)->clipIndex], qfalse);
+		bg_weaponclass_t *weaponClassInfo = &classInfo->classMiscWeapons[i];
+
+		if (skill == classInfo->classMiscWeapons[i].skill && ent->client->sess.skill[skill] == classInfo->classMiscWeapons[i].minSkillLevel)
+		{
+			AddWeaponToPlayer(ent->client, weaponClassInfo->weapon, classInfo->classMiscWeapons[i].startingAmmo, classInfo->classMiscWeapons[i].startingClip, qfalse);
+		}
 	}
 }
 
@@ -1055,6 +1059,45 @@ void G_BuildEndgameStats(void)
 
 	best = NULL;
 
+	// most damage given - check damage given, then damage received
+	for (i = 0; i < level.numConnectedClients; i++)
+	{
+		gclient_t *cl = &level.clients[level.sortedClients[i]];
+
+		if (cl->sess.sessionTeam == TEAM_FREE)
+		{
+			continue;
+		}
+
+		if (cl->sess.damage_given <= 0)
+		{
+			continue;
+		}
+
+		if (!best || cl->sess.damage_given > best->sess.damage_given)
+		{
+			best          = cl;
+			bestClientNum = level.sortedClients[i];
+		}
+		else if (cl->sess.damage_given == best->sess.damage_given && cl->sess.damage_received > best->sess.damage_received)
+		{
+			best          = cl;
+			bestClientNum = level.sortedClients[i];
+		}
+	}
+
+	if (best)
+	{
+		best->hasaward = qtrue;
+		Q_strcat(buffer, 1024, va("%i %i %i ", bestClientNum, best->sess.damage_given, best->sess.sessionTeam));
+	}
+	else
+	{
+		Q_strcat(buffer, 1024, "-1 0 0 ");
+	}
+
+	best = NULL;
+
 	// most gibs - check gibs, then damage given
 	for (i = 0; i < level.numConnectedClients; i++)
 	{
@@ -1202,7 +1245,7 @@ void G_BuildEndgameStats(void)
 
 	best = NULL;
 
-	// welcome newbie! award - dont get this if any other award given or > 100 xp (this map)
+	// welcome newbie! award - don't get this if any other award given or > 100 xp (this map)
 	for (i = 0; i < level.numConnectedClients; i++)
 	{
 		gclient_t *cl = &level.clients[level.sortedClients[i]];

@@ -1259,14 +1259,12 @@ typedef struct level_locals_s
 	qboolean disableTankExit;
 	qboolean disableTankEnter;
 
-	int axisBombCounter, alliedBombCounter;
-	int axisArtyCounter, alliedArtyCounter;     ///< arty/airstrike rate limiting
+	int axisAirstrikeCounter, alliedAirstrikeCounter; ///< airstrike rate limiting
+	int axisArtilleryCounter, alliedArtilleryCounter; ///< artillery rate limiting
 	int axisAutoSpawn, alliesAutoSpawn;
 
 	limbo_cam_t limboCams[MAX_LIMBO_CAMS];
 	int numLimboCams;
-
-	int numActiveAirstrikes[2];
 
 	float teamXP[SK_NUM_SKILLS][2];
 
@@ -1291,6 +1289,11 @@ typedef struct level_locals_s
 	int svCvarsCount;
 
 	config_t config;            ///< etpro style config
+
+	// objective indicator
+	int flagIndicator;
+	int redFlagCounter;
+	int blueFlagCounter;
 
 #ifdef FEATURE_RATING
 	// skill rating
@@ -1549,6 +1552,8 @@ float AngleDifference(float ang1, float ang2);
 qboolean G_FlingClient(gentity_t *vic, int flingType);
 
 void G_PreFilledMissileEntity(gentity_t *ent, int weaponNum, int realWeapon, int ownerNum, team_t teamNum, int clientNum, gentity_t *parent, const vec3_t start, const vec3_t dir);
+
+int G_GetEnemyPosition(gentity_t *ent, gentity_t *targ);
 
 // g_weapon.c
 qboolean AccuracyHit(gentity_t *target, gentity_t *attacker);
@@ -2004,8 +2009,8 @@ extern vmCvar_t g_campaignFile;
 extern vmCvar_t g_countryflags;
 
 // arty/airstrike rate limiting
-extern vmCvar_t team_airstrikeTime;
-extern vmCvar_t team_artyTime;
+extern vmCvar_t team_maxAirstrikes;
+extern vmCvar_t team_maxArtillery;
 
 // team class/weapon limiting
 // classes
@@ -2017,8 +2022,8 @@ extern vmCvar_t team_maxCovertops;
 // weapons
 extern vmCvar_t team_maxMortars;
 extern vmCvar_t team_maxFlamers;
-extern vmCvar_t team_maxMg42s;
-extern vmCvar_t team_maxPanzers;
+extern vmCvar_t team_maxMachineguns;
+extern vmCvar_t team_maxRockets;
 extern vmCvar_t team_maxRiflegrenades;
 extern vmCvar_t team_maxLandmines;
 // skills
@@ -2340,6 +2345,7 @@ qboolean G_configSet(const char *configname);
 void G_ConfigCheckLocked(void);
 void G_PrintConfigs(gentity_t *ent);
 qboolean G_isValidConfig(gentity_t *ent, const char *configname);
+void G_ReloadConfig(void);
 
 // g_match.c
 void G_addStats(gentity_t *targ, gentity_t *attacker, int damage, meansOfDeath_t mod);
@@ -2467,6 +2473,8 @@ gentity_t *SelectCTFSpawnPoint(team_t team, int teamstate, vec3_t origin, vec3_t
 void TeamplayInfoMessage(team_t team);
 void CheckTeamStatus(void);
 int Pickup_Team(gentity_t *ent, gentity_t *other);
+void G_globalFlagIndicator(void);
+void G_clientFlagIndicator(gentity_t *ent);
 
 // g_vote.c
 int G_voteCmdCheck(gentity_t *ent, char *arg, char *arg2, qboolean fRefereeCmd);
@@ -2514,16 +2522,19 @@ qboolean G_LandmineArmed(gentity_t *ent);
 qboolean G_LandmineUnarmed(gentity_t *ent);
 team_t G_LandmineTeam(gentity_t *ent);
 qboolean G_LandmineSpotted(gentity_t *ent);
-qboolean G_AvailableAirstrikes(gentity_t *ent);
+qboolean G_AvailableAirstrike(gentity_t *ent);
 qboolean G_AvailableArtillery(gentity_t *ent);
 void G_AddAirstrikeToCounters(gentity_t *ent);
 void G_AddArtilleryToCounters(gentity_t *ent);
+int G_MaxAvailableAirstrikes(gentity_t *ent);
+int G_MaxAvailableArtillery(gentity_t *ent);
 
 void G_SetTargetName(gentity_t *ent, char *targetname);
 void G_KillEnts(const char *target, gentity_t *ignore, gentity_t *killer, meansOfDeath_t mod);
 void trap_EngineerTrace(trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask);
 
 int G_CountTeamMedics(team_t team, qboolean alivecheck);
+int G_CountTeamFieldops(team_t team);
 qboolean G_TankIsOccupied(gentity_t *ent);
 qboolean G_TankIsMountable(gentity_t *ent, gentity_t *other);
 
@@ -2621,8 +2632,6 @@ qboolean G_LandmineSnapshotCallback(int entityNum, int clientNum);
 #define DOOR_CRUSHER                    4
 #define DOOR_TOUCH                      8
 
-// Spawnflags end
-
 // teamplay specific stuff
 #define AXIS_OBJECTIVE                   1
 #define ALLIED_OBJECTIVE                 2
@@ -2649,6 +2658,9 @@ qboolean G_LandmineSnapshotCallback(int entityNum, int clientNum);
 #define MAPVOTE_MULTI_VOTE       4
 #define MAPVOTE_NO_RANDOMIZE     8 ///< unused
 #define MAPVOTE_NEXTMAP_VOTEMAP  16
+
+
+// Spawnflags end
 
 /**
  * @enum fieldtype_t
@@ -2695,8 +2707,8 @@ void G_MapVoteInfoRead(void);
 
 // g_misc flags
 #define G_MISC_SHOVE_NOZ               BIT(0)
-#define G_MISC_MEDIC_SYRINGE_HEAL      BIT(1)
-#define G_MISC_ARTY_STRIKE_COMBINE     BIT(2)
+// BIT(1) unused
+// BIT(2) unused
 #define G_MISC_CROSSHAIR_DYNAMITE      BIT(3)
 #define G_MISC_CROSSHAIR_LANDMINE      BIT(4)
 #define G_MISC_LOOSE_SPAWN_PROTECTION  BIT(5)
@@ -2747,17 +2759,28 @@ typedef struct weapFireTable_t
 extern weapFireTable_t weapFireTable[WP_NUM_WEAPONS];
 #define GetWeaponFireTableData(weapIndex) ((weapFireTable_t *)(&weapFireTable[weapIndex]))
 
+/**
+ * @struct consoleCommmandTable_s
+ * @typedef consoleCommandTable_t
+ * @brief
+ */
+typedef struct consoleCommandTable_s
+{
+	char *name;           ///< -
+	void (*cmd)(void);    ///< -
+
+} consoleCommandTable_t;
 
 static const char *gameNames[] =
 {
-		"Single Player",    // Obsolete
-		"Cooperative",      // Obsolete
-		"Objective",
-		"Stopwatch",
-		"Campaign",
-		"Last Man Standing",
-		"Map Voting"        // GT_WOLF_MAPVOTE
-		// GT_MAX_GAME_TYPE
+	"Single Player",        // Obsolete
+	"Cooperative",          // Obsolete
+	"Objective",
+	"Stopwatch",
+	"Campaign",
+	"Last Man Standing",
+	"Map Voting"            // GT_WOLF_MAPVOTE
+	// GT_MAX_GAME_TYPE
 };
 
 #endif // #ifndef INCLUDE_G_LOCAL_H

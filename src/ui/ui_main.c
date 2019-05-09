@@ -5788,10 +5788,42 @@ void UI_RunMenuScript(char **args)
 			trap_Cvar_Set("ui_browserModFilter", "0");
 			trap_Cvar_Set("ui_browserOssFilter", "0");
 		}
+		else if (Q_stricmp(name, "ResetInternet") == 0)
+		{
+			trap_Cvar_Set("ui_joinGameType", "-1");
+			trap_Cvar_Set("ui_netSource", "1");
+			trap_Cvar_Set("ui_browserShowEmptyOrFull", "0");
+			trap_Cvar_Set("ui_browserShowPasswordProtected", "0");
+			trap_Cvar_Set("ui_browserShowFriendlyFire", "0");
+			trap_Cvar_Set("ui_browserShowMaxlives", "0");
+			trap_Cvar_Set("ui_browserShowWeaponsRestricted", "0");
+			trap_Cvar_Set("ui_browserShowAntilag", "0");
+			trap_Cvar_Set("ui_browserShowTeamBalanced", "0");
+			trap_Cvar_Set("ui_browserShowHumans", "0");
+			trap_Cvar_Set("ui_browserMapFilterCheckBox", "0");
+			trap_Cvar_Set("ui_browserModFilter", "0");
+			trap_Cvar_Set("ui_browserOssFilter", "0");
+		}
 		else if (Q_stricmp(name, "ResetFavorites") == 0)
 		{
 			trap_Cvar_Set("ui_joinGameType", "-1");
 			trap_Cvar_Set("ui_netSource", "2");
+			trap_Cvar_Set("ui_browserShowEmptyOrFull", "0");
+			trap_Cvar_Set("ui_browserShowPasswordProtected", "0");
+			trap_Cvar_Set("ui_browserShowFriendlyFire", "0");
+			trap_Cvar_Set("ui_browserShowMaxlives", "0");
+			trap_Cvar_Set("ui_browserShowWeaponsRestricted", "0");
+			trap_Cvar_Set("ui_browserShowAntilag", "0");
+			trap_Cvar_Set("ui_browserShowTeamBalanced", "0");
+			trap_Cvar_Set("ui_browserShowHumans", "0");
+			trap_Cvar_Set("ui_browserMapFilterCheckBox", "0");
+			trap_Cvar_Set("ui_browserModFilter", "0");
+			trap_Cvar_Set("ui_browserOssFilter", "0");
+		}
+		else if (Q_stricmp(name, "ResetLocal") == 0)
+		{
+			trap_Cvar_Set("ui_joinGameType", "-1");
+			trap_Cvar_Set("ui_netSource", "0");
 			trap_Cvar_Set("ui_browserShowEmptyOrFull", "0");
 			trap_Cvar_Set("ui_browserShowPasswordProtected", "0");
 			trap_Cvar_Set("ui_browserShowFriendlyFire", "0");
@@ -6418,16 +6450,16 @@ static void UI_BuildServerDisplayList(int force)
 	{
 		if (numinvisible > 0)
 		{
-			DC->setCVar("ui_tmp_ServersFiltered", va(trap_TranslateString("^3Filtered/Total: %04i/%04i"), numinvisible, count));
+			DC->setCVar("ui_tmp_ServersFiltered", va(trap_TranslateString("Filtered/Total: %04i/%04i"), numinvisible, count));
 		}
 		else
 		{
-			DC->setCVar("ui_tmp_ServersFiltered", va(trap_TranslateString("^3Check your filters - no servers found!              Filtered/Total: %04i/%04i"), numinvisible, count));
+			DC->setCVar("ui_tmp_ServersFiltered", va(trap_TranslateString("^3Check your filters - no servers found!              ^9Filtered/Total: ^3%04i^9/%04i"), numinvisible, count));
 		}
 	}
 	else
 	{
-		DC->setCVar("ui_tmp_ServersFiltered", trap_TranslateString("^1No Connection or master down - no servers found!    Filtered/Total: 0000/0000"));
+		DC->setCVar("ui_tmp_ServersFiltered", trap_TranslateString("^1No Connection or master down - no servers found!    ^9Filtered/Total: ^10000^9/0000"));
 	}
 }
 
@@ -8337,6 +8369,22 @@ void UI_SetActiveMenu(uiMenuCommand_t menu)
 			Menus_OpenByName("wm_classAlt");
 			return;
 
+		case UIMENU_WM_TEAM:
+			uiInfo.uiDC.cursorx = 639;
+			uiInfo.uiDC.cursory = 479;
+			trap_Key_SetCatcher(KEYCATCH_UI);
+			Menus_CloseAll();
+			Menus_OpenByName("wm_team");
+			return;
+
+		case UIMENU_WM_TEAMALT:
+			uiInfo.uiDC.cursorx = 639;
+			uiInfo.uiDC.cursory = 479;
+			trap_Key_SetCatcher(KEYCATCH_UI);
+			Menus_CloseAll();
+			Menus_OpenByName("wm_teamAlt");
+			return;
+
 		// say, team say, etc
 		case UIMENU_INGAME_MESSAGEMODE:
 			trap_Key_SetCatcher(KEYCATCH_UI);
@@ -8633,7 +8681,6 @@ cvarTable_t cvarTable[] =
 	{ NULL,                             "server_motd3",                        "",                           CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "server_motd4",                        "",                           CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "server_motd5",                        "",                           CVAR_ARCHIVE,                   0 },
-	{ NULL,                             "team_maxPanzers",                     "-1",                         CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "team_maxplayers",                     "0",                          CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "team_nocontrols",                     "0",                          CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "vote_allow_gametype",                 "1",                          CVAR_ARCHIVE,                   0 },

@@ -810,8 +810,10 @@ void limbo(gentity_t *ent, qboolean makeCorpse)
 			ent->client->saved_persistant[i] = ent->client->ps.persistant[i];
 		}
 
-		if (g_stickyCharge.integer > 0 && ent->client->ps.classWeaponTime >= 0) {
-			switch (ent->client->sess.playerType) {
+		if (g_stickyCharge.integer > 0 && ent->client->ps.classWeaponTime >= 0)
+		{
+			switch (ent->client->sess.playerType)
+			{
 			case PC_MEDIC:
 				ent->client->pers.savedClassWeaponTimeMed = level.time - ent->client->ps.classWeaponTime;
 				break;
@@ -1089,7 +1091,7 @@ void AddWeaponToPlayer(gclient_t *client, weapon_t weapon, int ammo, int ammocli
 {
 	COM_BitSet(client->ps.weapons, weapon);
 	client->ps.ammoclip[GetWeaponTableData(weapon)->clipIndex] = ammoclip;
-	client->ps.ammo[GetWeaponTableData(weapon)->ammoIndex]     = ammo;
+	client->ps.ammo[GetWeaponTableData(weapon)->ammoIndex]    += ammo;
 
 	if (GetWeaponTableData(weapon)->attributes & WEAPON_ATTRIBUT_AKIMBO)
 	{
@@ -1166,6 +1168,7 @@ void SetWolfSpawnWeapons(gclient_t *client)
 
 	// zero out all ammo counts
 	Com_Memset(client->ps.ammo, 0, MAX_WEAPONS * sizeof(int));
+	Com_Memset(client->ps.ammoclip, 0, MAX_WEAPONS * sizeof(int));
 
 	// All players start with a knife (not OR-ing so that it clears previous weapons)
 	client->ps.weapons[0] = 0;
@@ -1190,6 +1193,12 @@ void SetWolfSpawnWeapons(gclient_t *client)
 	//
 	weaponClassInfo = &classInfo->classPrimaryWeapons[0]; // default primary weapon
 
+	// ensure weapon is valid
+	if (!IS_VALID_WEAPON(client->sess.playerWeapon))
+	{
+		client->sess.playerWeapon = weaponClassInfo->weapon;
+	}
+
 	// parse available primary weapons and check is valid for current class
 	for (i = 0; i < MAX_WEAPS_PER_CLASS && classInfo->classPrimaryWeapons[i].weapon; i++)
 	{
@@ -1210,6 +1219,12 @@ void SetWolfSpawnWeapons(gclient_t *client)
 	// secondary weapon
 	//
 	weaponClassInfo = &classInfo->classSecondaryWeapons[0];   // default secondary weapon
+
+	// ensure weapon is valid
+	if (!IS_VALID_WEAPON(client->sess.playerWeapon2))
+	{
+		client->sess.playerWeapon2 = weaponClassInfo->weapon;
+	}
 
 	// parse available secondary weapons and check is valid for current class
 	for (i = 0; i < MAX_WEAPS_PER_CLASS && classInfo->classSecondaryWeapons[i].weapon; i++)
@@ -1315,6 +1330,37 @@ void AddMedicTeamBonus(gclient_t *client)
 	}
 
 	client->ps.stats[STAT_MAX_HEALTH] = client->pers.maxHealth;
+}
+
+/**
+ * @brief G_CountTeamFieldops
+ * @param[in] team
+ * @param[in] alivecheck
+ * @return
+ */
+int G_CountTeamFieldops(team_t team)
+{
+	int numFieldops = 0;
+	int i, j;
+
+	for (i = 0; i < level.numConnectedClients; i++)
+	{
+		j = level.sortedClients[i];
+
+		if (level.clients[j].sess.sessionTeam != team)
+		{
+			continue;
+		}
+
+		if (level.clients[j].sess.playerType != PC_FIELDOPS)
+		{
+			continue;
+		}
+
+		numFieldops++;
+	}
+
+	return numFieldops;
 }
 
 /**
@@ -1963,7 +2009,7 @@ char *ClientConnect(int clientNum, qboolean firstTime, qboolean isBot)
 #ifdef FEATURE_LUA
 	char reason[MAX_STRING_CHARS] = "";
 #endif
-	qboolean allowGeoIP = qfalse;
+	qboolean allowGeoIP = qtrue;
 	trap_GetUserinfo(clientNum, userinfo, sizeof(userinfo));
 
 	// grab the values we need in just one pass
@@ -2390,17 +2436,23 @@ void ClientBegin(int clientNum)
 	client->pers.lastteambleed_client = -1;
 	client->pers.lastteambleed_dmg    = -1;
 
-	client->pers.savedClassWeaponTime = -999999;
+	client->pers.savedClassWeaponTime     = -999999;
 	client->pers.savedClassWeaponTimeCvop = -999999;
-	client->pers.savedClassWeaponTimeEng = -999999;
-	client->pers.savedClassWeaponTimeFop = -999999;
-	client->pers.savedClassWeaponTimeMed = -999999;
+	client->pers.savedClassWeaponTimeEng  = -999999;
+	client->pers.savedClassWeaponTimeFop  = -999999;
+	client->pers.savedClassWeaponTimeMed  = -999999;
 
 #ifdef FEATURE_OMNIBOT
 	// Omni-bot
 	client->sess.botSuicide = qfalse; // make sure this is not set
 	client->sess.botPush    = (ent->r.svFlags & SVF_BOT) ? qtrue : qfalse;
 #endif
+
+	// init objective indicator if already set
+	if (level.flagIndicator > 0)
+	{
+		G_clientFlagIndicator(ent);
+	}
 
 	ClientSpawn(ent, qfalse, qtrue, qtrue);
 
@@ -2636,12 +2688,13 @@ static char *G_CheckVersion(gentity_t *ent)
 }
 #endif
 
-static qboolean isMortalSelfDamage(gentity_t *ent) {
+static qboolean isMortalSelfDamage(gentity_t *ent)
+{
 	return (
 		(ent->enemy && ent->enemy->s.number >= MAX_CLIENTS) // worldkill
 		|| (ent->enemy == ent) // selfkill
 		|| OnSameTeam(ent->enemy, ent) // teamkill
-	);
+		);
 }
 
 /**
@@ -2729,10 +2782,10 @@ void ClientSpawn(gentity_t *ent, qboolean revived, qboolean teamChange, qboolean
 
 	ent->s.eFlags &= ~EF_MOUNTEDTANK;
 
-	savedPers = client->pers;
-	savedSess = client->sess;
-	savedPing = client->ps.ping;
-	savedTeam = client->ps.teamNum;
+	savedPers      = client->pers;
+	savedSess      = client->sess;
+	savedPing      = client->ps.ping;
+	savedTeam      = client->ps.teamNum;
 	savedDeathTime = client->deathTime;
 
 	for (i = 0 ; i < MAX_PERSISTANT ; i++)
@@ -2781,14 +2834,16 @@ void ClientSpawn(gentity_t *ent, qboolean revived, qboolean teamChange, qboolean
 	// clear entity values
 	client->ps.stats[STAT_MAX_HEALTH] = client->pers.maxHealth;
 	client->ps.eFlags                 = flags;
-	client->deathTime = savedDeathTime;
+	client->deathTime                 = savedDeathTime;
 
 	// Reset/restore special weapon time
 	if (
 		((g_stickyCharge.integer & STICKYCHARGE_SELFKILL) && isMortalSelfDamage(ent))
 		|| (g_stickyCharge.integer & STICKYCHARGE_ANYDEATH)
-	) {
-		switch (client->sess.latchPlayerType) {
+		)
+	{
+		switch (client->sess.latchPlayerType)
+		{
 		case PC_MEDIC:
 			client->ps.classWeaponTime = client->pers.savedClassWeaponTimeMed;
 			break;
@@ -2805,9 +2860,11 @@ void ClientSpawn(gentity_t *ent, qboolean revived, qboolean teamChange, qboolean
 			client->ps.classWeaponTime = client->pers.savedClassWeaponTime;
 		}
 
-		if (client->ps.classWeaponTime >= 0) {
+		if (client->ps.classWeaponTime >= 0)
+		{
 			// class change
-			if (client->sess.playerType != client->sess.latchPlayerType) {
+			if (client->sess.playerType != client->sess.latchPlayerType)
+			{
 				// restore the weapon time as it was on the moment of death
 				client->ps.classWeaponTime = level.time - client->ps.classWeaponTime;
 			}
@@ -2818,7 +2875,8 @@ void ClientSpawn(gentity_t *ent, qboolean revived, qboolean teamChange, qboolean
 			}
 		}
 	}
-	else {
+	else
+	{
 		client->ps.classWeaponTime = -999999;
 	}
 
@@ -2998,6 +3056,12 @@ void ClientSpawn(gentity_t *ent, qboolean revived, qboolean teamChange, qboolean
 	if (level.intermissiontime)
 	{
 		MoveClientToIntermission(ent);
+
+		// send current mapvote tally
+		if (g_gametype.integer == GT_WOLF_MAPVOTE)
+		{
+			G_IntermissionVoteTally(ent);
+		}
 	}
 	else
 	{
@@ -3189,6 +3253,30 @@ void ClientDisconnect(int clientNum)
 
 		// Log stats too
 		G_LogPrintf("WeaponStats: %s\n", G_createStats(ent));
+	}
+
+	// remove mapvote
+	if (g_gametype.integer == GT_WOLF_MAPVOTE && g_gamestate.integer == GS_INTERMISSION)
+	{
+		if (g_mapVoteFlags.integer & MAPVOTE_MULTI_VOTE && ent->client->ps.eFlags & EF_VOTED)
+		{
+			for (i = 0; i < 3; i++)
+			{
+				if (ent->client->sess.mapVotedFor[i] != -1)
+				{
+					level.mapvoteinfo[ent->client->sess.mapVotedFor[i]].numVotes   -= (i + 1);
+					level.mapvoteinfo[ent->client->sess.mapVotedFor[i]].totalVotes -= (i + 1);
+				}
+			}
+		}
+		else if (ent->client->ps.eFlags & EF_VOTED)
+		{
+			level.mapvoteinfo[ent->client->sess.mapVotedFor[0]].numVotes--;
+			level.mapvoteinfo[ent->client->sess.mapVotedFor[0]].totalVotes--;
+		}
+
+		// send updated vote tally to all
+		G_IntermissionVoteTally(NULL);
 	}
 
 	G_LogPrintf("ClientDisconnect: %i\n", clientNum);

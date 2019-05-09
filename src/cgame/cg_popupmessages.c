@@ -34,8 +34,7 @@
 
 #include "cg_local.h"
 
-#define NUM_PM_STACK_ITEMS  32
-
+#define NUM_PM_STACK_ITEMS     32
 #define NUM_PM_STACK_ITEMS_BIG 8 // we shouldn't need many of these
 
 typedef struct pmStackItem_s pmListItem_t;
@@ -103,6 +102,8 @@ void CG_InitPMGraphics(void)
 	cgs.media.pmImages[PM_TEAM]         = trap_R_RegisterShaderNoMip("sprites/voiceChat");
 	cgs.media.pmImages[PM_AMMOPICKUP]   = trap_R_RegisterShaderNoMip("gfx/limbo/filter_healthammo");
 	cgs.media.pmImages[PM_HEALTHPICKUP] = trap_R_RegisterShaderNoMip("gfx/limbo/filter_healthammo");
+	cgs.media.pmImages[PM_WEAPONPICKUP] = trap_R_RegisterShaderNoMip("sprites/voiceChat");
+	cgs.media.pmImages[PM_CONNECT]      = trap_R_RegisterShaderNoMip("sprites/voiceChat");
 
 	cgs.media.pmImageAlliesConstruct = trap_R_RegisterShaderNoMip("gfx/hud/pm_constallied");
 	cgs.media.pmImageAxisConstruct   = trap_R_RegisterShaderNoMip("gfx/hud/pm_constaxis");
@@ -114,10 +115,10 @@ void CG_InitPMGraphics(void)
 	cgs.media.hintKey                = trap_R_RegisterShaderNoMip("gfx/hud/keyboardkey_old");
 
 	// extra obituaries
-	cgs.media.pmImageSlime = trap_R_RegisterShader("gfx/hud/pm_slime");
-	cgs.media.pmImageLava  = trap_R_RegisterShader("gfx/hud/pm_lava");
-	cgs.media.pmImageCrush = trap_R_RegisterShader("gfx/hud/pm_crush");
-	cgs.media.pmImageShove = trap_R_RegisterShader("gfx/hud/pm_shove");
+	cgs.media.pmImageSlime = trap_R_RegisterShaderNoMip("gfx/hud/pm_slime");
+	cgs.media.pmImageLava  = trap_R_RegisterShaderNoMip("gfx/hud/pm_lava");
+	cgs.media.pmImageCrush = trap_R_RegisterShaderNoMip("gfx/hud/pm_crush");
+	cgs.media.pmImageShove = trap_R_RegisterShaderNoMip("gfx/hud/pm_shove");
 }
 
 /**
@@ -335,6 +336,55 @@ pmListItem_t *CG_FindFreePMItem(void)
 }
 
 /**
+ * @brief CG_CheckPMItemFilter
+ * @param[in] type
+ * @return
+ */
+static qboolean CG_CheckPMItemFilter(popupMessageType_t type)
+{
+	switch (type) {
+		case PM_CONNECT:
+			if (cg_popupFilter.integer & POPUP_FILTER_CONNECT)
+			{
+				return qtrue;
+			}
+		case PM_TEAM:
+			if (cg_popupFilter.integer & POPUP_FILTER_TEAMJOIN)
+			{
+				return qtrue;
+			}
+			break;
+		case PM_MESSAGE:
+		case PM_DYNAMITE:
+		case PM_CONSTRUCTION:
+		case PM_MINES:
+		case PM_OBJECTIVE:
+		case PM_DESTRUCTION:
+			if (cg_popupFilter.integer & POPUP_FILTER_MISSION)
+			{
+				return qtrue;
+			}
+			break;
+		case PM_AMMOPICKUP:
+		case PM_HEALTHPICKUP:
+		case PM_WEAPONPICKUP:
+			if (cg_popupFilter.integer & POPUP_FILTER_PICKUP)
+			{
+				return qtrue;
+			}
+			break;
+		case PM_DEATH:
+			if (cg_popupFilter.integer & POPUP_FILTER_DEATH)
+			{
+				return qtrue;
+			}
+			break;
+		default:
+			break;
+	}
+}
+
+/**
  * @brief CG_AddPMItem
  * @param[in] type
  * @param[in] message
@@ -357,6 +407,16 @@ void CG_AddPMItem(popupMessageType_t type, const char *message, const char *mess
 	if (type >= PM_NUM_TYPES)
 	{
 		CG_Printf("Invalid popup type: %d\n", type);
+		return;
+	}
+
+	if (CG_CheckPMItemFilter(type))
+	{
+		// log filtered pm to console. Death obituaries are logged in CG_Obituary().
+		if (type != PM_DEATH)
+		{
+			trap_Print(va("%s\n", message));
+		}
 		return;
 	}
 

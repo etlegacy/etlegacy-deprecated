@@ -80,7 +80,7 @@ void LAN_LoadCachedServers(void)
 #ifdef FEATURE_DBMS
 		if (db_mode->integer > 0)
 		{
-			DB_loadFavorites(cl_profile->string);
+			DB_LoadFavorites(cl_profile->string);
 
 			return; // don't load favcache.dat
 		}
@@ -186,17 +186,25 @@ static void LAN_ResetPings(int source)
 }
 
 /**
- * @brief LAN_AddServer
+ * @brief Adds servers to the internal data structure
+ * @note  Never ever add a localhost!
+ *
  * @param[in] source
  * @param[in] name
  * @param[in] address
- * @return
+ * @return 1 on success
  */
-static int LAN_AddServer(int source, const char *name, const char *address)
+int LAN_AddServer(int source, const char *name, const char *address)
 {
 	int          max, *count = 0;
 	netadr_t     adr;
 	serverInfo_t *servers = NULL;
+
+	if (NET_IsLocalAddressString(address))
+	{
+		Com_Printf("LAN_AddServer Warning: Can't add localhost\n");
+		return -1;
+	}
 
 	switch (source)
 	{
@@ -217,7 +225,7 @@ static int LAN_AddServer(int source, const char *name, const char *address)
 #ifdef FEATURE_DBMS
 		if (db_mode->integer > 0 && cl_profile->string[0])
 		{
-			DB_insertFavorite(cl_profile->string, source, name, address, "");
+			DB_InsertFavorite(cl_profile->string, source, name, address, "");
 		}
 #endif
 		break;
@@ -321,7 +329,7 @@ static void LAN_RemoveServer(int source, const char *addr)
 #ifdef FEATURE_DBMS
 				if (db_mode->integer > 0 && cl_profile->string[0])
 				{
-					DB_deleteFavorite(cl_profile->string, addr);
+					DB_DeleteFavorite(cl_profile->string, addr);
 				}
 				else
 #endif
@@ -353,7 +361,7 @@ static void LAN_RemoveServer(int source, const char *addr)
 #ifdef FEATURE_DBMS
 				if (db_mode->integer > 0)
 				{
-					DB_deleteFavorite(cl_profile->string, "*");
+					DB_DeleteFavorite(cl_profile->string, "*");
 				}
 				else
 #endif

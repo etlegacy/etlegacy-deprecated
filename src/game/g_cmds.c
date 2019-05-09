@@ -266,9 +266,7 @@ static void G_SendSkillRating(gentity_t *ent)
 	for (i = 0; i < level.numConnectedClients; i++)
 	{
 		cl = &level.clients[level.sortedClients[i]];
-		Q_strcat(buffer, sizeof(buffer), va("%.3f %.3f ",
-		                                    MIN(MAX(cl->sess.mu - 3 * cl->sess.sigma, 0.f), 2 * MU),
-		                                    cl->sess.mu - 3 * cl->sess.sigma - (cl->sess.oldmu - 3 * cl->sess.oldsigma)));
+		Q_strcat(buffer, sizeof(buffer), va("%.3f ", MIN(MAX(cl->sess.mu - 3 * cl->sess.sigma, 0.f), 2 * MU)));
 	}
 
 	trap_SendServerCommand(ent - g_entities, buffer);
@@ -1207,11 +1205,19 @@ void G_DropItems(gentity_t *self)
 	{
 		item                                  = BG_GetItem(ITEM_RED_FLAG);
 		self->client->ps.powerups[PW_REDFLAG] = 0;
+
+		// update objective indicator
+		level.redFlagCounter -= 1;
+		G_globalFlagIndicator();
 	}
 	if (self->client->ps.powerups[PW_BLUEFLAG])
 	{
 		item                                   = BG_GetItem(ITEM_BLUE_FLAG);
 		self->client->ps.powerups[PW_BLUEFLAG] = 0;
+
+		// update objective indicator
+		level.blueFlagCounter -= 1;
+		G_globalFlagIndicator();
 	}
 
 	if (item)
@@ -1725,13 +1731,13 @@ qboolean G_IsWeaponDisabled(gentity_t *ent, weapon_t weapon)
 	// single weapon restrictions
 	if (GetWeaponTableData(weapon)->type & WEAPON_TYPE_PANZER)
 	{
-		maxCount     = team_maxPanzers.integer;
-		weaponString = team_maxPanzers.string;
+		maxCount     = team_maxRockets.integer;
+		weaponString = team_maxRockets.string;
 	}
 	else if (GetWeaponTableData(weapon)->type & WEAPON_TYPE_MG)
 	{
-		maxCount     = team_maxMg42s.integer;
-		weaponString = team_maxMg42s.string;
+		maxCount     = team_maxMachineguns.integer;
+		weaponString = team_maxMachineguns.string;
 	}
 	else if (GetWeaponTableData(weapon)->type & WEAPON_TYPE_MORTAR)
 	{
@@ -2450,8 +2456,6 @@ void G_HQSay(gentity_t *other, int color, const char *name, const char *message)
 
 	trap_SendServerCommand(other - g_entities, va("gamechat \"%s%c%c%s\" 1", name, Q_COLOR_ESCAPE, color, message));
 }
-
-#define MAX_SAY_TEXT    150
 
 /**
  * @brief G_SayTo
@@ -3181,7 +3185,7 @@ void Cmd_Vote_f(gentity_t *ent)
 				}
 			}
 
-			trap_SendServerCommand(ent->client->pers.complaintClient, va("cpm \"^1Warning^7: Complaint filed against you by %s^7 You have Lost XP.\n\"", ent->client->pers.netname));    // ^*
+			trap_SendServerCommand(ent->client->pers.complaintClient, va("cpm \"^1Warning^7: Complaint filed against you by %s^7. You have lost XP.\n\"", ent->client->pers.netname));    // ^*
 			trap_SendServerCommand(ent - g_entities, "complaint -1");
 
 			G_LoseKillSkillPoints(other, ent->sound2to1, ent->sound1to2, ent->sound2to3 ? qtrue : qfalse);
@@ -4271,6 +4275,14 @@ void Cmd_IntermissionWeaponStats_f(gentity_t *ent)
 	}
 
 	Q_strncpyz(buffer, "imws ", sizeof(buffer));
+
+	// hit regions
+	Q_strcat(buffer, sizeof(buffer), va("%i %i %i %i ",
+		level.clients[clientNum].pers.playerStats.hitRegions[HR_HEAD],
+		level.clients[clientNum].pers.playerStats.hitRegions[HR_ARMS],
+		level.clients[clientNum].pers.playerStats.hitRegions[HR_BODY],
+		level.clients[clientNum].pers.playerStats.hitRegions[HR_LEGS]));
+
 	for (i = 0; i < WS_MAX; i++)
 	{
 		Q_strcat(buffer, sizeof(buffer), va("%i %i %i ", level.clients[clientNum].sess.aWeaponStats[i].atts, level.clients[clientNum].sess.aWeaponStats[i].hits, level.clients[clientNum].sess.aWeaponStats[i].kills));

@@ -39,17 +39,21 @@ menuDef {
 	YESNO( 8, PHYSICS_Y+16, (SUBWINDOW_WIDTH_L)-4, 10, _("Always Run:"), .2, 8, "cl_run", _("Toggle walk/run") )
 	MULTI( 8, PHYSICS_Y+28, (SUBWINDOW_WIDTH_L)-4, 10, _("Double-Tap Prone:"), .2, 8, "cl_doubletapdelay", cvarFloatList { "Yes" 350 "No" 0 }, _("Set the delay time between keypresses required to be a double-tap") )
 
+// Movement //
+#define MOVEMENT_Y 112
+	SUBWINDOW( 6, MOVEMENT_Y, (SUBWINDOW_WIDTH_R), 52, _("MOVEMENT") )
+	MULTI( 8, MOVEMENT_Y+16, (SUBWINDOW_WIDTH_R)-4, 10, _("Bob up:"), .2, 8, "cg_bobup", cvarFloatList { "Off" 0.00 "On" 0.005 }, _("Toggles the vertical bob effect when moving") )
+	MULTI( 8, MOVEMENT_Y+28, (SUBWINDOW_WIDTH_R)-4, 10, _("Bob pitch:"), .2, 8, "cg_bobpitch", cvarFloatList { "Off" 0.00 "On" 0.002 }, _("Toggles the bob pitch (forwards/backwards) effect when moving") )
+	MULTI( 8, MOVEMENT_Y+40, (SUBWINDOW_WIDTH_R)-4, 10, _("Bob roll:"), .2, 8, "cg_bobroll", cvarFloatList { "Off" 0.000 "On" 0.002 }, _("Toggles the bob roll (left/right) effect when moving") )
+
 // Weapons //
-#define WEAPONS_Y 112
-	SUBWINDOW( 6, WEAPONS_Y, (SUBWINDOW_WIDTH_L), 78, _("WEAPONS") )
+#define WEAPONS_Y 170
+	SUBWINDOW( 6, WEAPONS_Y, (SUBWINDOW_WIDTH_L), 42, _("WEAPONS") )
 	YESNO( 8, WEAPONS_Y+16, (SUBWINDOW_WIDTH_L)-4, 10, _("Automatic Reload:"), .2, 8, "cg_autoReload", _("Automatically reload when ammunition clip runs out") )
 	YESNO( 8, WEAPONS_Y+28, (SUBWINDOW_WIDTH_L)-4, 10, _("Autoswitch:"), .2, 8, "cg_noAmmoAutoSwitch", _("Automatically switch to a new weapon when out of ammunition") )
-	MULTI( 8, WEAPONS_Y+40, (SUBWINDOW_WIDTH_L)-4, 10, _("Weapon Icon Flash:"), .2, 8, "cg_drawWeaponIconFlash", cvarFloatList { "Off" 0 "On" 1 }, _("Flash weapon icon when firing, reloading, or switching") )
-	YESNO( 8, WEAPONS_Y+52, (SUBWINDOW_WIDTH_L)-4, 10, _("Muzzle Flash:"), .2, 8, "cg_muzzleflash", _("Enables or disables weapon fire (muzzle flash)") )
-	MULTI( 8, WEAPONS_Y+64, (SUBWINDOW_WIDTH_L)-4, 10, _("Bullet Tracers:"), .2, 8, "cg_tracers", cvarFloatList { "Off" 0 "On" 1 "Only own tracers" 2 "Only others tracers" 3 }, _("Enable/Disable bullet tracers") )
 
 // Scope //
-#define SCOPE_Y 196
+#define SCOPE_Y 218
 	SUBWINDOW( 6, SCOPE_Y, (SUBWINDOW_WIDTH_L), 52,_( "SCOPE") )
 	MULTI( 8, SCOPE_Y+16, (SUBWINDOW_WIDTH_L)-4, 10, _("Weapon Cycle for Zoom:"), .2, 8, "cg_useWeapsForZoom", cvarFloatList { "Off" 0 "On (normal)" 1 "On (reverse)" 2 }, _("Weapon switch will zoom in and out while scoped, rather than switch weapons") )
 	MULTI( 8, SCOPE_Y+28, (SUBWINDOW_WIDTH_L)-4, 10, _("Default Zoom Level:"), .2, 8, "cg_zoomdefaultsniper", cvarFloatList { "All the way Out" 20 "Near" 16 "Far" 8 "All the Way In" 4 }, _("Set the default zoom level for scopes") )
@@ -66,12 +70,13 @@ menuDef {
 
 // Sounds //
 #define SOUND_Y 114
-	SUBWINDOW( 6+(SUBWINDOW_WIDTH_L)+6, SOUND_Y, (SUBWINDOW_WIDTH_R), 40, _("SOUND") )
-	YESNO( 6+(SUBWINDOW_WIDTH_L)+6+2, SOUND_Y+16, (SUBWINDOW_WIDTH_R)-4, 10, _("Voice chat:"), .2, 8, "cg_voiceChats", _("Play voice chat in-game") )
-	MULTI( 6+(SUBWINDOW_WIDTH_L)+6+2, SOUND_Y+28, (SUBWINDOW_WIDTH_R)-4, 10, _("Hitsounds:"), .2, 8, "cg_hitsounds", cvarFloatList { "None" 0 "All" 1 "No Body Hit Sound" 2 "No Head Hit Sound" 4 "No Team Hit Sound" 8 }, _("Set hit sounds") )
+	SUBWINDOW( 6+(SUBWINDOW_WIDTH_L)+6, SOUND_Y, (SUBWINDOW_WIDTH_R), 52, _("SOUND") )
+	YESNO( 6+(SUBWINDOW_WIDTH_L)+6+2, SOUND_Y+16, (SUBWINDOW_WIDTH_R)-4, 10, _("Announcer:"), .2, 8, "cg_announcer", _("Play startup announcer voice") )
+	YESNO( 6+(SUBWINDOW_WIDTH_L)+6+2, SOUND_Y+28, (SUBWINDOW_WIDTH_R)-4, 10, _("Voice chat:"), .2, 8, "cg_voiceChats", _("Play voice chat in-game") )
+	MULTI( 6+(SUBWINDOW_WIDTH_L)+6+2, SOUND_Y+40, (SUBWINDOW_WIDTH_R)-4, 10, _("Hitsounds:"), .2, 8, "cg_hitsounds", cvarFloatList { "None" 0 "All" 1 "No Body Hit Sound" 2 "No Head Hit Sound" 4 "No Team Hit Sound" 8 }, _("Set hit sounds") )
 
 // Miscellaneous //
-#define MISC_Y 160
+#define MISC_Y 172
 	SUBWINDOW( 6+(SUBWINDOW_WIDTH_L)+6, MISC_Y, (SUBWINDOW_WIDTH_R), 90, _("MISCELLANEOUS") )
 	MULTI( 6+(SUBWINDOW_WIDTH_L)+6+2, MISC_Y+16, (SUBWINDOW_WIDTH_R)-4, 10, _("Complaint PopUp:"), .2, 8, "cg_complaintPopUp", cvarFloatList { "Off" 0 "On" 1 }, _("Display the option to file complaints about teammates who kill you") )
 	YESNO( 6+(SUBWINDOW_WIDTH_L)+6+2, MISC_Y+28, (SUBWINDOW_WIDTH_R)-4, 10, _("Log Important Messages:"), .2, 8, "cg_printObjectiveInfo",_("Prints important game messages to the console") )

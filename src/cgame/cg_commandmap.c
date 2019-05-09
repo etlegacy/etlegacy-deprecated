@@ -536,6 +536,7 @@ void CG_DrawMapEntity(mapEntityData_t *mEnt, float x, float y, float w, float h,
 	vec2_t           icon_extends, icon_pos, string_pos = { 0 };
 	int              customimage = 0;
 	oidInfo_t        *oidInfo    = NULL;
+	int              entNum;
 
 	switch (mEnt->type)
 	{
@@ -835,17 +836,18 @@ void CG_DrawMapEntity(mapEntityData_t *mEnt, float x, float y, float w, float h,
 
 		if (oidInfo)
 		{
-			int entNum;
-
 			customimage = mEnt->team == TEAM_AXIS ? oidInfo->customimageaxis : oidInfo->customimageallies;
 
 			// we have an oidInfo - check for main objective and do special color in case of
 			// note: to make this work map scripts have to be adjusted
-			entNum = atoi(CG_ConfigString(mEnt->team == TEAM_AXIS ? CS_MAIN_AXIS_OBJECTIVE : CS_MAIN_ALLIES_OBJECTIVE));
-
-			if (entNum == oidInfo->entityNum)
+			if (snap->ps.persistant[PERS_TEAM] != TEAM_SPECTATOR)
 			{
-				trap_R_SetColor(colorYellow);
+				entNum = atoi(CG_ConfigString(mEnt->team == TEAM_AXIS ? CS_MAIN_AXIS_OBJECTIVE : CS_MAIN_ALLIES_OBJECTIVE));
+
+				if (entNum == oidInfo->entityNum)
+				{
+					trap_R_SetColor(colorYellow);
+				}
 			}
 		}
 
@@ -1237,33 +1239,23 @@ void CG_DrawMap(float x, float y, float w, float h, int mEntFilter, mapScissor_t
 		if ((interactive && mEnt->team != RealTeam) ||
 		    (mEnt->team != snap->ps.persistant[PERS_TEAM] && snap->ps.persistant[PERS_TEAM] != TEAM_SPECTATOR))
 		{
-			goto CG_DrawMap_check;
-		}
+			if (mEnt->team != RealTeam && !CG_DisguiseMapCheck(mEnt))
+			{
+				continue;
+			}
 
-		if (mEnt->type == ME_PLAYER ||
-		    mEnt->type == ME_PLAYER_DISGUISED ||
-		    mEnt->type == ME_PLAYER_OBJECTIVE ||
-		    mEnt->type == ME_PLAYER_REVIVE)
-		{
-			goto CG_DrawMap_check;
-		}
-		goto CG_DrawMap_draw;
+			if (mEnt->type != ME_PLAYER &&
+				mEnt->type != ME_PLAYER_DISGUISED &&
+				mEnt->type != ME_PLAYER_OBJECTIVE &&
+				mEnt->type != ME_PLAYER_REVIVE)
+			{
+				continue;
+			}
 
-CG_DrawMap_check:
-		if (mEnt->team != RealTeam && !CG_DisguiseMapCheck(mEnt))
-		{
+			CG_DrawMapEntity(mEnt, x, y, w, h, mEntFilter, scissor, interactive, snap, icon_size);
 			continue;
 		}
 
-		if (mEnt->type != ME_PLAYER &&
-		    mEnt->type != ME_PLAYER_DISGUISED &&
-		    mEnt->type != ME_PLAYER_OBJECTIVE &&
-		    mEnt->type != ME_PLAYER_REVIVE)
-		{
-			continue;
-		}
-
-CG_DrawMap_draw:
 		CG_DrawMapEntity(mEnt, x, y, w, h, mEntFilter, scissor, interactive, snap, icon_size);
 	}
 
@@ -1277,6 +1269,25 @@ CG_DrawMap_draw:
 
 	// mortar impact markers
 	CG_DrawMortarMarker(x, y, w, h, qtrue, scissor, exspawn);
+
+	// entnfo players data
+	for (i = 0, mEnt = &mapEntities[0]; i < mapEntityCount; ++i, ++mEnt)
+	{
+		if (mEnt->team != RealTeam && !CG_DisguiseMapCheck(mEnt))
+		{
+			continue;
+		}
+
+		if (mEnt->type != ME_PLAYER &&
+			mEnt->type != ME_PLAYER_DISGUISED &&
+			mEnt->type != ME_PLAYER_OBJECTIVE &&
+			mEnt->type != ME_PLAYER_REVIVE)
+		{
+			continue;
+		}
+
+		CG_DrawMapEntity(mEnt, x, y, w, h, mEntFilter, scissor, interactive, snap, icon_size);
+	}
 
 	// draw spectator position and direction
 	if (cgs.clientinfo[cg.clientNum].team == TEAM_SPECTATOR)

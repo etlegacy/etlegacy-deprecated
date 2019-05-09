@@ -50,8 +50,7 @@ static void CG_ParseSkillRating(void)
 	s = CG_Argv(i);
 	while (*s)
 	{
-		cg.rating[i]      = (float)atof(CG_Argv(2 + i * 2 + 1));
-		cg.deltaRating[i] = (float)atof(CG_Argv(2 + i * 2 + 2));
+		cg.rating[i] = (float)atof(CG_Argv(i + 3));
 		i++;
 		s = CG_Argv(i);
 	}
@@ -480,7 +479,10 @@ void CG_ParseWolfinfo(void)
 	// Announce game in progress if we are really playing
 	if (old_gs != GS_PLAYING && cgs.gamestate == GS_PLAYING)
 	{
-		trap_S_StartLocalSound(cgs.media.countFight, CHAN_ANNOUNCER);
+		if (cg_announcer.integer)
+		{
+			trap_S_StartLocalSound(cgs.media.countFight, CHAN_ANNOUNCER);
+		}
 
 		Pri("^1FIGHT!\n");
 		CPri(CG_TranslateString("^1FIGHT!\n"));
@@ -834,14 +836,15 @@ void CG_ChargeTimesChanged(void)
 void CG_TeamRestrictionsChanged(void)
 {
 	const char *info;
+	int        i;
 
 	info = CG_ConfigString(CS_TEAMRESTRICTIONS);
 
-	Q_strncpyz(cg.maxSoldiers, Info_ValueForKey(info, "c0"), sizeof(cg.maxSoldiers));
-	Q_strncpyz(cg.maxMedics, Info_ValueForKey(info, "c1"), sizeof(cg.maxMedics));
-	Q_strncpyz(cg.maxEngineers, Info_ValueForKey(info, "c2"), sizeof(cg.maxEngineers));
-	Q_strncpyz(cg.maxFieldops, Info_ValueForKey(info, "c3"), sizeof(cg.maxFieldops));
-	Q_strncpyz(cg.maxCovertops, Info_ValueForKey(info, "c4"), sizeof(cg.maxCovertops));
+	for (i = 0; i < NUM_PLAYER_CLASSES; i++)
+	{
+		Q_strncpyz(cg.maxPlayerClasses[i], Info_ValueForKey(info, va("c%i", i)), sizeof(cg.maxPlayerClasses[i]));
+	}
+
 	Q_strncpyz(cg.maxMortars, Info_ValueForKey(info, "w0"), sizeof(cg.maxMortars));
 	Q_strncpyz(cg.maxFlamers, Info_ValueForKey(info, "w1"), sizeof(cg.maxFlamers));
 	Q_strncpyz(cg.maxMg42s, Info_ValueForKey(info, "w2"), sizeof(cg.maxMg42s));
@@ -1289,6 +1292,11 @@ static void CG_MapRestart(void)
 	// init crosshairMine + Dyna
 	cg.crosshairMine = -1;
 	cg.crosshairDyna = -1;
+
+	// init objective indicator
+	cg.flagIndicator   = 0;
+	cg.redFlagCounter  = 0;
+	cg.blueFlagCounter = 0;
 
 	CG_LimboPanel_RequestObjective();
 
@@ -1751,7 +1759,7 @@ void CG_VoiceChatLocal(int mode, qboolean voiceOnly, int clientNum, int color, c
 
 	if (CG_GetVoiceChat(voiceChatList, cmd, &snd, &sprite, &chat))
 	{
-		if (mode == SAY_TEAM || !cg_teamChatsOnly.integer)
+		if (mode == SAY_TEAM || mode == SAY_BUDDY || !cg_teamChatsOnly.integer)
 		{
 			bufferedVoiceChat_t vchat;
 			const char          *loc = " ";
@@ -2211,7 +2219,7 @@ void CG_parseWeaponStatsGS_cmd(void)
 /**
  * @brief Client-side stat presentation
  */
-void CG_parseWeaponStats_cmd(void (txt_dump) (const char *))
+void CG_parseWeaponStats_cmd(void(txt_dump) (const char *))
 {
 	clientInfo_t *ci;
 	qboolean     fFull;
@@ -2455,7 +2463,7 @@ void CG_parseWeaponStats_cmd(void (txt_dump) (const char *))
  * @brief CG_parseBestShotsStats_cmd
  * @param[in] doTop
  */
-static void CG_parseBestShotsStats_cmd(qboolean doTop, void (txt_dump) (const char *))
+static void CG_parseBestShotsStats_cmd(qboolean doTop, void(txt_dump) (const char *))
 {
 	int      iArg = 1;
 	qboolean fFull;
@@ -2528,7 +2536,7 @@ static void CG_parseBestShotsStats_cmd(qboolean doTop, void (txt_dump) (const ch
  * @brief CG_parseTopShotsStats_cmd
  * @param[in] doTop
  */
-static void CG_parseTopShotsStats_cmd(qboolean doTop, void (txt_dump) (const char *))
+static void CG_parseTopShotsStats_cmd(qboolean doTop, void(txt_dump) (const char *))
 {
 	int i, iArg = 1;
 	int cClients;
@@ -2824,8 +2832,9 @@ static void CG_ServerCommand(void)
 		return;
 	case CPM_HASH:                        // "cpm"
 	{
-		int        iconnumber;
-		const char *iconstring;
+		int                iconnumber;
+		const char         *iconstring;
+		popupMessageType_t pmType;
 
 		iconstring = CG_Argv(2);
 
@@ -2845,7 +2854,15 @@ static void CG_ServerCommand(void)
 			iconnumber = PM_MESSAGE;
 		}
 
-		CG_AddPMItem(PM_MESSAGE, CG_LocalizeServerCommand(CG_Argv(1)), " ", cgs.media.pmImages[iconnumber], 0, 0, NULL);
+		if (strstr(CG_Argv(1), " connected") || strstr(CG_Argv(1), " disconnected"))
+		{
+			pmType = PM_CONNECT;
+		}
+		else
+		{
+			pmType = PM_MESSAGE;
+		}
+		CG_AddPMItem(pmType, CG_LocalizeServerCommand(CG_Argv(1)), " ", cgs.media.pmImages[iconnumber], 0, 0, NULL);
 		return;
 	}
 	case CP_HASH:                         // "cp"

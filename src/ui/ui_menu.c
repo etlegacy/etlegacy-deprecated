@@ -343,7 +343,11 @@ void Menu_UpdatePosition(menuDef_t *menu)
 	centered       = (r->x == 16.f && r->w == 608.f);
 	menuName       = menu->window.name;
 
-	Cui_WideRect(&menu->window.rect);
+	// add offset to windows
+	if (centered)
+	{
+		menu->window.rect.x = menu->window.rect.x + xoffset;
+	}
 
 	for (i = 0; i < menu->itemCount; ++i)
 	{
@@ -366,31 +370,10 @@ void Menu_UpdatePosition(menuDef_t *menu)
 		}
 
 		// alignment..
-		if ((fullscreenMenu && !fullscreenItem) || !Q_stricmp(menuName, "main") || !Q_stricmp(menuName, "ingame_main") || centered)
+		if ((fullscreenMenu && !fullscreenItem) || centered)
 		{
-			// align to right of screen..
-			if (!Q_stricmp(itemName, "atvi_logo") ||
-			    !Q_stricmp(itemName, "id_logo"))
-			{
-				Item_SetScreenCoords(menu->items[i], x + 2 * xoffset, y);
-			}
 			// horizontally centered..
-			else if (!Q_stricmp(itemName, "etl_logo") ||
-			         !Q_stricmp(itemName, "credits_etlegacy"))
-			{
-				Item_SetScreenCoords(menu->items[i], x + xoffset, y);
-			}
-			// normal (left aligned)..
-			else if (!Q_stricmp(menuName, "main") || !Q_stricmp(menuName, "ingame_main"))
-			{
-				Item_SetScreenCoords(menu->items[i], x, y);
-
-			}
-			else
-			{
-				// horizontally centered..
-				Item_SetScreenCoords(menu->items[i], x + xoffset, y);
-			}
+			Item_SetScreenCoords(menu->items[i], x + xoffset, y);
 		}
 		// normal (left aligned)..
 		else

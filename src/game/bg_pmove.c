@@ -238,7 +238,7 @@ void PM_ClipVelocity(vec3_t in, vec3_t normal, vec3_t out, float overbounce)
  * @param[in] ignoreent
  * @param[in] tracemask
  */
-void PM_TraceLegs(trace_t *trace, float *legsOffset, vec3_t start, vec3_t end, trace_t *bodytrace, vec3_t viewangles, void (tracefunc) (trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask), int ignoreent, int tracemask)
+void PM_TraceLegs(trace_t *trace, float *legsOffset, vec3_t start, vec3_t end, trace_t *bodytrace, vec3_t viewangles, void(tracefunc) (trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask), int ignoreent, int tracemask)
 {
 	vec3_t ofs, org, point;
 	vec3_t flatforward;
@@ -319,13 +319,13 @@ void PM_TraceLegs(trace_t *trace, float *legsOffset, vec3_t start, vec3_t end, t
  * @param[in] tracemask
  */
 void PM_TraceHead(trace_t *trace, vec3_t start, vec3_t end, trace_t *bodytrace, vec3_t viewangles,
-                  void (tracefunc) (trace_t *results,
-                                    const vec3_t start,
-                                    const vec3_t mins,
-                                    const vec3_t maxs,
-                                    const vec3_t end,
-                                    int passEntityNum,
-                                    int contentMask),
+                  void(tracefunc) (trace_t *results,
+                                   const vec3_t start,
+                                   const vec3_t mins,
+                                   const vec3_t maxs,
+                                   const vec3_t end,
+                                   int passEntityNum,
+                                   int contentMask),
                   int ignoreent,
                   int tracemask)
 {
@@ -2270,8 +2270,8 @@ static void PM_BeginWeaponReload(weapon_t weapon)
 		}
 	}
 
-	// no reload when leaning (this includes manual and auto reloads)
-	if (pm->ps->leanf != 0.f)
+	// no reload when leaning (this includes manual and auto reloads but no throwable as nade and canister)
+	if (pm->ps->leanf != 0.f && !(GetWeaponTableData(weapon)->firingMode & WEAPON_FIRING_MODE_THROWABLE))
 	{
 		return;
 	}
@@ -2710,8 +2710,6 @@ static void PM_SwitchIfEmpty(void)
 	else if (pm->ps->weapon == WP_SATCHEL)
 	{
 		pm->ps->ammoclip[WP_SATCHEL_DET] = 1;
-		pm->ps->ammo[WP_SATCHEL_DET]     = 1;
-		pm->ps->ammo[WP_SATCHEL]         = 0;
 		pm->ps->ammoclip[WP_SATCHEL]     = 0;
 		PM_BeginWeaponChange(WP_SATCHEL, WP_SATCHEL_DET, qfalse);
 	}
@@ -3358,7 +3356,7 @@ static void PM_Weapon(void)
 	// if not on fire button and there's not a delayed shot this frame...
 	// consider also leaning, with delayed attack reset
 	if ((!(pm->cmd.buttons & BUTTON_ATTACK) && !(pm->cmd.wbuttons & WBUTTON_ATTACK2) && !delayedFire) ||
-	    (pm->ps->leanf != 0.f && !pm->ps->grenadeTimeLeft))
+	    (pm->ps->leanf != 0.f && !GetWeaponTableData(pm->ps->weapon)->grenadeTime))
 	{
 		pm->ps->weaponTime  = 0;
 		pm->ps->weaponDelay = 0;
@@ -3943,7 +3941,7 @@ void PM_UpdateLean(playerState_t *ps, usercmd_t *cmd, pmove_t *tpm)
  *
  * @note Tnused trace parameter
  */
-void PM_UpdateViewAngles(playerState_t *ps, pmoveExt_t *pmext, usercmd_t *cmd, void (trace) (trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask), int tracemask)                //   modified
+void PM_UpdateViewAngles(playerState_t *ps, pmoveExt_t *pmext, usercmd_t *cmd, void(trace) (trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask), int tracemask)                 //   modified
 {
 	short  temp;
 	int    i;

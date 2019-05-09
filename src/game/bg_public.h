@@ -58,7 +58,7 @@
 #define SPRINTTIME 20000.0f
 
 #define DEFAULT_GRAVITY     800
-#define FORCE_LIMBO_HEALTH  -75
+#define FORCE_LIMBO_HEALTH  -113
 #define GIB_ENT             99999
 #define GIB_HEALTH          -175
 #define GIB_DAMAGE(health) health - GIB_HEALTH + 1
@@ -608,7 +608,7 @@ typedef struct
 
 	// callbacks to test the world
 	// these will be different functions during game and cgame
-	void (*trace)(trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask);
+	void (*trace)(trace_t * results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask);
 	int (*pointcontents)(const vec3_t point, int passEntityNum);
 
 	/// used to determine if the player move is for prediction if it is, the movement should trigger no events
@@ -617,7 +617,7 @@ typedef struct
 } pmove_t;
 
 // if a full pmove isn't done on the client, you can just update the angles
-void PM_UpdateViewAngles(playerState_t *ps, pmoveExt_t *pmext, usercmd_t *cmd, void(trace) (trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask), int tracemask);
+void PM_UpdateViewAngles(playerState_t *ps, pmoveExt_t *pmext, usercmd_t *cmd, void (trace) (trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask), int tracemask);
 int Pmove(pmove_t *pmove);
 void PmovePredict(pmove_t *pmove, float frametime);
 
@@ -868,8 +868,9 @@ typedef enum
 	WP_MORTAR2_SET,            ///< 52
 	WP_BAZOOKA,                ///< 53
 	WP_MP34,                   ///< 54
+	WP_AIRSTRIKE,              ///< 55
 
-	WP_NUM_WEAPONS             ///< 55
+	WP_NUM_WEAPONS             ///< 56
 	///< NOTE: this cannot be larger than 64 for AI/player weapons!
 } weapon_t;
 
@@ -1382,10 +1383,11 @@ typedef enum
 	EV_POPUPMESSAGE,
 	EV_ARTYMESSAGE,
 	EV_AIRSTRIKEMESSAGE,
-	EV_MEDIC_CALL, ///< end of vanilla events
-	EV_SHOVE_SOUND,///< 127 - ETL shove
-	EV_BODY_DP,    ///< 128
-	EV_MAX_EVENTS  ///< 129 - just added as an 'endcap'
+	EV_MEDIC_CALL,     ///< end of vanilla events
+	EV_SHOVE_SOUND,    ///< 127 - ETL shove
+	EV_BODY_DP,        ///< 128
+	EV_FLAG_INDICATOR, ///< 129 - objective indicator
+	EV_MAX_EVENTS      ///< 130 - just added as an 'endcap'
 } entity_event_t;
 
 extern const char *eventnames[EV_MAX_EVENTS];
@@ -1829,6 +1831,7 @@ typedef enum item_s
 	ITEM_WEAPON_MAPMORTAR,
 	ITEM_WEAPON_PLIERS,
 	ITEM_WEAPON_ARTY,
+	ITEM_WEAPON_AIRSTRIKE,
 	ITEM_WEAPON_MEDIC_SYRINGE,
 	ITEM_WEAPON_MEDIC_ADRENALINE,
 	ITEM_WEAPON_MAGICAMMO,
@@ -2696,6 +2699,9 @@ typedef enum
 	UIMENU_WM_CLASS,
 	UIMENU_WM_CLASSALT,
 
+	UIMENU_WM_TEAM,
+	UIMENU_WM_TEAMALT,
+
 	// say, team say, etc
 	UIMENU_INGAME_MESSAGEMODE,
 } uiMenuCommand_t;
@@ -2745,6 +2751,8 @@ float BG_GetSkyGroundHeightAtPoint(vec3_t pos);
 float BG_GetGroundHeightAtPoint(vec3_t pos);
 int BG_GetTracemapGroundFloor(void);
 int BG_GetTracemapGroundCeil(void);
+int BG_GetTracemapSkyGroundFloor(void);
+int BG_GetTracemapSkyGroundCeil(void);
 
 // bg_animgroup.c
 
@@ -2874,6 +2882,8 @@ typedef enum popupMessageType_e
 	PM_TEAM,
 	PM_AMMOPICKUP,
 	PM_HEALTHPICKUP,
+	PM_WEAPONPICKUP,
+	PM_CONNECT,
 	PM_NUM_TYPES
 } popupMessageType_t;
 
@@ -2894,8 +2904,8 @@ typedef enum popupMessageBigType_e
 #define HITBOXBIT_LEGS   2048
 #define HITBOXBIT_CLIENT 4096
 
-void PM_TraceLegs(trace_t *trace, float *legsOffset, vec3_t start, vec3_t end, trace_t *bodytrace, vec3_t viewangles, void(tracefunc)(trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask), int ignoreent, int tracemask);
-void PM_TraceHead(trace_t *trace, vec3_t start, vec3_t end, trace_t *bodytrace, vec3_t viewangles, void(tracefunc)(trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask), int ignoreent, int tracemask);
+void PM_TraceLegs(trace_t *trace, float *legsOffset, vec3_t start, vec3_t end, trace_t *bodytrace, vec3_t viewangles, void (tracefunc)(trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask), int ignoreent, int tracemask);
+void PM_TraceHead(trace_t *trace, vec3_t start, vec3_t end, trace_t *bodytrace, vec3_t viewangles, void (tracefunc)(trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask), int ignoreent, int tracemask);
 void PM_TraceAllParts(trace_t *trace, float *legsOffset, vec3_t start, vec3_t end);
 void PM_TraceAll(trace_t *trace, vec3_t start, vec3_t end);
 

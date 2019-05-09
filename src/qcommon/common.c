@@ -257,21 +257,19 @@ void QDECL Com_Printf(const char *fmt, ...)
 		// also, avoid recursing in the qconsole.log opening (i.e. if fs_debug is on)
 		if (!logfile && FS_Initialized() && !opening_qconsole)
 		{
-			struct tm *newtime;
-			time_t    aclock;
+			time_t aclock;
+			char   timeFt[32];
 
 			opening_qconsole = qtrue;
-
-			time(&aclock);
-			newtime = localtime(&aclock);
 
 			logfile = FS_FOpenFileWrite("etconsole.log");
 
 			if (logfile)
 			{
-				// FIXME: Obsolete function 'asctime' called. It is recommended to use 'strftime' instead.
-				// Does we really need to change it ?
-				Com_Printf("logfile opened on %s\n", asctime(newtime));
+				time(&aclock);
+				strftime(timeFt, sizeof(timeFt), "%a %b %d %X %Y",  localtime(&aclock));
+				Com_Printf("logfile opened on %s\n", timeFt);
+
 				if (com_logfile->integer > 1)
 				{
 					// force it to not buffer so we get valid
@@ -1077,8 +1075,6 @@ void Z_Free(void *ptr)
 /**
  * @brief Z_FreeTags
  * @param[in] tag
- *
- * @todo FIXME: remove debug count ?
  */
 void Z_FreeTags(int tag)
 {
@@ -1239,7 +1235,7 @@ void *Z_Malloc(int size)
 #endif
 	void *buf;
 
-	//Z_CheckHeap ();	// DEBUG
+	//Z_CheckHeap();	// DEBUG
 
 #ifdef ZONE_DEBUG
 	buf = Z_TagMallocDebug(size, TAG_GENERAL, label, file, line);
@@ -2888,10 +2884,14 @@ void Com_Init(char *commandLine)
 	}
 
 #ifdef FEATURE_DBMS
-	if (DB_Init() != 0)
+	if (!DB_Init())
 	{
-		Com_Printf("WARNING: ETL DBMS not init as intended!\n");
+		Com_Printf("SQLite3 ETL WARNING: DBMS not init as intended!\n");
 	}
+#endif
+
+#if defined(FEATURE_PAKISOLATION) && !defined(DEDICATED)
+	FS_InitWhitelist();
 #endif
 
 	Cbuf_AddText("exec autoexec.cfg\n");
@@ -2969,7 +2969,7 @@ void Com_Init(char *commandLine)
 		}
 	}
 
-	if (com_developer && com_developer->integer)
+	if (com_developer->integer)
 	{
 		Cmd_AddCommand("error", Com_Error_f, "Just throw a fatal error to test error shutdown procedures.");
 		Cmd_AddCommand("crash", Com_Crash_f, "A way to force a bus error for development reasons.");
@@ -3319,11 +3319,13 @@ void Com_Frame(void)
 		}
 		else
 		{
-			if (com_minimized->integer) // FIXME: clients shouldn't do this while downloading & recording demo !!!
+			if (com_minimized->integer && !Cvar_VariableString("cl_downloadName")[0] // don't set different minMsec while downloading
+				&& Cvar_VariableIntegerValue("cl_demorecording") == 0) // don't set different minMsec while recording
 			{
 				minMsec = 100; // = 1000/10;
 			}
-			else if (com_unfocused->integer && com_maxfps->integer > 1)
+			else if (com_unfocused->integer && com_maxfps->integer > 1 && !Cvar_VariableString("cl_downloadName")[0]  // don't set different minMsec while downloading
+				&& Cvar_VariableIntegerValue("cl_demorecording") == 0) // don't set different minMsec while recording
 			{
 				minMsec = 1000 / (com_maxfps->integer / 2);
 			}
@@ -3538,7 +3540,7 @@ void Com_Shutdown(qboolean badProfile)
 	}
 
 #ifdef FEATURE_DBMS
-	DB_Close();
+	(void) DB_Close();
 #endif
 
 	if (logfile)
@@ -3641,7 +3643,7 @@ static void PrintMatches(const char *s)
 {
 	if (!Q_stricmpn(s, shortestMatch, strlen(shortestMatch)))
 	{
-		Com_Printf("    %s\n", s);
+		Com_Printf("    ^5%s\n", s);
 	}
 }
 
@@ -3656,7 +3658,7 @@ static void PrintCvarMatches(const char *s)
 	if (!Q_stricmpn(s, shortestMatch, strlen(shortestMatch)))
 	{
 		Com_TruncateLongString(value, Cvar_VariableString(s));
-		Com_Printf("    %s = \"%s^7\"\n", s, value);
+		Com_Printf("    ^9%s = \"^5%s^9\"\n", s, value);
 	}
 }
 

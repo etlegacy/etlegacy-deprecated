@@ -488,7 +488,7 @@ void G_players_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fDump)
 			}
 			else if (cl->sess.sessionTeam == TEAM_ALLIES)
 			{
-				tc = (ent) ? "^4L^7" : "L";
+				tc = (ent) ? "^$L^7" : "L";
 			}
 			else if (cl->sess.sessionTeam == TEAM_SPECTATOR)
 			{
@@ -502,11 +502,11 @@ void G_players_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fDump)
 
 		if (ent)
 		{
-			CP(va("print \"%s%s%2d:%s %-26s^7%s  ^3%s%s%s^7\n\"", ready, tc, idnum, ((ref[0]) ? "^3" : "^7"), n2, rate, ref, ign, muted));
+			CP(va("print \"%s%s%2d :%s %-26s^7%s  ^3%s%s%s^7\n\"", ready, tc, idnum, ((ref[0]) ? "^3" : "^7"), n2, rate, ref, ign, muted));
 		}
 		else
 		{
-			G_Printf("%s%s%2d: %-26s%s  %s%s\n", ready, tc, idnum, n2, rate, ref, muted);
+			G_Printf("%s%s%2d : %-26s%s  %s%s\n", ready, tc, idnum, n2, rate, ref, muted);
 		}
 
 		cnt++;
