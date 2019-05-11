@@ -893,26 +893,28 @@ void RB_SurfaceLightningBolt(void)
 	}
 }
 
-
+#if idppc_altivec
 /**
- * @brief LerpMeshVertexes
+ * @brief LerpMeshVertexes_altivec
  * @param[in] surf
  * @param[in] backlerp
  */
-static void LerpMeshVertexes(md3Surface_t *surf, float backlerp)
+static void LerpMeshVertexes_altivec(md3Surface_t *surf, float backlerp)
 {
-	short    *oldXyz, *newXyz, *oldNormals, *newNormals;
-	float    *outXyz, *outNormal;
-	float    newXyzScale;
-	float    newNormalScale;
+	short *oldXyz, *newXyz, *oldNormals, *newNormals;
+	float *outXyz, *outNormal;
+	float oldXyzScale QALIGN(16);
+	float newXyzScale QALIGN(16);
+	float oldNormalScale QALIGN(16);
+	float newNormalScale QALIGN(16);
 	int      vertNum;
 	unsigned lat, lng;
 	int      numVerts;
 
-	outXyz    = tess.xyz[tess.numVertexes].v;
-	outNormal = tess.normal[tess.numVertexes].v;
+	outXyz    = tess.xyz[tess.numVertexes];
+	outNormal = tess.normal[tess.numVertexes];
 
-	newXyz = ( short * )((byte *)surf + surf->ofsXyzNormals)
+	newXyz = (short *)((byte *)surf + surf->ofsXyzNormals)
 	         + (backEnd.currentEntity->e.frame * surf->numVerts * 4);
 	newNormals = newXyz + 3;
 
@@ -923,15 +925,41 @@ static void LerpMeshVertexes(md3Surface_t *surf, float backlerp)
 
 	if (backlerp == 0)
 	{
+		vector signed short  newNormalsVec0;
+		vector signed short  newNormalsVec1;
+		vector signed int    newNormalsIntVec;
+		vector float         newNormalsFloatVec;
+		vector float         newXyzScaleVec;
+		vector unsigned char newNormalsLoadPermute;
+		vector unsigned char newNormalsStorePermute;
+		vector float         zero;
+
+		newNormalsStorePermute = vec_lvsl(0, (float *)&newXyzScaleVec);
+		newXyzScaleVec         = *(vector float *)&newXyzScale;
+		newXyzScaleVec         = vec_perm(newXyzScaleVec, newXyzScaleVec, newNormalsStorePermute);
+		newXyzScaleVec         = vec_splat(newXyzScaleVec, 0);
+		newNormalsLoadPermute  = vec_lvsl(0, newXyz);
+		newNormalsStorePermute = vec_lvsr(0, outXyz);
+		zero                   = (vector float)vec_splat_s8(0);
+		//
 		// just copy the vertexes
+		//
 		for (vertNum = 0 ; vertNum < numVerts ; vertNum++,
 		     newXyz += 4, newNormals += 4,
 		     outXyz += 4, outNormal += 4)
 		{
-
-			outXyz[0] = newXyz[0] * newXyzScale;
-			outXyz[1] = newXyz[1] * newXyzScale;
-			outXyz[2] = newXyz[2] * newXyzScale;
+			newNormalsLoadPermute  = vec_lvsl(0, newXyz);
+			newNormalsStorePermute = vec_lvsr(0, outXyz);
+			newNormalsVec0         = vec_ld(0, newXyz);
+			newNormalsVec1         = vec_ld(16, newXyz);
+			newNormalsVec0         = vec_perm(newNormalsVec0, newNormalsVec1, newNormalsLoadPermute);
+			newNormalsIntVec       = vec_unpackh(newNormalsVec0);
+			newNormalsFloatVec     = vec_ctf(newNormalsIntVec, 0);
+			newNormalsFloatVec     = vec_madd(newNormalsFloatVec, newXyzScaleVec, zero);
+			newNormalsFloatVec     = vec_perm(newNormalsFloatVec, newNormalsFloatVec, newNormalsStorePermute);
+			//outXyz[0] = newXyz[0] * newXyzScale;
+			//outXyz[1] = newXyz[1] * newXyzScale;
+			//outXyz[2] = newXyz[2] * newXyzScale;
 
 			lat  = (newNormals[0] >> 8) & 0xff;
 			lng  = (newNormals[0] & 0xff);
@@ -945,14 +973,18 @@ static void LerpMeshVertexes(md3Surface_t *surf, float backlerp)
 			outNormal[0] = tr.sinTable[(lat + (FUNCTABLE_SIZE / 4)) & FUNCTABLE_MASK] * tr.sinTable[lng];
 			outNormal[1] = tr.sinTable[lat] * tr.sinTable[lng];
 			outNormal[2] = tr.sinTable[(lng + (FUNCTABLE_SIZE / 4)) & FUNCTABLE_MASK];
+
+			vec_ste(newNormalsFloatVec, 0, outXyz);
+			vec_ste(newNormalsFloatVec, 4, outXyz);
+			vec_ste(newNormalsFloatVec, 8, outXyz);
 		}
 	}
 	else
 	{
-		float oldNormalScale, oldXyzScale;
-
+		//
 		// interpolate and copy the vertex and normal
-		oldXyz = ( short * )((byte *)surf + surf->ofsXyzNormals)
+		//
+		oldXyz = (short *)((byte *)surf + surf->ofsXyzNormals)
 		         + (backEnd.currentEntity->e.oldframe * surf->numVerts * 4);
 		oldNormals = oldXyz + 3;
 
@@ -963,7 +995,9 @@ static void LerpMeshVertexes(md3Surface_t *surf, float backlerp)
 		     oldXyz += 4, newXyz += 4, oldNormals += 4, newNormals += 4,
 		     outXyz += 4, outNormal += 4)
 		{
-			//vec3_t uncompressedOldNormal, uncompressedNewNormal;
+#if 0
+			vec3_t uncompressedOldNormal, uncompressedNewNormal;
+#endif
 
 			// interpolate the xyz
 			outXyz[0] = oldXyz[0] * oldXyzScale + newXyz[0] * newXyzScale;
@@ -974,16 +1008,16 @@ static void LerpMeshVertexes(md3Surface_t *surf, float backlerp)
 #if 0
 			lat                      = (newNormals[0] >> 8) & 0xff;
 			lng                      = (newNormals[0] & 0xff);
-			lat                     *= (FUNCTABLE_SIZE / 256);
-			lng                     *= (FUNCTABLE_SIZE / 256);
+			lat                     *= 4;
+			lng                     *= 4;
 			uncompressedNewNormal[0] = tr.sinTable[(lat + (FUNCTABLE_SIZE / 4)) & FUNCTABLE_MASK] * tr.sinTable[lng];
 			uncompressedNewNormal[1] = tr.sinTable[lat] * tr.sinTable[lng];
 			uncompressedNewNormal[2] = tr.sinTable[(lng + (FUNCTABLE_SIZE / 4)) & FUNCTABLE_MASK];
 
 			lat  = (oldNormals[0] >> 8) & 0xff;
 			lng  = (oldNormals[0] & 0xff);
-			lat *= (FUNCTABLE_SIZE / 256);
-			lng *= (FUNCTABLE_SIZE / 256);
+			lat *= 4;
+			lng *= 4;
 
 			uncompressedOldNormal[0] = tr.sinTable[(lat + (FUNCTABLE_SIZE / 4)) & FUNCTABLE_MASK] * tr.sinTable[lng];
 			uncompressedOldNormal[1] = tr.sinTable[lat] * tr.sinTable[lng];
@@ -1005,10 +1039,141 @@ static void LerpMeshVertexes(md3Surface_t *surf, float backlerp)
 
 			//VectorNormalize (outNormal);
 		}
-
 		// unecessary because of lat/lng lerping
 		//VectorArrayNormalize((vec4_t *)tess.normal[tess.numVertexes], numVerts);
 	}
+}
+#endif
+
+/**
+ * @brief LerpMeshVertexes_scalar
+ * @param[in] surf
+ * @param[in] backlerp
+ */
+static void LerpMeshVertexes_scalar(md3Surface_t *surf, float backlerp)
+{
+    float    *outXyz    = tess.xyz[tess.numVertexes];
+    float    *outNormal = tess.normal[tess.numVertexes];
+    float    newXyzScale;
+    float    newNormalScale;
+    int      vertNum;
+    unsigned lat, lng;
+    int      numVerts;
+    short    *oldXyz, *newXyz, *oldNormals, *newNormals;
+
+    newXyz     = ( short * )((byte *)surf + surf->ofsXyzNormals) + (backEnd.currentEntity->e.frame * surf->numVerts * 4);
+    newNormals = newXyz + 3;
+
+    newXyzScale    = MD3_XYZ_SCALE * (1.0 - backlerp);
+    newNormalScale = 1.0f - backlerp;
+
+    numVerts = surf->numVerts;
+
+    if (backlerp == 0.f)
+    {
+        // just copy the vertexes
+        for (vertNum = 0 ; vertNum < numVerts ; vertNum++,
+                newXyz += 4, newNormals += 4,
+                outXyz += 4, outNormal += 4)
+        {
+            outXyz[0] = newXyz[0] * newXyzScale;
+            outXyz[1] = newXyz[1] * newXyzScale;
+            outXyz[2] = newXyz[2] * newXyzScale;
+
+            lat  = (newNormals[0] >> 8) & 0xff;
+            lng  = (newNormals[0] & 0xff);
+            lat *= (FUNCTABLE_SIZE / 256);
+            lng *= (FUNCTABLE_SIZE / 256);
+
+            // decode X as cos( lat ) * sin( long )
+            // decode Y as sin( lat ) * sin( long )
+            // decode Z as cos( long )
+
+            outNormal[0] = tr.sinTable[(lat + (FUNCTABLE_SIZE / 4)) & FUNCTABLE_MASK] * tr.sinTable[lng];
+            outNormal[1] = tr.sinTable[lat] * tr.sinTable[lng];
+            outNormal[2] = tr.sinTable[(lng + (FUNCTABLE_SIZE / 4)) & FUNCTABLE_MASK];
+        }
+    }
+    else
+    {
+        float oldNormalScale, oldXyzScale;
+
+        // interpolate and copy the vertex and normal
+        oldXyz = ( short * )((byte *)surf + surf->ofsXyzNormals)
+                 + (backEnd.currentEntity->e.oldframe * surf->numVerts * 4);
+        oldNormals = oldXyz + 3;
+
+        oldXyzScale    = MD3_XYZ_SCALE * backlerp;
+        oldNormalScale = backlerp;
+
+        for (vertNum = 0 ; vertNum < numVerts ; vertNum++,
+                oldXyz += 4, newXyz += 4, oldNormals += 4, newNormals += 4,
+                outXyz += 4, outNormal += 4)
+        {
+            //vec3_t uncompressedOldNormal, uncompressedNewNormal;
+
+            // interpolate the xyz
+            outXyz[0] = oldXyz[0] * oldXyzScale + newXyz[0] * newXyzScale;
+            outXyz[1] = oldXyz[1] * oldXyzScale + newXyz[1] * newXyzScale;
+            outXyz[2] = oldXyz[2] * oldXyzScale + newXyz[2] * newXyzScale;
+
+            // interpolate lat/long instead
+#if 0
+            lat                      = (newNormals[0] >> 8) & 0xff;
+			lng                      = (newNormals[0] & 0xff);
+			lat                     *= (FUNCTABLE_SIZE / 256);
+			lng                     *= (FUNCTABLE_SIZE / 256);
+			uncompressedNewNormal[0] = tr.sinTable[(lat + (FUNCTABLE_SIZE / 4)) & FUNCTABLE_MASK] * tr.sinTable[lng];
+			uncompressedNewNormal[1] = tr.sinTable[lat] * tr.sinTable[lng];
+			uncompressedNewNormal[2] = tr.sinTable[(lng + (FUNCTABLE_SIZE / 4)) & FUNCTABLE_MASK];
+
+			lat  = (oldNormals[0] >> 8) & 0xff;
+			lng  = (oldNormals[0] & 0xff);
+			lat *= (FUNCTABLE_SIZE / 256);
+			lng *= (FUNCTABLE_SIZE / 256);
+
+			uncompressedOldNormal[0] = tr.sinTable[(lat + (FUNCTABLE_SIZE / 4)) & FUNCTABLE_MASK] * tr.sinTable[lng];
+			uncompressedOldNormal[1] = tr.sinTable[lat] * tr.sinTable[lng];
+			uncompressedOldNormal[2] = tr.sinTable[(lng + (FUNCTABLE_SIZE / 4)) & FUNCTABLE_MASK];
+
+			outNormal[0] = uncompressedOldNormal[0] * oldNormalScale + uncompressedNewNormal[0] * newNormalScale;
+			outNormal[1] = uncompressedOldNormal[1] * oldNormalScale + uncompressedNewNormal[1] * newNormalScale;
+			outNormal[2] = uncompressedOldNormal[2] * oldNormalScale + uncompressedNewNormal[2] * newNormalScale;
+#else
+            lat = (int)((((oldNormals[0] >> 8) & 0xFF) * (FUNCTABLE_SIZE / 256) * newNormalScale) +
+                        (((oldNormals[0] >> 8) & 0xFF) * (FUNCTABLE_SIZE / 256) * oldNormalScale));
+            lng = (int)(((oldNormals[0] & 0xFF) * (FUNCTABLE_SIZE / 256) * newNormalScale) +
+                        ((oldNormals[0] & 0xFF) * (FUNCTABLE_SIZE / 256) * oldNormalScale));
+
+            outNormal[0] = tr.sinTable[(lat + (FUNCTABLE_SIZE / 4)) & FUNCTABLE_MASK] * tr.sinTable[lng];
+            outNormal[1] = tr.sinTable[lat] * tr.sinTable[lng];
+            outNormal[2] = tr.sinTable[(lng + (FUNCTABLE_SIZE / 4)) & FUNCTABLE_MASK];
+#endif
+
+            //VectorNormalize (outNormal);
+        }
+
+        // unecessary because of lat/lng lerping
+        //VectorArrayNormalize((vec4_t *)tess.normal[tess.numVertexes], numVerts);
+    }
+}
+
+/**
+ * @brief LerpMeshVertexes
+ * @param[in] surf
+ * @param[in] backlerp
+ */
+static void LerpMeshVertexes(md3Surface_t *surf, float backlerp)
+{
+#if idppc_altivec
+    if (com_altivec->integer)
+	{
+		// must be in a seperate function or G3 systems will crash.
+		LerpMeshVertexes_altivec(surf, backlerp);
+		return;
+	}
+#endif // idppc_altivec
+    LerpMeshVertexes_scalar(surf, backlerp);
 }
 
 

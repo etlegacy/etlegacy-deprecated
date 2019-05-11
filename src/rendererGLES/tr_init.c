@@ -321,99 +321,6 @@ byte *RB_ReadPixels(int x, int y, int width, int height, size_t *offset, int *pa
 }
 
 /**
- * @brief RB_ReadZBuffer
- * @param[in] x
- * @param[in] y
- * @param[in] width
- * @param[in,out] height
- * @param[in,out] padlen
- * @return
- *
- * @note Unused
- */
-byte *RB_ReadZBuffer(int x, int y, int width, int height, int *padlen)
-{
-	byte  *buffer, *bufstart;
-	int   padwidth, linelen;
-	GLint packAlign;
-
-	qglGetIntegerv(GL_PACK_ALIGNMENT, &packAlign);
-
-	linelen  = width;
-	padwidth = PAD(linelen, packAlign);
-
-	// Allocate a few more bytes so that we can choose an alignment we like
-	buffer = ri.Hunk_AllocateTempMemory(padwidth * height + packAlign - 1);
-
-	bufstart = PADP(( intptr_t ) buffer, packAlign);
-	qglDepthRange(0.0f, 1.0f);
-	qglReadPixels(x, y, width, height, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, bufstart);
-
-	*padlen = padwidth - linelen;
-
-	return buffer;
-}
-
-/*
- * @brief zbuffer writer for the future implementation of the Depth of field effect
- * @param[in] x
- * @param[in] y
- * @param[in] width
- * @param[in] height
- * @param[in] fileName
- *
- * @note Unused.
-void RB_TakeDepthshot(int x, int y, int width, int height, const char *fileName)
-{
-    byte   *allbuf, *buffer;
-    byte   *srcptr, *destptr;
-    byte   *endline, *endmem;
-    int    linelen, padlen;
-    size_t offset = 18, memcount;
-
-    allbuf = RB_ReadZBuffer(x, y, width, height, &padlen);
-    buffer = ri.Hunk_AllocateTempMemory(width * height * 3 + offset);
-
-    Com_Memset(buffer, 0, 18);
-    buffer[2]  = 2;         // uncompressed type
-    buffer[12] = width & 255;
-    buffer[13] = width >> 8;
-    buffer[14] = height & 255;
-    buffer[15] = height >> 8;
-    buffer[16] = 24;        // pixel size
-
-    linelen = width;
-
-    srcptr  = allbuf;
-    destptr = buffer + offset;
-    endmem  = srcptr + (linelen + padlen) * height;
-    while (srcptr < endmem)
-    {
-        endline = srcptr + linelen;
-
-        while (srcptr < endline)
-        {
-            *destptr++ = srcptr[0];
-            *destptr++ = srcptr[0];
-            *destptr++ = srcptr[0];
-
-            srcptr++;
-        }
-
-        // Skip the pad
-        srcptr += padlen;
-    }
-
-    memcount = linelen * 3 * height + offset;
-
-    ri.FS_WriteFile(fileName, buffer, memcount);
-
-    ri.Hunk_FreeTempMemory(allbuf);
-    ri.Hunk_FreeTempMemory(buffer);
-}
-*/
-
-/**
  * @brief RB_TakeScreenshot
  * @param[in] x
  * @param[in] y
@@ -945,7 +852,9 @@ void GL_SetDefaultState(void)
 	// make sure our GL state vector is set correctly
 	glState.glStateBits = GLS_DEPTHTEST_DISABLE | GLS_DEPTHMASK_TRUE;
 
-	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    qglPixelStorei(GL_PACK_ALIGNMENT, 1);
+    qglPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
 	qglDepthMask(GL_TRUE);
 	qglDisable(GL_DEPTH_TEST);
 	qglEnable(GL_SCISSOR_TEST);

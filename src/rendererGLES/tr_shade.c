@@ -175,23 +175,6 @@ static void DrawTris(shaderCommands_t *input)
 		GL_State(stateBits);
 		qglDepthRange(0, 0);
 	}
-#ifdef CELSHADING_HACK
-	else if (r_showtris->integer == 3)
-	{
-		stateBits |= (GLS_POLYMODE_LINE | GLS_DEPTHMASK_TRUE);
-		GL_State(stateBits);
-		qglEnable(GL_POLYGON_OFFSET_LINE);
-		qglPolygonOffset(4.0, 0.5);
-		qglLineWidth(5.0);
-	}
-#endif
-	else
-	{
-		stateBits |= (GLS_POLYMODE_LINE);
-		GL_State(stateBits);
-		qglEnable(GL_POLYGON_OFFSET_LINE);
-		qglPolygonOffset(r_offsetFactor->value, r_offsetUnits->value);
-	}
 
 	qglDisableClientState(GL_COLOR_ARRAY);
 	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -212,7 +195,6 @@ static void DrawTris(shaderCommands_t *input)
 		Ren_LogComment("glUnlockArraysEXT\n");
 	}
 	qglDepthRange(0, 1);
-	qglDisable(GL_POLYGON_OFFSET_LINE);
 }
 
 /**
@@ -343,13 +325,6 @@ static void DrawMultitextured(shaderCommands_t *input, int stage)
 	}
 
 	GL_State(pStage->stateBits);
-
-	// this is an ugly hack to work around a GeForce driver
-	// bug with multitexture and clip planes
-	if (backEnd.viewParms.isPortal)
-	{
-		qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	}
 
 	// base
 	GL_SelectTexture(0);
