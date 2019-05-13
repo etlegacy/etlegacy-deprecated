@@ -235,6 +235,7 @@ void R_ImageList_f(void)
 		case 4:
 			Ren_Print("RGBA ");
 			break;
+#ifndef FEATURE_RENDERER_GLES
 		case GL_RGBA8:
 			Ren_Print("RGBA8");
 			break;
@@ -257,6 +258,7 @@ void R_ImageList_f(void)
 		case GL_RGB5:
 			Ren_Print("RGB5 ");
 			break;
+#endif
 		default:
 			Ren_Print("???? ");
 			break;
@@ -686,6 +688,7 @@ static void Upload32(unsigned *data,
 		{
 			if (r_greyScale->integer)
 			{
+#ifndef FEATURE_RENDERER_GLES
 				if (r_textureBits->integer == 16)
 				{
 					internalFormat = GL_LUMINANCE8;
@@ -696,11 +699,15 @@ static void Upload32(unsigned *data,
 				}
 				else
 				{
+#endif
 					internalFormat = GL_LUMINANCE;
+#ifndef FEATURE_RENDERER_GLES
 				}
+#endif
 			}
 			else
 			{
+#ifndef FEATURE_RENDERER_GLES
 				if (!noCompress && glConfig.textureCompression == TC_S3TC_ARB)
 				{
 					internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
@@ -719,14 +726,18 @@ static void Upload32(unsigned *data,
 				}
 				else
 				{
+#endif
 					internalFormat = GL_RGB;
+#ifndef FEATURE_RENDERER_GLES
 				}
+#endif
 			}
 		}
 		else if (samples == 4)
 		{
 			if (r_greyScale->integer)
 			{
+#ifndef FEATURE_RENDERER_GLES
 				if (r_textureBits->integer == 16)
 				{
 					internalFormat = GL_LUMINANCE8_ALPHA8;
@@ -737,11 +748,15 @@ static void Upload32(unsigned *data,
 				}
 				else
 				{
+#endif
 					internalFormat = GL_LUMINANCE_ALPHA;
+#ifndef FEATURE_RENDERER_GLES
 				}
+#endif
 			}
 			else
 			{
+#ifndef FEATURE_RENDERER_GLES
 				if (!noCompress && glConfig.textureCompression == TC_S3TC_ARB)
 				{
 					internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
@@ -756,8 +771,11 @@ static void Upload32(unsigned *data,
 				}
 				else
 				{
+#endif
 					internalFormat = GL_RGBA;
+#ifndef FEATURE_RENDERER_GLES
 				}
+#endif
 			}
 		}
 	}
@@ -836,21 +854,25 @@ done:
 
 	if (mipmap)
 	{
+#ifndef FEATURE_RENDERER_GLES
 		if (textureFilterAnisotropic)
 		{
 			qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT,
 			                 (GLint)Com_Clamp(1, maxAnisotropy, r_extMaxAnisotropy->integer));
 		}
+#endif
 
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
 	}
 	else
 	{
+#ifndef FEATURE_RENDERER_GLES
 		if (textureFilterAnisotropic)
 		{
 			qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1);
 		}
+#endif
 
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -1256,6 +1278,7 @@ static void R_CreateFogImage(void)
 	tr.fogImage = R_CreateImage("*fog", (byte *)data, FOG_S, FOG_T, qfalse, qfalse, GL_CLAMP_TO_EDGE);
 	ri.Hunk_FreeTempMemory(data);
 
+#ifndef FEATURE_RENDERER_GLES
 	// FIXME: the following lines are unecessary for new GL_CLAMP_TO_EDGE fog (?)
 	borderColor[0] = 1.0;
 	borderColor[1] = 1.0;
@@ -1263,6 +1286,7 @@ static void R_CreateFogImage(void)
 	borderColor[3] = 1;
 
 	qglTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+#endif
 }
 
 #define DEFAULT_SIZE    16
@@ -1441,10 +1465,17 @@ void R_SetColorMappings(void)
 		s_intensitytable[i] = j;
 	}
 
+#ifndef FEATURE_RENDERER_GLES
 	if (glConfig.deviceSupportsGamma && !GLEW_ARB_fragment_program)
 	{
 		ri.GLimp_SetGamma(s_gammatable, s_gammatable, s_gammatable);
 	}
+#else
+    if (glConfig.deviceSupportsGamma)
+	{
+		ri.GLimp_SetGamma(s_gammatable, s_gammatable, s_gammatable);
+	}
+#endif
 }
 
 /**

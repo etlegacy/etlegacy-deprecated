@@ -22,6 +22,30 @@ if(BUILD_CLIENT)
 		include_directories(${X11_INCLUDE_DIR})
 	endif(NOT WIN32)
 
+	if(ARM)
+		set(COMMON_INCLUDE_DIRS
+				"/opt/vc/include"
+				"/opt/vc/include/interface/vcos"
+				"/opt/vc/include/interface/vmcs_host/linux"
+				"/opt/vc/include/interface/vcos/pthreads"
+				"/opt/vc/lib"
+				)
+		link_directories(SYSTEM ${COMMON_INCLUDE_DIRS})
+
+		LIST(APPEND SDL_LIBRARIES
+				bcm_host
+				brcmEGL
+				brcmGLESv2
+				)
+
+		LIST(APPEND RENDERER_LIBRARIES
+				bcm_host
+				brcmEGL
+				brcmGLESv2
+				)
+		MESSAGE("Using Raspberry")
+	endif()
+
 	if(NOT FEATURE_RENDERER_GLES)
 		if(NOT BUNDLED_GLEW)
 			find_package(GLEW REQUIRED)

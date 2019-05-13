@@ -626,13 +626,33 @@ void RB_SurfaceBeam(void)
 
 	qglColor3f(1, 0, 0);
 
-	qglBegin(GL_TRIANGLE_STRIP);
-	for (i = 0; i <= NUM_BEAM_SEGS; i++)
-	{
-		qglVertex3fv(start_points[i % NUM_BEAM_SEGS]);
-		qglVertex3fv(end_points[i % NUM_BEAM_SEGS]);
+#ifdef FEATURE_RENDERER_GLES
+    GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
+	GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
+	if (glcol)
+		qglDisableClientState(GL_COLOR_ARRAY);
+	if (text)
+		qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
+	GLfloat vtx[NUM_BEAM_SEGS*6+6];
+	for ( i = 0; i <= NUM_BEAM_SEGS; i++ ) {
+		memcpy(vtx+i*6, start_points[ i % NUM_BEAM_SEGS], sizeof(GLfloat)*3);
+		memcpy(vtx+i*6+3, end_points[ i % NUM_BEAM_SEGS], sizeof(GLfloat)*3);
 	}
-	qglEnd();
+	qglVertexPointer (3, GL_FLOAT, 0, vtx);
+	qglDrawArrays(GL_TRIANGLE_STRIP, 0, NUM_BEAM_SEGS*2+2);
+	if (glcol)
+		qglEnableClientState(GL_COLOR_ARRAY);
+	if (text)
+        qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+#else
+    qglBegin(GL_TRIANGLE_STRIP);
+    for (i = 0; i <= NUM_BEAM_SEGS; i++)
+    {
+        qglVertex3fv(start_points[i % NUM_BEAM_SEGS]);
+        qglVertex3fv(end_points[i % NUM_BEAM_SEGS]);
+    }
+    qglEnd();
+#endif
 }
 
 //================================================================================
@@ -1732,17 +1752,50 @@ void RB_SurfaceAxis(void)
 	GL_Bind(tr.whiteImage);
 	GL_State(GLS_DEFAULT);
 	qglLineWidth(3);
-	qglBegin(GL_LINES);
-	qglColor3f(1, 0, 0);
-	qglVertex3f(0, 0, 0);
-	qglVertex3f(16, 0, 0);
-	qglColor3f(0, 1, 0);
-	qglVertex3f(0, 0, 0);
-	qglVertex3f(0, 16, 0);
-	qglColor3f(0, 0, 1);
-	qglVertex3f(0, 0, 0);
-	qglVertex3f(0, 0, 16);
-	qglEnd();
+
+#ifdef FEATURE_RENDERER_GLES
+    GLfloat col[] = {
+	  1,0,0, 1,
+	  1,0,0, 1,
+	  0,1,0, 1,
+	  0,1,0, 1,
+	  0,0,1, 1,
+	  0,0,1, 1
+	 };
+	 GLfloat vtx[] = {
+	  0,0,0,
+	  16,0,0,
+	  0,0,0,
+	  0,16,0,
+	  0,0,0,
+	  0,0,16
+	 };
+	GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
+	GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
+	if (text)
+		qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
+	if (!glcol)
+		qglEnableClientState( GL_COLOR_ARRAY);
+	qglColorPointer( 4, GL_UNSIGNED_BYTE, 0, col );
+	qglVertexPointer (3, GL_FLOAT, 0, vtx);
+	qglDrawArrays(GL_LINES, 0, 6);
+	if (text)
+		qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+	if (!glcol)
+        qglDisableClientState( GL_COLOR_ARRAY);
+#else
+    qglBegin(GL_LINES);
+    qglColor3f(1, 0, 0);
+    qglVertex3f(0, 0, 0);
+    qglVertex3f(16, 0, 0);
+    qglColor3f(0, 1, 0);
+    qglVertex3f(0, 0, 0);
+    qglVertex3f(0, 16, 0);
+    qglColor3f(0, 0, 1);
+    qglVertex3f(0, 0, 0);
+    qglVertex3f(0, 0, 16);
+    qglEnd();
+#endif
 	qglLineWidth(1);
 }
 
@@ -1872,7 +1925,9 @@ void RB_SurfaceDisplayList(srfDisplayList_t *surf)
 {
 	// all apropriate state must be set in RB_BeginSurface
 	// this isn't implemented yet...
+#ifndef FEATURE_RENDERER_GLES
 	qglCallList(surf->listNum);
+#endif
 }
 
 /**

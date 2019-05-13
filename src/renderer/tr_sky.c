@@ -441,21 +441,61 @@ static void DrawSkySide(struct image_s *image, const int mins[2], const int maxs
 
 	GL_Bind(image);
 
+#ifdef FEATURE_RENDERER_GLES
+    GLfloat vtx[3*1024];	// arbitrary sized
+	GLfloat tex[2*1024];
+	int idx;
+
+	GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
+	GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
+	if (glcol)
+		qglDisableClientState(GL_COLOR_ARRAY);
+	if (!text)
+		qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+#endif
+
 	for (t = mins[1] + HALF_SKY_SUBDIVISIONS; t < maxs[1] + HALF_SKY_SUBDIVISIONS; t++)
 	{
-		qglBegin(GL_TRIANGLE_STRIP);
+#ifdef FEATURE_RENDERER_GLES
+        idx=0;
+#else
+        qglBegin(GL_TRIANGLE_STRIP);
+#endif
 
 		for (s = mins[0] + HALF_SKY_SUBDIVISIONS; s <= maxs[0] + HALF_SKY_SUBDIVISIONS; s++)
 		{
+#ifdef FEATURE_RENDERER_GLES
+            memcpy(tex+idx*2, s_skyTexCoords[t][s], sizeof(GLfloat)*2);
+			memcpy(vtx+idx*3, s_skyPoints[t][s], sizeof(GLfloat)*3);
+			idx++;
+			memcpy(tex+idx*2, s_skyTexCoords[t+1][s], sizeof(GLfloat)*2);
+			memcpy(vtx+idx*3, s_skyPoints[t+1][s], sizeof(GLfloat)*3);
+			idx++;
+#else
 			qglTexCoord2fv(s_skyTexCoords[t][s]);
 			qglVertex3fv(s_skyPoints[t][s]);
 
 			qglTexCoord2fv(s_skyTexCoords[t + 1][s]);
 			qglVertex3fv(s_skyPoints[t + 1][s]);
+#endif
 		}
 
+#ifdef FEATURE_RENDERER_GLES
+        //*TODO* Try to switch from many DrawArrays of GL_TRIANGLE_STRIP to a single DrawArrays of TRIANGLES to see if it perform better
+		qglVertexPointer (3, GL_FLOAT, 0, vtx);
+		qglTexCoordPointer(2, GL_FLOAT, 0, tex);
+		qglDrawArrays(GL_TRIANGLE_STRIP, 0, idx);
+#else
 		qglEnd();
+#endif
 	}
+
+#ifdef FEATURE_RENDERER_GLES
+    if (glcol)
+		qglEnableClientState(GL_COLOR_ARRAY);
+	if (!text)
+		qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
+#endif
 }
 
 /**
@@ -470,6 +510,19 @@ static void DrawSkySideInner(struct image_s *image, const int mins[2], const int
 
 	GL_Bind(image);
 
+#ifdef FEATURE_RENDERER_GLES
+    GLfloat vtx[3*1024];	// arbitrary sized
+	GLfloat tex[2*1024];
+	int idx;
+
+	GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
+	GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
+	if (glcol)
+		qglDisableClientState(GL_COLOR_ARRAY);
+	if (!text)
+		qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+#endif
+
 	//qglDisable (GL_BLEND);
 	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglEnable(GL_BLEND);
@@ -477,21 +530,48 @@ static void DrawSkySideInner(struct image_s *image, const int mins[2], const int
 
 	for (t = mins[1] + HALF_SKY_SUBDIVISIONS; t < maxs[1] + HALF_SKY_SUBDIVISIONS; t++)
 	{
-		qglBegin(GL_TRIANGLE_STRIP);
+#ifdef FEATURE_RENDERER_GLES
+        idx=0;
+#else
+        qglBegin( GL_TRIANGLE_STRIP );
+#endif
 
 		for (s = mins[0] + HALF_SKY_SUBDIVISIONS; s <= maxs[0] + HALF_SKY_SUBDIVISIONS; s++)
 		{
+#ifdef FEATURE_RENDERER_GLES
+            memcpy(tex+idx*2, s_skyTexCoords[t][s], sizeof(GLfloat)*2);
+			memcpy(vtx+idx*3, s_skyPoints[t][s], sizeof(GLfloat)*3);
+			idx++;
+			memcpy(tex+idx*2, s_skyTexCoords[t+1][s], sizeof(GLfloat)*2);
+			memcpy(vtx+idx*3, s_skyPoints[t+1][s], sizeof(GLfloat)*3);
+			idx++;
+#else
 			qglTexCoord2fv(s_skyTexCoords[t][s]);
 			qglVertex3fv(s_skyPoints[t][s]);
 
 			qglTexCoord2fv(s_skyTexCoords[t + 1][s]);
 			qglVertex3fv(s_skyPoints[t + 1][s]);
+#endif
 		}
 
-		qglEnd();
+#ifdef FEATURE_RENDERER_GLES
+        //*TODO* Try to switch from many DrawArrays of GL_TRIANGLE_STRIP to a single DrawArrays of TRIANGLES to see if it perform better
+		qglVertexPointer (3, GL_FLOAT, 0, vtx);
+		qglTexCoordPointer(2, GL_FLOAT, 0, tex);
+		qglDrawArrays(GL_TRIANGLE_STRIP, 0, idx);
+#else
+        qglEnd();
+#endif
 	}
 
 	qglDisable(GL_BLEND);
+
+#ifdef FEATURE_RENDERER_GLES
+    if (glcol)
+		qglEnableClientState(GL_COLOR_ARRAY);
+	if (!text)
+		qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
+#endif
 }
 
 /**

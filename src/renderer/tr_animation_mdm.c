@@ -1880,7 +1880,7 @@ void RB_MDM_SurfaceAnim(mdmSurface_t *surface)
 	}
 
 	DBG_SHOWTIME
-
+#ifndef FEATURE_RENDERER_GLES
 	if (r_bonesDebug->integer)
 	{
 		GL_State(GLS_POLYMODE_LINE | GLS_DEPTHMASK_TRUE);
@@ -2098,6 +2098,7 @@ void RB_MDM_SurfaceAnim(mdmSurface_t *surface)
 			qglEnd();
 		}
 	}
+#endif
 
 /*	if( r_showmodelbounds->integer ) {
         vec3_t diff, v1, v2, v3, v4, v5, v6;

@@ -42,7 +42,14 @@
 #include "../renderercommon/tr_common.h"
 #include "../renderercommon/qgl.h"
 
+
+#ifdef FEATURE_RENDERER_GLES
+#define GL_RGBA4				0x8056
+#define GL_RGB5	                0x8050
+#define GL_INDEX_TYPE       GL_UNSIGNED_SHORT
+#else
 #define GL_INDEX_TYPE       GL_UNSIGNED_INT
+#endif
 typedef unsigned int glIndex_t;
 
 // 14 bits

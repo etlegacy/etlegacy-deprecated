@@ -338,6 +338,7 @@ void GL_State(unsigned long stateBits)
 		}
 	}
 
+#ifndef FEATURE_RENDERER_GLES
 	// fill/line mode
 	if (diff & GLS_POLYMODE_LINE)
 	{
@@ -350,6 +351,7 @@ void GL_State(unsigned long stateBits)
 			qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 	}
+#endif
 
 	// depthtest
 	if (diff & GLS_DEPTHTEST_DISABLE)
@@ -849,8 +851,10 @@ void RE_StretchRaw(int x, int y, int w, int h, int cols, int rows, const byte *d
 		start = ri.Milliseconds();
 	}
 
+#ifndef FEATURE_RENDERER_GLES
 	if (!GL_ARB_texture_non_power_of_two)
 	{
+#endif
 		// make sure rows and cols are powers of 2
 		for (i = 0; (1 << i) < cols; i++)
 		{
@@ -862,7 +866,9 @@ void RE_StretchRaw(int x, int y, int w, int h, int cols, int rows, const byte *d
 		{
 			Ren_Drop("Draw_StretchRaw: size not a power of 2: %i by %i", cols, rows);
 		}
+#ifndef FEATURE_RENDERER_GLES
 	}
+#endif
 
 	GL_Bind(tr.scratchImage[client]);
 
@@ -898,6 +904,31 @@ void RE_StretchRaw(int x, int y, int w, int h, int cols, int rows, const byte *d
 
 	qglColor3f(tr.identityLight, tr.identityLight, tr.identityLight);
 
+#ifdef FEATURE_RENDERER_GLES
+    GLfloat tex[] = {
+            0.5f / cols,  0.5f / rows,
+            ( cols - 0.5f ) / cols ,  0.5f / rows,
+            ( cols - 0.5f ) / cols, ( rows - 0.5f ) / rows,
+            0.5f / cols, ( rows - 0.5f ) / rows };
+    GLfloat vtx[] = {
+            x, y,
+            x+w, y,
+            x+w, y+h,
+            x, y+h };
+    GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
+    GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
+    if (glcol)
+        qglDisableClientState(GL_COLOR_ARRAY);
+    if (!text)
+        qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+    qglTexCoordPointer( 2, GL_FLOAT, 0, tex );
+    qglVertexPointer  ( 2, GL_FLOAT, 0, vtx );
+    qglDrawArrays( GL_TRIANGLE_FAN, 0, 4 );
+    if (!text)
+        qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
+    if (glcol)
+        qglEnableClientState(GL_COLOR_ARRAY);
+#else
 	qglBegin(GL_QUADS);
 	qglTexCoord2f(0.5f / cols, 0.5f / rows);
 	qglVertex2f(x, y);
@@ -908,6 +939,7 @@ void RE_StretchRaw(int x, int y, int w, int h, int cols, int rows, const byte *d
 	qglTexCoord2f(0.5f / cols, (rows - 0.5f) / rows);
 	qglVertex2f(x, y + h);
 	qglEnd();
+#endif
 }
 
 /**
@@ -1291,7 +1323,9 @@ const void *RB_DrawBuffer(const void *data)
 {
 	const drawBufferCommand_t *cmd = ( const drawBufferCommand_t * ) data;
 
+#ifndef FEATURE_RENDERER_GLES
 	qglDrawBuffer(cmd->buffer);
+#endif
 
 	// clear screen for debugging
 	if (r_clear->integer)
@@ -1310,7 +1344,9 @@ void RB_GammaScreen(void)
 {
 	// We force the 2D drawing
 	RB_SetGL2D();
+#ifndef FEATURE_RENDERER_GLES
 	R_ScreenGamma();
+#endif
 }
 
 /**
@@ -1354,6 +1390,31 @@ void RB_ShowImages(void)
 			h *= image->uploadHeight / 512.0f;
 		}
 
+#ifdef FEATURE_RENDERER_GLES
+        GLfloat tex[] = {
+                0, 0,
+                1, 0,
+                1, 1,
+                0, 1 };
+        GLfloat vtx[] = {
+                x, y,
+                x + w, y,
+                x + w, y + h,
+                x, y + h };
+        GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
+        GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
+        if (glcol)
+            qglDisableClientState(GL_COLOR_ARRAY);
+        if (!text)
+            qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+        qglTexCoordPointer( 2, GL_FLOAT, 0, tex );
+        qglVertexPointer  ( 2, GL_FLOAT, 0, vtx );
+        qglDrawArrays( GL_TRIANGLE_FAN, 0, 4 );
+        if (glcol)
+            qglEnableClientState(GL_COLOR_ARRAY);
+        if (!text)
+            qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
+#else
 		GL_Bind(image);
 		qglBegin(GL_QUADS);
 		qglTexCoord2f(0, 0);
@@ -1365,6 +1426,7 @@ void RB_ShowImages(void)
 		qglTexCoord2f(0, 1);
 		qglVertex2f(x, y + h);
 		qglEnd();
+#endif
 	}
 
 	qglFinish();
@@ -1448,6 +1510,7 @@ const void *RB_SwapBuffers(const void *data)
 
 	cmd = ( const swapBuffersCommand_t * ) data;
 
+#ifndef FEATURE_RENDERER_GLES
 	// we measure overdraw by reading back the stencil buffer and
 	// counting up the number of increments that have happened
 	if (r_measureOverdraw->integer)
@@ -1467,6 +1530,7 @@ const void *RB_SwapBuffers(const void *data)
 		backEnd.pc.c_overDraw += sum;
 		ri.Hunk_FreeTempMemory(stencilReadback);
 	}
+#endif
 
 	if (!glState.finishCalled)
 	{
@@ -1496,7 +1560,9 @@ const void *RB_RenderToTexture(const void *data)
 	GL_Bind(cmd->image);
 	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_LINEAR);
 	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_LINEAR);
+#ifndef FEATURE_RENDERER_GLES
 	qglTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
+#endif
 	qglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, cmd->x, cmd->y, cmd->w, cmd->h, 0);
 	//qglCopyTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, cmd->x, cmd->y, cmd->w, cmd->h );
 

@@ -1640,7 +1640,7 @@ void RB_SurfaceAnim(mdsSurface_t *surface)
 	}
 
 	DBG_SHOWTIME
-
+#ifndef FEATURE_RENDERER_GLES
 	if (r_bonesDebug->integer)
 	{
 		if (r_bonesDebug->integer < 3)
@@ -1726,6 +1726,7 @@ void RB_SurfaceAnim(mdsSurface_t *surface)
 			}
 		}
 	}
+#endif
 
 	if (r_bonesDebug->integer > 1)
 	{

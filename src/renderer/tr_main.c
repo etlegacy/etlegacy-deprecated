@@ -1779,6 +1779,7 @@ void R_DebugPolygon(int color, int numPoints, float *points)
 
 	GL_State(GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE);
 
+#ifndef FEATURE_RENDERER_GLES
 	// draw solid shade
 	qglColor3f(color & 1, (color >> 1) & 1, (color >> 2) & 1);
 	qglBegin(GL_POLYGON);
@@ -1798,6 +1799,14 @@ void R_DebugPolygon(int color, int numPoints, float *points)
 		qglVertex3fv(points + i * 3);
 	}
 	qglEnd();
+#else
+    qglColor4f( color&1, (color>>1)&1, (color>>2)&1, 1.0f );
+    qglVertexPointer  ( 3, GL_FLOAT, 0, points );
+    qglDrawArrays( GL_TRIANGLE_FAN, 0, numPoints );
+    qglColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
+    qglVertexPointer  ( 3, GL_FLOAT, 0, points );
+    qglDrawArrays( GL_LINES, 0, numPoints );
+#endif
 	qglDepthRange(0, 1);
 }
 

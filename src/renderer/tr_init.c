@@ -320,6 +320,7 @@ byte *RB_ReadPixels(int x, int y, int width, int height, size_t *offset, int *pa
 	return buffer;
 }
 
+#ifndef FEATURE_RENDERER_GLES
 /**
  * @brief RB_ReadZBuffer
  * @param[in] x
@@ -353,7 +354,7 @@ byte *RB_ReadZBuffer(int x, int y, int width, int height, int *padlen)
 
 	return buffer;
 }
-
+#endif
 /*
  * @brief zbuffer writer for the future implementation of the Depth of field effect
  * @param[in] x
@@ -945,7 +946,9 @@ void GL_SetDefaultState(void)
 	// make sure our GL state vector is set correctly
 	glState.glStateBits = GLS_DEPTHTEST_DISABLE | GLS_DEPTHMASK_TRUE;
 
+#ifndef FEATURE_RENDERER_GLES
 	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+#endif
 	qglDepthMask(GL_TRUE);
 	qglDisable(GL_DEPTH_TEST);
 	qglEnable(GL_SCISSOR_TEST);
@@ -1007,6 +1010,11 @@ void GfxInfo_f(void)
 
 	// rendering primitives
 	{
+#ifdef FEATURE_RENDERER_GLES
+        Ren_Print("rendering primitives: ");
+        Ren_Print("single glDrawElements\n");
+#else
+
 		int primitives;
 
 		// default is to use triangles if compiled vertex arrays are present
@@ -1039,13 +1047,15 @@ void GfxInfo_f(void)
 		{
 			Ren_Print("multiple glColor4ubv + glTexCoord2fv + glVertex3fv\n");
 		}
-	}
-
+#endif
+    }
 	Ren_Print("texturemode: %s\n", r_textureMode->string);
 	Ren_Print("picmip: %d\n", r_picMip->integer);
 	Ren_Print("texture bits: %d\n", r_textureBits->integer);
 	Ren_Print("multitexture: %s\n", enablestrings[qglActiveTextureARB != 0]);
+#ifndef FEATURE_RENDERER_GLES
 	Ren_Print("compiled vertex arrays: %s\n", enablestrings[qglLockArraysEXT != 0]);
+#endif
 	Ren_Print("texenv add: %s\n", enablestrings[glConfig.textureEnvAddAvailable != 0]);
 	Ren_Print("compressed textures: %s\n", enablestrings[glConfig.textureCompression != TC_NONE]);
 
@@ -1286,7 +1296,9 @@ void R_Init(void)
 
 	R_InitFreeType();
 
+#ifndef FEATURE_RENDERER_GLES
 	R_InitGamma();
+#endif
 
 	err = qglGetError();
 	if (err != GL_NO_ERROR)
@@ -1353,7 +1365,9 @@ void RE_Shutdown(qboolean destroyWindow)
 
 	R_DoneFreeType();
 
+#ifndef FEATURE_RENDERER_GLES
 	R_ShutdownGamma();
+#endif
 
 	// shut down platform specific OpenGL stuff
 	if (destroyWindow)

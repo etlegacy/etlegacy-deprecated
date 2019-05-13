@@ -53,6 +53,10 @@ static int gammaResetTime = 0;
 #endif
 #endif // __APPLE__
 
+#ifdef FEATURE_RENDERER_GLES
+# include <EGL/egl.h>
+#endif
+
 SDL_Window           *main_window   = NULL;
 static SDL_Renderer  *main_renderer = NULL;
 static SDL_GLContext SDL_glContext  = NULL;
@@ -650,6 +654,10 @@ static int GLimp_SetMode(glconfig_t *glConfig, int mode, qboolean fullscreen, qb
 		SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 1);
 #endif
 
+#ifdef FEATURE_RENDERER_GLES
+        SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 1 );
+#endif
+
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, perChannelColorBits);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, perChannelColorBits);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, perChannelColorBits);
@@ -705,25 +713,28 @@ static int GLimp_SetMode(glconfig_t *glConfig, int mode, qboolean fullscreen, qb
 
 		if (context && context->versionMajor > 0)
 		{
-			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, context->versionMajor);
-			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, context->versionMinor);
-
-			switch (context->context)
-			{
-			case GL_CONTEXT_COMP:
-				SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
-				break;
-			case GL_CONTEXT_CORE:
-				SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-				SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
-				break;
-			case GL_CONTEXT_EGL:
-				SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-				break;
-			case GL_CONTEXT_DEFAULT:
-			default:
-				break;
-			}
+#ifdef FEATURE_RENDERER_GLES
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 1);
+	    	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+#else
+            switch (context->context)
+            {
+                case GL_CONTEXT_COMP:
+                    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+                    break;
+                case GL_CONTEXT_CORE:
+                    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+                    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+                    break;
+                case GL_CONTEXT_EGL:
+                    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+                    break;
+                case GL_CONTEXT_DEFAULT:
+                default:
+                    break;
+            }
+#endif
 		}
 
 		if ((SDL_glContext = SDL_GL_CreateContext(main_window)) == NULL)
