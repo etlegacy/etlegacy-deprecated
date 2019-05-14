@@ -787,114 +787,118 @@ static void Upload32(unsigned *data,
 			}
 		}
 		// select proper internal format
+#ifndef FEATURE_RENDERER_GLES
 		if (samples == 3)
 		{
 			if (r_greyScale->integer)
 			{
-#ifdef FEATURE_RENDERER_GLES
-                internalFormat = GL_LUMINANCE;
-#else
-                if (r_textureBits->integer == 16)
-                {
-                    internalFormat = GL_LUMINANCE8;
-                }
-                else if (r_textureBits->integer == 32)
-                {
-                    internalFormat = GL_LUMINANCE16;
-                }
-                else
-                {
-                    internalFormat = GL_LUMINANCE;
-                }
-#endif
-			}
-			else
-			{
-#ifdef FEATURE_RENDERER_GLES
-                if (r_textureBits->integer == 16)
+				if (r_textureBits->integer == 16)
 				{
-					internalFormat = GL_RGB5;
+					internalFormat = GL_LUMINANCE8;
+				}
+				else if (r_textureBits->integer == 32)
+				{
+					internalFormat = GL_LUMINANCE16;
 				}
 				else
 				{
-				    internalFormat = GL_RGB;
+					internalFormat = GL_LUMINANCE;
 				}
-#else
-                if (!noCompress && glConfig.textureCompression == TC_S3TC_ARB)
-                {
-                    internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-                }
-                else if (!noCompress && glConfig.textureCompression == TC_S3TC)
-                {
-                    internalFormat = GL_RGB4_S3TC;
-                }
-                else if (r_textureBits->integer == 16)
-                {
-                    internalFormat = GL_RGB5;
-                }
-                else if (r_textureBits->integer == 32)
-                {
-                    internalFormat = GL_RGB8;
-                }
-                else
-                {
-                    internalFormat = GL_RGB;
-                }
-#endif
+			}
+			else
+			{
+				if (!noCompress && glConfig.textureCompression == TC_S3TC_ARB)
+				{
+					internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+				}
+				else if (!noCompress && glConfig.textureCompression == TC_S3TC)
+				{
+					internalFormat = GL_RGB4_S3TC;
+				}
+				else if (r_textureBits->integer == 16)
+				{
+					internalFormat = GL_RGB5;
+				}
+				else if (r_textureBits->integer == 32)
+				{
+					internalFormat = GL_RGB8;
+				}
+				else
+				{
+					internalFormat = GL_RGB;
+				}
+
 			}
 		}
 		else if (samples == 4)
 		{
 			if (r_greyScale->integer)
 			{
-#ifdef FEATURE_RENDERER_GLES
-                internalFormat = GL_LUMINANCE_ALPHA;
-#else
-                if (r_textureBits->integer == 16)
-                {
-                    internalFormat = GL_LUMINANCE8_ALPHA8;
-                }
-                else if (r_textureBits->integer == 32)
-                {
-                    internalFormat = GL_LUMINANCE16_ALPHA16;
-                }
-                else
-                {
-                    internalFormat = GL_LUMINANCE_ALPHA;
-                }
-#endif
-			}
-			else
-			{
-#ifdef FEATURE_RENDERER_GLES
-                if (r_textureBits->integer == 16)
+				if (r_textureBits->integer == 16)
 				{
-					internalFormat = GL_RGBA4;
+					internalFormat = GL_LUMINANCE8_ALPHA8;
+				}
+				else if (r_textureBits->integer == 32)
+				{
+					internalFormat = GL_LUMINANCE16_ALPHA16;
 				}
 				else
 				{
-				    internalFormat = GL_RGBA;
+					internalFormat = GL_LUMINANCE_ALPHA;
 				}
-#else
-                if (!noCompress && glConfig.textureCompression == TC_S3TC_ARB)
-                {
-                    internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-                }
-                else if (r_textureBits->integer == 16)
-                {
-                    internalFormat = GL_RGBA4;
-                }
-                else if (r_textureBits->integer == 32)
-                {
-                    internalFormat = GL_RGBA8;
-                }
-                else
-                {
-                    internalFormat = GL_RGBA;
-                }
-#endif
+			}
+			else
+			{
+				if (!noCompress && glConfig.textureCompression == TC_S3TC_ARB)
+				{
+					internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+				}
+				else if (r_textureBits->integer == 16)
+				{
+					internalFormat = GL_RGBA4;
+				}
+				else if (r_textureBits->integer == 32)
+				{
+					internalFormat = GL_RGBA8;
+				}
+				else
+				{
+					internalFormat = GL_RGBA;
+				}
 			}
 		}
+#else
+        if (samples == 3)
+		{
+			if (r_greyScale->integer)
+			{
+				internalFormat = GL_LUMINANCE;
+			}
+			else if (r_textureBits->integer == 16)
+			{
+				internalFormat = GL_RGB5;
+			}
+			else
+			{
+				internalFormat = GL_RGB;
+			}
+		}
+		else if (samples == 4)
+		{
+			if (r_greyScale->integer)
+			{
+				internalFormat = GL_LUMINANCE_ALPHA;
+			}
+			else if (r_textureBits->integer == 16)
+			{
+				internalFormat = GL_RGBA4;
+			}
+			else
+			{
+				internalFormat = GL_RGBA;
+			}
+		}
+#endif
 	}
 
 #ifdef FEATURE_RENDERER_GLES

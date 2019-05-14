@@ -921,6 +921,7 @@ void RE_StretchRaw(int x, int y, int w, int h, int cols, int rows, const byte *d
         qglDisableClientState(GL_COLOR_ARRAY);
     if (!text)
         qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+	qglEnableClientState(GL_VERTEX_ARRAY);								   
     qglTexCoordPointer( 2, GL_FLOAT, 0, tex );
     qglVertexPointer  ( 2, GL_FLOAT, 0, vtx );
     qglDrawArrays( GL_TRIANGLE_FAN, 0, 4 );
@@ -1342,9 +1343,9 @@ const void *RB_DrawBuffer(const void *data)
  */
 void RB_GammaScreen(void)
 {
+#ifndef FEATURE_RENDERER_GLES
 	// We force the 2D drawing
 	RB_SetGL2D();
-#ifndef FEATURE_RENDERER_GLES
 	R_ScreenGamma();
 #endif
 }
@@ -1373,6 +1374,19 @@ void RB_ShowImages(void)
 
 	start = ri.Milliseconds();
 
+#ifdef FEATURE_RENDERER_GLES
+    GLboolean text  = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
+    GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
+    if (glcol)
+    {
+        qglDisableClientState(GL_COLOR_ARRAY);
+    }
+    if (!text)
+    {
+        qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    }
+#endif
+
 	for (i = 0 ; i < tr.numImages ; i++)
 	{
 		image = tr.images[i];
@@ -1391,29 +1405,26 @@ void RB_ShowImages(void)
 		}
 
 #ifdef FEATURE_RENDERER_GLES
-        GLfloat tex[] = {
-                0, 0,
-                1, 0,
-                1, 1,
-                0, 1 };
-        GLfloat vtx[] = {
-                x, y,
-                x + w, y,
-                x + w, y + h,
-                x, y + h };
-        GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
-        GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
-        if (glcol)
-            qglDisableClientState(GL_COLOR_ARRAY);
-        if (!text)
-            qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
-        qglTexCoordPointer( 2, GL_FLOAT, 0, tex );
-        qglVertexPointer  ( 2, GL_FLOAT, 0, vtx );
-        qglDrawArrays( GL_TRIANGLE_FAN, 0, 4 );
-        if (glcol)
-            qglEnableClientState(GL_COLOR_ARRAY);
-        if (!text)
-            qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
+        // OpenGLES Implementation		
+		GLfloat tex[] =
+		{
+			0, 0,
+			1, 0,
+			1, 1,
+			0, 1
+		};
+		GLfloat vtx[] =
+		{
+			x,     y,
+			x + w, y,
+			x + w, y + h,
+			x,     y + h
+		};
+
+		qglTexCoordPointer(2, GL_FLOAT, 0, tex);
+		qglVertexPointer(2, GL_FLOAT, 0, vtx);
+		qglDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+				
 #else
 		GL_Bind(image);
 		qglBegin(GL_QUADS);
@@ -1428,6 +1439,17 @@ void RB_ShowImages(void)
 		qglEnd();
 #endif
 	}
+	
+#ifdef FEATURE_RENDERER_GLES
+	if (glcol)
+	{
+		qglEnableClientState(GL_COLOR_ARRAY);
+	}
+	if (!text)
+	{
+		qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	}
+#endif
 
 	qglFinish();
 
