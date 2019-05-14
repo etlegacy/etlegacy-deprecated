@@ -684,11 +684,11 @@ static void Upload32(unsigned *data,
 			}
 		}
 		// select proper internal format
+#ifndef FEATURE_RENDERER_GLES
 		if (samples == 3)
 		{
 			if (r_greyScale->integer)
 			{
-#ifndef FEATURE_RENDERER_GLES
 				if (r_textureBits->integer == 16)
 				{
 					internalFormat = GL_LUMINANCE8;
@@ -699,15 +699,11 @@ static void Upload32(unsigned *data,
 				}
 				else
 				{
-#endif
 					internalFormat = GL_LUMINANCE;
-#ifndef FEATURE_RENDERER_GLES
 				}
-#endif
 			}
 			else
 			{
-#ifndef FEATURE_RENDERER_GLES
 				if (!noCompress && glConfig.textureCompression == TC_S3TC_ARB)
 				{
 					internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
@@ -726,18 +722,15 @@ static void Upload32(unsigned *data,
 				}
 				else
 				{
-#endif
 					internalFormat = GL_RGB;
-#ifndef FEATURE_RENDERER_GLES
 				}
-#endif
+
 			}
 		}
 		else if (samples == 4)
 		{
 			if (r_greyScale->integer)
 			{
-#ifndef FEATURE_RENDERER_GLES
 				if (r_textureBits->integer == 16)
 				{
 					internalFormat = GL_LUMINANCE8_ALPHA8;
@@ -748,15 +741,11 @@ static void Upload32(unsigned *data,
 				}
 				else
 				{
-#endif
 					internalFormat = GL_LUMINANCE_ALPHA;
-#ifndef FEATURE_RENDERER_GLES
 				}
-#endif
 			}
 			else
 			{
-#ifndef FEATURE_RENDERER_GLES
 				if (!noCompress && glConfig.textureCompression == TC_S3TC_ARB)
 				{
 					internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
@@ -771,13 +760,42 @@ static void Upload32(unsigned *data,
 				}
 				else
 				{
-#endif
 					internalFormat = GL_RGBA;
-#ifndef FEATURE_RENDERER_GLES
 				}
-#endif
 			}
 		}
+#else
+        if (samples == 3)
+		{
+			if (r_greyScale->integer)
+			{
+				internalFormat = GL_LUMINANCE;
+			}
+			else if (r_textureBits->integer == 16)
+			{
+				internalFormat = GL_RGB5;
+			}
+			else
+			{
+				internalFormat = GL_RGB;
+			}
+		}
+		else if (samples == 4)
+		{
+			if (r_greyScale->integer)
+			{
+				internalFormat = GL_LUMINANCE_ALPHA;
+			}
+			else if (r_textureBits->integer == 16)
+			{
+				internalFormat = GL_RGBA4;
+			}
+			else
+			{
+				internalFormat = GL_RGBA;
+			}
+		}
+#endif
 	}
 
 	// copy or resample data as appropriate for first MIP level
