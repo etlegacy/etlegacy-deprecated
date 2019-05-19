@@ -600,6 +600,9 @@ void Con_DrawInput(void)
 	           SCREEN_WIDTH - 3 * SMALLCHAR_WIDTH, qtrue, qtrue);
 }
 
+extern cvar_t *con_numNotifies;
+#define clamp(min, max, value) ((value < min) ? min : (value > max) ? max : value)
+
 /**
  * @brief Draws the last few lines of output transparently over the game top
  */
@@ -611,17 +614,24 @@ void Con_DrawNotify(void)
 	int          i;
 	int          time;
 	int          currentColor = 7;
+    int          maxNotifies;
+
+    maxNotifies = clamp(0, NUM_CON_TIMES, con_numNotifies->integer);
+    if (maxNotifies == 0)
+    {
+        return;
+    }
 
 	re.SetColor(g_color_table[currentColor]);
 
-	for (i = con.current - NUM_CON_TIMES + 1 ; i <= con.current ; i++)
+    for (i = con.current - maxNotifies + 1 ; i <= con.current ; i++)
 	{
 		if (i < 0)
 		{
 			continue;
 		}
 
-		time = con.times[i % NUM_CON_TIMES];
+        time = con.times[i % maxNotifies];
 
 		if (time == 0)
 		{
@@ -664,6 +674,8 @@ void Con_DrawNotify(void)
 
 	re.SetColor(NULL);
 }
+
+#undef clamp
 
 /**
  * @brief Draw scrollbar
