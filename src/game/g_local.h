@@ -1458,6 +1458,9 @@ qboolean G_MapIsValidCampaignStartMap(void);
 
 team_t G_GetTeamFromEntity(gentity_t *ent);
 
+const char* G_StringContains(const char *str1, const char *str2, int casesensitive);
+qboolean G_MatchString(const char *filter, const char *name, int casesensitive);
+
 /**
  * @struct grefEntity_t
  * @brief cut down refEntity_t w/ only stuff needed for player bone calculation
@@ -1873,6 +1876,10 @@ extern vmCvar_t pmove_msec;
 
 extern vmCvar_t g_scriptName;               ///< name of script file to run (instead of default for that map)
 extern vmCvar_t g_scriptDebug;
+/// What level of detail do we want script printing to go to.
+extern vmCvar_t g_scriptDebugLevel;
+// filter out script debug messages from other entities
+extern vmCvar_t g_scriptDebugTarget;
 
 extern vmCvar_t g_userAim;
 extern vmCvar_t g_developer;
@@ -1888,9 +1895,6 @@ extern vmCvar_t g_covertopsChargeTime;
 
 extern vmCvar_t g_debugConstruct;
 extern vmCvar_t g_landminetimeout;
-
-/// What level of detail do we want script printing to go to.
-extern vmCvar_t g_scriptDebugLevel;
 
 /// How fast do SP player and allied bots move?
 extern vmCvar_t g_movespeed;
