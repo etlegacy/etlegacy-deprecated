@@ -349,6 +349,7 @@ vmCvar_t g_multiview; // 0 - off, other - enabled
 #endif
 
 vmCvar_t g_stickyCharge;
+vmCvar_t g_riflegrenades;	// b_riflegrenades functionality from ETPro
 
 cvarTable_t gameCvarTable[] =
 {
@@ -635,6 +636,7 @@ cvarTable_t gameCvarTable[] =
 	{ &g_multiview,                         "g_multiview",                         "0",                          CVAR_LATCH | CVAR_ARCHIVE,                       0, qfalse, qfalse },
 #endif
 	{ &g_stickyCharge,                      "g_stickyCharge",                      "0",                          CVAR_ARCHIVE,                                    0, qfalse, qfalse },
+	{ &g_riflegrenades,                     "g_riflegrenades",                     "1",                          CVAR_ARCHIVE,                                    0, qfalse, qfalse },
 };
 
 /**

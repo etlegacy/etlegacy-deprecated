@@ -2074,6 +2074,7 @@ extern vmCvar_t g_multiview;
 #define STICKYCHARGE_SELFKILL 1 // keep charge after selfkill, mortal self damage, teamkill, mortal world damage
 #define STICKYCHARGE_ANYDEATH 2 // keep charge after any death (for eg. death by enemy)
 extern vmCvar_t g_stickyCharge;
+extern vmCvar_t g_riflegrenades;
 
 /**
  * @struct GeoIPTag
