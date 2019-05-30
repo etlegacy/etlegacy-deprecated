@@ -39,6 +39,7 @@
 
 #ifdef GAMEDLL
 extern vmCvar_t g_developer;
+extern vmCvar_t g_riflegrenades;
 #endif
 
 // *INDENT-OFF*
@@ -2572,6 +2573,18 @@ qboolean BG_AddMagicAmmo(playerState_t *ps, int *skill, team_t teamNum, int numO
 	{
 		if (GetWeaponTableData(weapon)->useAmmo)
 		{
+			#ifdef GAMEDLL
+			if (g_riflegrenades.integer == 0)
+			{
+				switch (weapon)
+				{
+					case WP_GPG40:
+					case WP_M7:
+						continue;
+				}
+			}
+			#endif
+
 			int      maxAmmo;
 			weapon_t clip;
 
