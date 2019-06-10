@@ -869,7 +869,7 @@ qboolean G_EmplacedGunIsMountable(gentity_t *ent, gentity_t *other)
 		return qfalse;
 	}
 
-	if (GetWeaponTableData(other->client->ps.weapon)->type & (WEAPON_TYPE_SCOPED | WEAPON_TYPE_SET))
+        if ((GetWeaponTableData(other->client->ps.weapon)->type & WEAPON_TYPE_SCOPED) || (other->client->pmext.silencedSideArm & 4))
 	{
 		return qfalse;
 	}
@@ -940,7 +940,7 @@ qboolean G_EmplacedGunIsRepairable(gentity_t *ent, gentity_t *other)
 		return qfalse;
 	}
 
-	if (GetWeaponTableData(other->client->ps.weapon)->type & (WEAPON_TYPE_SCOPED | WEAPON_TYPE_SET))
+        if ((GetWeaponTableData(other->client->ps.weapon)->type & WEAPON_TYPE_SCOPED) || (other->client->pmext.silencedSideArm & 4))
 	{
 		return qfalse;
 	}

@@ -594,14 +594,6 @@ void CG_TransitionPlayerState(playerState_t *ps, playerState_t *ops)
 		cg.proneMovingTime = -cg.time;
 	}
 
-	if (!(ps->eFlags & EF_PRONE) && (ops->eFlags & EF_PRONE))
-	{
-		if (CHECKBITWISE(GetWeaponTableData(cg.weaponSelect)->type, WEAPON_TYPE_MG | WEAPON_TYPE_SET))
-		{
-			CG_FinishWeaponChange(cg.weaponSelect, ps->nextWeapon);
-		}
-	}
-
 	// don't let players run with rifles -- speed 80 == crouch, 128 == walk, 256 == run until player start to don't run
 	if ((GetWeaponTableData(ps->weapon)->type & WEAPON_TYPE_SCOPED) && VectorLength(ps->velocity) > 127)
 	{

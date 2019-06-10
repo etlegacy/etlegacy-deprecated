@@ -1297,7 +1297,7 @@ void CG_PredictPlayerState(void)
 				CG_AdjustPositionForMover(cg.predictedPlayerState.origin, cg.predictedPlayerState.groundEntityNum, cg.physicsTime, cg.oldTime, adjusted, deltaAngles);
 				// add the deltaAngles (fixes jittery view while riding trains)
 				// only do this if player is prone or using set mortar
-				if ((cg.predictedPlayerState.eFlags & EF_PRONE) || CHECKBITWISE(GetWeaponTableData(cg.weaponSelect)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET))
+				if ((cg.predictedPlayerState.eFlags & EF_PRONE) || ((GetWeaponTableData(cg.weaponSelect)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & 4)))
 				{
 					cg.predictedPlayerState.delta_angles[YAW] += ANGLE2SHORT(deltaAngles[YAW]);
 				}

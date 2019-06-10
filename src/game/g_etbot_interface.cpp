@@ -342,8 +342,10 @@ static qboolean weaponCharged(playerState_t *ps, team_t team, int weapon, int *s
 		}
 		break;
 	case WP_MORTAR:
+#ifndef LEGACY            
 	case WP_MORTAR_SET:
-#if defined(NOQUARTER) || defined(LEGACY)
+#endif            
+#if defined(NOQUARTER)
 	case WP_MORTAR2:
 	case WP_MORTAR2_SET:
 #endif
@@ -669,8 +671,10 @@ static weapon_t _weaponBotToGame(int weapon)
 #endif                
 	case ET_WP_MORTAR:
 		return WP_MORTAR;
+#ifndef LEGACY  
 	case ET_WP_MORTAR_SET:
 		return WP_MORTAR_SET;
+#endif
 	case ET_WP_MP40:
 		return WP_MP40;
 	case ET_WP_PANZERFAUST:
@@ -746,8 +750,6 @@ static weapon_t _weaponBotToGame(int weapon)
 		return WP_MOBILE_BROWNING;
 	case 92:
 		return WP_MORTAR2;
-	case 93:
-		return WP_MORTAR2_SET;
 	case 94:
 		return WP_KNIFE_KABAR;
 	case 96:
@@ -824,8 +826,10 @@ int Bot_WeaponGameToBot(int weapon)
 #endif                
 	case WP_MORTAR:
 		return ET_WP_MORTAR;
+#ifndef LEGACY  
 	case WP_MORTAR_SET:
 		return ET_WP_MORTAR_SET;
+#endif
 	case WP_MP40:
 		return ET_WP_MP40;
 	case WP_PANZERFAUST:
@@ -901,8 +905,6 @@ int Bot_WeaponGameToBot(int weapon)
 		return ET_WP_MOBILE_MG42;
 	case WP_MORTAR2:
 		return ET_WP_MORTAR;
-	case WP_MORTAR2_SET:
-		return ET_WP_MORTAR_SET;
 	case WP_KNIFE_KABAR:
 		return ET_WP_KNIFE;
 	case WP_BAZOOKA:
@@ -1833,9 +1835,11 @@ static int _GetEntityClass(gentity_t *_ent)
 			return ET_CLASSEX_M7_GRENADE;
 		case WP_GPG40:
 			return ET_CLASSEX_GPG40_GRENADE;
+#ifndef LEGACY  
 		case WP_MORTAR_SET:
 			return ET_CLASSEX_MORTAR;
-#if defined(NOQUARTER) || defined(LEGACY)
+#endif
+#if defined(NOQUARTER)
 		case WP_MORTAR2_SET:
 			return ET_CLASSEX_MORTAR;
 #endif
@@ -2607,10 +2611,12 @@ public:
 			{
 				cmd.weapon = WP_MORTAR2;
 			}
+#ifndef LEGACY  
 			else if (cmd.weapon == WP_MORTAR_SET)
 			{
 				cmd.weapon = WP_MORTAR2_SET;
 			}
+#endif
 		}
 #endif
 
@@ -3394,9 +3400,13 @@ public:
 			case WP_SATCHEL:
 			case WP_M7:
 			case WP_GPG40:
+#ifndef LEGACY  
 			case WP_MORTAR_SET:
+#endif
 #if defined(NOQUARTER) || defined(LEGACY)
+#ifndef LEGACY  
 			case WP_MORTAR2_SET:
+#endif
 			case WP_BAZOOKA:
 #endif
 				_category.SetFlag(ENT_CAT_AVOID);
@@ -3812,9 +3822,13 @@ public:
 				case WP_SATCHEL:
 				case WP_M7:
 				case WP_GPG40:
+#ifndef LEGACY  
 				case WP_MORTAR_SET:
+#endif
 #if defined(NOQUARTER) || defined(LEGACY)
+#ifndef LEGACY  
 				case WP_MORTAR2_SET:
+#endif
 				case WP_BAZOOKA:
 #endif
 				case WP_SMOKE_BOMB:
@@ -4276,11 +4290,15 @@ public:
 			case WP_LANDMINE:
 			case WP_MEDKIT:
 			case WP_MORTAR:
+#ifndef LEGACY  
 			case WP_MORTAR_SET:
+#endif
 			case WP_PANZERFAUST:
 #if defined(NOQUARTER) || defined(LEGACY)
 			case WP_MORTAR2:
+#ifndef LEGACY  
 			case WP_MORTAR2_SET:
+#endif
 			case WP_BAZOOKA:
 #endif
 			case WP_PLIERS:
@@ -4343,9 +4361,11 @@ public:
 				case WP_MORTAR:
 					_weaponId = WP_MORTAR2;
 					break;
+#ifndef LEGACY  
 				case WP_MORTAR_SET:
 					_weaponId = WP_MORTAR2_SET;
 					break;
+#endif
 				default:
 					break;
 				}
@@ -4376,11 +4396,15 @@ public:
 			case WP_LANDMINE:
 			case WP_MEDKIT:
 			case WP_MORTAR:
+#ifndef LEGACY  
 			case WP_MORTAR_SET:
+#endif
 			case WP_PANZERFAUST:
 #if defined(NOQUARTER) || defined(LEGACY)
 			case WP_MORTAR2:
+#ifndef LEGACY  
 			case WP_MORTAR2_SET:
+#endif
 			case WP_BAZOOKA:
 #endif
 			case WP_PLIERS:

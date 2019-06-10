@@ -1245,9 +1245,9 @@ void CG_DrawMap(float x, float y, float w, float h, int mEntFilter, mapScissor_t
 			}
 
 			if (mEnt->type != ME_PLAYER &&
-				mEnt->type != ME_PLAYER_DISGUISED &&
-				mEnt->type != ME_PLAYER_OBJECTIVE &&
-				mEnt->type != ME_PLAYER_REVIVE)
+			    mEnt->type != ME_PLAYER_DISGUISED &&
+			    mEnt->type != ME_PLAYER_OBJECTIVE &&
+			    mEnt->type != ME_PLAYER_REVIVE)
 			{
 				continue;
 			}
@@ -1279,9 +1279,9 @@ void CG_DrawMap(float x, float y, float w, float h, int mEntFilter, mapScissor_t
 		}
 
 		if (mEnt->type != ME_PLAYER &&
-			mEnt->type != ME_PLAYER_DISGUISED &&
-			mEnt->type != ME_PLAYER_OBJECTIVE &&
-			mEnt->type != ME_PLAYER_REVIVE)
+		    mEnt->type != ME_PLAYER_DISGUISED &&
+		    mEnt->type != ME_PLAYER_OBJECTIVE &&
+		    mEnt->type != ME_PLAYER_REVIVE)
 		{
 			continue;
 		}
@@ -1781,9 +1781,9 @@ int CG_DrawSpawnPointInfo(float px, float py, float pw, float ph, qboolean draw,
  */
 void CG_DrawMortarMarker(float px, float py, float pw, float ph, qboolean draw, mapScissor_t *scissor, int expand)
 {
-	if (CHECKBITWISE(GetWeaponTableData(cg.lastFiredWeapon)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET) && cg.mortarImpactTime >= 0)
+	if ((GetWeaponTableData(cg.lastFiredWeapon)->type & WEAPON_TYPE_MORTAR) && cg.mortarImpactTime >= 0)
 	{
-		if (!(CHECKBITWISE(GetWeaponTableData(cg.snap->ps.weapon)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET)))
+		if (!(GetWeaponTableData(cg.snap->ps.weapon)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & 4))
 		{
 			cg.mortarImpactTime = 0;
 		}
@@ -1845,7 +1845,7 @@ void CG_DrawMortarMarker(float px, float py, float pw, float ph, qboolean draw, 
 		}
 	}
 
-	if (COM_BitCheck(cg.snap->ps.weapons, WP_MORTAR_SET) || COM_BitCheck(cg.snap->ps.weapons, WP_MORTAR2_SET))
+	if ((GetWeaponTableData(cg.snap->ps.weapon)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & 4))
 	{
 		vec4_t colour = { 1.f, 1.f, 1.f, 1.f };
 		vec3_t point;

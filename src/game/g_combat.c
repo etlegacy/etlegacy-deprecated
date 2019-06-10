@@ -1325,7 +1325,7 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t
 	}
 
 	// set weapons means less knockback
-        if (targ->client && ((GetWeaponTableData(targ->client->ps.weapon)->type & WEAPON_TYPE_SET) || (targ->client->pmext.silencedSideArm & 4)))
+        if (targ->client && (targ->client->pmext.silencedSideArm & 4))
 	{
 		knockback *= 0.5;
 	}

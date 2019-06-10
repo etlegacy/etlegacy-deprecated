@@ -2286,7 +2286,7 @@ static void CG_CalculateWeaponPosition(vec3_t origin, vec3_t angles)
 		angles[PITCH] = cg.refdefViewAngles[PITCH] / 1.2f;
 	}
 
-	if (!cg.renderingThirdPerson && ((GetWeaponTableData(cg.predictedPlayerState.weapon)->type & WEAPON_TYPE_SET) || cg.pmext.silencedSideArm & 4) &&
+        if (!cg.renderingThirdPerson && (cg.pmext.silencedSideArm & 4) &&
 	    cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
 	{
 		angles[PITCH] = cg.pmext.mountedWeaponAngles[PITCH];
@@ -2365,7 +2365,7 @@ static void CG_CalculateWeaponPosition(vec3_t origin, vec3_t angles)
 	}
 
 	// idle drift
-	if ((!(cg.predictedPlayerState.eFlags & EF_MOUNTEDTANK) && !(GetWeaponTableData(cg.predictedPlayerState.weapon)->type & WEAPON_TYPE_SET)) && !(cg.pmext.silencedSideArm & 4))
+	if (!(cg.predictedPlayerState.eFlags & EF_MOUNTEDTANK) && !(cg.pmext.silencedSideArm & 4))
 	{
 		float fracsin = (float)sin(cg.time * 0.001);
 
@@ -2569,7 +2569,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 		}
 	}
 
-	if (ps && !cg.renderingThirdPerson && CHECKBITWISE(GetWeaponTableData(cg.predictedPlayerState.weapon)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET)
+        if (ps && !cg.renderingThirdPerson && (GetWeaponTableData(cg.predictedPlayerState.weapon)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & 4)
 	    && cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
 	{
 		vec3_t angles;
@@ -2655,7 +2655,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 
 		for (i = W_PART_1; i < W_MAX_PARTS; i++)
 		{
-			if (CHECKBITWISE(GetWeaponTableData(weaponNum)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET) && (i == W_PART_4 || i == W_PART_5))
+			if ((GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & 4) && (i == W_PART_4 || i == W_PART_5))
 			{
 				if (ps && !cg.renderingThirdPerson && cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
 				{
@@ -2666,7 +2666,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 			spunpart      = qfalse;
 			barrel.hModel = weapon->partModels[modelViewType][i].model;
 
-			if (CHECKBITWISE(GetWeaponTableData(weaponNum)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET))
+			if ((GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & 4))
 			{
 				if (i == W_PART_3)
 				{
@@ -2709,7 +2709,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 
 				drawpart = CG_GetPartFramesFromWeap(cent, &barrel, parent, i, weapon);
 
-				if (CHECKBITWISE(GetWeaponTableData(weaponNum)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET) && (i == W_PART_1 || i == W_PART_2))
+				if ((GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & 4) && (i == W_PART_1 || i == W_PART_2))
 				{
 					if (ps && !cg.renderingThirdPerson && cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
 					{
@@ -2802,7 +2802,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 						satchelDetPart.customShader = weapon->modModels[2];
 						CG_AddWeaponWithPowerups(&satchelDetPart, cent->currentState.powerups, ps, cent);
 					}
-					else if (CHECKBITWISE(GetWeaponTableData(weaponNum)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET) && i == W_PART_3)
+					else if ((GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & 4) && i == W_PART_3)
 					{
 						if (ps && !cg.renderingThirdPerson && cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
 						{
@@ -3002,7 +3002,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 			}
 		}
 
-		if (CHECKBITWISE(GetWeaponTableData(weaponNum)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET))
+		if ((GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & 4))
 		{
 			if (ps && !cg.renderingThirdPerson && cg.time - cent->muzzleFlashTime < 800)
 			{
@@ -4299,7 +4299,7 @@ qboolean CG_CheckCanSwitch(void)
 		return qfalse;
 	}
 
-	if ((GetWeaponTableData(cg.snap->ps.weapon)->type & WEAPON_TYPE_SET) || (cg.pmext.silencedSideArm & 4))
+	if (cg.pmext.silencedSideArm & 4)
 	{
 		return qfalse;
 	}
@@ -4585,7 +4585,7 @@ void CG_OutOfAmmoChange(qboolean allowForceSwitch)
 			return;
 		}
 
-		if (GetWeaponTableData(cg.weaponSelect)->type & (WEAPON_TYPE_SET | WEAPON_TYPE_RIFLENADE))
+		if (GetWeaponTableData(cg.weaponSelect)->type & WEAPON_TYPE_RIFLENADE)
 		{
 			CG_FinishWeaponChange(cg.predictedPlayerState.weapon, GetWeaponTableData(cg.weaponSelect)->weapAlts);
 			return;
@@ -4840,7 +4840,7 @@ void CG_FireWeapon(centity_t *cent)
 		// kick angles
 		CG_WeaponFireRecoil(cent->currentState.weapon);
 
-		if (CHECKBITWISE(GetWeaponTableData(cent->currentState.weapon)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET))
+		if (GetWeaponTableData(cent->currentState.weapon)->type & WEAPON_TYPE_MORTAR)
 		{
 			cg.mortarImpactTime        = -1;
 			cg.mortarFireAngles[PITCH] = cg.predictedPlayerState.viewangles[PITCH];

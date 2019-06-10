@@ -271,7 +271,7 @@ void CG_EDV_WeaponCam(centity_t *cent, refEntity_t *ent)
 			trap_Cvar_Set("timescale", demo_autotimescale.string);
 		}
 	}
-	else if ((demo_weaponcam.integer & DWC_MORTAR) && CHECKBITWISE(GetWeaponTableData(cent->currentState.weapon)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET))
+        else if ((demo_weaponcam.integer & DWC_MORTAR) && (GetWeaponTableData(cent->currentState.weapon)->type & WEAPON_TYPE_MORTAR))
 	{
 		cgs.demoCamera.renderingWeaponCam = qtrue;
 

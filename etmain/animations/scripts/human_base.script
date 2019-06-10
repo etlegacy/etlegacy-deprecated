@@ -28,9 +28,9 @@ set weapons throwables_underhand = dynamite weapon
 set weapons one_handed_weapons   = Luger AND Colt AND Silenced Luger AND Silenced Colt
 set weapons two_handed_weapons   = MP 40 AND Thompson AND Sten gun AND flamethrower AND panzerfaust AND bazooka AND K43 Rifle AND gpg40 AND M7 AND m1 garand AND FG 42 Paratroop Rifle AND Scoped M1 Garand AND Mobile MG 42 AND Scoped K43 Rifle AND K43 Rifle Scope AND M1 Garand Scope AND FG 42 Paratroop Rifle Scope AND Mobile Browning AND MP34
 
-set weapons all                    = Luger AND Colt AND Silenced Luger AND Silenced Colt AND Binoculars AND special AND Ammo Pack AND knives AND dynamite weapon AND pineapple AND grenade AND smokeGrenade AND Smoke Bomb AND Landmine AND Satchel Charge AND MP 40 AND Thompson AND Sten gun AND flamethrower AND panzerfaust AND bazooka AND Ammo Pack AND Medicheal AND gpg40 AND M7 AND m1 garand AND FG 42 Paratroop Rifle AND Scoped M1 Garand AND Satchel Charge AND Landmine AND Mobile MG 42 AND Scoped K43 Rifle AND K43 Rifle Scope AND M1 Garand Scope AND FG 42 Paratroop Rifle Scope AND Mortar AND Mounted Mortar AND Satchel Charge AND Satchel Charge Detonator AND Mobile Browning AND Granatwerfer AND Mounted Granatwerfer AND MP34
+set weapons all                    = Luger AND Colt AND Silenced Luger AND Silenced Colt AND Binoculars AND special AND Ammo Pack AND knives AND dynamite weapon AND pineapple AND grenade AND smokeGrenade AND Smoke Bomb AND Landmine AND Satchel Charge AND MP 40 AND Thompson AND Sten gun AND flamethrower AND panzerfaust AND bazooka AND Ammo Pack AND Medicheal AND gpg40 AND M7 AND m1 garand AND FG 42 Paratroop Rifle AND Scoped M1 Garand AND Satchel Charge AND Landmine AND Mobile MG 42 AND Scoped K43 Rifle AND K43 Rifle Scope AND M1 Garand Scope AND FG 42 Paratroop Rifle Scope AND Mortar AND Satchel Charge AND Satchel Charge Detonator AND Mobile Browning AND Granatwerfer AND MP34
 set weapons all_one_handed_weapons = Luger AND Colt AND Silenced Luger AND Silenced Colt AND Binoculars AND special AND Ammo Pack AND knives AND dynamite weapon AND pineapple AND grenade AND smokeGrenade AND Smoke Bomb AND Landmine AND Satchel Charge
-set weapons all_two_handed_weapons = MP 40 AND Thompson AND Sten gun AND flamethrower AND panzerfaust AND bazooka AND Ammo Pack AND Medicheal AND gpg40 AND M7 AND m1 garand AND FG 42 Paratroop Rifle AND Scoped M1 Garand AND Satchel Charge AND Landmine AND Mobile MG 42 AND Scoped K43 Rifle AND K43 Rifle Scope AND M1 Garand Scope AND FG 42 Paratroop Rifle Scope AND Mortar AND Mounted Mortar AND Satchel Charge AND Satchel Charge Detonator AND Mobile Browning AND Granatwerfer AND Mounted Granatwerfer AND MP34
+set weapons all_two_handed_weapons = MP 40 AND Thompson AND Sten gun AND flamethrower AND panzerfaust AND bazooka AND Ammo Pack AND Medicheal AND gpg40 AND M7 AND m1 garand AND FG 42 Paratroop Rifle AND Scoped M1 Garand AND Satchel Charge AND Landmine AND Mobile MG 42 AND Scoped K43 Rifle AND K43 Rifle Scope AND M1 Garand Scope AND FG 42 Paratroop Rifle Scope AND Mortar AND Satchel Charge AND Satchel Charge Detonator AND Mobile Browning AND Granatwerfer AND MP34
 
 // movetypes
 set movetype moving = walk AND walkcr AND walkcrbk AND walkbk AND run AND runbk AND straferight AND strafeleft
@@ -102,10 +102,6 @@ STATE COMBAT
 	idle
 	{
 		weapons Mortar AND Granatwerfer
-		{
-			legs stand_panzer torso e_mortar_stand
-		}
-		weapons Mounted Mortar AND Mounted Granatwerfer
 		{
 			both mortar_deployed
 		}
@@ -262,10 +258,6 @@ STATE COMBAT
 		{
 			legs alert_crchidle_2h torso e_mortar_stand
 		}
-		weapons Mounted Mortar AND Mounted Granatwerfer
-		{
-			both mortar_deployed
-		}
 		weapons satchel charge
 		{
 			legs alert_crchidle_1h torso stand_medpack
@@ -389,10 +381,6 @@ STATE COMBAT
 		{
 			legs relaxed_walk_1h_1 torso e_mortar_run
 		}
-		weapons Mounted Mortar AND Mounted Granatwerfer
-		{
-			both mortar_deployed
-		}
 		weapons satchel charge
 		{
 			legs relaxed_walk_1h_1 torso stand_medpack
@@ -512,10 +500,6 @@ STATE COMBAT
 		{
 			legs alert_bk_2h torso e_mortar_run
 		}
-		weapons Mounted Mortar AND Mounted Granatwerfer
-		{
-			both mortar_deployed
-		}
 		weapons satchel charge
 		{
 			legs alert_bk_2h torso stand_medpack
@@ -634,10 +618,6 @@ STATE COMBAT
 		weapons Mortar AND Granatwerfer
 		{
 			legs alert_crch_2h torso e_mortar_run
-		}
-		weapons Mounted Mortar AND Mounted Granatwerfer
-		{
-			both mortar_deployed
 		}
 		weapons satchel charge
 		{
@@ -759,10 +739,6 @@ STATE COMBAT
 		{
 			legs alert_crbk_2h torso e_mortar_run
 		}
-		weapons Mounted Mortar AND Mounted Granatwerfer
-		{
-			both mortar_deployed
-		}
 		weapons satchel charge
 		{
 			legs alert_crbk_2h torso stand_medpack
@@ -882,10 +858,6 @@ STATE COMBAT
 		{
 			legs alert_run_1h torso e_mortar_run
 		}
-		weapons Mounted Mortar AND Mounted Granatwerfer
-		{
-			both mortar_deployed
-		}
 		weapons satchel charge
 		{
 			legs alert_run_1h torso stand_medpack
@@ -1004,10 +976,6 @@ STATE COMBAT
 		weapons Mortar AND Granatwerfer
 		{
 			legs alert_bk_2h torso e_mortar_run
-		}
-		weapons Mounted Mortar AND Mounted Granatwerfer
-		{
-			both mortar_deployed
 		}
 		weapons satchel charge
 		{
@@ -1132,10 +1100,6 @@ STATE COMBAT
 		{
 			legs alert_run_2h torso e_mortar_run
 		}
-		weapons Mounted Mortar AND Mounted Granatwerfer
-		{
-			both mortar_deployed
-		}
 		weapons satchel charge
 		{
 			legs alert_run_2h torso stand_medpack
@@ -1254,10 +1218,6 @@ STATE COMBAT
 		weapons Mortar AND Granatwerfer
 		{
 			legs alert_run_2h torso e_mortar_run
-		}
-		weapons Mounted Mortar AND Mounted Granatwerfer
-		{
-			both mortar_deployed
 		}
 		weapons satchel charge
 		{
@@ -1426,10 +1386,6 @@ STATE COMBAT
 	}
 	idleprone
 	{
-		weapons Mounted Mortar AND Mounted Granatwerfer
-		{
-			legs prone_legs torso mortar_deployed
-		}
 		weapons Mortar AND Granatwerfer
 		{
 			legs prone_legs torso e_prone_mortar_stand
@@ -1671,7 +1627,7 @@ fireweapon
 		torso self_inject
 	}
 // Mortar
-	weapons Mounted Mortar AND Mounted Granatwerfer
+	weapons Mortar AND Granatwerfer
 	{
 		torso mortar_fire
 	}

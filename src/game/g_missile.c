@@ -248,7 +248,7 @@ void G_MissileImpact(gentity_t *ent, trace_t *trace, int impactDamage)
 	temp->s.weapon    = ent->s.weapon;
 	temp->s.clientNum = ent->r.ownerNum;
 
-	if (CHECKBITWISE(GetWeaponTableData(ent->s.weapon)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET))
+	if (GetWeaponTableData(ent->s.weapon)->type & WEAPON_TYPE_MORTAR)
 	{
 		temp->r.svFlags |= SVF_BROADCAST;
 	}
@@ -568,7 +568,7 @@ void G_RunMissile(gentity_t *ent)
 	// ignoring interactions with the missile owner
 	trap_Trace(&tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, origin, ent->r.ownerNum, ent->clipmask);
 
-	if ((CHECKBITWISE(GetWeaponTableData(ent->s.weapon)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET) ||
+        if (((GetWeaponTableData(ent->s.weapon)->type & WEAPON_TYPE_MORTAR) ||
 	     ent->s.weapon == WP_AIRSTRIKE || ent->s.weapon == WP_ARTY) && ent->count2 == 1)
 	{
 		if (ent->r.currentOrigin[2] > origin[2] && origin[2] - BG_GetGroundHeightAtPoint(origin) < 512)

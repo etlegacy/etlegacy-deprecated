@@ -374,7 +374,7 @@ void G_DropWeapon(gentity_t *ent, weapon_t weapon)
 	{
 		weapon_t weapAlts = GetWeaponTableData(weapon)->weapAlts;
 
-		if (GetWeaponTableData(weapAlts)->type & (WEAPON_TYPE_RIFLENADE | WEAPON_TYPE_SCOPED | WEAPON_TYPE_SET))
+		if (GetWeaponTableData(weapAlts)->type & (WEAPON_TYPE_RIFLENADE | WEAPON_TYPE_SCOPED))
 		{
 			COM_BitClear(client->ps.weapons, weapAlts);
 		}
@@ -507,12 +507,6 @@ int Pickup_Weapon(gentity_t *ent, gentity_t *other)
 			return 0;
 		}
 
-		// don't pick up when MG or mortar is set
-		if (GetWeaponTableData(other->client->ps.weapon)->type & WEAPON_TYPE_SET)
-		{
-			return 0;
-		}
-
 		// see if we can pick it up
 		if (G_CanPickupWeapon(ent->item->giWeapon, other))
 		{
@@ -544,7 +538,7 @@ int Pickup_Weapon(gentity_t *ent, gentity_t *other)
 				{
 					weapon_t weapAlts = GetWeaponTableData(ent->item->giWeapon)->weapAlts;
 
-					if (GetWeaponTableData(weapAlts)->type & (WEAPON_TYPE_RIFLENADE | WEAPON_TYPE_SCOPED | WEAPON_TYPE_SET))
+					if (GetWeaponTableData(weapAlts)->type & (WEAPON_TYPE_RIFLENADE | WEAPON_TYPE_SCOPED))
 					{
 						COM_BitSet(other->client->ps.weapons, weapAlts);
 					}

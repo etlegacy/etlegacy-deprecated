@@ -1190,7 +1190,7 @@ static void CG_Missile(centity_t *cent)
 	// reverted to vanilla behaviour
 	// FIXME: check FEATURE_EDV weapon cam (see else condition below)
 	if (/*GetWeaponTableData(cent->currentState.weapon)->type & (WEAPON_TYPE_RIFLENADE | WEAPON_TYPE_PANZER | WEAPON_TYPE_GRENADE)
-	    &&*/ (CHECKBITWISE(GetWeaponTableData(cent->currentState.weapon)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET)
+	    &&*/ ((GetWeaponTableData(cent->currentState.weapon)->type & WEAPON_TYPE_MORTAR)
 	          || cent->currentState.weapon == WP_MAPMORTAR /*|| cent->currentState.weapon == WP_SMOKE_MARKER
 	        || cent->currentState.weapon == WP_SMOKE_BOMB || cent->currentState.weapon == WP_DYNAMITE*/))
 	{

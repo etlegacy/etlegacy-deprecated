@@ -865,21 +865,19 @@ typedef enum
 	WP_GARAND_SCOPE,           ///< 40
 	WP_K43_SCOPE,              ///< 41
 	WP_FG42SCOPE,              ///< 42
-	WP_MORTAR_SET,             ///< 43
-	WP_MEDIC_ADRENALINE,       ///< 44
-	WP_AKIMBO_SILENCEDCOLT,    ///< 45
-	WP_AKIMBO_SILENCEDLUGER,   ///< 46
+	WP_MEDIC_ADRENALINE,       ///< 43
+	WP_AKIMBO_SILENCEDCOLT,    ///< 44
+	WP_AKIMBO_SILENCEDLUGER,   ///< 45
 
 	// legacy weapon
-	WP_KNIFE_KABAR,            ///< 47
-	WP_MOBILE_BROWNING,        ///< 48
-	WP_MORTAR2,                ///< 49
-	WP_MORTAR2_SET,            ///< 50
-	WP_BAZOOKA,                ///< 51
-	WP_MP34,                   ///< 52
-	WP_AIRSTRIKE,              ///< 53
+	WP_KNIFE_KABAR,            ///< 46
+	WP_MOBILE_BROWNING,        ///< 47
+	WP_MORTAR2,                ///< 48
+	WP_BAZOOKA,                ///< 49
+	WP_MP34,                   ///< 50
+	WP_AIRSTRIKE,              ///< 51
 
-	WP_NUM_WEAPONS             ///< 54
+	WP_NUM_WEAPONS             ///< 52
 	///< NOTE: this cannot be larger than 64 for AI/player weapons!
 } weapon_t;
 
@@ -1042,8 +1040,7 @@ typedef enum weaponType_s
 	WEAPON_TYPE_SYRINGUE  = BIT(9),
 	WEAPON_TYPE_SCOPABLE  = BIT(10),
 	WEAPON_TYPE_SCOPED    = BIT(11),
-	WEAPON_TYPE_SETTABLE  = BIT(12),
-	WEAPON_TYPE_SET       = BIT(13)
+	WEAPON_TYPE_SETTABLE  = BIT(12)
 
 } weaponType_t;
 
@@ -1852,9 +1849,7 @@ typedef enum item_s
 	ITEM_WEAPON_FG42,
 	ITEM_WEAPON_FG42SCOPE,
 	ITEM_WEAPON_MORTAR,
-	ITEM_WEAPON_MORTAR_SET,
 	ITEM_WEAPON_MORTAR2,
-	ITEM_WEAPON_MORTAR2_SET,
 	ITEM_WEAPON_LANDMINE,
 	ITEM_WEAPON_SATCHEL,
 	ITEM_WEAPON_SATCHELDET,
