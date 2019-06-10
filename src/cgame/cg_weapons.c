@@ -2286,7 +2286,7 @@ static void CG_CalculateWeaponPosition(vec3_t origin, vec3_t angles)
 		angles[PITCH] = cg.refdefViewAngles[PITCH] / 1.2f;
 	}
 
-	if (!cg.renderingThirdPerson && (GetWeaponTableData(cg.predictedPlayerState.weapon)->type & WEAPON_TYPE_SET) &&
+	if (!cg.renderingThirdPerson && ((GetWeaponTableData(cg.predictedPlayerState.weapon)->type & WEAPON_TYPE_SET) || cg.pmext.silencedSideArm & 4) &&
 	    cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
 	{
 		angles[PITCH] = cg.pmext.mountedWeaponAngles[PITCH];
@@ -2365,7 +2365,7 @@ static void CG_CalculateWeaponPosition(vec3_t origin, vec3_t angles)
 	}
 
 	// idle drift
-	if ((!(cg.predictedPlayerState.eFlags & EF_MOUNTEDTANK) && !(GetWeaponTableData(cg.predictedPlayerState.weapon)->type & WEAPON_TYPE_SET)))
+	if ((!(cg.predictedPlayerState.eFlags & EF_MOUNTEDTANK) && !(GetWeaponTableData(cg.predictedPlayerState.weapon)->type & WEAPON_TYPE_SET)) && !(cg.pmext.silencedSideArm & 4))
 	{
 		float fracsin = (float)sin(cg.time * 0.001);
 
@@ -2898,7 +2898,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 		else if (GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_MG)
 		{
 			barrel.hModel = weapon->modModels[0];
-			barrel.frame  = GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_SETTABLE;
+			barrel.frame  = !(cg.pmext.silencedSideArm & 4);
 			CG_PositionEntityOnTag(&barrel, &gun, "tag_bipod", 0, NULL);
 			CG_AddWeaponWithPowerups(&barrel, cent->currentState.powerups, ps, cent);
 		}
@@ -3900,54 +3900,44 @@ void CG_AltWeapon_f(void)
 	// need ground for this
 	if (GetWeaponTableData(cg.weaponSelect)->type & WEAPON_TYPE_SETTABLE)
 	{
-		if (GetWeaponTableData(cg.weaponSelect)->type & WEAPON_TYPE_MG)
+		int    contents;
+		vec3_t point;
+
+		if (cg.predictedPlayerState.groundEntityNum == ENTITYNUM_NONE)
 		{
-			if (!(cg.predictedPlayerState.eFlags & EF_PRONE))
-			{
-				return;
-			}
+			return;
 		}
-		else // mortar
+
+		if (!cg.predictedPlayerState.ammoclip[cg.weaponSelect])
 		{
-			int    contents;
-			vec3_t point;
+			return;
+		}
 
-			if (cg.predictedPlayerState.groundEntityNum == ENTITYNUM_NONE)
-			{
-				return;
-			}
+		if (cg.predictedPlayerState.eFlags & EF_PRONE)
+		{
+			return;
+		}
 
-			if (!cg.predictedPlayerState.ammoclip[cg.weaponSelect])
-			{
-				return;
-			}
+		if (cg_pmove.waterlevel == 3)
+		{
+			return;
+		}
 
-			if (cg.predictedPlayerState.eFlags & EF_PRONE)
-			{
-				return;
-			}
+		// don't allow set if moving
+		if (VectorLengthSquared(cg.snap->ps.velocity) != 0.f)
+		{
+			return;
+		}
 
-			if (cg_pmove.waterlevel == 3)
-			{
-				return;
-			}
+		// eurgh, need it here too else we play sounds :/
+		point[0] = cg.snap->ps.origin[0];
+		point[1] = cg.snap->ps.origin[1];
+		point[2] = cg.snap->ps.origin[2] + cg.snap->ps.crouchViewHeight;
+		contents = CG_PointContents(point, cg.snap->ps.clientNum);
 
-			// don't allow set if moving
-			if (VectorLengthSquared(cg.snap->ps.velocity) != 0.f)
-			{
-				return;
-			}
-
-			// eurgh, need it here too else we play sounds :/
-			point[0] = cg.snap->ps.origin[0];
-			point[1] = cg.snap->ps.origin[1];
-			point[2] = cg.snap->ps.origin[2] + cg.snap->ps.crouchViewHeight;
-			contents = CG_PointContents(point, cg.snap->ps.clientNum);
-
-			if (contents & MASK_WATER)
-			{
-				return;
-			}
+		if (contents & MASK_WATER)
+		{
+			return;
 		}
 	}
 	else if (GetWeaponTableData(cg.weaponSelect)->type & WEAPON_TYPE_SCOPABLE)
@@ -4309,7 +4299,7 @@ qboolean CG_CheckCanSwitch(void)
 		return qfalse;
 	}
 
-	if (GetWeaponTableData(cg.snap->ps.weapon)->type & WEAPON_TYPE_SET)
+	if ((GetWeaponTableData(cg.snap->ps.weapon)->type & WEAPON_TYPE_SET) || (cg.pmext.silencedSideArm & 4))
 	{
 		return qfalse;
 	}
@@ -6112,7 +6102,7 @@ qboolean CG_CalcMuzzlePoint(int entityNum, vec3_t muzzle)
 			muzzle[2] += cg.snap->ps.viewheight;
 			AngleVectors(cg.snap->ps.viewangles, forward, NULL, NULL);
 
-			if (CHECKBITWISE(GetWeaponTableData(cg.snap->ps.weapon)->type, WEAPON_TYPE_MG | WEAPON_TYPE_SET))
+			if ((GetWeaponTableData(cg.snap->ps.weapon)->type & WEAPON_TYPE_MG) && (cg.pmext.silencedSideArm & 4))
 			{
 				VectorMA(muzzle, 36, forward, muzzle);
 			}
@@ -6177,7 +6167,7 @@ qboolean CG_CalcMuzzlePoint(int entityNum, vec3_t muzzle)
 		{
 			muzzle[2] += PRONE_VIEWHEIGHT;
 
-			if (CHECKBITWISE(GetWeaponTableData(cent->currentState.weapon)->type, WEAPON_TYPE_MG | WEAPON_TYPE_SET))
+			if ((GetWeaponTableData(cg.snap->ps.weapon)->type & WEAPON_TYPE_MG) && (cg.pmext.silencedSideArm & 4))
 			{
 				VectorMA(muzzle, 36, forward, muzzle);
 			}

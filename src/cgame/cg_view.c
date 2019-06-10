@@ -590,7 +590,7 @@ static void CG_OffsetFirstPersonView(void)
 	origin = cg.refdef_current->vieworg;
 	angles = cg.refdefViewAngles;
 
-	if (CHECKBITWISE(GetWeaponTableData(cg.snap->ps.weapon)->type, WEAPON_TYPE_MG | WEAPON_TYPE_SET))
+	if ((GetWeaponTableData(cg.snap->ps.weapon)->type & WEAPON_TYPE_MG) && (cg.pmext.silencedSideArm & 4))
 	{
 		vec3_t forward, point;
 		float  oldZ = origin[2];
@@ -1055,7 +1055,7 @@ static int CG_CalcFov(void)
 	{
 		fov_x = 55;
 	}
-	else if (CHECKBITWISE(GetWeaponTableData(cg.snap->ps.weapon)->type, WEAPON_TYPE_MG | WEAPON_TYPE_SET))
+	else if ((GetWeaponTableData(cg.snap->ps.weapon)->type & WEAPON_TYPE_MG) && (cg.pmext.silencedSideArm & 4))
 	{
 		fov_x = 55;
 	}
@@ -1656,7 +1656,7 @@ void CG_DrawSkyBoxPortal(qboolean fLocalView)
 
 		rd.rdflags &= ~RDF_SNOOPERVIEW;
 
-		if (BG_PlayerMounted(cg.snap->ps.eFlags) || (CHECKBITWISE(GetWeaponTableData(cg.predictedPlayerState.weapon)->type, WEAPON_TYPE_MG | WEAPON_TYPE_SET)))
+                if (BG_PlayerMounted(cg.snap->ps.eFlags) || ((GetWeaponTableData(cg.snap->ps.weapon)->type & WEAPON_TYPE_MG) && (cg.pmext.silencedSideArm & 4)))
 		{
 			fov_x = 55;
 		}

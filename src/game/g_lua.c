@@ -2523,17 +2523,15 @@ static void registerWeaponConstants(lua_vm_t *vm)
 	lua_regconstinteger(vm->L, WP_MEDIC_ADRENALINE);     // 44
 	lua_regconstinteger(vm->L, WP_AKIMBO_SILENCEDCOLT);  // 45
 	lua_regconstinteger(vm->L, WP_AKIMBO_SILENCEDLUGER); // 46
-	lua_regconstinteger(vm->L, WP_MOBILE_MG42_SET);      // 47
 
 	// legacy weapons
-	lua_regconstinteger(vm->L, WP_KNIFE_KABAR);          // 48
-	lua_regconstinteger(vm->L, WP_MOBILE_BROWNING);      // 49
-	lua_regconstinteger(vm->L, WP_MOBILE_BROWNING_SET);  // 50
-	lua_regconstinteger(vm->L, WP_MORTAR2);              // 51
-	lua_regconstinteger(vm->L, WP_MORTAR2_SET);          // 52
-	lua_regconstinteger(vm->L, WP_BAZOOKA);              // 53
-	lua_regconstinteger(vm->L, WP_MP34);                 // 54
-	lua_regconstinteger(vm->L, WP_AIRSTRIKE);            // 55
+	lua_regconstinteger(vm->L, WP_KNIFE_KABAR);          // 47
+	lua_regconstinteger(vm->L, WP_MOBILE_BROWNING);      // 48
+	lua_regconstinteger(vm->L, WP_MORTAR2);              // 49
+	lua_regconstinteger(vm->L, WP_MORTAR2_SET);          // 50
+	lua_regconstinteger(vm->L, WP_BAZOOKA);              // 51
+	lua_regconstinteger(vm->L, WP_MP34);                 // 52
+	lua_regconstinteger(vm->L, WP_AIRSTRIKE);            // 53
 	lua_regconstinteger(vm->L, WP_NUM_WEAPONS);
 }
 

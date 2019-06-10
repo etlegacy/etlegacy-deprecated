@@ -16,7 +16,6 @@ DEFINES
 
 // weapons
 set weapons knives               = Knife AND Ka-Bar
-set weapons Bipods               = Mobile MG 42 Bipod AND Mobile Browning Bipod
 set weapons pistols              = Luger AND Colt AND Silenced Luger AND Silenced Colt
 set weapons akimbo_pistols       = Akimbo Luger AND Silenced Akimbo Luger AND Akimbo Colt AND Silenced Akimbo Colt
 set weapons machineguns          = MP 40 AND Thompson AND Sten gun AND Flamethrower AND panzerfaust AND bazooka AND Mobile MG 42 AND Mobile Browning AND MP34
@@ -1447,10 +1446,6 @@ STATE COMBAT
 		{
 			legs prone_legs torso prone_poke_idle
 		}
-		weapons Mobile MG 42 Bipod AND Mobile Browning Bipod
-		{
-			legs prone_legs torso prone_mg42_idle
-		}
 		weapons Mobile MG 42 AND Mobile Browning
 		{
 			legs prone_legs torso prone_mg42_idle
@@ -2253,10 +2248,6 @@ fireweaponprone
 	{
 		torso prone_mg42_fire
 	}
-	weapons Mobile MG 42 Bipod  AND Mobile Browning Bipod
-	{
-		torso prone_mg42_fire
-	}
 	weapons machineguns
 	{
 		torso prone_mg_fire
@@ -2474,10 +2465,6 @@ reloadprone
 		torso e_prone_pistols_reload
 	}
 	weapons Mobile MG 42 AND Mobile Browning
-	{
-		torso prone_mg42_reload
-	}
-	weapons Mobile MG 42 Bipod  AND Mobile Browning Bipod
 	{
 		torso prone_mg42_reload
 	}

@@ -1857,7 +1857,7 @@ static consoleCommand_t commands[] =
 	{ "weapprevinbank",      CG_PrevWeaponInBank_f     },
 	{ "weapnext",            CG_NextWeapon_f           },
 	{ "weapprev",            CG_PrevWeapon_f           },
-	{ "weapalt",             CG_AltWeapon_f            },
+	{ "+attack2",            CG_AltWeapon_f            },
 	{ "weapon",              CG_Weapon_f               },
 	{ "weaponbank",          CG_WeaponBank_f           },
 	{ "fade",                CG_Fade_f                 },

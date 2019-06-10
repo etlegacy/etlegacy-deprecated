@@ -3543,7 +3543,7 @@ qboolean G_TankIsMountable(gentity_t *ent, gentity_t *other)
 		return qfalse;
 	}
 
-	if (GetWeaponTableData(other->client->ps.weapon)->type & WEAPON_TYPE_SET)
+	if (GetWeaponTableData(other->client->ps.weapon)->type & WEAPON_TYPE_SET || (ent->client->pmext.silencedSideArm & 4))
 	{
 		return qfalse;
 	}
@@ -3850,7 +3850,7 @@ void Cmd_Activate_f(gentity_t *ent)
 		return;
 	}
 
-	if (GetWeaponTableData(ent->s.weapon)->type & WEAPON_TYPE_SET)
+	if (GetWeaponTableData(ent->s.weapon)->type & WEAPON_TYPE_SET || (ent->client->pmext.silencedSideArm & 4))
 	{
 		return;
 	}
@@ -4043,7 +4043,7 @@ void Cmd_Activate2_f(gentity_t *ent)
 		return;
 	}
 
-	if (GetWeaponTableData(ent->s.weapon)->type & WEAPON_TYPE_SET)
+        if (GetWeaponTableData(ent->s.weapon)->type & WEAPON_TYPE_SET || (ent->client->pmext.silencedSideArm & 4))
 	{
 		return;
 	}

@@ -869,19 +869,17 @@ typedef enum
 	WP_MEDIC_ADRENALINE,       ///< 44
 	WP_AKIMBO_SILENCEDCOLT,    ///< 45
 	WP_AKIMBO_SILENCEDLUGER,   ///< 46
-	WP_MOBILE_MG42_SET,        ///< 47
 
-	// legacy weapons
-	WP_KNIFE_KABAR,            ///< 48
-	WP_MOBILE_BROWNING,        ///< 49
-	WP_MOBILE_BROWNING_SET,    ///< 50
-	WP_MORTAR2,                ///< 51
-	WP_MORTAR2_SET,            ///< 52
-	WP_BAZOOKA,                ///< 53
-	WP_MP34,                   ///< 54
-	WP_AIRSTRIKE,              ///< 55
+	// legacy weapon
+	WP_KNIFE_KABAR,            ///< 47
+	WP_MOBILE_BROWNING,        ///< 48
+	WP_MORTAR2,                ///< 49
+	WP_MORTAR2_SET,            ///< 50
+	WP_BAZOOKA,                ///< 51
+	WP_MP34,                   ///< 52
+	WP_AIRSTRIKE,              ///< 53
 
-	WP_NUM_WEAPONS             ///< 56
+	WP_NUM_WEAPONS             ///< 54
 	///< NOTE: this cannot be larger than 64 for AI/player weapons!
 } weapon_t;
 
@@ -1862,8 +1860,6 @@ typedef enum item_s
 	ITEM_WEAPON_SATCHELDET,
 	ITEM_WEAPON_SMOKE_BOMB,
 	ITEM_WEAPON_MOBILE_MG42,
-	ITEM_WEAPON_MOBILE_MG42_SET,
-	ITEM_WEAPON_MOBILE_BROWNING_SET,
 	ITEM_WEAPON_MOBILE_BROWNING,
 	ITEM_WEAPON_SILENCER,
 	ITEM_WEAPON_SILENCED_COLT,
@@ -1885,7 +1881,7 @@ typedef enum item_s
 	ITEM_AMMO_30CAL_LARGE,
 	ITEM_RED_FLAG,
 	ITEM_BLUE_FLAG,
-	ITEM_MAX_ITEMS,
+	ITEM_MAX_ITEMS
 
 } item_t;
 

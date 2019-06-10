@@ -663,8 +663,10 @@ static weapon_t _weaponBotToGame(int weapon)
 		return WP_MEDKIT;
 	case ET_WP_MOBILE_MG42:
 		return WP_MOBILE_MG42;
+#ifndef LEGACY                
 	case ET_WP_MOBILE_MG42_SET:
 		return WP_MOBILE_MG42_SET;
+#endif                
 	case ET_WP_MORTAR:
 		return WP_MORTAR;
 	case ET_WP_MORTAR_SET:
@@ -742,8 +744,6 @@ static weapon_t _weaponBotToGame(int weapon)
 #ifdef LEGACY
 	case 88:
 		return WP_MOBILE_BROWNING;
-	case 89:
-		return WP_MOBILE_BROWNING_SET;
 	case 92:
 		return WP_MORTAR2;
 	case 93:
@@ -818,8 +818,10 @@ int Bot_WeaponGameToBot(int weapon)
 		return ET_WP_MEDKIT;
 	case WP_MOBILE_MG42:
 		return ET_WP_MOBILE_MG42;
+#ifndef LEGACY                
 	case WP_MOBILE_MG42_SET:
 		return ET_WP_MOBILE_MG42_SET;
+#endif                
 	case WP_MORTAR:
 		return ET_WP_MORTAR;
 	case WP_MORTAR_SET:
@@ -897,8 +899,6 @@ int Bot_WeaponGameToBot(int weapon)
 #ifdef LEGACY
 	case WP_MOBILE_BROWNING:
 		return ET_WP_MOBILE_MG42;
-	case WP_MOBILE_BROWNING_SET:
-		return ET_WP_MOBILE_MG42_SET;
 	case WP_MORTAR2:
 		return ET_WP_MORTAR;
 	case WP_MORTAR2_SET:
@@ -2584,10 +2584,12 @@ public:
 			{
 				cmd.weapon = WP_MOBILE_BROWNING;
 			}
+#ifndef LEGACY                          
 			else if (cmd.weapon == WP_MOBILE_MG42_SET)
 			{
 				cmd.weapon = WP_MOBILE_BROWNING_SET;
 			}
+#endif                        
 			else if (cmd.weapon == WP_KNIFE)
 			{
 				cmd.weapon = WP_KNIFE_KABAR;
@@ -4320,9 +4322,11 @@ public:
 				case WP_MOBILE_MG42:
 					_weaponId = WP_MOBILE_BROWNING;
 					break;
+#ifndef LEGACY                                          
 				case WP_MOBILE_MG42_SET:
 					_weaponId = WP_MOBILE_BROWNING_SET;
 					break;
+#endif
 #ifdef LEGACY
 				case WP_PANZERFAUST:
 					_weaponId = WP_BAZOOKA;
@@ -6511,23 +6515,24 @@ void Bot_Interface_Update()
 
 //////////////////////////////////////////////////////////////////////////
 
+#ifndef LEGACY 
 qboolean Bot_Util_AllowPush(int weaponId)
 {
 	switch (weaponId)
 	{
 	case WP_MORTAR_SET:
-#if defined(NOQUARTER) || defined(LEGACY)
+#if defined(NOQUARTER)
 	case WP_MORTAR2_SET:
 	case WP_MOBILE_BROWNING_SET:
-#ifndef LEGACY
 	case WP_BAR_SET:
 #endif
-#endif
-	case WP_MOBILE_MG42_SET:
+	case WP_MOBILE_MG42_SET: 
 		return qfalse;
+              
 	}
 	return qtrue;
 }
+#endif 
 
 //////////////////////////////////////////////////////////////////////////
 const char *_GetEntityName(gentity_t *_ent)

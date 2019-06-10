@@ -100,6 +100,7 @@ void ClientStoreSurfaceFlags(int clientNum, int surfaceFlags);
 #endif
 
 static void PM_BeginWeaponChange(weapon_t oldWeapon, weapon_t newWeapon, qboolean reload);
+static void PM_BeginAltWeaponChange(void);
 
 /**
  * @brief PM_AddEvent
@@ -913,6 +914,10 @@ static qboolean PM_CheckProne(void)
 				if (GetWeaponTableData(pm->ps->weapon)->type & (WEAPON_TYPE_SCOPED | WEAPON_TYPE_SET))
 				{
 					PM_BeginWeaponChange((weapon_t)pm->ps->weapon, GetWeaponTableData(pm->ps->weapon)->weapAlts, qfalse);
+				}
+				else if (pm->pmext->silencedSideArm & 4)
+				{
+					PM_BeginAltWeaponChange();
 				}
 
 				// don't jump for a bit
@@ -2292,7 +2297,14 @@ static void PM_BeginWeaponReload(weapon_t weapon)
 
 	if (!(GetWeaponTableData(weapon)->type & WEAPON_TYPE_MORTAR))
 	{
-		PM_ContinueWeaponAnim(PM_ReloadAnimForWeapon(pm->ps->weapon));
+		if (pm->pmext->silencedSideArm & 4)
+		{
+			PM_ContinueWeaponAnim(WEAP_RELOAD3);
+		}
+		else
+		{
+			PM_ContinueWeaponAnim(PM_ReloadAnimForWeapon(pm->ps->weapon));
+		}
 	}
 
 	// okay to reload while overheating without tacking the reload time onto the end of the
@@ -2545,6 +2557,107 @@ static void PM_FinishWeaponChange(void)
 	}
 }
 
+static void PM_BeginAltWeaponChange()
+{
+	if (pm->ps->pm_flags & PMF_RESPAWNED)
+	{
+		return;     // don't allow weapon switch until all buttons are up
+	}
+
+	if (pm->ps->eFlags & EF_DEAD)
+	{
+		return;
+	}
+
+	if (pm->ps->weaponstate == WEAPON_DROPPING || pm->ps->weaponstate == WEAPON_DROPPING_TORELOAD ||
+	    pm->ps->weaponstate == WEAPON_RELOADING)
+	{
+		return;
+	}
+
+	// don't allow another weapon switch when we're still swapping alt weap, to prevent animation breaking
+	// there we check the value of the animation to prevent any switch during raising and dropping alt weapon
+	// until the animation is ended
+	if ((pm->ps->weapAnim & ~ANIM_TOGGLEBIT) == GetWeaponTableData(pm->ps->weapon)->altSwitchFrom ||
+	    (pm->ps->weapAnim & ~ANIM_TOGGLEBIT) == GetWeaponTableData(pm->ps->weapon)->altSwitchTo)
+	{
+		return;
+	}
+
+	// don't allow change during spinup
+	if (pm->ps->weaponDelay)
+	{
+		return;
+	}
+
+	// don't allow switch if you're holding a hot potato or dynamite
+	if (pm->ps->grenadeTimeLeft > 0)
+	{
+		return;
+	}
+
+	if (GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_SETTABLE)
+	{
+		if (!(pm->pmext->silencedSideArm & 4))
+		{
+			vec3_t axis[3];
+
+			// need ground for this
+			if (GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MG)
+			{
+				if (!(pm->ps->eFlags & EF_PRONE))
+				{
+					return;
+				}
+			}
+
+			VectorCopy(pml.forward, axis[0]);
+			VectorCopy(pml.right, axis[2]);
+			CrossProduct(axis[0], axis[2], axis[1]);
+			AxisToAngles(axis, pm->pmext->mountedWeaponAngles);
+		}
+	}
+	else
+	{
+		return;
+	}
+
+	PM_AddEvent(EV_CHANGE_WEAPON_2);
+
+	pm->ps->weaponstate = WEAPON_DROPPING;
+}
+
+static void PM_FinishAltWeaponChange()
+{
+	pm->ps->weaponstate = WEAPON_RAISING;
+
+	if (GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_SETTABLE)
+	{
+		if (pm->pmext->silencedSideArm & 4)
+		{
+			PM_StartWeaponAnim(WEAP_ALTSWITCHFROM);
+			pm->ps->weaponTime += GetWeaponTableData(pm->ps->weapon)->altSwitchTimeFinish;
+		}
+		else
+		{
+			PM_StartWeaponAnim(WEAP_ALTSWITCHTO);
+			pm->ps->weaponTime += GetWeaponTableData(pm->ps->weapon)->altSwitchTimeBegin;
+		}
+		pm->pmext->silencedSideArm ^= 4;
+	}
+
+	BG_UpdateConditionValue(pm->ps->clientNum, ANIM_COND_WEAPON, pm->ps->weapon, qtrue);
+
+	if (pm->ps->eFlags & EF_PRONE)
+	{
+		BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DO_ALT_WEAPON_MODE_PRONE, qfalse, qfalse);
+	}
+	else
+	{
+		BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DO_ALT_WEAPON_MODE, qfalse, qfalse);
+	}
+}
+
 /**
  * @brief PM_ReloadClip
  * @param[in] weapon
@@ -2580,7 +2693,15 @@ static void PM_FinishWeaponReload(void)
 {
 	PM_ReloadClip(pm->ps->weapon);            // move ammo into clip
 	pm->ps->weaponstate = WEAPON_READY;     // ready to fire
-	PM_StartWeaponAnim(GetWeaponTableData(pm->ps->weapon)->idleAnim);
+
+	if (pm->pmext->silencedSideArm & 4)
+	{
+		PM_StartWeaponAnim(WEAP_IDLE2);
+	}
+	else
+	{
+		PM_StartWeaponAnim(GetWeaponTableData(pm->ps->weapon)->idleAnim);
+	}
 }
 
 /**
@@ -3289,6 +3410,10 @@ static void PM_Weapon(void)
 		{
 			PM_BeginWeaponChange(pm->ps->weapon, pm->cmd.weapon, qfalse);
 		}
+		else if (pm->cmd.wbuttons & WBUTTON_ATTACK2 && !(pm->oldcmd.wbuttons & WBUTTON_ATTACK2))
+		{
+			PM_BeginAltWeaponChange();
+		}
 	}
 
 	// waiting for attack animation to complete (eg. Mortar)
@@ -3313,11 +3438,26 @@ static void PM_Weapon(void)
 		break;
 	case WEAPON_DROPPING:
 	case WEAPON_DROPPING_TORELOAD:
-		PM_FinishWeaponChange();
+		if (pm->ps->weapon != pm->cmd.weapon)
+		{
+			PM_FinishWeaponChange();
+		}
+		else
+		{
+			PM_FinishAltWeaponChange();
+		}
 		return;
 	case WEAPON_RAISING:
 		pm->ps->weaponstate = WEAPON_READY;
-		PM_StartWeaponAnim(GetWeaponTableData(pm->ps->weapon)->idleAnim);
+		if (pm->pmext->silencedSideArm & 4)
+		{
+			PM_StartWeaponAnim(WEAP_IDLE2);
+		}
+		else
+		{
+			PM_StartWeaponAnim(GetWeaponTableData(pm->ps->weapon)->idleAnim);
+		}
+
 		return;
 	case WEAPON_RAISING_TORELOAD:
 		pm->ps->weaponstate = WEAPON_READY;
@@ -3330,7 +3470,14 @@ static void PM_Weapon(void)
 	// can't shoot while prone and moving
 	if ((pm->ps->eFlags & EF_PRONE_MOVING) && !delayedFire)
 	{
-		PM_ContinueWeaponAnim(GetWeaponTableData(pm->ps->weapon)->idleAnim);
+		if (pm->pmext->silencedSideArm & 4)
+		{
+			PM_ContinueWeaponAnim(WEAP_IDLE2);
+		}
+		else
+		{
+			PM_ContinueWeaponAnim(GetWeaponTableData(pm->ps->weapon)->idleAnim);
+		}
 		return;
 	}
 
@@ -3357,7 +3504,7 @@ static void PM_Weapon(void)
 	// check for fire
 	// if not on fire button and there's not a delayed shot this frame...
 	// consider also leaning, with delayed attack reset
-	if ((!(pm->cmd.buttons & BUTTON_ATTACK) && !(pm->cmd.wbuttons & WBUTTON_ATTACK2) && !delayedFire) ||
+	if ((!(pm->cmd.buttons & BUTTON_ATTACK) /*&& !(pm->cmd.wbuttons & WBUTTON_ATTACK2)*/ && !delayedFire) ||
 	    (pm->ps->leanf != 0.f && !GetWeaponTableData(pm->ps->weapon)->grenadeTime))
 	{
 		pm->ps->weaponTime  = 0;
@@ -3365,7 +3512,15 @@ static void PM_Weapon(void)
 
 		if (weaponstateFiring)     // you were just firing, time to relax
 		{
-			PM_ContinueWeaponAnim(GetWeaponTableData(pm->ps->weapon)->idleAnim);
+			if (pm->pmext->silencedSideArm & 4)
+			{
+				PM_ContinueWeaponAnim(WEAP_IDLE2);
+			}
+			else
+			{
+				PM_ContinueWeaponAnim(GetWeaponTableData(pm->ps->weapon)->idleAnim);
+			}
+
 		}
 
 		pm->ps->weaponstate = WEAPON_READY;
@@ -3592,13 +3747,20 @@ static void PM_Weapon(void)
 	}
 	else
 	{
-		if (PM_WeaponClipEmpty(pm->ps->weapon))
+		if (pm->pmext->silencedSideArm & 4)
 		{
-			weapattackanim = GetWeaponTableData(pm->ps->weapon)->lastAttackAnim;
+			weapattackanim = WEAP_ATTACK2;
 		}
 		else
 		{
-			weapattackanim = GetWeaponTableData(pm->ps->weapon)->attackAnim;
+			if (PM_WeaponClipEmpty(pm->ps->weapon))
+			{
+				weapattackanim = GetWeaponTableData(pm->ps->weapon)->lastAttackAnim;
+			}
+			else
+			{
+				weapattackanim = GetWeaponTableData(pm->ps->weapon)->attackAnim;
+			}
 		}
 	}
 
@@ -3668,6 +3830,12 @@ static void PM_Weapon(void)
 				pm->pmext->weapRecoilPitch = .5f;
 			}
 		}
+	}
+	else if (pm->pmext->silencedSideArm & 4)
+	{
+		// no recoil with set weapon
+		pm->pmext->weapRecoilYaw   = 0;
+		pm->pmext->weapRecoilPitch = 0;
 	}
 	else if (CHECKBITWISE(GetWeaponTableData(pm->ps->weapon)->type, WEAPON_TYPE_MG | WEAPON_TYPE_SETTABLE))
 	{
@@ -4257,7 +4425,7 @@ void PM_UpdateViewAngles(playerState_t *ps, pmoveExt_t *pmext, usercmd_t *cmd, v
 		}*/
 
 		// Check if we are allowed to rotate to there
-		if (CHECKBITWISE(GetWeaponTableData(ps->weapon)->type, WEAPON_TYPE_MG | WEAPON_TYPE_SET))
+		if (GetWeaponTableData(ps->weapon)->type & WEAPON_TYPE_MG && pm->pmext->silencedSideArm & 4)
 		{
 			float yawDiff;
 
@@ -4709,7 +4877,8 @@ void PmoveSingle(pmove_t *pmove)
 			if (!(GetWeaponTableData(pm->ps->weapon)->type & (WEAPON_TYPE_SCOPED | WEAPON_TYPE_SET)) &&  // if using the sniper scope or set weapon
 			    !BG_PlayerMounted(pm->ps->eFlags) &&                    // or if mounted on a weapon
 			    !(pm->ps->eFlags & EF_PRONE_MOVING) &&                  // when prone moving
-			    !pm->ps->grenadeTimeLeft)                               // if in the middle of throwing grenade
+			    !pm->ps->grenadeTimeLeft &&                             // if in the middle of throwing grenade
+			    !(pm->pmext->silencedSideArm & 4))
 			{
 				pm->ps->eFlags |= EF_ZOOMING;
 			}
@@ -4887,6 +5056,8 @@ void PmoveSingle(pmove_t *pmove)
 	{
 		PM_DeadMove();
 
+		pm->pmext->silencedSideArm &= ~4;
+
 		if (CHECKBITWISE(GetWeaponTableData(pm->ps->weapon)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET))
 		{
 			pm->ps->weapon = GetWeaponTableData(pm->ps->weapon)->weapAlts;
@@ -4894,13 +5065,14 @@ void PmoveSingle(pmove_t *pmove)
 	}
 	else
 	{
-		if (CHECKBITWISE(GetWeaponTableData(pm->ps->weapon)->type, WEAPON_TYPE_MG | WEAPON_TYPE_SET))
+		if ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MG) && pm->pmext->silencedSideArm & 4)
 		{
 			if (!(pm->ps->eFlags & EF_PRONE))
 			{
-				PM_BeginWeaponChange(pm->ps->weapon, GetWeaponTableData(pm->ps->weapon)->weapAlts, qfalse);
+				//PM_BeginWeaponChange(pm->ps->weapon, GetWeaponTableData(pm->ps->weapon)->weapAlts, qfalse);
+				PM_BeginAltWeaponChange();
 #ifdef CGAMEDLL
-				cg.weaponSelect = GetWeaponTableData(pm->ps->weapon)->weapAlts;
+				//cg.weaponSelect = GetWeaponTableData(pm->ps->weapon)->weapAlts;
 #endif // CGAMEDLL
 			}
 		}

@@ -243,10 +243,17 @@ void PushBot(gentity_t *ent, gentity_t *other)
 	}
 
 	// dont push when mounted in certain stationary weapons or scripted not to be pushed
+#ifdef LEGACY
+	if ((other->client->pmext.silencedSideArm & 4) || !other->client->sess.botPush)
+	{
+		return;
+	}
+#else
 	if (Bot_Util_AllowPush(other->client->ps.weapon) == qfalse || !other->client->sess.botPush)
 	{
 		return;
 	}
+#endif
 
 	oldspeed = VectorLength(other->client->ps.velocity);
 	if (oldspeed < 200)
@@ -739,7 +746,7 @@ qboolean ClientInactivityTimer(gclient_t *client)
 	    (client->pers.cmd.buttons & BUTTON_ATTACK) ||
 	    BG_PlayerMounted(client->ps.eFlags) ||
 	    (client->ps.pm_flags & PMF_LIMBO) ||
-	    ((client->ps.eFlags & EF_PRONE) && (client->ps.weapon == WP_MOBILE_MG42_SET || client->ps.weapon == WP_MOBILE_BROWNING_SET)) ||
+	    ((client->ps.eFlags & EF_PRONE) && (client->pmext.silencedSideArm & 4)) ||
 	    (client->ps.pm_type == PM_DEAD))
 	{
 		client->inactivityWarning = qfalse;
@@ -807,7 +814,7 @@ qboolean ClientInactivityTimer(gclient_t *client)
 			{
 				CPx(client - level.clients, "cp \"^3Dropped for inactivity\n\"");
 			}
-				// display a message at 30 seconds, and countdown at last 10 ..
+			// display a message at 30 seconds, and countdown at last 10 ..
 			else if (secondsLeft <= 10 || secondsLeft == 30)
 			{
 				CPx(client - level.clients, va("cp \"^1%i ^3seconds until inactivity drop\n\"", secondsLeft));
@@ -1069,8 +1076,8 @@ void WolfFindMedic(gentity_t *self)
 	trace_t   tr;
 	float     bestdist = 1024, dist;
 
-	self->client->ps.viewlocked_entNum    = 0;
-	self->client->ps.viewlocked           = VIEWLOCK_NONE;
+	self->client->ps.viewlocked_entNum = 0;
+	self->client->ps.viewlocked        = VIEWLOCK_NONE;
 
 	VectorCopy(self->s.pos.trBase, start);
 	start[2] += self->client->ps.viewheight;
@@ -2309,7 +2316,7 @@ void ClientEndFrame(gentity_t *ent)
 		G_RailBox(head->r.currentOrigin, head->r.mins, head->r.maxs, tv(0.f, 1.f, 0.f), head->s.number | HITBOXBIT_HEAD);
 		G_FreeEntity(head);
 
-		if (ent->client->ps.eFlags & (EF_PRONE|EF_DEAD))
+		if (ent->client->ps.eFlags & (EF_PRONE | EF_DEAD))
 		{
 			gentity_t *legs;
 

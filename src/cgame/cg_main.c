@@ -1288,9 +1288,9 @@ void CG_RegisterGameSounds()
 	//cgs.cachedSounds[GAMESOUND_WPN_ARTILLERY_FLY_1]  = trap_S_RegisterSound("sound/weapons/artillery/artillery_fly_1.wav", qfalse);   // moved in weap file
 	//cgs.cachedSounds[GAMESOUND_WPN_ARTILLERY_FLY_2]  = trap_S_RegisterSound("sound/weapons/artillery/artillery_fly_2.wav", qfalse);   // moved in weap file
 	//cgs.cachedSounds[GAMESOUND_WPN_ARTILLERY_FLY_3]  = trap_S_RegisterSound("sound/weapons/artillery/artillery_fly_3.wav", qfalse);   // moved in weap file
-	cgs.cachedSounds[GAMESOUND_MISC_REVIVE]          = trap_S_RegisterSound("sound/misc/vo_revive.wav", qfalse);
-	cgs.cachedSounds[GAMESOUND_MISC_REFEREE]         = trap_S_RegisterSound("sound/misc/referee.wav", qfalse);
-	cgs.cachedSounds[GAMESOUND_MISC_VOTE]            = trap_S_RegisterSound("sound/misc/vote.wav", qfalse);
+	cgs.cachedSounds[GAMESOUND_MISC_REVIVE]  = trap_S_RegisterSound("sound/misc/vo_revive.wav", qfalse);
+	cgs.cachedSounds[GAMESOUND_MISC_REFEREE] = trap_S_RegisterSound("sound/misc/referee.wav", qfalse);
+	cgs.cachedSounds[GAMESOUND_MISC_VOTE]    = trap_S_RegisterSound("sound/misc/vote.wav", qfalse);
 	//cgs.cachedSounds[GAMESOUND_MISC_BANNED] = trap_S_RegisterSound("sound/osp/banned.wav", qfalse);
 	//cgs.cachedSounds[GAMESOUND_MISC_KICKED] = trap_S_RegisterSound("sound/osp/kicked.wav", qfalse);
 }
@@ -2827,6 +2827,15 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum, qbo
 	CG_UpdateSvCvars();
 
 	CG_ParseLegacyinfo();
+
+	// rebind weapalt to +attack2
+	if (trap_Key_GetKey("weapalt"))
+	{
+		char buf[16] = { 0 };
+
+		trap_Key_KeynumToStringBuf(trap_Key_GetKey("weapalt"), buf, 16);
+		trap_SendConsoleCommand(va("bind %s +attack2\n", buf));
+	}
 
 	cg.crosshairMine = -1;
 	cg.crosshairDyna = -1;
