@@ -103,7 +103,7 @@ STATE COMBAT
 	{
 		weapons Mortar AND Granatwerfer
 		{
-			both mortar_deployed
+			legs stand_panzer torso e_mortar_stand
 		}
 		weapons Satchel Charge
 		{
@@ -256,7 +256,7 @@ STATE COMBAT
 	{
 		weapons Mortar AND Granatwerfer
 		{
-			legs alert_crchidle_2h torso e_mortar_stand
+			both mortar_deployed
 		}
 		weapons satchel charge
 		{

@@ -605,7 +605,7 @@ static float PM_CmdScale(usercmd_t *cmd)
 	// full speed.  not completely realistic (well, sure, you can run faster with the weapon strapped to your
 	// back than in carry position) but more fun to play.  If it doesn't play well this way we'll bog down the
 	// player if the own the weapon at all.
-        if (GetWeaponTableData(pm->ps->weapon)->skillBased == SK_HEAVY_WEAPONS && !((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR) && (pm->pmext->silencedSideArm & 4)))
+	if (GetWeaponTableData(pm->ps->weapon)->skillBased == SK_HEAVY_WEAPONS && !((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR) && (pm->pmext->silencedSideArm & 4)))
 	{
 		if (pm->ps->weapon == WP_FLAMETHROWER) // trying some different balance for the FT
 		{
@@ -830,7 +830,7 @@ static qboolean PM_CheckProne(void)
 			return qfalse;
 		}
 
-                if ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR) && (pm->pmext->silencedSideArm & 4))
+		if ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR) && (pm->pmext->silencedSideArm & 4))
 		{
 			return qfalse;
 		}
@@ -1863,7 +1863,7 @@ static void PM_CheckDuck(void)
 
 	// duck
 	if ((pm->cmd.upmove < 0 && !(pm->ps->eFlags & EF_MOUNTEDTANK) && !(pm->ps->pm_flags & PMF_LADDER))
-            || ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR) && (pm->pmext->silencedSideArm & 4)))
+	    || ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR) && (pm->pmext->silencedSideArm & 4)))
 	{
 		pm->ps->pm_flags |= PMF_DUCKED;
 	}
@@ -2600,6 +2600,48 @@ static void PM_BeginAltWeaponChange()
 					return;
 				}
 			}
+			else if (GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR)
+			{
+				int    contents;
+				vec3_t point;
+
+				if (pm->ps->groundEntityNum == ENTITYNUM_NONE)
+				{
+					return;
+				}
+
+				if (!pm->ps->ammoclip[pm->ps->weapon])
+				{
+					return;
+				}
+
+				if (pm->ps->eFlags & EF_PRONE)
+				{
+					return;
+				}
+
+				if (pm->waterlevel == 3)
+				{
+					return;
+				}
+
+				// don't allow set if moving
+				if (VectorLengthSquared(pm->ps->velocity) != 0.f)
+				{
+					return;
+				}
+
+				// eurgh, need it here too else we play sounds :/
+				point[0] = pm->ps->origin[0];
+				point[1] = pm->ps->origin[1];
+				point[2] = pm->ps->origin[2] + pm->ps->crouchViewHeight;
+				contents = pm->pointcontents(point, pm->ps->clientNum);
+
+				if (contents & MASK_WATER)
+				{
+					return;
+				}
+			}
 
 			VectorCopy(pml.forward, axis[0]);
 			VectorCopy(pml.right, axis[2]);
@@ -2611,6 +2653,8 @@ static void PM_BeginAltWeaponChange()
 	{
 		return;
 	}
+
+	BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DROPWEAPON, qfalse, qfalse);
 
 	PM_AddEvent(EV_CHANGE_WEAPON_2);
 
@@ -3486,7 +3530,7 @@ static void PM_Weapon(void)
 	}
 
 	// a not mounted mortar can't fire
-        if ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR) && !(pm->pmext->silencedSideArm & 4))
+	if ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR) && !(pm->pmext->silencedSideArm & 4))
 	{
 		return;
 	}
@@ -3988,7 +4032,7 @@ void PM_UpdateLean(playerState_t *ps, usercmd_t *cmd, pmove_t *tpm)
 		     !(ps->eFlags & EF_DEAD) &&                         // not allow to lean while dead
 		     !(ps->eFlags & EF_PRONE) &&                        // not allow to lean while prone
 		     !(ps->weaponstate == WEAPON_FIRING && ps->weapon == WP_DYNAMITE) && // don't allow to lean while tossing dynamite. NOTE: ATVI Wolfenstein Misc #479 - initial fix to #270 would crash in g_synchronousClients 1 situation
-                     !(pm->pmext->silencedSideArm & 4)))                  // not allow to lean while set
+		     !(pm->pmext->silencedSideArm & 4)))                          // not allow to lean while set
 		{
 			// if both are pressed, result is no lean
 			if (cmd->wbuttons & WBUTTON_LEANLEFT)
@@ -4253,7 +4297,7 @@ void PM_UpdateViewAngles(playerState_t *ps, pmoveExt_t *pmext, usercmd_t *cmd, v
 			}
 		}
 	}
-        else if ((GetWeaponTableData(ps->weapon)->type & WEAPON_TYPE_MORTAR) && (pm->pmext->silencedSideArm & 4))
+	else if ((GetWeaponTableData(ps->weapon)->type & WEAPON_TYPE_MORTAR) && (pm->pmext->silencedSideArm & 4))
 	{
 		float degsSec = 60.f;
 		float pitch, oldPitch;
@@ -5018,7 +5062,7 @@ void PmoveSingle(pmove_t *pmove)
 	case PM_INTERMISSION: // no movement at all
 		return;
 	case PM_NORMAL:
-            if ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR) && (pm->pmext->silencedSideArm & 4))
+		if ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR) && (pm->pmext->silencedSideArm & 4))
 		{
 			pm->cmd.forwardmove = 0;
 			pm->cmd.rightmove   = 0;

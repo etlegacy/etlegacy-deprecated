@@ -3897,50 +3897,7 @@ void CG_AltWeapon_f(void)
 		return;
 	}
 
-	// need ground for this
-	if (GetWeaponTableData(cg.weaponSelect)->type & WEAPON_TYPE_SETTABLE)
-	{
-		int    contents;
-		vec3_t point;
-
-		if (cg.predictedPlayerState.groundEntityNum == ENTITYNUM_NONE)
-		{
-			return;
-		}
-
-		if (!cg.predictedPlayerState.ammoclip[cg.weaponSelect])
-		{
-			return;
-		}
-
-		if (cg.predictedPlayerState.eFlags & EF_PRONE)
-		{
-			return;
-		}
-
-		if (cg_pmove.waterlevel == 3)
-		{
-			return;
-		}
-
-		// don't allow set if moving
-		if (VectorLengthSquared(cg.snap->ps.velocity) != 0.f)
-		{
-			return;
-		}
-
-		// eurgh, need it here too else we play sounds :/
-		point[0] = cg.snap->ps.origin[0];
-		point[1] = cg.snap->ps.origin[1];
-		point[2] = cg.snap->ps.origin[2] + cg.snap->ps.crouchViewHeight;
-		contents = CG_PointContents(point, cg.snap->ps.clientNum);
-
-		if (contents & MASK_WATER)
-		{
-			return;
-		}
-	}
-	else if (GetWeaponTableData(cg.weaponSelect)->type & WEAPON_TYPE_SCOPABLE)
+        if (GetWeaponTableData(cg.weaponSelect)->type & WEAPON_TYPE_SCOPABLE)
 	{
 		// don't allow players switching to scoped weapon when prone moving
 		if (cg.predictedPlayerState.eFlags & EF_PRONE_MOVING)
