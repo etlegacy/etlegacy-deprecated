@@ -2286,7 +2286,7 @@ static void CG_CalculateWeaponPosition(vec3_t origin, vec3_t angles)
 		angles[PITCH] = cg.refdefViewAngles[PITCH] / 1.2f;
 	}
 
-        if (!cg.renderingThirdPerson && (cg.pmext.silencedSideArm & 4) &&
+	if (!cg.renderingThirdPerson && (cg.pmext.silencedSideArm & 4) &&
 	    cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
 	{
 		angles[PITCH] = cg.pmext.mountedWeaponAngles[PITCH];
@@ -2521,7 +2521,15 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 		team = team == TEAM_AXIS ? TEAM_ALLIES : TEAM_AXIS;
 	}
 
-	gun.hModel = weapon->weaponModel[modelViewType].model;
+        // deployed mortar use a specific model in 3rd person
+	if (!isFirstPerson && (GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & 4))
+	{
+		gun.hModel = weapon->modModels[0];
+	}
+	else
+	{
+		gun.hModel = weapon->weaponModel[modelViewType].model;
+	}
 
 	if ((team == TEAM_AXIS) && weapon->weaponModel[modelViewType].skin[TEAM_AXIS])
 	{
@@ -2569,7 +2577,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 		}
 	}
 
-        if (ps && !cg.renderingThirdPerson && (GetWeaponTableData(cg.predictedPlayerState.weapon)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & 4)
+	if (ps && !cg.renderingThirdPerson && (GetWeaponTableData(cg.predictedPlayerState.weapon)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & 4)
 	    && cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
 	{
 		vec3_t angles;
@@ -3897,7 +3905,7 @@ void CG_AltWeapon_f(void)
 		return;
 	}
 
-        if (GetWeaponTableData(cg.weaponSelect)->type & WEAPON_TYPE_SCOPABLE)
+	if (GetWeaponTableData(cg.weaponSelect)->type & WEAPON_TYPE_SCOPABLE)
 	{
 		// don't allow players switching to scoped weapon when prone moving
 		if (cg.predictedPlayerState.eFlags & EF_PRONE_MOVING)
