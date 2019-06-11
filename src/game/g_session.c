@@ -108,7 +108,6 @@ void G_WriteClientSessionData(gclient_t *client, qboolean restart)
 	       ((mvc >> 16) & 0xFFFF),
 #endif
 	       // Damage and rounds played rolled in with weapon stats (below)
-
 	       client->sess.muted,
 	       client->sess.ignoreClients[0],
 	       client->sess.ignoreClients[1],
@@ -189,7 +188,6 @@ void G_ClientSwap(gclient_t *client)
 	{
 		flags |= TEAM_AXIS;
 	}
-
 	client->sess.spec_team = flags;
 }
 
@@ -215,11 +213,9 @@ void G_CalcRank(gclient_t *client)
 		{
 			client->sess.rank = 10;
 		}
-
 		return;
 	}
 #endif
-
 	for (i = 0; i < SK_NUM_SKILLS; i++)
 	{
 		G_SetPlayerSkill(client, i);
@@ -228,7 +224,6 @@ void G_CalcRank(gclient_t *client)
 			highestskill = client->sess.skill[i];
 		}
 	}
-
 	// set rank
 	client->sess.rank = highestskill;
 
@@ -270,15 +265,15 @@ void G_ReadSessionData(gclient_t *client)
 
 #ifdef FEATURE_MULTIVIEW
 #ifdef FEATURE_RATING
-	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i %i %i",
+	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i %i %i",
 #else
-	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
 #endif
 #else
 #ifdef FEATURE_RATING
-	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i",
+	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i",
 #else
-	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
 #endif
 #endif
 	       (int *)&client->sess.sessionTeam,
@@ -349,7 +344,6 @@ void G_ReadSessionData(gclient_t *client)
 	    !(g_gametype.integer == GT_WOLF_CAMPAIGN && (g_campaigns[level.currentCampaign].current == 0  || level.newCampaign)) &&
 	    !(g_gametype.integer == GT_WOLF_LMS && g_currentRound.integer == 0))
 	{
-
 		trap_Cvar_VariableStringBuffer(va("sessionstats%i", (int)(client - level.clients)), s, sizeof(s));
 
 		// read the clients stats (7) and medals (7)
@@ -449,19 +443,16 @@ void G_InitWorldSession(void)
     trap_Cvar_VariableStringBuffer("session", s, sizeof(s));
     gt = atoi(s);
 
-    // if the gametype changed since the last session, don't use any
-    // client sessions
+    // if the gametype changed since the last session, don't use any client sessions
     if (g_gametype.integer != gt)
     {
         level.fResetStats = qtrue;
         G_Printf("Gametype changed, clearing session data.\n");
-
 	}
     else
     {
         char     *tmp = s;
         qboolean test = (g_altStopwatchMode.integer != 0 || g_currentRound.integer == 1);
-
 
 #define GETVAL(x) if ((tmp = strchr(tmp, ' ')) == NULL) { return; \
 } x = atoi(++tmp);
@@ -620,7 +611,6 @@ void G_WriteSessionData(qboolean restart)
 			}
             Com_sprintf(buffer, MAX_STRING_CHARS, "\\id\\%i\\i\\%s\\p\\%i", level.fireTeams[i].ident - 1, buffer2, level.fireTeams[i].priv ? 1 : 0);
 		}
-
         trap_Cvar_Set(va("fireteam%i", i), buffer);
 	}
 }
