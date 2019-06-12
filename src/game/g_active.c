@@ -244,7 +244,7 @@ void PushBot(gentity_t *ent, gentity_t *other)
 
 	// dont push when mounted in certain stationary weapons or scripted not to be pushed
 #ifdef LEGACY
-	if ((other->client->pmext.silencedSideArm & 4) || !other->client->sess.botPush)
+	if ((other->client->pmext.silencedSideArm & WALTTYPE_BIPOD) || !other->client->sess.botPush)
 	{
 		return;
 	}
@@ -746,7 +746,7 @@ qboolean ClientInactivityTimer(gclient_t *client)
 	    (client->pers.cmd.buttons & BUTTON_ATTACK) ||
 	    BG_PlayerMounted(client->ps.eFlags) ||
 	    (client->ps.pm_flags & PMF_LIMBO) ||
-	    ((client->ps.eFlags & EF_PRONE) && (client->pmext.silencedSideArm & 4)) ||
+	    ((client->ps.eFlags & EF_PRONE) && (client->pmext.silencedSideArm & WALTTYPE_BIPOD)) ||
 	    (client->ps.pm_type == PM_DEAD))
 	{
 		client->inactivityWarning = qfalse;

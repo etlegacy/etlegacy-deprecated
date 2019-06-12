@@ -848,7 +848,7 @@ static void CG_DrawMortarReticle(void)
 
 	// last fire pos
 	fadeTime = 0;
-        if ((GetWeaponTableData(cg.lastFiredWeapon)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & 4) && cg.mortarImpactTime >= -1)
+        if ((GetWeaponTableData(cg.lastFiredWeapon)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & WALTTYPE_BIPOD) && cg.mortarImpactTime >= -1)
 	{
 		fadeTime = cg.time - (cg.predictedPlayerEntity.muzzleFlashTime + 5000);
 
@@ -1029,7 +1029,7 @@ static void CG_DrawMortarReticle(void)
 	}
 
 	// last fire pos
-	if ((GetWeaponTableData(cg.lastFiredWeapon)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & 4) && cg.mortarImpactTime >= -1)
+	if ((GetWeaponTableData(cg.lastFiredWeapon)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & WALTTYPE_BIPOD) && cg.mortarImpactTime >= -1)
 	{
 		if (fadeTime < 3000)
 		{
@@ -1156,7 +1156,7 @@ static void CG_DrawCrosshair(void)
 	}
 
 	// FIXME: spectators/chasing?
-        if ((GetWeaponTableData(cg.predictedPlayerState.weapon)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & 4) && cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
+        if ((GetWeaponTableData(cg.predictedPlayerState.weapon)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & WALTTYPE_BIPOD) && cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
 	{
 		CG_DrawMortarReticle();
 		return;

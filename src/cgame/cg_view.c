@@ -590,7 +590,7 @@ static void CG_OffsetFirstPersonView(void)
 	origin = cg.refdef_current->vieworg;
 	angles = cg.refdefViewAngles;
 
-	if (cg.pmext.silencedSideArm & 4)
+	if (cg.pmext.silencedSideArm & WALTTYPE_BIPOD)
 	{
 		vec3_t forward, point;
 		float  oldZ = origin[2];
@@ -1042,7 +1042,7 @@ static int CG_CalcFov(void)
 	{
 		fov_x = 55;
 	}
-	else if ((GetWeaponTableData(cg.snap->ps.weapon)->type & WEAPON_TYPE_MG) && (cg.pmext.silencedSideArm & 4))
+	else if ((GetWeaponTableData(cg.snap->ps.weapon)->type & WEAPON_TYPE_MG) && (cg.pmext.silencedSideArm & WALTTYPE_BIPOD))
 	{
 		fov_x = 55;
 	}
@@ -1643,7 +1643,7 @@ void CG_DrawSkyBoxPortal(qboolean fLocalView)
 
 		rd.rdflags &= ~RDF_SNOOPERVIEW;
 
-		if (BG_PlayerMounted(cg.snap->ps.eFlags) || ((GetWeaponTableData(cg.snap->ps.weapon)->type & WEAPON_TYPE_MG) && (cg.pmext.silencedSideArm & 4)))
+		if (BG_PlayerMounted(cg.snap->ps.eFlags) || ((GetWeaponTableData(cg.snap->ps.weapon)->type & WEAPON_TYPE_MG) && (cg.pmext.silencedSideArm & WALTTYPE_BIPOD)))
 		{
 			fov_x = 55;
 		}

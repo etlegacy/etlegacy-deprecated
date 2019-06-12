@@ -1122,7 +1122,7 @@ void AddWeaponToPlayer(gclient_t *client, weapon_t weapon, int ammo, int ammocli
 				return;
 			}
 
-			client->pmext.silencedSideArm = 1;
+			client->pmext.silencedSideArm = WALTTYPE_SILENCER;
 		}
 
 		COM_BitSet(client->ps.weapons, GetWeaponTableData(weapon)->weapAlts);

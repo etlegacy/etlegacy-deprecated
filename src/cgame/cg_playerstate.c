@@ -237,11 +237,11 @@ void CG_Respawn(qboolean revived)
 	// Puts riflenade on if current weapon is riflenade weapon
 	if (cg.predictedPlayerState.stats[STAT_PLAYER_CLASS] == PC_COVERTOPS)
 	{
-		cg.pmext.silencedSideArm = 1;
+		cg.pmext.silencedSideArm = WALTTYPE_SILENCER;
 	}
 	else if (GetWeaponTableData(cg.predictedPlayerState.weapon)->type & WEAPON_TYPE_RIFLENADE)
 	{
-		cg.pmext.silencedSideArm = 2;
+		cg.pmext.silencedSideArm = WALTTYPE_RIFLENADE;
 	}
 
 	cg.proneMovingTime = 0;

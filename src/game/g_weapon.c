@@ -3274,7 +3274,7 @@ gentity_t *Bullet_Fire(gentity_t *ent)
 	}
 	else if (GetWeaponTableData(ent->s.weapon)->type & WEAPON_TYPE_MG)
 	{
-		if (!(ent->client->pmext.silencedSideArm & 4) && ((ent->client->ps.pm_flags & PMF_DUCKED) || (ent->client->ps.eFlags & EF_PRONE)))
+		if (!(ent->client->pmext.silencedSideArm & WALTTYPE_BIPOD) && ((ent->client->ps.pm_flags & PMF_DUCKED) || (ent->client->ps.eFlags & EF_PRONE)))
 		{
 			spread *= .6f;
 		}

@@ -605,7 +605,7 @@ static float PM_CmdScale(usercmd_t *cmd)
 	// full speed.  not completely realistic (well, sure, you can run faster with the weapon strapped to your
 	// back than in carry position) but more fun to play.  If it doesn't play well this way we'll bog down the
 	// player if the own the weapon at all.
-	if (GetWeaponTableData(pm->ps->weapon)->skillBased == SK_HEAVY_WEAPONS && !((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR) && (pm->pmext->silencedSideArm & 4)))
+	if (GetWeaponTableData(pm->ps->weapon)->skillBased == SK_HEAVY_WEAPONS && !((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR) && (pm->pmext->silencedSideArm & WALTTYPE_BIPOD)))
 	{
 		if (pm->ps->weapon == WP_FLAMETHROWER) // trying some different balance for the FT
 		{
@@ -830,7 +830,7 @@ static qboolean PM_CheckProne(void)
 			return qfalse;
 		}
 
-		if ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR) && (pm->pmext->silencedSideArm & 4))
+		if ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR) && (pm->pmext->silencedSideArm & WALTTYPE_BIPOD))
 		{
 			return qfalse;
 		}
@@ -915,7 +915,7 @@ static qboolean PM_CheckProne(void)
 				{
 					PM_BeginWeaponChange((weapon_t)pm->ps->weapon, GetWeaponTableData(pm->ps->weapon)->weapAlts, qfalse);
 				}
-				else if (pm->pmext->silencedSideArm & 4)
+				else if (pm->pmext->silencedSideArm & WALTTYPE_BIPOD)
 				{
 					PM_BeginAltWeaponChange();
 				}
@@ -1863,7 +1863,7 @@ static void PM_CheckDuck(void)
 
 	// duck
 	if ((pm->cmd.upmove < 0 && !(pm->ps->eFlags & EF_MOUNTEDTANK) && !(pm->ps->pm_flags & PMF_LADDER))
-	    || ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR) && (pm->pmext->silencedSideArm & 4)))
+	    || ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR) && (pm->pmext->silencedSideArm & WALTTYPE_BIPOD)))
 	{
 		pm->ps->pm_flags |= PMF_DUCKED;
 	}
@@ -2297,7 +2297,7 @@ static void PM_BeginWeaponReload(weapon_t weapon)
 
 	if (!(GetWeaponTableData(weapon)->type & WEAPON_TYPE_MORTAR))
 	{
-		if (pm->pmext->silencedSideArm & 4)
+		if (pm->pmext->silencedSideArm & WALTTYPE_BIPOD)
 		{
 			PM_ContinueWeaponAnim(WEAP_RELOAD3);
 		}
@@ -2484,20 +2484,20 @@ static void PM_FinishWeaponChange(void)
 	{
 		if (GetWeaponTableData(newWeapon)->attributes & WEAPON_ATTRIBUT_SILENCED)
 		{
-			pm->pmext->silencedSideArm |= 1;
+			pm->pmext->silencedSideArm |= WALTTYPE_SILENCER;
 		}
 		else
 		{
-			pm->pmext->silencedSideArm &= ~1;
+			pm->pmext->silencedSideArm &= ~WALTTYPE_SILENCER;
 		}
 	}
 	else if (GetWeaponTableData(newWeapon)->type & WEAPON_TYPE_RIFLE)
 	{
-		pm->pmext->silencedSideArm &= ~2;
+		pm->pmext->silencedSideArm &= ~WALTTYPE_RIFLENADE;
 	}
 	else if (GetWeaponTableData(newWeapon)->type & WEAPON_TYPE_RIFLENADE)
 	{
-		pm->pmext->silencedSideArm |= 2;
+		pm->pmext->silencedSideArm |= WALTTYPE_RIFLENADE;
 	}
 
 	// doesn't happen too often (player switched weapons away then back very quickly)
@@ -2588,7 +2588,7 @@ static void PM_BeginAltWeaponChange()
 
 	if (GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_SETTABLE)
 	{
-		if (!(pm->pmext->silencedSideArm & 4))
+		if (!(pm->pmext->silencedSideArm & WALTTYPE_BIPOD))
 		{
 			vec3_t axis[3];
 
@@ -2667,7 +2667,7 @@ static void PM_FinishAltWeaponChange()
 
 	if (GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_SETTABLE)
 	{
-		if (pm->pmext->silencedSideArm & 4)
+		if (pm->pmext->silencedSideArm & WALTTYPE_BIPOD)
 		{
 			PM_StartWeaponAnim(WEAP_ALTSWITCHFROM);
 			pm->ps->weaponTime += GetWeaponTableData(pm->ps->weapon)->altSwitchTimeFinish;
@@ -2677,7 +2677,7 @@ static void PM_FinishAltWeaponChange()
 			PM_StartWeaponAnim(WEAP_ALTSWITCHTO);
 			pm->ps->weaponTime += GetWeaponTableData(pm->ps->weapon)->altSwitchTimeBegin;
 		}
-		pm->pmext->silencedSideArm ^= 4;
+		pm->pmext->silencedSideArm ^= WALTTYPE_BIPOD;
 	}
 
 	BG_UpdateConditionValue(pm->ps->clientNum, ANIM_COND_WEAPON, pm->ps->weapon, qtrue);
@@ -2728,7 +2728,7 @@ static void PM_FinishWeaponReload(void)
 	PM_ReloadClip(pm->ps->weapon);            // move ammo into clip
 	pm->ps->weaponstate = WEAPON_READY;     // ready to fire
 
-	if (pm->pmext->silencedSideArm & 4)
+	if (pm->pmext->silencedSideArm & WALTTYPE_BIPOD)
 	{
 		PM_StartWeaponAnim(WEAP_IDLE2);
 	}
@@ -3483,7 +3483,7 @@ static void PM_Weapon(void)
 		return;
 	case WEAPON_RAISING:
 		pm->ps->weaponstate = WEAPON_READY;
-		if (pm->pmext->silencedSideArm & 4)
+		if (pm->pmext->silencedSideArm & WALTTYPE_BIPOD)
 		{
 			PM_StartWeaponAnim(WEAP_IDLE2);
 		}
@@ -3504,7 +3504,7 @@ static void PM_Weapon(void)
 	// can't shoot while prone and moving
 	if ((pm->ps->eFlags & EF_PRONE_MOVING) && !delayedFire)
 	{
-		if (pm->pmext->silencedSideArm & 4)
+		if (pm->pmext->silencedSideArm & WALTTYPE_BIPOD)
 		{
 			PM_ContinueWeaponAnim(WEAP_IDLE2);
 		}
@@ -3530,7 +3530,7 @@ static void PM_Weapon(void)
 	}
 
 	// a not mounted mortar can't fire
-	if ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR) && !(pm->pmext->silencedSideArm & 4))
+	if ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR) && !(pm->pmext->silencedSideArm & WALTTYPE_BIPOD))
 	{
 		return;
 	}
@@ -3546,7 +3546,7 @@ static void PM_Weapon(void)
 
 		if (weaponstateFiring)     // you were just firing, time to relax
 		{
-			if (pm->pmext->silencedSideArm & 4)
+			if (pm->pmext->silencedSideArm & WALTTYPE_BIPOD)
 			{
 				PM_ContinueWeaponAnim(WEAP_IDLE2);
 			}
@@ -3781,7 +3781,7 @@ static void PM_Weapon(void)
 	}
 	else
 	{
-		if (pm->pmext->silencedSideArm & 4)
+		if (pm->pmext->silencedSideArm & WALTTYPE_BIPOD)
 		{
 			weapattackanim = WEAP_ATTACK2;
 		}
@@ -3865,13 +3865,13 @@ static void PM_Weapon(void)
 			}
 		}
 	}
-	else if (pm->pmext->silencedSideArm & 4)
+	else if (pm->pmext->silencedSideArm & WALTTYPE_BIPOD)
 	{
 		// no recoil with set weapon
 		pm->pmext->weapRecoilYaw   = 0;
 		pm->pmext->weapRecoilPitch = 0;
 	}
-	else if (CHECKBITWISE(GetWeaponTableData(pm->ps->weapon)->type, WEAPON_TYPE_MG | WEAPON_TYPE_SETTABLE))
+	else if (GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MG)
 	{
 		if ((pm->ps->pm_flags & PMF_DUCKED) || (pm->ps->eFlags & EF_PRONE))
 		{
@@ -4032,7 +4032,7 @@ void PM_UpdateLean(playerState_t *ps, usercmd_t *cmd, pmove_t *tpm)
 		     !(ps->eFlags & EF_DEAD) &&                         // not allow to lean while dead
 		     !(ps->eFlags & EF_PRONE) &&                        // not allow to lean while prone
 		     !(ps->weaponstate == WEAPON_FIRING && ps->weapon == WP_DYNAMITE) && // don't allow to lean while tossing dynamite. NOTE: ATVI Wolfenstein Misc #479 - initial fix to #270 would crash in g_synchronousClients 1 situation
-		     !(pm->pmext->silencedSideArm & 4)))                          // not allow to lean while set
+		     !(pm->pmext->silencedSideArm & WALTTYPE_BIPOD)))                          // not allow to lean while set
 		{
 			// if both are pressed, result is no lean
 			if (cmd->wbuttons & WBUTTON_LEANLEFT)
@@ -4297,7 +4297,7 @@ void PM_UpdateViewAngles(playerState_t *ps, pmoveExt_t *pmext, usercmd_t *cmd, v
 			}
 		}
 	}
-	else if ((GetWeaponTableData(ps->weapon)->type & WEAPON_TYPE_MORTAR) && (pm->pmext->silencedSideArm & 4))
+	else if ((GetWeaponTableData(ps->weapon)->type & WEAPON_TYPE_MORTAR) && (pm->pmext->silencedSideArm & WALTTYPE_BIPOD))
 	{
 		float degsSec = 60.f;
 		float pitch, oldPitch;
@@ -4459,7 +4459,7 @@ void PM_UpdateViewAngles(playerState_t *ps, pmoveExt_t *pmext, usercmd_t *cmd, v
 		}*/
 
 		// Check if we are allowed to rotate to there
-		if (GetWeaponTableData(ps->weapon)->type & WEAPON_TYPE_MG && pm->pmext->silencedSideArm & 4)
+		if (GetWeaponTableData(ps->weapon)->type & WEAPON_TYPE_MG && pm->pmext->silencedSideArm & WALTTYPE_BIPOD)
 		{
 			float yawDiff;
 
@@ -4912,7 +4912,7 @@ void PmoveSingle(pmove_t *pmove)
 			    !BG_PlayerMounted(pm->ps->eFlags) &&                    // or if mounted on a weapon
 			    !(pm->ps->eFlags & EF_PRONE_MOVING) &&                  // when prone moving
 			    !pm->ps->grenadeTimeLeft &&                             // if in the middle of throwing grenade
-			    !(pm->pmext->silencedSideArm & 4))
+			    !(pm->pmext->silencedSideArm & WALTTYPE_BIPOD))
 			{
 				pm->ps->eFlags |= EF_ZOOMING;
 			}
@@ -4948,7 +4948,7 @@ void PmoveSingle(pmove_t *pmove)
 	{
 		if (pm->ps->stats[STAT_PLAYER_CLASS] == PC_COVERTOPS)
 		{
-			pm->pmext->silencedSideArm |= 1;
+			pm->pmext->silencedSideArm |= WALTTYPE_SILENCER;
 		}
 
 		// clear the respawned flag if attack button are cleared
@@ -5062,7 +5062,7 @@ void PmoveSingle(pmove_t *pmove)
 	case PM_INTERMISSION: // no movement at all
 		return;
 	case PM_NORMAL:
-		if ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR) && (pm->pmext->silencedSideArm & 4))
+		if ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR) && (pm->pmext->silencedSideArm & WALTTYPE_BIPOD))
 		{
 			pm->cmd.forwardmove = 0;
 			pm->cmd.rightmove   = 0;
@@ -5091,11 +5091,11 @@ void PmoveSingle(pmove_t *pmove)
 		PM_DeadMove();
 
 		// unset weapon
-		pm->pmext->silencedSideArm &= ~4;
+		pm->pmext->silencedSideArm &= ~WALTTYPE_BIPOD;
 	}
 	else
 	{
-		if ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MG) && pm->pmext->silencedSideArm & 4)
+		if ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MG) && pm->pmext->silencedSideArm & WALTTYPE_BIPOD)
 		{
 			if (!(pm->ps->eFlags & EF_PRONE))
 			{

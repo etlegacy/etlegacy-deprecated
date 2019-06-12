@@ -1783,7 +1783,7 @@ void CG_DrawMortarMarker(float px, float py, float pw, float ph, qboolean draw, 
 {
 	if ((GetWeaponTableData(cg.lastFiredWeapon)->type & WEAPON_TYPE_MORTAR) && cg.mortarImpactTime >= 0)
 	{
-		if (!(GetWeaponTableData(cg.snap->ps.weapon)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & 4))
+		if (!((GetWeaponTableData(cg.snap->ps.weapon)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & WALTTYPE_BIPOD)))
 		{
 			cg.mortarImpactTime = 0;
 		}
@@ -1845,7 +1845,7 @@ void CG_DrawMortarMarker(float px, float py, float pw, float ph, qboolean draw, 
 		}
 	}
 
-	if ((GetWeaponTableData(cg.snap->ps.weapon)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & 4))
+	if ((GetWeaponTableData(cg.snap->ps.weapon)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & WALTTYPE_BIPOD))
 	{
 		vec4_t colour = { 1.f, 1.f, 1.f, 1.f };
 		vec3_t point;

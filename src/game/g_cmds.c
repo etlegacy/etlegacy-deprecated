@@ -3543,7 +3543,7 @@ qboolean G_TankIsMountable(gentity_t *ent, gentity_t *other)
 		return qfalse;
 	}
 
-	if (ent->client->pmext.silencedSideArm & 4)
+	if (ent->client->pmext.silencedSideArm & WALTTYPE_BIPOD)
 	{
 		return qfalse;
 	}
@@ -3850,7 +3850,7 @@ void Cmd_Activate_f(gentity_t *ent)
 		return;
 	}
 
-	if (ent->client->pmext.silencedSideArm & 4)
+	if (ent->client->pmext.silencedSideArm & WALTTYPE_BIPOD)
 	{
 		return;
 	}
@@ -4043,7 +4043,7 @@ void Cmd_Activate2_f(gentity_t *ent)
 		return;
 	}
 
-        if (ent->client->pmext.silencedSideArm & 4)
+        if (ent->client->pmext.silencedSideArm & WALTTYPE_BIPOD)
 	{
 		return;
 	}

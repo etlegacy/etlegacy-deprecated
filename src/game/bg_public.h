@@ -509,6 +509,18 @@ typedef enum
 	WSTATE_RELOAD
 } weaponstateCompact_t;
 
+/**
+ * @enum weaponAltType_t
+ * @brief
+ */
+typedef enum
+{
+    WALTTYPE_SILENCER  = BIT(1),
+    WALTTYPE_RIFLENADE = BIT(2),
+    WALTTYPE_BIPOD     = BIT(3),
+    WALTTYPE_SCOPE     = BIT(4)
+} weaponAltType_t;
+
 // pmove->pm_flags	(sent as max 16 bits in msg.c)
 #define PMF_DUCKED          1
 #define PMF_JUMP_HELD       2
