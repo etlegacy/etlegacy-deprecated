@@ -75,14 +75,14 @@ void GL_Bind(image_t *image)
 
 	if (glState.currenttextures[glState.currenttmu] != texnum)
 	{
-		if (image)
-		{
-			image->frameUsed = tr.frameCount;
-		}
+        if (image)
+        {
+            image->frameUsed = tr.frameCount;
+        }
 
-		glState.currenttextures[glState.currenttmu] = texnum;
-		qglBindTexture(GL_TEXTURE_2D, texnum);
-	}
+        glState.currenttextures[glState.currenttmu] = texnum;
+        qglBindTexture(GL_TEXTURE_2D, texnum);
+    }
 }
 
 /**
@@ -807,7 +807,7 @@ void RB_SetGL2D(void)
 	         GLS_SRCBLEND_SRC_ALPHA |
 	         GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA);
 
-	qglDisable(GL_CULL_FACE);
+    GL_Cull(CT_TWO_SIDED);
 	qglDisable(GL_CLIP_PLANE0);
 
 	// set time for 2D shaders
@@ -877,7 +877,11 @@ void RE_StretchRaw(int x, int y, int w, int h, int cols, int rows, const byte *d
 	{
 		tr.scratchImage[client]->width  = tr.scratchImage[client]->uploadWidth = cols;
 		tr.scratchImage[client]->height = tr.scratchImage[client]->uploadHeight = rows;
-		qglTexImage2D(GL_TEXTURE_2D, 0, 3, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+#ifdef FEATURE_RENDERER_GLES
+        qglTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+#else
+        qglTexImage2D(GL_TEXTURE_2D, 0, 3, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+#endif
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -963,7 +967,11 @@ void RE_UploadCinematic(int w, int h, int cols, int rows, const byte *data, int 
 	{
 		tr.scratchImage[client]->width  = tr.scratchImage[client]->uploadWidth = cols;
 		tr.scratchImage[client]->height = tr.scratchImage[client]->uploadHeight = rows;
-		qglTexImage2D(GL_TEXTURE_2D, 0, 3, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+#ifdef FEATURE_RENDERER_GLES
+        qglTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+#else
+        qglTexImage2D(GL_TEXTURE_2D, 0, 3, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+#endif
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

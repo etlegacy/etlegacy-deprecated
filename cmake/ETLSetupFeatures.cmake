@@ -28,21 +28,15 @@ if(BUILD_CLIENT)
 				"/opt/vc/include/interface/vcos"
 				"/opt/vc/include/interface/vmcs_host/linux"
 				"/opt/vc/include/interface/vcos/pthreads"
-				"/opt/vc/lib"
 				)
-		link_directories(SYSTEM ${COMMON_INCLUDE_DIRS})
+		include_directories(${COMMON_INCLUDE_DIRS})
 
-		LIST(APPEND SDL_LIBRARIES
+		link_directories("/opt/vc/lib")
+
+		LIST(APPEND CLIENT_LIBRARIES
 				bcm_host
-				brcmEGL
-				brcmGLESv2
 				)
 
-		LIST(APPEND RENDERER_LIBRARIES
-				bcm_host
-				brcmEGL
-				brcmGLESv2
-				)
 		MESSAGE("Using Raspberry")
 	endif()
 
@@ -65,6 +59,14 @@ if(BUILD_CLIENT)
 		find_package(GLES REQUIRED)
 		list(APPEND RENDERER_LIBRARIES ${GLES_LIBRARY})
 		include_directories(SYSTEM ${GLES_INCLUDE_DIR})
+
+		if (ARM)
+			LIST(APPEND CLIENT_LIBRARIES
+				brcmEGL
+				brcmGLESv2
+				${GLES_LIBRARY}
+			)
+		endif()
 	endif()
 
 	if(NOT BUNDLED_SDL)
