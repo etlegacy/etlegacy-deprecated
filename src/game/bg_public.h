@@ -515,10 +515,10 @@ typedef enum
  */
 typedef enum
 {
-    WALTTYPE_SILENCER  = BIT(1),
-    WALTTYPE_RIFLENADE = BIT(2),
-    WALTTYPE_BIPOD     = BIT(3),
-    WALTTYPE_SCOPE     = BIT(4)
+	WALTTYPE_SILENCER  = BIT(1),
+	WALTTYPE_RIFLENADE = BIT(2),
+	WALTTYPE_BIPOD     = BIT(3),
+	WALTTYPE_SCOPE     = BIT(4)
 } weaponAltType_t;
 
 // pmove->pm_flags	(sent as max 16 bits in msg.c)
@@ -2190,6 +2190,8 @@ typedef enum
 	ANIM_COND_FLAILING_TYPE,
 	ANIM_COND_GEN_BITFLAG,     ///< general bit flags (to save some space)
 	ANIM_COND_AISTATE,         ///< our current ai state (sometimes more convenient than creating a separate section)
+	ANIM_COND_BIPOD,
+	ANIM_COND_SCOPED,
 
 	NUM_ANIM_CONDITIONS
 } scriptAnimConditions_t;

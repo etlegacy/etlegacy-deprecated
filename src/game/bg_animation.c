@@ -279,6 +279,8 @@ static animStringItem_t animConditionsStr[] =
 	{ "FLAILING_TYPE",  -1 },
 	{ "GEN_BITFLAG",    -1 },
 	{ "AISTATE",        -1 },
+	{ "BIPOD",          -1 },
+	{ "SCOPED",         -1 },
 
 	{ NULL,             -1 },
 };
@@ -306,6 +308,8 @@ static animConditionTable_t animConditionsTable[NUM_ANIM_CONDITIONS] =
 	{ ANIM_CONDTYPE_VALUE,    animFlailTypeStr             },
 	{ ANIM_CONDTYPE_BITFLAGS, animGenBitFlagStr            },
 	{ ANIM_CONDTYPE_VALUE,    animAIStateStr               },
+	{ ANIM_CONDTYPE_VALUE,    NULL                         },
+	{ ANIM_CONDTYPE_VALUE,    NULL                         },
 };
 
 //------------------------------------------------------------
@@ -1970,14 +1974,11 @@ void BG_AnimUpdatePlayerStateConditions(pmove_t *pmove)
 		ps->eFlags &= ~EF_CROUCHING;
 	}
 
-	if (pmove->cmd.buttons & BUTTON_ATTACK)
-	{
-		BG_UpdateConditionValue(ps->clientNum, ANIM_COND_FIRING, qtrue, qtrue);
-	}
-	else
-	{
-		BG_UpdateConditionValue(ps->clientNum, ANIM_COND_FIRING, qfalse, qtrue);
-	}
+	BG_UpdateConditionValue(ps->clientNum, ANIM_COND_FIRING, pmove->cmd.buttons & BUTTON_ATTACK, qtrue);
+
+	BG_UpdateConditionValue(ps->clientNum, ANIM_COND_BIPOD, pmove->pmext->silencedSideArm & WALTTYPE_BIPOD, qtrue);
+
+	BG_UpdateConditionValue(ps->clientNum, ANIM_COND_SCOPED, pmove->pmext->silencedSideArm & WALTTYPE_SCOPE, qtrue);
 
 	if (ps->pm_flags & PMF_FLAILING)
 	{

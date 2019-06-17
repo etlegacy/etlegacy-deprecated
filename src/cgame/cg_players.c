@@ -349,7 +349,7 @@ void CG_NewClientInfo(int clientNum)
 
 				CG_PriorityCenterPrint(va(CG_TranslateString("You have been rewarded with %s"), CG_TranslateString(cg_skillRewards[i][newInfo.skill[i] - 1])), 400, cg_fontScaleCP.value, 99999);
 #ifdef FEATURE_EDV
-				}
+			}
 #endif
 			}
 		}
@@ -1480,7 +1480,7 @@ void CG_PredictLean(centity_t *cent, vec3_t torsoAngles, vec3_t headAngles, int 
 	{
 		leaning = 0;    // not allowed to lean while dead
 	}
-        if ((cent->currentState.eFlags & EF_PRONE) || ((GetWeaponTableData(cent->currentState.weapon)->type & WEAPON_TYPE_MG) && (cg.pmext.silencedSideArm & WALTTYPE_BIPOD)))
+	if ((cent->currentState.eFlags & EF_PRONE) || ((GetWeaponTableData(cent->currentState.weapon)->type & WEAPON_TYPE_MG) && (cg.pmext.silencedSideArm & WALTTYPE_BIPOD)))
 	{
 		leaning = 0;    // not allowed to lean while prone
 	}
@@ -2551,23 +2551,13 @@ void CG_AnimPlayerConditions(bg_character_t *character, centity_t *cent)
 	// UNDERHAND
 	BG_UpdateConditionValue(es->clientNum, ANIM_COND_UNDERHAND, cent->lerpAngles[0] > 0, qtrue);
 
-	if (es->eFlags & EF_CROUCHING)
-	{
-		BG_UpdateConditionValue(es->clientNum, ANIM_COND_CROUCHING, qtrue, qtrue);
-	}
-	else
-	{
-		BG_UpdateConditionValue(es->clientNum, ANIM_COND_CROUCHING, qfalse, qtrue);
-	}
+	BG_UpdateConditionValue(es->clientNum, ANIM_COND_CROUCHING, es->eFlags & EF_CROUCHING, qtrue);
 
-	if (es->eFlags & EF_FIRING)
-	{
-		BG_UpdateConditionValue(es->clientNum, ANIM_COND_FIRING, qtrue, qtrue);
-	}
-	else
-	{
-		BG_UpdateConditionValue(es->clientNum, ANIM_COND_FIRING, qfalse, qtrue);
-	}
+	BG_UpdateConditionValue(es->clientNum, ANIM_COND_FIRING, es->eFlags & EF_FIRING, qtrue);
+
+	BG_UpdateConditionValue(es->clientNum, ANIM_COND_BIPOD, cg.pmext.silencedSideArm & WALTTYPE_BIPOD, qtrue);
+
+	BG_UpdateConditionValue(es->clientNum, ANIM_COND_SCOPED, cg.pmext.silencedSideArm & WALTTYPE_SCOPE, qtrue);
 
 	// reverse engineer the legs anim -> movetype (if possible)
 	legsAnim = es->legsAnim & ~ANIM_TOGGLEBIT;
@@ -2807,7 +2797,7 @@ void CG_Player(centity_t *cent)
 
 	// DEBUG
 	if (cg_debugPlayerHitboxes.integer && cent->currentState.eType != ET_CORPSE &&
-			cent->currentState.number == cg.snap->ps.clientNum)
+	    cent->currentState.number == cg.snap->ps.clientNum)
 	{
 		// position marker
 		if (cg_debugPlayerHitboxes.integer & 4)
@@ -2871,7 +2861,7 @@ void CG_Player(centity_t *cent)
 				maxs[2] = maxs[2] - (cg.predictedPlayerState.standViewHeight - PRONE_BODYHEIGHT + 8);
 			}
 			else if (cg.predictedPlayerState.pm_flags & PMF_DUCKED
-				&& cg.predictedPlayerState.velocity[0] == 0.f && cg.predictedPlayerState.velocity[1] == 0.f)
+			         && cg.predictedPlayerState.velocity[0] == 0.f && cg.predictedPlayerState.velocity[1] == 0.f)
 			{
 				maxs[2] = cg.predictedPlayerState.crouchMaxZ + DEFAULT_BODYHEIGHT_DELTA - CROUCH_IDLE_BODYHEIGHT_DELTA;
 			}

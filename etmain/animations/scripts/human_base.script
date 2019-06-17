@@ -298,6 +298,18 @@ STATE COMBAT
 		{
 			legs alert_crchidle_1h torso stand_pistolB
 		}
+		weapons Scoped K43 Rifle, scoped
+		{
+			legs alert_crchidle_2h torso stand_rifle
+		}
+		weapons Scoped M1 Garand, scoped
+		{
+			legs alert_crchidle_2h torso stand_rifle
+		}
+		weapons FG 42 Paratroop Rifle, scoped
+		{
+			legs alert_crchidle_2h torso stand_rifle
+		}
 		weapons Scoped M1 Garand
 		{
 			both alert_crchidle_srifle
@@ -409,6 +421,18 @@ STATE COMBAT
 		{
 			legs relaxed_walk_1h_1 torso stand_pistolB
 		}
+		weapons Scoped K43 Rifle, scoped
+		{
+			legs relaxed_walk_1h_1 torso stand_rifle
+		}
+		weapons Scoped M1 Garand, scoped
+		{
+			legs relaxed_walk_1h_1 torso stand_rifle
+		}
+		weapons FG 42 Paratroop Rifle, scoped
+		{
+			legs relaxed_walk_1h_1 torso stand_rifle
+		}
 		weapons Scoped M1 Garand
 		{
 			legs relaxed_walk_1h_1 torso stand_srifle
@@ -516,6 +540,18 @@ STATE COMBAT
 		{
 			both alert_bk_1h
 		}
+		weapons Scoped K43 Rifle, scoped
+		{
+			legs alert_bk_2h torso stand_rifle
+		}
+		weapons Scoped M1 Garand, scoped
+		{
+			legs alert_bk_2h torso stand_rifle
+		}
+		weapons FG 42 Paratroop Rifle, scoped
+		{
+			legs alert_bk_2h torso stand_rifle
+		}
 		weapons Scoped M1 Garand
 		{
 			both alert_bk_srifle
@@ -622,6 +658,18 @@ STATE COMBAT
 		weapons throwables AND throwables_underhand
 		{
 			both alert_crch_1h
+		}
+		weapons Scoped K43 Rifle, scoped
+		{
+			legs alert_crch_2h torso stand_rifle
+		}
+		weapons Scoped M1 Garand, scoped
+		{
+			legs alert_crch_2h torso stand_rifle
+		}
+		weapons FG 42 Paratroop Rifle, scoped
+		{
+			legs alert_crch_2h torso stand_rifle
 		}
 		weapons Scoped M1 Garand
 		{
@@ -731,6 +779,18 @@ STATE COMBAT
 		{
 			both alert_crbk_1h
 		}
+		weapons Scoped K43 Rifle, scoped
+		{
+			legs alert_crbk_2h torso stand_rifle
+		}
+		weapons Scoped M1 Garand, scoped
+		{
+			legs alert_crbk_2h torso stand_rifle
+		}
+		weapons FG 42 Paratroop Rifle, scoped
+		{
+			legs alert_crbk_2h torso stand_rifle
+		}
 		weapons Scoped M1 Garand
 		{
 			both alert_crbk_srifle
@@ -837,6 +897,18 @@ STATE COMBAT
 		weapons one_handed_weapons
 		{
 			legs alert_run_1h torso stand_pistolb
+		}
+		weapons Scoped K43 Rifle, scoped
+		{
+			legs alert_run_2h torso stand_rifle
+		}
+		weapons Scoped M1 Garand, scoped
+		{
+			legs alert_run_2h torso stand_rifle
+		}
+		weapons FG 42 Paratroop Rifle, scoped
+		{
+			legs alert_run_2h torso stand_rifle
 		}
 		weapons Scoped M1 Garand
 		{
@@ -949,6 +1021,18 @@ STATE COMBAT
 		{
 			both alert_bk_1h
 		}
+		weapons Scoped K43 Rifle, scoped
+		{
+			legs alert_bk_2h torso stand_rifle
+		}
+		weapons Scoped M1 Garand, scoped
+		{
+			legs alert_bk_2h torso stand_rifle
+		}
+		weapons FG 42 Paratroop Rifle, scoped
+		{
+			legs alert_bk_2h torso stand_rifle
+		}
 		weapons Scoped M1 Garand
 		{
 			both alert_bk_srifle
@@ -1056,6 +1140,18 @@ STATE COMBAT
 		{
 			both alert_run_no
 		}
+		weapons Scoped K43 Rifle, scoped
+		{
+			legs alert_run_2h torso stand_rifle
+		}
+		weapons Scoped M1 Garand, scoped
+		{
+			legs alert_run_2h torso stand_rifle
+		}
+		weapons FG 42 Paratroop Rifle, scoped
+		{
+			legs alert_run_2h torso stand_rifle
+		}
 		weapons Scoped M1 Garand
 		{
 			both alert_run_srifle
@@ -1162,6 +1258,18 @@ STATE COMBAT
 		weapons throwables AND throwables_underhand
 		{
 			both alert_run_no
+		}
+		weapons Scoped K43 Rifle, scoped
+		{
+			legs alert_run_2h torso stand_rifle
+		}
+		weapons Scoped M1 Garand, scoped
+		{
+			legs alert_run_2h torso stand_rifle
+		}
+		weapons FG 42 Paratroop Rifle, scoped
+		{
+			legs alert_run_2h torso stand_rifle
 		}
 		weapons Scoped M1 Garand
 		{
@@ -1345,6 +1453,18 @@ STATE COMBAT
 		weapons akimbo_pistols
 		{
 			legs prone_legs torso e_prone_pistols_idle	// FIXME
+		}
+		weapons Scoped K43 Rifle, scoped
+		{
+			legs prone_legs torso e_prone_rifle_snipeidle
+		}
+		weapons Scoped M1 Garand, scoped
+		{
+			legs prone_legs torso e_prone_rifle_snipeidle
+		}
+		weapons FG 42 Paratroop Rifle, scoped
+		{
+			legs prone_legs torso e_prone_rifle_snipeidle
 		}
 		weapons Scoped M1 Garand
 		{
@@ -1759,6 +1879,26 @@ fireweapon
 		torso firing_machinegun duration 50
 	}
 // RIFLES
+	weapons Scoped M1 Garand, movetype walk AND turnleft AND turnright AND idlecr AND idle, scoped
+	{
+		torso firing_rifle
+	}
+	weapons Scoped M1 Garand, movetype crouching, scoped
+	{
+		torso firing_crch_2h
+	}
+	weapons Scoped M1 Garand, movetype run AND swim, scoped
+	{
+		torso alert_run_2h
+	}
+	weapons Scoped M1 Garand, movetype backstep AND swimbk, scoped
+	{
+		torso firing_bk_2h
+	}
+	weapons Scoped M1 Garand, scoped
+	{
+		torso firing_rifle
+	}
 	weapons Scoped M1 Garand, movetype walk AND turnleft AND turnright AND idlecr AND idle
 	{
 		torso firing_srifle
@@ -1778,6 +1918,26 @@ fireweapon
 	weapons Scoped M1 Garand
 	{
 		torso firing_srifle
+	}
+		weapons FG 42 Paratroop Rifle, movetype walk AND turnleft AND turnright AND idlecr AND idle, scoped
+	{
+		torso firing_rifle
+	}
+	weapons FG 42 Paratroop Rifle, movetype crouching, scoped
+	{
+		torso firing_crch_2h
+	}
+	weapons FG 42 Paratroop Rifle, movetype run AND swim, scoped
+	{
+		torso alert_run_2h
+	}
+	weapons FG 42 Paratroop Rifle, movetype backstep AND swimbk, scoped
+	{
+		torso firing_bk_2h
+	}
+	weapons FG 42 Paratroop Rifle, scoped
+	{
+		torso firing_rifle
 	}
 	weapons FG 42 Paratroop Rifle, movetype walk AND turnleft AND turnright AND idlecr AND idle
 	{
@@ -1878,6 +2038,26 @@ fireweapon
 	weapons m1 garand
 	{
 		torso firing_srifle
+	}
+		weapons Scoped K43 Rifle, movetype walk AND turnleft AND turnright AND idlecr AND idle, scoped
+	{
+		torso firing_rifle
+	}
+	weapons Scoped K43 Rifle, movetype crouching, scoped
+	{
+		torso firing_crch_2h
+	}
+	weapons Scoped K43 Rifle, movetype run AND swim, scoped
+	{
+		torso alert_run_2h
+	}
+	weapons Scoped K43 Rifle, movetype backstep AND swimbk, scoped
+	{
+		torso firing_bk_2h
+	}
+	weapons Scoped K43 Rifle, scoped
+	{
+		torso firing_rifle
 	}
 	weapons Scoped K43 Rifle, movetype walk AND turnleft AND turnright AND idlecr AND idle
 	{
@@ -2016,6 +2196,18 @@ fireweaponprone
 	{
 		torso prone_mg_fire
 	}
+	weapons Scoped K43 Rifle, scoped
+	{
+		torso e_prone_rifle_snipefire
+	}
+	weapons Scoped M1 Garand, scoped
+	{
+		torso e_prone_rifle_snipefire
+	}
+	weapons FG 42 Paratroop Rifle, scoped
+	{
+		torso e_prone_rifle_snipefire
+	}
 	weapons Scoped M1 Garand
 	{
 		torso prone_rifle_fire
@@ -2132,6 +2324,18 @@ raiseweaponprone
 	{
 		torso prone_mg_switch
 	}
+	weapons Scoped K43 Rifle, scoped
+	{
+		torso e_prone_rifle_snipe
+	}
+	weapons Scoped M1 Garand, scoped
+	{
+		torso e_prone_rifle_snipe
+	}
+	weapons FG 42 Paratroop Rifle, scoped
+	{
+		torso e_prone_rifle_snipe
+	}
 	weapons Scoped M1 Garand
 	{
 		torso prone_rifle_switch
@@ -2211,6 +2415,18 @@ reloadprone
 	weapons machineguns
 	{
 		torso prone_mg_reload
+	}
+	weapons Scoped K43 Rifle, scoped
+	{
+		torso prone_rifle_reload
+	}
+	weapons Scoped M1 Garand, scoped
+	{
+		torso prone_rifle_reload
+	}
+	weapons FG 42 Paratroop Rifle, scoped
+	{
+		torso prone_rifle_reload
 	}
 	weapons Scoped M1 Garand
 	{
@@ -2312,6 +2528,18 @@ raiseweapon
 	{
 		torso raise_machinegun
 	}
+	weapons Scoped K43 Rifle, scoped
+	{
+		torso raise_sniper
+	}
+	weapons Scoped M1 Garand, scoped
+	{
+		torso raise_sniper
+	}
+	weapons FG 42 Paratroop Rifle, scoped
+	{
+		torso raise_sniper
+	}
 	weapons Scoped M1 Garand
 	{
 		torso raise_machinegun
@@ -2339,6 +2567,10 @@ raiseweapon
 	weapons Scoped K43 Rifle
 	{
 		torso raise_machinegun
+	}
+	weapons throwables AND throwables_underhand
+	{
+		torso raise_grenade
 	}
 }
 
@@ -2416,6 +2648,18 @@ reload
 	{
 		torso reload_machinegun
 	}
+	weapons Scoped K43 Rifle, scoped
+	{
+		torso reload_rifle
+	}
+	weapons Scoped M1 Garand, scoped
+	{
+		torso reload_rifle
+	}
+	weapons FG 42 Paratroop Rifle, scoped
+	{
+		torso reload_rifle
+	}
 	weapons Scoped M1 Garand
 	{
 		torso reload_machinegun
@@ -2472,6 +2716,30 @@ jump
 //	{
 //		legs jump_nostep_1h torso stand_rifle
 //	}
+	weapons Scoped K43 Rifle, movetype run, scoped
+	{
+		legs jump_1step_2h torso stand_rifle
+	}
+	weapons Scoped K43 Rifle, scoped
+	{
+		legs jump_nostep_1h torso stand_rifle
+	}
+	weapons Scoped M1 Garand, movetype run, scoped
+	{
+		legs jump_1step_2h torso stand_rifle
+	}
+	weapons Scoped M1 Garand, scoped
+	{
+		legs jump_nostep_1h torso stand_rifle
+	}
+	weapons FG 42 Paratroop Rifle, movetype run, scoped
+	{
+		legs jump_1step_2h torso stand_rifle
+	}
+	weapons FG 42 Paratroop Rifle, scoped
+	{
+		legs jump_nostep_1h torso stand_rifle
+	}
 	weapons Scoped M1 Garand, movetype run
 	{
 		legs jump_1step_2h
@@ -2576,6 +2844,30 @@ jumpbk
 //	{
 //		legs jump_nostep_1h torso stand_rifle
 //	}
+	weapons Scoped K43 Rifle, movetype run, scoped
+	{
+		legs jump_1step_2h torso stand_rifle
+	}
+	weapons Scoped K43 Rifle, scoped
+	{
+		legs jump_nostep_1h torso stand_rifle
+	}
+	weapons Scoped M1 Garand, movetype run, scoped
+	{
+		legs jump_1step_2h torso stand_rifle
+	}
+	weapons Scoped M1 Garand, scoped
+	{
+		legs jump_nostep_1h torso stand_rifle
+	}
+	weapons FG 42 Paratroop Rifle, movetype run, scoped
+	{
+		legs jump_1step_2h torso stand_rifle
+	}
+	weapons FG 42 Paratroop Rifle, scoped
+	{
+		legs jump_nostep_1h torso stand_rifle
+	}
 	weapons Scoped M1 Garand, movetype run
 	{
 		legs jump_1step_2h
