@@ -342,9 +342,9 @@ static qboolean weaponCharged(playerState_t *ps, team_t team, int weapon, int *s
 		}
 		break;
 	case WP_MORTAR:
-#ifndef LEGACY            
+#ifndef LEGACY
 	case WP_MORTAR_SET:
-#endif            
+#endif
 #if defined(NOQUARTER)
 	case WP_MORTAR2:
 	case WP_MORTAR2_SET:
@@ -634,13 +634,21 @@ static weapon_t _weaponBotToGame(int weapon)
 	case ET_WP_FG42:
 		return WP_FG42;
 	case ET_WP_FG42_SCOPE:
+#ifdef LEGACY
+		return WP_FG42;
+#else
 		return WP_FG42SCOPE;
+#endif
 	case ET_WP_FLAMETHROWER:
 		return WP_FLAMETHROWER;
 	case ET_WP_GARAND:
 		return WP_GARAND;
 	case ET_WP_GARAND_SCOPE:
+#ifdef LEGACY
+		return WP_GARAND;
+#else
 		return WP_GARAND_SCOPE;
+#endif
 	case ET_WP_GPG40:
 		return WP_GPG40;
 	case ET_WP_GREN_ALLIES:
@@ -650,7 +658,11 @@ static weapon_t _weaponBotToGame(int weapon)
 	case ET_WP_K43:
 		return WP_K43;
 	case ET_WP_K43_SCOPE:
+#ifdef LEGACY
+		return WP_K43;
+#else
 		return WP_K43_SCOPE;
+#endif
 	case ET_WP_KAR98:
 		return WP_KAR98;
 	case ET_WP_KNIFE:
@@ -665,14 +677,18 @@ static weapon_t _weaponBotToGame(int weapon)
 		return WP_MEDKIT;
 	case ET_WP_MOBILE_MG42:
 		return WP_MOBILE_MG42;
-#ifndef LEGACY                
 	case ET_WP_MOBILE_MG42_SET:
+#ifdef LEGACY
+		return WP_MOBILE_MG42;
+#else
 		return WP_MOBILE_MG42_SET;
-#endif                
+#endif
 	case ET_WP_MORTAR:
 		return WP_MORTAR;
-#ifndef LEGACY  
 	case ET_WP_MORTAR_SET:
+#ifdef LEGACY
+		return WP_MORTAR;
+#else
 		return WP_MORTAR_SET;
 #endif
 	case ET_WP_MP40:
@@ -747,8 +763,10 @@ static weapon_t _weaponBotToGame(int weapon)
 #endif
 #ifdef LEGACY
 	case 88:
+	case 89:
 		return WP_MOBILE_BROWNING;
 	case 92:
+	case 93:
 		return WP_MORTAR2;
 	case 94:
 		return WP_KNIFE_KABAR;
@@ -788,14 +806,18 @@ int Bot_WeaponGameToBot(int weapon)
 		return ET_WP_DYNAMITE;
 	case WP_FG42:
 		return ET_WP_FG42;
+#ifndef LEGACY
 	case WP_FG42SCOPE:
 		return ET_WP_FG42_SCOPE;
+#endif
 	case WP_FLAMETHROWER:
 		return ET_WP_FLAMETHROWER;
 	case WP_GARAND:
 		return ET_WP_GARAND;
+#ifndef LEGACY
 	case WP_GARAND_SCOPE:
 		return ET_WP_GARAND_SCOPE;
+#endif
 	case WP_GPG40:
 		return ET_WP_GPG40;
 	case WP_GRENADE_PINEAPPLE:
@@ -804,8 +826,10 @@ int Bot_WeaponGameToBot(int weapon)
 		return ET_WP_GREN_AXIS;
 	case WP_K43:
 		return ET_WP_K43;
+#ifndef LEGACY
 	case WP_K43_SCOPE:
 		return ET_WP_K43_SCOPE;
+#endif
 	case WP_KAR98:
 		return ET_WP_KAR98;
 	case WP_KNIFE:
@@ -820,13 +844,13 @@ int Bot_WeaponGameToBot(int weapon)
 		return ET_WP_MEDKIT;
 	case WP_MOBILE_MG42:
 		return ET_WP_MOBILE_MG42;
-#ifndef LEGACY                
+#ifndef LEGACY
 	case WP_MOBILE_MG42_SET:
 		return ET_WP_MOBILE_MG42_SET;
-#endif                
+#endif
 	case WP_MORTAR:
 		return ET_WP_MORTAR;
-#ifndef LEGACY  
+#ifndef LEGACY
 	case WP_MORTAR_SET:
 		return ET_WP_MORTAR_SET;
 #endif
@@ -1835,7 +1859,7 @@ static int _GetEntityClass(gentity_t *_ent)
 			return ET_CLASSEX_M7_GRENADE;
 		case WP_GPG40:
 			return ET_CLASSEX_GPG40_GRENADE;
-#ifndef LEGACY  
+#ifndef LEGACY
 		case WP_MORTAR_SET:
 			return ET_CLASSEX_MORTAR;
 #endif
@@ -2588,12 +2612,12 @@ public:
 			{
 				cmd.weapon = WP_MOBILE_BROWNING;
 			}
-#ifndef LEGACY                          
+#ifndef LEGACY
 			else if (cmd.weapon == WP_MOBILE_MG42_SET)
 			{
 				cmd.weapon = WP_MOBILE_BROWNING_SET;
 			}
-#endif                        
+#endif
 			else if (cmd.weapon == WP_KNIFE)
 			{
 				cmd.weapon = WP_KNIFE_KABAR;
@@ -2611,7 +2635,7 @@ public:
 			{
 				cmd.weapon = WP_MORTAR2;
 			}
-#ifndef LEGACY  
+#ifndef LEGACY
 			else if (cmd.weapon == WP_MORTAR_SET)
 			{
 				cmd.weapon = WP_MORTAR2_SET;
@@ -2620,6 +2644,7 @@ public:
 		}
 #endif
 
+#ifndef LEGACY
 		// dont choose scoped directly.
 		switch (cmd.weapon)
 		{
@@ -2633,7 +2658,7 @@ public:
 			cmd.weapon = WP_K43;
 			break;
 		}
-
+#endif
 		if (cmd.weapon == WP_BINOCULARS)
 		{
 			cmd.wbuttons |= WBUTTON_ZOOM;
@@ -2736,6 +2761,16 @@ public:
 		if (_input.m_ButtonFlags.CheckFlag(BOT_BUTTON_AIM))
 		{
 			//if(!(bot->s.eFlags & EF_ZOOMING))
+#ifdef LEGACY
+			if (GetWeaponTableData(bot->client->ps.weapon)->type & WEAPON_TYPE_SCOPABLE)
+			{
+				cmd.wbuttons |= WBUTTON_ATTACK2;
+			}
+			else
+			{
+				cmd.wbuttons |= WBUTTON_ZOOM;
+			}
+#else
 			switch (bot->client->ps.weapon)
 			{
 			case WP_GARAND:
@@ -2754,6 +2789,7 @@ public:
 				cmd.wbuttons |= WBUTTON_ZOOM;
 				break;
 			}
+#endif
 		}
 		else
 		{
@@ -3400,11 +3436,11 @@ public:
 			case WP_SATCHEL:
 			case WP_M7:
 			case WP_GPG40:
-#ifndef LEGACY  
+#ifndef LEGACY
 			case WP_MORTAR_SET:
 #endif
 #if defined(NOQUARTER) || defined(LEGACY)
-#ifndef LEGACY  
+#ifndef LEGACY
 			case WP_MORTAR2_SET:
 #endif
 			case WP_BAZOOKA:
@@ -3732,6 +3768,12 @@ public:
 					_flags.SetFlag(ET_ENT_FLAG_INLIMBO);
 				}
 
+#ifdef LEGACY
+				if (pEnt->client->pmext.silencedSideArm & WALTTYPE_SCOPE)
+				{
+					_flags.SetFlag(ENT_FLAG_ZOOMING);
+				}
+#else
 				switch (pEnt->client->ps.weapon)
 				{
 				case WP_GARAND_SCOPE:
@@ -3740,6 +3782,7 @@ public:
 					_flags.SetFlag(ENT_FLAG_ZOOMING);
 					break;
 				}
+#endif
 				if (pEnt->s.eFlags & EF_ZOOMING)
 				{
 					_flags.SetFlag(ENT_FLAG_ZOOMING);
@@ -3822,11 +3865,11 @@ public:
 				case WP_SATCHEL:
 				case WP_M7:
 				case WP_GPG40:
-#ifndef LEGACY  
+#ifndef LEGACY
 				case WP_MORTAR_SET:
 #endif
 #if defined(NOQUARTER) || defined(LEGACY)
-#ifndef LEGACY  
+#ifndef LEGACY
 				case WP_MORTAR2_SET:
 #endif
 				case WP_BAZOOKA:
@@ -4290,13 +4333,13 @@ public:
 			case WP_LANDMINE:
 			case WP_MEDKIT:
 			case WP_MORTAR:
-#ifndef LEGACY  
+#ifndef LEGACY
 			case WP_MORTAR_SET:
 #endif
 			case WP_PANZERFAUST:
 #if defined(NOQUARTER) || defined(LEGACY)
 			case WP_MORTAR2:
-#ifndef LEGACY  
+#ifndef LEGACY
 			case WP_MORTAR2_SET:
 #endif
 			case WP_BAZOOKA:
@@ -4340,7 +4383,7 @@ public:
 				case WP_MOBILE_MG42:
 					_weaponId = WP_MOBILE_BROWNING;
 					break;
-#ifndef LEGACY                                          
+#ifndef LEGACY
 				case WP_MOBILE_MG42_SET:
 					_weaponId = WP_MOBILE_BROWNING_SET;
 					break;
@@ -4361,7 +4404,7 @@ public:
 				case WP_MORTAR:
 					_weaponId = WP_MORTAR2;
 					break;
-#ifndef LEGACY  
+#ifndef LEGACY
 				case WP_MORTAR_SET:
 					_weaponId = WP_MORTAR2_SET;
 					break;
@@ -4396,13 +4439,13 @@ public:
 			case WP_LANDMINE:
 			case WP_MEDKIT:
 			case WP_MORTAR:
-#ifndef LEGACY  
+#ifndef LEGACY
 			case WP_MORTAR_SET:
 #endif
 			case WP_PANZERFAUST:
 #if defined(NOQUARTER) || defined(LEGACY)
 			case WP_MORTAR2:
-#ifndef LEGACY  
+#ifndef LEGACY
 			case WP_MORTAR2_SET:
 #endif
 			case WP_BAZOOKA:
@@ -6539,7 +6582,7 @@ void Bot_Interface_Update()
 
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef LEGACY 
+#ifndef LEGACY
 qboolean Bot_Util_AllowPush(int weaponId)
 {
 	switch (weaponId)
@@ -6550,13 +6593,13 @@ qboolean Bot_Util_AllowPush(int weaponId)
 	case WP_MOBILE_BROWNING_SET:
 	case WP_BAR_SET:
 #endif
-	case WP_MOBILE_MG42_SET: 
+	case WP_MOBILE_MG42_SET:
 		return qfalse;
-              
+
 	}
 	return qtrue;
 }
-#endif 
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 const char *_GetEntityName(gentity_t *_ent)
@@ -6735,6 +6778,38 @@ void Bot_Event_AddWeapon(int _client, int _weaponId)
 		{
 			//////////////////////////////////////////////////////////////////////////
 			int AddWeapon = _weaponId;
+
+			switch (AddWeapon)
+			{
+			case ET_WP_GARAND:
+			{
+				// remove the unscoped to give the scoped
+				Event_RemoveWeapon d = { ET_WP_GARAND };
+				g_BotFunctions.pfnSendEvent(_client, MessageHelper(MESSAGE_REMOVEWEAPON, &d, sizeof(d)));
+
+				AddWeapon = ET_WP_GARAND_SCOPE;
+				break;
+			}
+			case ET_WP_K43:
+			{
+				// remove the unscoped to give the scoped
+				Event_RemoveWeapon d = { ET_WP_K43 };
+				g_BotFunctions.pfnSendEvent(_client, MessageHelper(MESSAGE_REMOVEWEAPON, &d, sizeof(d)));
+
+				AddWeapon = ET_WP_K43_SCOPE;
+				break;
+			}
+			case ET_WP_FG42:
+			{
+				// remove the unscoped to give the scoped
+				Event_RemoveWeapon d = { ET_WP_FG42 };
+				g_BotFunctions.pfnSendEvent(_client, MessageHelper(MESSAGE_REMOVEWEAPON, &d, sizeof(d)));
+
+				AddWeapon = ET_WP_FG42_SCOPE;
+				break;
+			}
+			}
+#ifndef LEGACY
 			switch (AddWeapon)
 			{
 			case ET_WP_GARAND:
@@ -6797,7 +6872,9 @@ void Bot_Event_AddWeapon(int _client, int _weaponId)
 
 				break;
 			}
+
 			}
+#endif
 			//////////////////////////////////////////////////////////////////////////
 
 			Event_AddWeapon d = { AddWeapon };

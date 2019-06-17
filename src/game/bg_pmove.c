@@ -100,7 +100,7 @@ void ClientStoreSurfaceFlags(int clientNum, int surfaceFlags);
 #endif
 
 static void PM_BeginWeaponChange(weapon_t oldWeapon, weapon_t newWeapon, qboolean reload);
-static void PM_BeginAltWeaponChange(void);
+static void PM_BeginAltWeaponChange(qboolean reload);
 
 /**
  * @brief PM_AddEvent
@@ -911,13 +911,9 @@ static qboolean PM_CheckProne(void)
 				// don't let them keep scope out when
 				// standing from prone or they will
 				// look right through a wall
-				if (GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_SCOPED)
+				if (pm->pmext->silencedSideArm & (WALTTYPE_SCOPE | WALTTYPE_BIPOD))
 				{
-					PM_BeginWeaponChange((weapon_t)pm->ps->weapon, GetWeaponTableData(pm->ps->weapon)->weapAlts, qfalse);
-				}
-				else if (pm->pmext->silencedSideArm & WALTTYPE_BIPOD)
-				{
-					PM_BeginAltWeaponChange();
+					PM_BeginAltWeaponChange(qfalse);
 				}
 
 				// don't jump for a bit
@@ -2473,14 +2469,7 @@ static void PM_FinishWeaponChange(void)
 		pm->ps->weaponstate = WEAPON_RAISING;
 	}
 
-	// don't really care about anim since these weapons don't show in view.
-	// However, need to set the animspreadscale so they are initally at worst accuracy
-	if (GetWeaponTableData(newWeapon)->type & WEAPON_TYPE_SCOPED)
-	{
-		pm->ps->aimSpreadScale      = AIMSPREAD_MAXSPREAD;       // initially at lowest accuracy
-		pm->ps->aimSpreadScaleFloat = AIMSPREAD_MAXSPREAD;       // initially at lowest accuracy
-	}
-	else if (GetWeaponTableData(newWeapon)->type & WEAPON_TYPE_PISTOL)
+	if (GetWeaponTableData(newWeapon)->type & WEAPON_TYPE_PISTOL)
 	{
 		if (GetWeaponTableData(newWeapon)->attributes & WEAPON_ATTRIBUT_SILENCED)
 		{
@@ -2547,7 +2536,10 @@ static void PM_FinishWeaponChange(void)
 	}
 }
 
-static void PM_BeginAltWeaponChange()
+/**
+ * @brief PM_BeginAltWeaponChange
+ */
+static void PM_BeginAltWeaponChange(qboolean reload)
 {
 	if (pm->ps->pm_flags & PMF_RESPAWNED)
 	{
@@ -2649,6 +2641,23 @@ static void PM_BeginAltWeaponChange()
 			AxisToAngles(axis, pm->pmext->mountedWeaponAngles);
 		}
 	}
+	else if (GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_SCOPABLE)
+	{
+		if (!(pm->pmext->silencedSideArm & WALTTYPE_SCOPE))
+		{
+			// don't allow players switching to scoped weapon when prone moving
+			if (pm->ps->eFlags & EF_PRONE_MOVING)
+			{
+				return;
+			}
+
+			// don't let players run with rifles -- speed 80 == crouch, 128 == walk, 256 == run until player start to don't run
+			if (VectorLength(pm->ps->velocity) > 127)
+			{
+				return;
+			}
+		}
+	}
 	else
 	{
 		return;
@@ -2658,27 +2667,65 @@ static void PM_BeginAltWeaponChange()
 
 	PM_AddEvent(EV_CHANGE_WEAPON_2);
 
-	pm->ps->weaponstate = WEAPON_DROPPING;
+	if (reload)
+	{
+		pm->ps->weaponstate = WEAPON_DROPPING_TORELOAD;
+	}
+	else
+	{
+		pm->ps->weaponstate = WEAPON_DROPPING;
+	}
 }
 
+/**
+ * @brief PM_FinishAltWeaponChange
+ */
 static void PM_FinishAltWeaponChange()
 {
-	pm->ps->weaponstate = WEAPON_RAISING;
+	weaponAltType_t weaponAltType;
+
+	if (pm->ps->weaponstate == WEAPON_DROPPING_TORELOAD)
+	{
+		pm->ps->weaponstate = WEAPON_RAISING_TORELOAD;
+	}
+	else
+	{
+		pm->ps->weaponstate = WEAPON_RAISING;
+	}
 
 	if (GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_SETTABLE)
 	{
-		if (pm->pmext->silencedSideArm & WALTTYPE_BIPOD)
-		{
-			PM_StartWeaponAnim(WEAP_ALTSWITCHFROM);
-			pm->ps->weaponTime += GetWeaponTableData(pm->ps->weapon)->altSwitchTimeFinish;
-		}
-		else
-		{
-			PM_StartWeaponAnim(WEAP_ALTSWITCHTO);
-			pm->ps->weaponTime += GetWeaponTableData(pm->ps->weapon)->altSwitchTimeBegin;
-		}
-		pm->pmext->silencedSideArm ^= WALTTYPE_BIPOD;
+		weaponAltType = WALTTYPE_BIPOD;
 	}
+	else if (GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_SCOPABLE)
+	{
+		weaponAltType = WALTTYPE_SCOPE;
+
+		if (!(pm->pmext->silencedSideArm & weaponAltType))
+		{
+			// don't really care about anim since these weapons don't show in view.
+			// However, need to set the animspreadscale so they are initally at worst accuracy
+			pm->ps->aimSpreadScale      = AIMSPREAD_MAXSPREAD;           // initially at lowest accuracy
+			pm->ps->aimSpreadScaleFloat = AIMSPREAD_MAXSPREAD;           // initially at lowest accuracy
+		}
+	}
+	else
+	{
+		return;
+	}
+
+	if (pm->pmext->silencedSideArm & weaponAltType)
+	{
+		PM_StartWeaponAnim(WEAP_ALTSWITCHFROM);
+		pm->ps->weaponTime += GetWeaponTableData(pm->ps->weapon)->altSwitchTimeFinish;
+	}
+	else
+	{
+		PM_StartWeaponAnim(WEAP_ALTSWITCHTO);
+		pm->ps->weaponTime += GetWeaponTableData(pm->ps->weapon)->altSwitchTimeBegin;
+	}
+
+	pm->pmext->silencedSideArm ^= weaponAltType;
 
 	BG_UpdateConditionValue(pm->ps->clientNum, ANIM_COND_WEAPON, pm->ps->weapon, qtrue);
 
@@ -2809,12 +2856,15 @@ void PM_CheckForReload(weapon_t weapon)
 
 		if (doReload)
 		{
-			if (GetWeaponTableData(weapon)->type & WEAPON_TYPE_SCOPED)
+			if (pm->pmext->silencedSideArm & WALTTYPE_SCOPE)
 			{
-				PM_BeginWeaponChange(weapon, GetWeaponTableData(weapon)->weapAlts, qtrue);
+				PM_BeginAltWeaponChange(qtrue);
+			}
+			else
+			{
+				PM_BeginWeaponReload(weapon);
 			}
 
-			PM_BeginWeaponReload(weapon);
 		}
 	}
 }
@@ -3027,22 +3077,22 @@ void PM_AdjustAimSpreadScale(void)
 	{
 		float viewchange = 0;
 
-		if ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_SCOPED) && pm->skill[SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS] >= 3)
+		if ((pm->pmext->silencedSideArm & WALTTYPE_SCOPE) && pm->skill[SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS] >= 3)
 		{
-			wpnScale *= 0.5;
+			wpnScale *= 0.5f;
 		}
 
 		// crouched players recover faster (mostly useful for snipers)
 		if ((pm->ps->eFlags & EF_CROUCHING) || (pm->ps->eFlags & EF_PRONE))
 		{
-			wpnScale *= 0.5;
+			wpnScale *= 0.5f;
 		}
 
 		decrease = (cmdTime * AIMSPREAD_DECREASE_RATE) / wpnScale;
 
 		// take player movement into account (even if only for the scoped weapons)
 		// TODO: also check for jump/crouch and adjust accordingly
-		if (GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_SCOPED)
+		if (pm->pmext->silencedSideArm & WALTTYPE_SCOPE)
 		{
 			for (i = 0; i < 2; i++)
 			{
@@ -3446,7 +3496,7 @@ static void PM_Weapon(void)
 		}
 		else if (pm->cmd.wbuttons & WBUTTON_ATTACK2 && !(pm->oldcmd.wbuttons & WBUTTON_ATTACK2))
 		{
-			PM_BeginAltWeaponChange();
+			PM_BeginAltWeaponChange(qfalse);
 		}
 	}
 
@@ -3800,7 +3850,7 @@ static void PM_Weapon(void)
 
 	// weapon firing animation
 	// FG42 is exclude because the continue animation don't look great with it (no recoil, look stuck)
-	if ((GetWeaponTableData(pm->ps->weapon)->firingMode & WEAPON_FIRING_MODE_AUTOMATIC) && pm->ps->weapon != WP_FG42 && pm->ps->weapon != WP_FG42SCOPE)
+	if ((GetWeaponTableData(pm->ps->weapon)->firingMode & WEAPON_FIRING_MODE_AUTOMATIC) && pm->ps->weapon != WP_FG42)
 	{
 		PM_ContinueWeaponAnim(weapattackanim);
 	}
@@ -3844,10 +3894,13 @@ static void PM_Weapon(void)
 	pm->pmext->weapRecoilPitch     = GetWeaponTableData(pm->ps->weapon)->weapRecoilPitch[0] * random() * GetWeaponTableData(pm->ps->weapon)->weapRecoilPitch[1];
 
 	// handle case depending of player skill and position for weapon recoil
-	if (GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_SCOPED)
+	if (pm->pmext->silencedSideArm & WALTTYPE_SCOPE)
 	{
-		if (pm->ps->weapon == WP_FG42SCOPE)
+		if (pm->ps->weapon == WP_FG42)
 		{
+			// FG42 shoot slower while scoped
+			addTime *= 4;
+
 			if (pm->skill[SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS] >= 3)
 			{
 				pm->pmext->weapRecoilPitch *= .5f;
@@ -3865,9 +3918,9 @@ static void PM_Weapon(void)
 			}
 		}
 	}
-	else if (pm->pmext->silencedSideArm & WALTTYPE_BIPOD)
+	else if (pm->pmext->silencedSideArm & WALTTYPE_BIPOD || GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_RIFLE)
 	{
-		// no recoil with set weapon
+		// no recoil with set weapon and rifle
 		pm->pmext->weapRecoilYaw   = 0;
 		pm->pmext->weapRecoilPitch = 0;
 	}
@@ -4908,11 +4961,10 @@ void PmoveSingle(pmove_t *pmove)
 		if (pm->ps->stats[STAT_KEYS] & (1 << INV_BINOCS))               // binoculars are an inventory item (inventory==keys)
 		{
 			// don't allow binocs:
-			if (!(GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_SCOPED) &&              // if using the sniper scope or set weapon
+			if (!(pm->pmext->silencedSideArm & (WALTTYPE_SCOPE | WALTTYPE_BIPOD)) &&                          // if using the sniper scope or set weapon
 			    !BG_PlayerMounted(pm->ps->eFlags) &&                    // or if mounted on a weapon
 			    !(pm->ps->eFlags & EF_PRONE_MOVING) &&                  // when prone moving
-			    !pm->ps->grenadeTimeLeft &&                             // if in the middle of throwing grenade
-			    !(pm->pmext->silencedSideArm & WALTTYPE_BIPOD))
+			    !pm->ps->grenadeTimeLeft)                               // if in the middle of throwing grenade
 			{
 				pm->ps->eFlags |= EF_ZOOMING;
 			}
@@ -5090,8 +5142,8 @@ void PmoveSingle(pmove_t *pmove)
 	{
 		PM_DeadMove();
 
-		// unset weapon
-		pm->pmext->silencedSideArm &= ~WALTTYPE_BIPOD;
+		// unset/unscope weapon
+		pm->pmext->silencedSideArm &= ~(WALTTYPE_BIPOD | WALTTYPE_SCOPE);
 	}
 	else
 	{
@@ -5099,11 +5151,15 @@ void PmoveSingle(pmove_t *pmove)
 		{
 			if (!(pm->ps->eFlags & EF_PRONE))
 			{
-				PM_BeginAltWeaponChange();
+				PM_BeginAltWeaponChange(qfalse);
 			}
 		}
-
-		if (pm->ps->weapon == WP_SATCHEL_DET)
+		// don't let players run with rifles -- speed 80 == crouch, 128 == walk, 256 == run until player start to don't run
+		else if ((pm->pmext->silencedSideArm & WALTTYPE_SCOPE) && VectorLength(pm->ps->velocity) > 127)
+		{
+			PM_BeginAltWeaponChange(qfalse);
+		}
+		else if (pm->ps->weapon == WP_SATCHEL_DET)
 		{
 			if (!(pm->ps->ammoclip[WP_SATCHEL_DET]))
 			{

@@ -710,7 +710,7 @@ static void CG_DrawScopedReticle(void)
 		weapon = cg.weaponSelect;
 	}
 
-	if (!(GetWeaponTableData(weapon)->type & WEAPON_TYPE_SCOPED))
+        if (!(cg.pmext.silencedSideArm & WALTTYPE_SCOPE))
 	{
 		return;
 	}
@@ -725,7 +725,7 @@ static void CG_DrawScopedReticle(void)
 		CG_DrawPic(80 + cgs.wideXoffset, 0, SCREEN_HEIGHT, SCREEN_HEIGHT, cgs.media.reticleShaderSimple);
 	}
 
-	if (weapon == WP_FG42SCOPE)
+	if (weapon == WP_FG42)
 	{
 		// hairs
 		CG_FillRect(84 + cgs.wideXoffset, 239, 150, 3, colorBlack);     // left
@@ -739,7 +739,7 @@ static void CG_DrawScopedReticle(void)
 		CG_FillRect(320 + cgs.wideXoffset, 241, 1, 87, colorBlack);     // bot center top
 		CG_FillRect(319 + cgs.wideXoffset, 327, 3, 151, colorBlack);    // bot center bot
 	}
-	else if (weapon == WP_GARAND_SCOPE)
+	else if (weapon == WP_GARAND)
 	{
 		// hairs
 		CG_FillRect(84 + cgs.wideXoffset, 239, 177, 2, colorBlack);     // left
@@ -747,7 +747,7 @@ static void CG_DrawScopedReticle(void)
 		CG_FillRect(319 + cgs.wideXoffset, 300, 2, 178, colorBlack);    // center bot
 		CG_FillRect(380 + cgs.wideXoffset, 239, 177, 2, colorBlack);    // right
 	}
-	else if (weapon == WP_K43_SCOPE)
+	else if (weapon == WP_K43)
 	{
 		// hairs
 		CG_FillRect(84 + cgs.wideXoffset, 239, 177, 2, colorBlack);     // left

@@ -208,15 +208,6 @@ void CG_Respawn(qboolean revived)
 	trap_SendConsoleCommand("-zoom\n");
 	cg.binocZoomTime = 0;
 
-	// ensure scoped weapons are reset after revive
-	if (revived)
-	{
-		if (GetWeaponTableData(cg.snap->ps.weapon)->type & WEAPON_TYPE_SCOPED)
-		{
-			CG_FinishWeaponChange(cg.snap->ps.weapon, GetWeaponTableData(cg.snap->ps.weapon)->weapAlts);
-		}
-	}
-
 	// clear pmext
 	Com_Memset(&cg.pmext, 0, sizeof(cg.pmext));
 
@@ -576,10 +567,6 @@ void CG_TransitionPlayerState(playerState_t *ps, playerState_t *ops)
 				trap_SendConsoleCommand("-zoom\n");
 			}
 		}
-		else if (GetWeaponTableData(ps->weapon)->type & WEAPON_TYPE_SCOPED)
-		{
-			CG_FinishWeaponChange(ps->weapon, GetWeaponTableData(ps->weapon)->weapAlts);
-		}
 
 		if (!(ops->eFlags & EF_PRONE_MOVING))
 		{
@@ -592,12 +579,6 @@ void CG_TransitionPlayerState(playerState_t *ps, playerState_t *ops)
 	else if (ops->eFlags & EF_PRONE_MOVING)
 	{
 		cg.proneMovingTime = -cg.time;
-	}
-
-	// don't let players run with rifles -- speed 80 == crouch, 128 == walk, 256 == run until player start to don't run
-	if ((GetWeaponTableData(ps->weapon)->type & WEAPON_TYPE_SCOPED) && VectorLength(ps->velocity) > 127)
-	{
-		CG_FinishWeaponChange(ps->weapon, GetWeaponTableData(ps->weapon)->weapAlts);
 	}
 
 	// run events

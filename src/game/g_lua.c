@@ -868,7 +868,7 @@ static int _et_RemoveWeaponFromPlayer(lua_State *L)
 	{
 		weapon_t weapAlts = GetWeaponTableData(weapon)->weapAlts;
 
-		if (GetWeaponTableData(weapAlts)->type & (WEAPON_TYPE_RIFLENADE | WEAPON_TYPE_SCOPED))
+		if (GetWeaponTableData(weapAlts)->type & WEAPON_TYPE_RIFLENADE)
 		{
 			COM_BitClear(client->ps.weapons, weapAlts);
 		}
@@ -2516,20 +2516,17 @@ static void registerWeaponConstants(lua_vm_t *vm)
 	lua_regconstinteger(vm->L, WP_M7);                   // 38
 	lua_regconstinteger(vm->L, WP_SILENCED_COLT);        // 39
 
-	lua_regconstinteger(vm->L, WP_GARAND_SCOPE);         // 40
-	lua_regconstinteger(vm->L, WP_K43_SCOPE);            // 41
-	lua_regconstinteger(vm->L, WP_FG42SCOPE);            // 42
-	lua_regconstinteger(vm->L, WP_MEDIC_ADRENALINE);     // 43
-	lua_regconstinteger(vm->L, WP_AKIMBO_SILENCEDCOLT);  // 44
-	lua_regconstinteger(vm->L, WP_AKIMBO_SILENCEDLUGER); // 45
+	lua_regconstinteger(vm->L, WP_MEDIC_ADRENALINE);     // 40
+	lua_regconstinteger(vm->L, WP_AKIMBO_SILENCEDCOLT);  // 41
+	lua_regconstinteger(vm->L, WP_AKIMBO_SILENCEDLUGER); // 42
 
 	// legacy weapons
-	lua_regconstinteger(vm->L, WP_KNIFE_KABAR);          // 46
-	lua_regconstinteger(vm->L, WP_MOBILE_BROWNING);      // 47
-	lua_regconstinteger(vm->L, WP_MORTAR2);              // 48
-	lua_regconstinteger(vm->L, WP_BAZOOKA);              // 49
-	lua_regconstinteger(vm->L, WP_MP34);                 // 50
-	lua_regconstinteger(vm->L, WP_AIRSTRIKE);            // 51
+	lua_regconstinteger(vm->L, WP_KNIFE_KABAR);          // 43
+	lua_regconstinteger(vm->L, WP_MOBILE_BROWNING);      // 44
+	lua_regconstinteger(vm->L, WP_MORTAR2);              // 45
+	lua_regconstinteger(vm->L, WP_BAZOOKA);              // 46
+	lua_regconstinteger(vm->L, WP_MP34);                 // 47
+	lua_regconstinteger(vm->L, WP_AIRSTRIKE);            // 48
 	lua_regconstinteger(vm->L, WP_NUM_WEAPONS);
 }
 

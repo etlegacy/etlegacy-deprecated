@@ -383,7 +383,7 @@ static void CG_ItemPickup(int itemNum)
 
 			// don't ever autoswitch to secondary fire weapons
 			// Leave autoswitch to secondary kar/carbine as they use alt ammo and arent zoomed: Note, not that it would do this anyway as it isnt in a bank....
-			if (!(GetWeaponTableData(itemid)->type & WEAPON_TYPE_SCOPED) && itemid != WP_AMMO)
+			if (itemid != WP_AMMO)
 			{
 				// no weap currently selected, always just select the new one
 				if (!cg.weaponSelect)
@@ -2177,16 +2177,6 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 		if (cg_weapons[GetWeaponTableData(es->weapon)->weapAlts].switchSound)
 		{
 			trap_S_StartSound(NULL, es->number, CHAN_WEAPON, cg_weapons[GetWeaponTableData(es->weapon)->weapAlts].switchSound);
-		}
-
-		if (es->number == cg.snap->ps.clientNum)
-		{
-			// client will get this message if reloading while using an alternate weapon
-			// client should voluntarily switch back to primary at that point
-			if (GetWeaponTableData(es->weapon)->type & WEAPON_TYPE_SCOPED)
-			{
-				CG_FinishWeaponChange(es->weapon, GetWeaponTableData(es->weapon)->weapAlts);
-			}
 		}
 		break;
 	case EV_FIRE_WEAPON_MOUNTEDMG42:

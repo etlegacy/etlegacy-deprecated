@@ -831,7 +831,7 @@ void CG_ZoomIn_f(void)
 	// fixed being able to "latch" your zoom by weaponcheck + quick zoomin
 	// - change for zoom view in demos
 	// zoom if weapon is scoped or if binoc is scoped
-	if (GetWeaponTableData(cg_entities[cg.snap->ps.clientNum].currentState.weapon)->type & WEAPON_TYPE_SCOPED)
+        if ((GetWeaponTableData(cg_entities[cg.snap->ps.clientNum].currentState.weapon)->type & WEAPON_TYPE_SCOPABLE) && (cg.pmext.silencedSideArm & WALTTYPE_SCOPE))
 	{
 		CG_AdjustZoomVal(-(cg_zoomStepSniper.value)
 		                 , GetWeaponTableData(cg_entities[cg.snap->ps.clientNum].currentState.weapon)->zoomOut
@@ -851,7 +851,7 @@ void CG_ZoomIn_f(void)
 void CG_ZoomOut_f(void)
 {
 	// zoom if weapon is scoped or if binoc is scoped
-	if (GetWeaponTableData(cg_entities[cg.snap->ps.clientNum].currentState.weapon)->type & WEAPON_TYPE_SCOPED)
+        if ((GetWeaponTableData(cg_entities[cg.snap->ps.clientNum].currentState.weapon)->type & WEAPON_TYPE_SCOPABLE) && (cg.pmext.silencedSideArm & WALTTYPE_SCOPE))
 	{
 		CG_AdjustZoomVal(cg_zoomStepSniper.value
 		                 , GetWeaponTableData(cg_entities[cg.snap->ps.clientNum].currentState.weapon)->zoomOut
@@ -906,7 +906,7 @@ void CG_Zoom(void)
 		cg.zoomTime    = cg.time;
 		cg.zoomval     = cg_zoomDefaultSniper.value; // was DefaultBinoc, changed per atvi req
 	}
-	else if (GetWeaponTableData(weapon)->type & WEAPON_TYPE_SCOPED) // check for scope weapon in use, and change to if necessary
+        else if (cg.pmext.silencedSideArm & WALTTYPE_SCOPE) // check for scope weapon in use, and change to if necessary
 	{
 		if (cg.zoomed)
 		{

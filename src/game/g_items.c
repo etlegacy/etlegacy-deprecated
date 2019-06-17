@@ -374,7 +374,7 @@ void G_DropWeapon(gentity_t *ent, weapon_t weapon)
 	{
 		weapon_t weapAlts = GetWeaponTableData(weapon)->weapAlts;
 
-		if (GetWeaponTableData(weapAlts)->type & (WEAPON_TYPE_RIFLENADE | WEAPON_TYPE_SCOPED))
+		if (GetWeaponTableData(weapAlts)->type & WEAPON_TYPE_RIFLENADE)
 		{
 			COM_BitClear(client->ps.weapons, weapAlts);
 		}
@@ -538,7 +538,7 @@ int Pickup_Weapon(gentity_t *ent, gentity_t *other)
 				{
 					weapon_t weapAlts = GetWeaponTableData(ent->item->giWeapon)->weapAlts;
 
-					if (GetWeaponTableData(weapAlts)->type & (WEAPON_TYPE_RIFLENADE | WEAPON_TYPE_SCOPED))
+					if (GetWeaponTableData(weapAlts)->type & WEAPON_TYPE_RIFLENADE)
 					{
 						COM_BitSet(other->client->ps.weapons, weapAlts);
 					}
