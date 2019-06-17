@@ -22,7 +22,7 @@ if(BUILD_CLIENT)
 		include_directories(${X11_INCLUDE_DIR})
 	endif(NOT WIN32)
 
-	if(ARM)
+	if(ARM AND RPI)
 		set(COMMON_INCLUDE_DIRS
 				"/opt/vc/include"
 				"/opt/vc/include/interface/vcos"
@@ -37,7 +37,7 @@ if(BUILD_CLIENT)
 				bcm_host
 				)
 
-		MESSAGE("Using Raspberry")
+		MESSAGE("Using Raspberry Pi")
 	endif()
 
 	if(NOT FEATURE_RENDERER_GLES)
@@ -60,7 +60,7 @@ if(BUILD_CLIENT)
 		list(APPEND RENDERER_LIBRARIES ${GLES_LIBRARY})
 		include_directories(SYSTEM ${GLES_INCLUDE_DIR})
 
-		if (ARM)
+		if (ARM AND RPI)
 			LIST(APPEND CLIENT_LIBRARIES
 				brcmEGL
 				brcmGLESv2
