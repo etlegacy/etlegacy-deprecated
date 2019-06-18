@@ -2551,13 +2551,13 @@ void CG_AnimPlayerConditions(bg_character_t *character, centity_t *cent)
 	// UNDERHAND
 	BG_UpdateConditionValue(es->clientNum, ANIM_COND_UNDERHAND, cent->lerpAngles[0] > 0, qtrue);
 
-	BG_UpdateConditionValue(es->clientNum, ANIM_COND_CROUCHING, es->eFlags & EF_CROUCHING, qtrue);
+	BG_UpdateConditionValue(es->clientNum, ANIM_COND_CROUCHING, (es->eFlags & EF_CROUCHING) ? qtrue : qfalse, qtrue);
 
-	BG_UpdateConditionValue(es->clientNum, ANIM_COND_FIRING, es->eFlags & EF_FIRING, qtrue);
+	BG_UpdateConditionValue(es->clientNum, ANIM_COND_FIRING, (es->eFlags & EF_FIRING) ? qtrue : qfalse, qtrue);
 
-	BG_UpdateConditionValue(es->clientNum, ANIM_COND_BIPOD, cg.pmext.silencedSideArm & WALTTYPE_BIPOD, qtrue);
+	BG_UpdateConditionValue(es->clientNum, ANIM_COND_BIPOD, (cg.pmext.silencedSideArm & WALTTYPE_BIPOD) ? qtrue : qfalse, qtrue);
 
-	BG_UpdateConditionValue(es->clientNum, ANIM_COND_SCOPED, cg.pmext.silencedSideArm & WALTTYPE_SCOPE, qtrue);
+	BG_UpdateConditionValue(es->clientNum, ANIM_COND_SCOPED, (cg.pmext.silencedSideArm & WALTTYPE_SCOPE) ? qtrue : qfalse, qtrue);
 
 	// reverse engineer the legs anim -> movetype (if possible)
 	legsAnim = es->legsAnim & ~ANIM_TOGGLEBIT;

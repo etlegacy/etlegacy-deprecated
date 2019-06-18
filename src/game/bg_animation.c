@@ -1974,11 +1974,11 @@ void BG_AnimUpdatePlayerStateConditions(pmove_t *pmove)
 		ps->eFlags &= ~EF_CROUCHING;
 	}
 
-	BG_UpdateConditionValue(ps->clientNum, ANIM_COND_FIRING, pmove->cmd.buttons & BUTTON_ATTACK, qtrue);
+	BG_UpdateConditionValue(ps->clientNum, ANIM_COND_FIRING, (pmove->cmd.buttons & BUTTON_ATTACK) ? qtrue : qfalse, qtrue);
 
-	BG_UpdateConditionValue(ps->clientNum, ANIM_COND_BIPOD, pmove->pmext->silencedSideArm & WALTTYPE_BIPOD, qtrue);
+	BG_UpdateConditionValue(ps->clientNum, ANIM_COND_BIPOD, (pmove->pmext->silencedSideArm & WALTTYPE_BIPOD) ? qtrue : qfalse, qtrue);
 
-	BG_UpdateConditionValue(ps->clientNum, ANIM_COND_SCOPED, pmove->pmext->silencedSideArm & WALTTYPE_SCOPE, qtrue);
+	BG_UpdateConditionValue(ps->clientNum, ANIM_COND_SCOPED, (pmove->pmext->silencedSideArm & WALTTYPE_SCOPE) ? qtrue : qfalse, qtrue);
 
 	if (ps->pm_flags & PMF_FLAILING)
 	{
