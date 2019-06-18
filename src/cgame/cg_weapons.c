@@ -2451,7 +2451,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 	}
 
 	// don't draw weapon stuff when looking through a scope
-        if (cg.pmext.silencedSideArm & WALTTYPE_SCOPE)
+	if (cg.pmext.silencedSideArm & WALTTYPE_SCOPE)
 	{
 		if (isFirstPerson)
 		{
@@ -2521,7 +2521,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 		team = team == TEAM_AXIS ? TEAM_ALLIES : TEAM_AXIS;
 	}
 
-        // deployed mortar use a specific model in 3rd person
+	// deployed mortar use a specific model in 3rd person
 	if (!isFirstPerson && (GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & WALTTYPE_BIPOD))
 	{
 		gun.hModel = weapon->modModels[0];
@@ -2860,7 +2860,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 				}
 			}
 		}
-                else if (CHECKBITWISE(GetWeaponTableData(weaponNum)->type, (WEAPON_TYPE_RIFLE | WEAPON_TYPE_SCOPABLE)))
+		else if (CHECKBITWISE(GetWeaponTableData(weaponNum)->type, (WEAPON_TYPE_RIFLE | WEAPON_TYPE_SCOPABLE)))
 		{
 			barrel.hModel = weapon->modModels[0];
 
@@ -3688,12 +3688,12 @@ void CG_FinishWeaponChange(int lastWeapon, int newWeapon)
 		// selected weapon will become the switchback
 		if (cg.switchbackWeapon == newWeapon)
 		{
-                    cg.switchbackWeapon = lastWeapon;
+			cg.switchbackWeapon = lastWeapon;
 		}
 		// this fixes cg.switchbackWeapon=0 after very first spawn and switching weapon for the first time
 		else if (cg.switchbackWeapon == WP_NONE && CG_WeaponSelectable(lastWeapon)) // ensure last weapon is available
 		{
-                    cg.switchbackWeapon = lastWeapon;
+			cg.switchbackWeapon = lastWeapon;
 		}
 	}
 
@@ -3856,6 +3856,9 @@ void CG_AltWeapon_f(void)
 			//trap_SendConsoleCommand(va("cmd %s %s\n", cmd, "EnemyWeak"));
 			//return;
 			default:
+				// HACK: new alt weapon behaviour
+				trap_SendConsoleCommand("+attack2\n");
+				trap_SendConsoleCommand("-attack2\n");
 				break;
 			}
 		}
@@ -4690,7 +4693,7 @@ void CG_WeaponFireRecoil(int weapon)
 	{
 		pitchAdd *= (1 + rand() % 3);
 	}
-        else if ((GetWeaponTableData(weapon)->type & WEAPON_TYPE_RIFLE) && (cg.pmext.silencedSideArm & WALTTYPE_SCOPE))
+	else if ((GetWeaponTableData(weapon)->type & WEAPON_TYPE_RIFLE) && (cg.pmext.silencedSideArm & WALTTYPE_SCOPE))
 	{
 		// scoped weapon avoid yaw recoil (but FG42)
 		yawRandom = 0;
@@ -5335,7 +5338,7 @@ void CG_BulletImpact(int weapon, int missileEffect, vec3_t origin, vec3_t dir, i
 		// enough to see it, this way we can leave other marks around a lot
 		// longer, since most of the time we can't actually see the bullet holes
 		// - small modification.  only do this for non-rifles (so you can see your shots hitting when you're zooming with a rifle scope)
-                if ((cg.pmext.silencedSideArm & WALTTYPE_SCOPE) || (Distance(cg.refdef_current->vieworg, origin) < 384))
+		if ((cg.pmext.silencedSideArm & WALTTYPE_SCOPE) || (Distance(cg.refdef_current->vieworg, origin) < 384))
 		{
 			// mark and sound can potentially use the surface for override values
 			//mark   = cgs.media.bulletMarkShader;    // default

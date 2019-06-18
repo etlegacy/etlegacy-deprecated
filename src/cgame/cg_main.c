@@ -2828,15 +2828,6 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum, qbo
 
 	CG_ParseLegacyinfo();
 
-	// rebind weapalt to +attack2
-	if (trap_Key_GetKey("weapalt"))
-	{
-		char buf[16] = { 0 };
-
-		trap_Key_KeynumToStringBuf(trap_Key_GetKey("weapalt"), buf, 16);
-		trap_SendConsoleCommand(va("bind %s +attack2\n", buf));
-	}
-
 	cg.crosshairMine = -1;
 	cg.crosshairDyna = -1;
 
