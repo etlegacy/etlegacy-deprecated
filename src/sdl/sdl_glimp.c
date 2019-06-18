@@ -53,10 +53,6 @@ static int gammaResetTime = 0;
 #endif
 #endif // __APPLE__
 
-#ifdef FEATURE_RENDERER_GLES
-# include <EGL/egl.h>
-#endif
-
 SDL_Window           *main_window   = NULL;
 static SDL_Renderer  *main_renderer = NULL;
 static SDL_GLContext SDL_glContext  = NULL;

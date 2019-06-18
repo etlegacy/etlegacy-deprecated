@@ -38,7 +38,6 @@
 
 #ifdef FEATURE_RENDERER_GLES
 #   include <GLES/gl.h>
-#   include <EGL/egl.h>
 #else
 #   ifdef BUNDLED_GLEW
 #       include "GL/glew.h"

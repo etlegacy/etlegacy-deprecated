@@ -59,14 +59,6 @@ if(BUILD_CLIENT)
 		find_package(GLES REQUIRED)
 		list(APPEND RENDERER_LIBRARIES ${GLES_LIBRARY})
 		include_directories(SYSTEM ${GLES_INCLUDE_DIR})
-
-		if (ARM AND RPI)
-			LIST(APPEND CLIENT_LIBRARIES
-				brcmEGL
-				brcmGLESv2
-				${GLES_LIBRARY}
-			)
-		endif()
 	endif()
 
 	if(NOT BUNDLED_SDL)

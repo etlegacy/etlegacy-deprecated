@@ -106,7 +106,8 @@ In order to use full OpenGL, use the following instructions:
 2.  Modify "easybuild.sh" file and set the "FEATURE_RENDERER_GLES" flag to 0 under the "RPI" section.
 3.  If building SDL from source, ensure you have passed "--host=armv7l-raspberry-linux-gnueabihf" when calling the
     configure command. Otherwise, keep "BUNDLED_SDL=1" in "easybuild.sh".
-4.  Run "./easybuild.sh -RPI -j4" to build for Raspberry Pi.
+4.  Increase GPU memory split to at least 192mb.
+5.  Run "./easybuild.sh -RPI -j4" to build for Raspberry Pi.
 
 In order to use OpenGL ES, use the following instructions:
 
@@ -116,10 +117,8 @@ In order to use OpenGL ES, use the following instructions:
     "--host=armv7l-raspberry-linux-gnueabihf --host=armv7l-raspberry-linux-gnueabihf --disable-pulseaudio \
         --disable-esd --disable-video-mir --disable-video-wayland --disable-video-x11 --disable-video-opengl"
     when calling the configure command. This will ensure SDL is built with an OpenGL ES backend. Otherwise, keep "BUNDLED_SDL=1" in "easybuild.sh".
-4.  Run "./easybuild.sh -RPI -j4" to build for Raspberry Pi.
-
-Note: It is important you exit from X11 when loading the OpenGL ES version of ET: Legacy in order to use full hardware
-accelerated GLES.
+4.  Increase GPU memory split to at least 192mb.
+5.  Run "./easybuild.sh -RPI -j4" to build for Raspberry Pi.
 
 
 
