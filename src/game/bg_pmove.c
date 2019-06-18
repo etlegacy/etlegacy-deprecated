@@ -3071,7 +3071,14 @@ void PM_AdjustAimSpreadScale(void)
 
 	cmdTime = (pm->cmd.serverTime - pm->oldcmd.serverTime) / 1000.0f;
 
-	wpnScale = GetWeaponTableData(pm->ps->weapon)->spreadScale;
+	if (pm->pmext->silencedSideArm & WALTTYPE_SCOPE)
+	{
+		wpnScale = 10.f;
+	}
+	else
+	{
+		wpnScale = GetWeaponTableData(pm->ps->weapon)->spreadScale;
+	}
 
 	if (wpnScale != 0.f)
 	{
@@ -3947,9 +3954,13 @@ static void PM_Weapon(void)
 	{
 		aimSpreadScaleAdd += rand() % 10;
 	}
+	else if ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_RIFLE) && (pm->pmext->silencedSideArm & WALTTYPE_SCOPE))
+	{
+		aimSpreadScaleAdd *= 4;
+	}
 
 	// add the recoil amount to the aimSpreadScale
-	pm->ps->aimSpreadScaleFloat += 3.0 * aimSpreadScaleAdd;
+	pm->ps->aimSpreadScaleFloat += 3.0f * aimSpreadScaleAdd;
 
 	if (pm->ps->aimSpreadScaleFloat > AIMSPREAD_MAXSPREAD)
 	{

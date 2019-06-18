@@ -3211,7 +3211,7 @@ void EmitterCheck(gentity_t *ent, gentity_t *attacker, trace_t *tr)
  */
 void Bullet_Endpos(gentity_t *ent, float spread, vec3_t *end)
 {
-        if (ent->client->pmext.silencedSideArm & WALTTYPE_SCOPE)
+	if (ent->client->pmext.silencedSideArm & WALTTYPE_SCOPE)
 	{
 		// aim dir already accounted for sway of scoped weapons in CalcMuzzlePoints()
 		VectorMA(muzzleTrace, 2 * MAX_TRACE, forward, *end);
@@ -3236,6 +3236,7 @@ gentity_t *Bullet_Fire(gentity_t *ent)
 	vec3_t end;
 	float  spread = GetWeaponTableData(ent->s.weapon)->spread;
 	float  aimSpreadScale;
+	int    damage;
 
 	if (g_userAim.integer)
 	{
@@ -3284,11 +3285,20 @@ gentity_t *Bullet_Fire(gentity_t *ent)
 		}
 	}
 
+	if (ent->client->pmext.silencedSideArm & WALTTYPE_SCOPE)
+	{
+		damage = GetWeaponTableData(ent->s.weapon)->damageScope;
+	}
+	else
+	{
+		damage = GetWeaponTableData(ent->s.weapon)->damage;
+	}
+
 	Bullet_Endpos(ent, spread, &end);
 
 	G_HistoricalTraceBegin(ent);
 
-	Bullet_Fire_Extended(ent, ent, muzzleTrace, end, GetWeaponTableData(ent->s.weapon)->damage, GetWeaponTableData(ent->s.weapon)->attributes & WEAPON_ATTRIBUT_FALL_OFF);
+	Bullet_Fire_Extended(ent, ent, muzzleTrace, end, damage, GetWeaponTableData(ent->s.weapon)->attributes & WEAPON_ATTRIBUT_FALL_OFF);
 
 	G_HistoricalTraceEnd(ent);
 
@@ -3951,7 +3961,7 @@ void CalcMuzzlePoints(gentity_t *ent, int weapon)
 
 	// non ai's take into account scoped weapon 'sway' (just another way aimspread is visualized/utilized)
 
-        if (ent->client->pmext.silencedSideArm & WALTTYPE_SCOPE)
+	if (ent->client->pmext.silencedSideArm & WALTTYPE_SCOPE)
 	{
 		float pitchMinAmp, yawMinAmp, phase;
 

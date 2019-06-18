@@ -1138,6 +1138,7 @@ typedef struct weapontable_s
 	weapon_t clipIndex;             ///< bg - which clip this weapon uses. This allows the sniper rifle to use the same clip as the garand, etc.
 
 	int damage;                     ///< g -
+        int damageScope;                ///< g -
 	float spread;                   ///< bg -
 	float spreadScale;              ///< bg -
 	int splashDamage;               ///< g -
