@@ -1087,7 +1087,7 @@ static void AddExtraSpawnAmmo(gclient_t *client, weapon_t weaponNum)
  * @param[in] ammoclip
  * @param[in] setcurrent
  */
-void AddWeaponToPlayer(gclient_t *client, weapon_t weapon, int ammo, int ammoclip, qboolean setcurrent)
+void AddWeaponToPlayer(gclient_t *client, weapon_t weapon, int ammo, int ammoclip, qboolean setcurrent, winv_t attachment)
 {
 	COM_BitSet(client->ps.weapons, weapon);
 	client->ps.ammoclip[GetWeaponTableData(weapon)->clipIndex] = ammoclip;
@@ -1098,9 +1098,9 @@ void AddWeaponToPlayer(gclient_t *client, weapon_t weapon, int ammo, int ammocli
 		client->ps.ammoclip[GetWeaponTableData(GetWeaponTableData(weapon)->akimboSideArm)->clipIndex] = ammoclip;
 	}
 
-	if (weapon == WP_BINOCULARS)
+	if (attachment)
 	{
-		client->ps.stats[STAT_KEYS] |= (1 << INV_BINOCS);
+		client->ps.stats[STAT_KEYS] |= (1 << attachment);
 	}
 
 	if (setcurrent)
@@ -1180,13 +1180,13 @@ void SetWolfSpawnWeapons(gclient_t *client)
 	// knife
 	//
 	weaponClassInfo = &classInfo->classKnifeWeapon;
-	AddWeaponToPlayer(client, weaponClassInfo->weapon, weaponClassInfo->startingAmmo, weaponClassInfo->startingClip, qtrue);
+        AddWeaponToPlayer(client, weaponClassInfo->weapon, weaponClassInfo->startingAmmo, weaponClassInfo->startingClip, qtrue, weaponClassInfo->attachment);
 
 	//
 	// grenade
 	//
 	weaponClassInfo = &classInfo->classGrenadeWeapon;
-	AddWeaponToPlayer(client, weaponClassInfo->weapon, weaponClassInfo->startingAmmo, weaponClassInfo->startingClip, qfalse);
+	AddWeaponToPlayer(client, weaponClassInfo->weapon, weaponClassInfo->startingAmmo, weaponClassInfo->startingClip, qfalse, weaponClassInfo->attachment);
 
 	//
 	// primary weapon
@@ -1213,7 +1213,7 @@ void SetWolfSpawnWeapons(gclient_t *client)
 	}
 
 	// add primary weapon (set to current weapon)
-	AddWeaponToPlayer(client, weaponClassInfo->weapon, weaponClassInfo->startingAmmo, weaponClassInfo->startingClip, qtrue);
+	AddWeaponToPlayer(client, weaponClassInfo->weapon, weaponClassInfo->startingAmmo, weaponClassInfo->startingClip, qtrue, weaponClassInfo->attachment);
 
 	//
 	// secondary weapon
@@ -1240,7 +1240,7 @@ void SetWolfSpawnWeapons(gclient_t *client)
 	}
 
 	// add secondary weapon
-	AddWeaponToPlayer(client, weaponClassInfo->weapon, weaponClassInfo->startingAmmo, weaponClassInfo->startingClip, qfalse);
+	AddWeaponToPlayer(client, weaponClassInfo->weapon, weaponClassInfo->startingAmmo, weaponClassInfo->startingClip, qfalse, weaponClassInfo->attachment);
 
 	//
 	// special weapons and items
@@ -1261,7 +1261,7 @@ void SetWolfSpawnWeapons(gclient_t *client)
 			}
 
 			// add each
-			AddWeaponToPlayer(client, weaponClassInfo->weapon, weaponClassInfo->startingAmmo, weaponClassInfo->startingClip, qfalse);
+			AddWeaponToPlayer(client, weaponClassInfo->weapon, weaponClassInfo->startingAmmo, weaponClassInfo->startingClip, qfalse, weaponClassInfo->attachment);
 		}
 	}
 }

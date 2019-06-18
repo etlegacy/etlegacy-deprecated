@@ -842,7 +842,7 @@ void Cmd_Give_f(gentity_t *ent)
 	// Wolf keys
 	if (give_all || Q_stricmp(name, "keys") == 0)
 	{
-		ent->client->ps.stats[STAT_KEYS] = (1 << KEY_NUM_KEYS) - 2;
+		ent->client->ps.stats[STAT_KEYS] = (1 << INV_NUM_INVS) - 2;
 		if (!give_all)
 		{
 			return;

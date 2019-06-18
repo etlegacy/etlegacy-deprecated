@@ -2484,7 +2484,7 @@ void SP_func_door(gentity_t *ent)
 		ent->key = -2;                  // otherwise, set the key when this ent finishes spawning
 	}
 	// if the key is invalid, set the key in the finishSpawning routine
-	if (ent->key > KEY_NUM_KEYS || ent->key < -2)
+	if (ent->key > INV_NUM_INVS || ent->key < -2)
 	{
 		G_Error("invalid key number: %d in func_door_rotating\n", ent->key);
 		ent->key = -2;   // FIXME: never executed !
@@ -2619,7 +2619,7 @@ void SP_func_secret(gentity_t *ent)
 		ent->key = -1;                  // otherwise, set the key when this ent finishes spawning
 	}
 	// if the key is invalid, set the key in the finishSpawning routine
-	if (ent->key > KEY_NUM_KEYS || ent->key < -1)
+	if (ent->key > INV_NUM_INVS || ent->key < -1)
 	{
 		G_Error("invalid key number: %d in func_door_rotating\n", ent->key);
 		ent->key = -1;  // FIXME: never executed !
@@ -4103,7 +4103,7 @@ void SP_func_door_rotating(gentity_t *ent)
 		ent->key = -2;                  // otherwise, set the key when this ent finishes spawning
 	}
 	// if the key is invalid, set the key in the finishSpawning routine
-	if (ent->key > KEY_NUM_KEYS || ent->key < -2)
+	if (ent->key > INV_NUM_INVS || ent->key < -2)
 	{
 		G_Error("invalid key number: %d in func_door_rotating\n", ent->key);
 		ent->key = -2;  // FIXME: never execute

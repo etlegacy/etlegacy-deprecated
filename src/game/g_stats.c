@@ -182,7 +182,7 @@ void G_SetPlayerSkill(gclient_t *client, skillType_t skill)
 	G_SetPlayerScore(client);
 }
 
-extern void AddWeaponToPlayer(gclient_t *client, weapon_t weapon, int ammo, int ammoclip, qboolean setcurrent);
+extern void AddWeaponToPlayer(gclient_t *client, weapon_t weapon, int ammo, int ammoclip, qboolean setcurrent, winv_t attachment);
 
 /**
  * @brief Local func to actual do skill upgrade, used by both MP skill system, and SP scripted skill system
@@ -271,7 +271,7 @@ void G_UpgradeSkill(gentity_t *ent, skillType_t skill)
 
 		if (skill == classInfo->classMiscWeapons[i].skill && ent->client->sess.skill[skill] == classInfo->classMiscWeapons[i].minSkillLevel)
 		{
-			AddWeaponToPlayer(ent->client, weaponClassInfo->weapon, classInfo->classMiscWeapons[i].startingAmmo, classInfo->classMiscWeapons[i].startingClip, qfalse);
+                    AddWeaponToPlayer(ent->client, weaponClassInfo->weapon, classInfo->classMiscWeapons[i].startingAmmo, classInfo->classMiscWeapons[i].startingClip, qfalse, INV_NONE);
 		}
 	}
 }

@@ -786,35 +786,16 @@ typedef enum
 } powerup_t;
 
 /**
- * @enum wkey_t
- * @brief These will probably all change to INV_n to get the word 'key' out of the game.
- * id and DM don't want references to 'keys' in the game.
- * @todo TODO: I'll change to 'INV' as the item becomes 'permanent' and not a test item.
- *
- * @warning Conflicts with types.h
+ * @enum winv_t
+ * @brief Inventory item used to store accessory
  */
 typedef enum
 {
-	KEY_NONE = 0,
-	KEY_1,                 ///< skull
-	KEY_2,                 ///< chalice
-	KEY_3,                 ///< eye
-	KEY_4,                 ///< field radio          unused
-	KEY_5,                 ///< satchel charge
+	INV_NONE = 0,
 	INV_BINOCS,            ///< binoculars
-	KEY_7,
-	KEY_8,
-	KEY_9,
-	KEY_10,
-	KEY_11,
-	KEY_12,
-	KEY_13,
-	KEY_14,
-	KEY_15,
-	KEY_16,
-	KEY_LOCKED_PICKABLE,   ///< ent can be unlocked with the WP_LOCKPICK. FIXME: remove
-	KEY_NUM_KEYS
-} wkey_t;
+	INV_SILENCER,          ///< silencer
+	INV_NUM_INVS
+} winv_t;
 
 #define NO_AIRSTRIKE    1
 #define NO_ARTILLERY    2
@@ -1138,7 +1119,7 @@ typedef struct weapontable_s
 	weapon_t clipIndex;             ///< bg - which clip this weapon uses. This allows the sniper rifle to use the same clip as the garand, etc.
 
 	int damage;                     ///< g -
-        int damageScope;                ///< g -
+	int damageScope;                    ///< g -
 	float spread;                   ///< bg -
 	float spreadScale;              ///< bg -
 	int splashDamage;               ///< g -
@@ -2426,6 +2407,7 @@ typedef struct
 	int minSkillLevel;  ///< minimum skill level needed to handle it
 	int startingAmmo;   ///< default starting ammo (reserve)
 	int startingClip;   ///< default starting in clip
+        winv_t attachment;  ///< accessory
 
 } bg_weaponclass_t;
 
