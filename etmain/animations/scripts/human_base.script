@@ -242,9 +242,14 @@ STATE COMBAT
 	}
 	idlecr
 	{
-		weapons Mortar AND Granatwerfer
+		weapons Mortar AND Granatwerfer, bipod
 		{
 			both mortar_deployed
+		}
+	
+		weapons Mortar AND Granatwerfer
+		{
+			legs alert_crchidle_2h torso e_mortar_stand
 		}
 		weapons satchel charge
 		{
