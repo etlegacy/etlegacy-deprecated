@@ -260,7 +260,6 @@ parse_commandline() {
 		elif [ "$var" = "-RPI" ]; then
 			einfo "Will enable Raspberry PI build ..."
 			ARM=1
-			RPI=1
 			CROSS_COMPILE32=0
 			x86_build=false
 			FEATURE_RENDERER_GLES=1
@@ -362,7 +361,6 @@ generate_configuration() {
 	RELEASE_TYPE=${RELEASE_TYPE:-Release}
 	CROSS_COMPILE32=${CROSS_COMPILE32:-1}
 	ARM=${ARM:-0}
-	RPI=${RPI:-0}
 	BUILD_SERVER=${BUILD_SERVER:-1}
 	BUILD_CLIENT=${BUILD_CLIENT:-1}
 	BUILD_MOD=${BUILD_MOD:-1}
@@ -422,7 +420,6 @@ generate_configuration() {
 		-DCMAKE_BUILD_TYPE=${RELEASE_TYPE}
 		-DCROSS_COMPILE32=${CROSS_COMPILE32}
 		-DARM=${ARM}
-		-DRPI=${RPI}
 		-DBUILD_SERVER=${BUILD_SERVER}
 		-DBUILD_CLIENT=${BUILD_CLIENT}
 		-DBUILD_MOD=${BUILD_MOD}

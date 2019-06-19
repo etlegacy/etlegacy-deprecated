@@ -22,22 +22,32 @@ if(BUILD_CLIENT)
 		include_directories(${X11_INCLUDE_DIR})
 	endif(NOT WIN32)
 
-	if(ARM AND RPI)
-		set(COMMON_INCLUDE_DIRS
-				"/opt/vc/include"
-				"/opt/vc/include/interface/vcos"
-				"/opt/vc/include/interface/vmcs_host/linux"
-				"/opt/vc/include/interface/vcos/pthreads"
-				)
-		include_directories(${COMMON_INCLUDE_DIRS})
+	if(ARM)
 
-		link_directories("/opt/vc/lib")
+		#check if we're running on Raspberry Pi
+		MESSAGE("Looking for bcm_host.h")
+		if(EXISTS "/opt/vc/include/bcm_host.h")
+			MESSAGE("bcm_host.h found")
+			set(BCMHOST found)
+		else()
+			MESSAGE("bcm_host.h not found")
+		endif()
 
-		LIST(APPEND CLIENT_LIBRARIES
-				bcm_host
-				)
+		if(DEFINED BCMHOST)
+			set(COMMON_INCLUDE_DIRS
+					"/opt/vc/include"
+					"/opt/vc/include/interface/vcos"
+					"/opt/vc/include/interface/vmcs_host/linux"
+					"/opt/vc/include/interface/vcos/pthreads"
+					)
+			include_directories(${COMMON_INCLUDE_DIRS})
 
-		MESSAGE("Using Raspberry Pi")
+			link_directories("/opt/vc/lib")
+
+			LIST(APPEND CLIENT_LIBRARIES
+					bcm_host
+					)
+		endif()
 	endif()
 
 	if(NOT FEATURE_RENDERER_GLES)
