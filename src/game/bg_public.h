@@ -825,49 +825,47 @@ typedef enum
 	WP_MEDIC_SYRINGE,          ///< 11	broken out from CLASS_SPECIAL per Id request
 	WP_AMMO,                   ///< 12	likewise
 	WP_ARTY,                   ///< 13
-	WP_SILENCER,               ///< 14	used to be sp5
-	WP_DYNAMITE,               ///< 15
-	WP_SMOKETRAIL,             ///< 16
-	WP_MAPMORTAR,              ///< 17
-	VERYBIGEXPLOSION,          ///< 18	explosion effect for airplanes
-	WP_MEDKIT,                 ///< 19
+	WP_DYNAMITE,               ///< 14
+	WP_SMOKETRAIL,             ///< 15
+	WP_MAPMORTAR,              ///< 16
+	VERYBIGEXPLOSION,          ///< 17	explosion effect for airplanes
+	WP_MEDKIT,                 ///< 18
 
-	WP_BINOCULARS,             ///< 20
-	WP_PLIERS,                 ///< 21
-	WP_SMOKE_MARKER,           ///< 22	changed name to cause less confusion
-	WP_KAR98,                  ///< 23	WolfXP weapons
-	WP_CARBINE,                ///< 24
-	WP_GARAND,                 ///< 25
-	WP_LANDMINE,               ///< 26
-	WP_SATCHEL,                ///< 27
-	WP_SATCHEL_DET,            ///< 28
-	WP_SMOKE_BOMB,             ///< 29
+	WP_BINOCULARS,             ///< 19
+	WP_PLIERS,                 ///< 20
+	WP_SMOKE_MARKER,           ///< 21	changed name to cause less confusion
+	WP_KAR98,                  ///< 22	WolfXP weapons
+	WP_CARBINE,                ///< 23
+	WP_GARAND,                 ///< 24
+	WP_LANDMINE,               ///< 25
+	WP_SATCHEL,                ///< 26
+	WP_SATCHEL_DET,            ///< 27
+	WP_SMOKE_BOMB,             ///< 28
 
-	WP_MOBILE_MG42,            ///< 30
-	WP_K43,                    ///< 31
-	WP_FG42,                   ///< 32
-	WP_DUMMY_MG42,             ///< 33 for storing heat on mounted mg42s...
-	WP_MORTAR,                 ///< 34
-	WP_AKIMBO_COLT,            ///< 35
-	WP_AKIMBO_LUGER,           ///< 36
+	WP_MOBILE_MG42,            ///< 29
+	WP_K43,                    ///< 30
+	WP_FG42,                   ///< 31
+	WP_DUMMY_MG42,             ///< 32 for storing heat on mounted mg42s...
+	WP_MORTAR,                 ///< 33
+	WP_AKIMBO_COLT,            ///< 34
+	WP_AKIMBO_LUGER,           ///< 35
 
-	WP_GPG40,                  ///< 37
-	WP_M7,                     ///< 38
-	WP_SILENCED_COLT,          ///< 39
+	WP_GPG40,                  ///< 36
+	WP_M7,                     ///< 37
 
-	WP_MEDIC_ADRENALINE,       ///< 40
-	WP_AKIMBO_SILENCEDCOLT,    ///< 41
-	WP_AKIMBO_SILENCEDLUGER,   ///< 42
+	WP_MEDIC_ADRENALINE,       ///< 38
+	WP_AKIMBO_SILENCEDCOLT,    ///< 39
+	WP_AKIMBO_SILENCEDLUGER,   ///< 40
 
 	// legacy weapon
-	WP_KNIFE_KABAR,            ///< 43
-	WP_MOBILE_BROWNING,        ///< 44
-	WP_MORTAR2,                ///< 45
-	WP_BAZOOKA,                ///< 46
-	WP_MP34,                   ///< 47
-	WP_AIRSTRIKE,              ///< 48
+	WP_KNIFE_KABAR,            ///< 41
+	WP_MOBILE_BROWNING,        ///< 42
+	WP_MORTAR2,                ///< 43
+	WP_BAZOOKA,                ///< 44
+	WP_MP34,                   ///< 45
+	WP_AIRSTRIKE,              ///< 46
 
-	WP_NUM_WEAPONS             ///< 49
+	WP_NUM_WEAPONS             ///< 47
 	///< NOTE: this cannot be larger than 64 for AI/player weapons!
 } weapon_t;
 
@@ -934,7 +932,6 @@ typedef enum
 	MOD_STEN,
 	MOD_GARAND,
 
-	MOD_SILENCER,
 	MOD_FG42,
 	MOD_FG42SCOPE,
 	MOD_PANZERFAUST,
@@ -973,7 +970,6 @@ typedef enum
 
 	MOD_SMOKEBOMB,
 	MOD_MOBILE_MG42,
-	MOD_SILENCED_COLT,
 	MOD_GARAND_SCOPE,
 
 	MOD_CRUSH_CONSTRUCTION,
@@ -1017,19 +1013,20 @@ typedef enum
  */
 typedef enum weaponType_s
 {
-	WEAPON_TYPE_NONE      = 0,
-	WEAPON_TYPE_MELEE     = BIT(0),
-	WEAPON_TYPE_PISTOL    = BIT(1),
-	WEAPON_TYPE_SMG       = BIT(2),
-	WEAPON_TYPE_RIFLE     = BIT(3),
-	WEAPON_TYPE_GRENADE   = BIT(4),
-	WEAPON_TYPE_RIFLENADE = BIT(5),
-	WEAPON_TYPE_MORTAR    = BIT(6),
-	WEAPON_TYPE_MG        = BIT(7),
-	WEAPON_TYPE_PANZER    = BIT(8),
-	WEAPON_TYPE_SYRINGUE  = BIT(9),
-	WEAPON_TYPE_SCOPABLE  = BIT(10),
-	WEAPON_TYPE_SETTABLE  = BIT(11)
+	WEAPON_TYPE_NONE        = 0,
+	WEAPON_TYPE_MELEE       = BIT(0),
+	WEAPON_TYPE_PISTOL      = BIT(1),
+	WEAPON_TYPE_SMG         = BIT(2),
+	WEAPON_TYPE_RIFLE       = BIT(3),
+	WEAPON_TYPE_GRENADE     = BIT(4),
+	WEAPON_TYPE_RIFLENADE   = BIT(5),
+	WEAPON_TYPE_MORTAR      = BIT(6),
+	WEAPON_TYPE_MG          = BIT(7),
+	WEAPON_TYPE_PANZER      = BIT(8),
+	WEAPON_TYPE_SYRINGUE    = BIT(9),
+	WEAPON_TYPE_SCOPABLE    = BIT(10),
+	WEAPON_TYPE_SETTABLE    = BIT(11),
+	WEAPON_TYPE_SILENCEABLE = BIT(12)
 
 } weaponType_t;
 
@@ -1843,8 +1840,6 @@ typedef enum item_s
 	ITEM_WEAPON_SMOKE_BOMB,
 	ITEM_WEAPON_MOBILE_MG42,
 	ITEM_WEAPON_MOBILE_BROWNING,
-	ITEM_WEAPON_SILENCER,
-	ITEM_WEAPON_SILENCED_COLT,
 	ITEM_AMMO_SYRINGE,
 	ITEM_AMMO_SMOKE_GRENADE,
 	ITEM_AMMO_DYNAMITE,
@@ -2407,7 +2402,7 @@ typedef struct
 	int minSkillLevel;  ///< minimum skill level needed to handle it
 	int startingAmmo;   ///< default starting ammo (reserve)
 	int startingClip;   ///< default starting in clip
-        winv_t attachment;  ///< accessory
+	winv_t attachment;      ///< accessory
 
 } bg_weaponclass_t;
 

@@ -41,16 +41,16 @@
  */
 weapon_t weapBanksMultiPlayer[MAX_WEAP_BANKS_MP][MAX_WEAPS_IN_BANK_MP] =
 {
-	{ 0,                   0,                    0,               0,               0,              0,                0,                      0,                       0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       }, // empty bank '0'
-	{ WP_KNIFE,            WP_KNIFE_KABAR,       0,               0,               0,              0,                0,                      0,                       0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
-	{ WP_LUGER,            WP_COLT,              WP_AKIMBO_COLT,  WP_AKIMBO_LUGER, WP_SILENCER,    WP_SILENCED_COLT, WP_AKIMBO_SILENCEDCOLT, WP_AKIMBO_SILENCEDLUGER, 0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
-	{ WP_MP40,             WP_THOMPSON,          WP_STEN,         WP_GARAND,       WP_PANZERFAUST, WP_FLAMETHROWER,  WP_KAR98,               WP_CARBINE,              WP_FG42, WP_K43, WP_MOBILE_MG42, WP_MOBILE_BROWNING, WP_MORTAR, WP_MORTAR2, WP_BAZOOKA, WP_GPG40, WP_M7, WP_MP34 },
-	{ WP_GRENADE_LAUNCHER, WP_GRENADE_PINEAPPLE, 0,               0,               0,              0,                0,                      0,                       0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
-	{ WP_MEDIC_SYRINGE,    WP_PLIERS,            WP_SMOKE_MARKER, WP_SMOKE_BOMB,   0,              0,                0,                      0,                       0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
-	{ WP_DYNAMITE,         WP_MEDKIT,            WP_AMMO,         WP_SATCHEL,      WP_SATCHEL_DET, 0,                0,                      0,                       0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
-	{ WP_LANDMINE,         WP_MEDIC_ADRENALINE,  0,               0,               0,              0,                0,                      0,                       0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
-	{ WP_BINOCULARS,       0,                    0,               0,               0,              0,                0,                      0,                       0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
-	{ 0,                   0,                    0,               0,               0,              0,                0,                      0,                       0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
+	{ 0,                   0,                    0,               0,               0,                      0,                       0,        0,          0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },              // empty bank '0'
+	{ WP_KNIFE,            WP_KNIFE_KABAR,       0,               0,               0,                      0,                       0,        0,          0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
+	{ WP_LUGER,            WP_COLT,              WP_AKIMBO_COLT,  WP_AKIMBO_LUGER, WP_AKIMBO_SILENCEDCOLT, WP_AKIMBO_SILENCEDLUGER, 0,        0,          0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
+	{ WP_MP40,             WP_THOMPSON,          WP_STEN,         WP_GARAND,       WP_PANZERFAUST,         WP_FLAMETHROWER,         WP_KAR98, WP_CARBINE, WP_FG42, WP_K43, WP_MOBILE_MG42, WP_MOBILE_BROWNING, WP_MORTAR, WP_MORTAR2, WP_BAZOOKA, WP_GPG40, WP_M7, WP_MP34 },
+	{ WP_GRENADE_LAUNCHER, WP_GRENADE_PINEAPPLE, 0,               0,               0,                      0,                       0,        0,          0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
+	{ WP_MEDIC_SYRINGE,    WP_PLIERS,            WP_SMOKE_MARKER, WP_SMOKE_BOMB,   0,                      0,                       0,        0,          0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
+	{ WP_DYNAMITE,         WP_MEDKIT,            WP_AMMO,         WP_SATCHEL,      WP_SATCHEL_DET,         0,                       0,        0,          0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
+	{ WP_LANDMINE,         WP_MEDIC_ADRENALINE,  0,               0,               0,                      0,                       0,        0,          0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
+	{ WP_BINOCULARS,       0,                    0,               0,               0,                      0,                       0,        0,          0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
+	{ 0,                   0,                    0,               0,               0,                      0,                       0,        0,          0,       0,      0,              0,                  0,         0,          0,          0,        0,     0       },
 };
 
 /**
@@ -1240,7 +1240,7 @@ static qboolean CG_RW_ParseWeaponSound(int handle, weaponSounds_t *weaponSounds)
 
 	if (!trap_PC_ReadToken(handle, &token))
 	{
-		return CG_RW_ParseError(handle, "expected sounds filenames or sounds number");
+		return qfalse;
 	}
 
 	// get the number of files sound to register
@@ -1316,7 +1316,10 @@ static qboolean CG_RW_ParseSoundSurface(int handle, weaponSounds_t *weaponSound)
 			return CG_RW_ParseError(handle, "unknown token '%s'", token.string);
 		}
 
-		CG_RW_ParseWeaponSound(handle, &weaponSound[soundSurface]);
+		if (!CG_RW_ParseWeaponSound(handle, &weaponSound[soundSurface]))
+		{
+			return CG_RW_ParseError(handle, "expected sound filenames or sounds number", token.string);
+		}
 	}
 
 	return qtrue;
@@ -1473,21 +1476,28 @@ static qboolean CG_RW_ParseClient(int handle, weaponInfo_t *weaponInfo)
 		{
 			if (!CG_RW_ParseWeaponSound(handle, &weaponInfo->flashSound))
 			{
-				return qfalse;
+				return CG_RW_ParseError(handle, "expected flashSound filenames or sounds number");
+			}
+		}
+		else if (!Q_stricmp(token.string, "flashSoundSilenced"))
+		{
+			if (!CG_RW_ParseWeaponSound(handle, &weaponInfo->flashSoundSilenced))
+			{
+				return CG_RW_ParseError(handle, "expected flashSoundSilenced filenames or sounds number");
 			}
 		}
 		else if (!Q_stricmp(token.string, "flashEchoSound"))
 		{
 			if (!CG_RW_ParseWeaponSound(handle, &weaponInfo->flashEchoSound))
 			{
-				return qfalse;
+				return CG_RW_ParseError(handle, "expected flashEchoSound filenames or sounds number");
 			}
 		}
 		else if (!Q_stricmp(token.string, "lastShotSound"))
 		{
 			if (!CG_RW_ParseWeaponSound(handle, &weaponInfo->lastShotSound))
 			{
-				return qfalse;
+				return CG_RW_ParseError(handle, "expected lastShotSound filenames or sounds number");
 			}
 		}
 		else if (!Q_stricmp(token.string, "readySound"))
@@ -1553,14 +1563,23 @@ static qboolean CG_RW_ParseClient(int handle, weaponInfo_t *weaponInfo)
 
 			weaponInfo->spindownSound = trap_S_RegisterSound(filename, qfalse);
 		}
-		else if (!Q_stricmp(token.string, "switchSound"))
+		else if (!Q_stricmp(token.string, "switchSoundOn"))
 		{
 			if (!PC_String_ParseNoAlloc(handle, filename, sizeof(filename)))
 			{
-				return CG_RW_ParseError(handle, "expected switchSound filename");
+				return CG_RW_ParseError(handle, "expected switchSoundOn filename");
 			}
 
-			weaponInfo->switchSound = trap_S_RegisterSound(filename, qfalse);
+			weaponInfo->switchSoundOn = trap_S_RegisterSound(filename, qfalse);
+		}
+		else if (!Q_stricmp(token.string, "switchSoundOff"))
+		{
+			if (!PC_String_ParseNoAlloc(handle, filename, sizeof(filename)))
+			{
+				return CG_RW_ParseError(handle, "expected switchSoundOff filename");
+			}
+
+			weaponInfo->switchSoundOff = trap_S_RegisterSound(filename, qfalse);
 		}
 		else if (!Q_stricmp(token.string, "noAmmoSound"))
 		{
@@ -3639,9 +3658,7 @@ void CG_FinishWeaponChange(int lastWeapon, int newWeapon)
 
 	if (lastWeapon != GetWeaponTableData(newWeapon)->weapAlts)
 	{
-		if (((GetWeaponTableData(newWeapon)->type & WEAPON_TYPE_PISTOL) && !(GetWeaponTableData(newWeapon)->attributes & WEAPON_ATTRIBUT_SILENCED) && (cg.pmext.silencedSideArm & WALTTYPE_SILENCER))
-		    || ((GetWeaponTableData(newWeapon)->type & WEAPON_TYPE_PISTOL) && (GetWeaponTableData(newWeapon)->attributes & WEAPON_ATTRIBUT_SILENCED) && !(cg.pmext.silencedSideArm & WALTTYPE_SILENCER))
-		    || ((GetWeaponTableData(newWeapon)->type & WEAPON_TYPE_RIFLE) && (cg.pmext.silencedSideArm & WALTTYPE_RIFLENADE))
+		if (((GetWeaponTableData(newWeapon)->type & WEAPON_TYPE_RIFLE) && (cg.pmext.silencedSideArm & WALTTYPE_RIFLENADE))
 		    || ((GetWeaponTableData(newWeapon)->type & WEAPON_TYPE_RIFLENADE) && !(cg.pmext.silencedSideArm & WALTTYPE_RIFLENADE)))
 		{
 			newWeapon       = GetWeaponTableData(newWeapon)->weapAlts;
@@ -3911,7 +3928,7 @@ void CG_NextWeap(qboolean switchBanks)
 	qboolean nextbank = qfalse;     // need to switch to the next bank of weapons?
 	int      i;
 
-	if (GetWeaponTableData(curweap)->type & (WEAPON_TYPE_PISTOL | WEAPON_TYPE_RIFLE))
+	if (GetWeaponTableData(curweap)->type & WEAPON_TYPE_RIFLE)
 	{
 		num = GetWeaponTableData(curweap)->weapAlts;
 	}
@@ -4058,8 +4075,7 @@ void CG_PrevWeap(qboolean switchBanks)
 	qboolean prevbank = qfalse;     // need to switch to the next bank of weapons?
 	int      i;
 
-	if (((GetWeaponTableData(curweap)->type & WEAPON_TYPE_PISTOL) && (GetWeaponTableData(curweap)->attributes & WEAPON_ATTRIBUT_SILENCED))
-	    || GetWeaponTableData(curweap)->type & WEAPON_TYPE_RIFLENADE)
+	if (GetWeaponTableData(curweap)->type & WEAPON_TYPE_RIFLENADE)
 	{
 		num = GetWeaponTableData(curweap)->weapAlts;
 	}

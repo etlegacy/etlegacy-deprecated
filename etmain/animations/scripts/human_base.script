@@ -16,7 +16,7 @@ DEFINES
 
 // weapons
 set weapons knives               = Knife AND Ka-Bar
-set weapons pistols              = Luger AND Colt AND Silenced Luger AND Silenced Colt
+set weapons pistols              = Luger AND Colt
 set weapons akimbo_pistols       = Akimbo Luger AND Silenced Akimbo Luger AND Akimbo Colt AND Silenced Akimbo Colt
 set weapons machineguns          = MP 40 AND Thompson AND Sten gun AND Flamethrower AND panzerfaust AND bazooka AND Mobile MG 42 AND Mobile Browning AND MP34
 set weapons rifles               = K43 Rifle AND gpg40 AND M7 AND m1 garand AND FG 42 Paratroop Rifle AND Scoped K43 Rifle
@@ -25,11 +25,11 @@ set weapons rifles               = K43 Rifle AND gpg40 AND M7 AND m1 garand AND 
 set weapons throwables           = pineapple AND grenade AND Smoke Bomb
 set weapons throwables_underhand = dynamite weapon
 
-set weapons one_handed_weapons   = Luger AND Colt AND Silenced Luger AND Silenced Colt
+set weapons one_handed_weapons   = Luger AND Colt
 set weapons two_handed_weapons   = MP 40 AND Thompson AND Sten gun AND flamethrower AND panzerfaust AND bazooka AND K43 Rifle AND gpg40 AND M7 AND m1 garand AND FG 42 Paratroop Rifle AND Scoped M1 Garand AND Mobile MG 42 AND Scoped K43 Rifle AND Mobile Browning AND MP34
 
-set weapons all                    = Luger AND Colt AND Silenced Luger AND Silenced Colt AND Binoculars AND special AND Ammo Pack AND knives AND dynamite weapon AND pineapple AND grenade AND smokeGrenade AND Smoke Bomb AND Landmine AND Satchel Charge AND MP 40 AND Thompson AND Sten gun AND flamethrower AND panzerfaust AND bazooka AND Ammo Pack AND Medicheal AND gpg40 AND M7 AND m1 garand AND FG 42 Paratroop Rifle AND Scoped M1 Garand AND Satchel Charge AND Landmine AND Mobile MG 42 AND Scoped K43 Rifle AND Mortar AND Satchel Charge AND Satchel Charge Detonator AND Mobile Browning AND Granatwerfer AND MP34
-set weapons all_one_handed_weapons = Luger AND Colt AND Silenced Luger AND Silenced Colt AND Binoculars AND special AND Ammo Pack AND knives AND dynamite weapon AND pineapple AND grenade AND smokeGrenade AND Smoke Bomb AND Landmine AND Satchel Charge
+set weapons all                    = Luger AND Colt AND Binoculars AND special AND Ammo Pack AND knives AND dynamite weapon AND pineapple AND grenade AND smokeGrenade AND Smoke Bomb AND Landmine AND Satchel Charge AND MP 40 AND Thompson AND Sten gun AND flamethrower AND panzerfaust AND bazooka AND Ammo Pack AND Medicheal AND gpg40 AND M7 AND m1 garand AND FG 42 Paratroop Rifle AND Scoped M1 Garand AND Satchel Charge AND Landmine AND Mobile MG 42 AND Scoped K43 Rifle AND Mortar AND Satchel Charge AND Satchel Charge Detonator AND Mobile Browning AND Granatwerfer AND MP34
+set weapons all_one_handed_weapons = Luger AND Colt AND Binoculars AND special AND Ammo Pack AND knives AND dynamite weapon AND pineapple AND grenade AND smokeGrenade AND Smoke Bomb AND Landmine AND Satchel Charge
 set weapons all_two_handed_weapons = MP 40 AND Thompson AND Sten gun AND flamethrower AND panzerfaust AND bazooka AND Ammo Pack AND Medicheal AND gpg40 AND M7 AND m1 garand AND FG 42 Paratroop Rifle AND Scoped M1 Garand AND Satchel Charge AND Landmine AND Mobile MG 42 AND Scoped K43 Rifle AND Mortar AND Satchel Charge AND Satchel Charge Detonator AND Mobile Browning AND Granatwerfer AND MP34
 
 // movetypes
@@ -3124,11 +3124,11 @@ do_alt_weapon_mode
 	{
 		torso reload_grenlauncher
 	}
-	weapons Silenced Luger
+	weapons Luger
 	{
 		torso attach_silencer
 	}
-	weapons Silenced Colt
+	weapons Colt
 	{
 		torso attach_silencer
 	}
@@ -3136,11 +3136,11 @@ do_alt_weapon_mode
 
 undo_alt_weapon_mode
 {
-	weapons Silenced Luger
+	weapons Luger
 	{
 		torso detach_silencer
 	}
-	weapons Silenced Colt
+	weapons Colt
 	{
 		torso detach_silencer
 	}
@@ -3164,11 +3164,11 @@ do_alt_weapon_mode_prone
 	{
 		torso e_prone_rifle_attach
 	}
-	weapons Silenced Luger
+	weapons Luger
 	{
 		torso e_prone_pistol_attach
 	}
-	weapons Silenced Colt
+	weapons Colt
 	{
 		torso e_prone_pistol_attach
 	}
@@ -3192,11 +3192,11 @@ undo_alt_weapon_mode_prone
 	{
 		torso e_prone_rifle_detach
 	}
-	weapons Silenced Luger
+	weapons Luger
 	{
 		torso e_prone_pistol_detach
 	}
-	weapons Silenced Colt
+	weapons Colt
 	{
 		torso e_prone_pistol_detach
 	}

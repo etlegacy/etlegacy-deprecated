@@ -702,9 +702,17 @@ static weapon_t _weaponBotToGame(int weapon)
 	case ET_WP_SATCHEL_DET:
 		return WP_SATCHEL_DET;
 	case ET_WP_SILENCED_COLT:
-		return WP_SILENCED_COLT;
+#ifdef LEGACY
+            return WP_COLT;
+#else
+            return WP_SILENCED_COLT;
+#endif
 	case ET_WP_SILENCED_LUGER:
-		return WP_SILENCER;
+#ifdef LEGACY
+            return WP_LUGER;
+#else
+            return WP_SILENCER;
+#endif
 	case ET_WP_SMOKE_GRENADE:
 		return WP_SMOKE_BOMB;
 	case ET_WP_SMOKE_MARKER:
@@ -864,10 +872,12 @@ int Bot_WeaponGameToBot(int weapon)
 		return ET_WP_SATCHEL;
 	case WP_SATCHEL_DET:
 		return ET_WP_SATCHEL_DET;
+#ifndef LEGACY
 	case WP_SILENCED_COLT:
 		return ET_WP_SILENCED_COLT;
 	case WP_SILENCER:
 		return ET_WP_SILENCED_LUGER;
+#endif
 	case WP_SMOKE_BOMB:
 		return ET_WP_SMOKE_GRENADE;
 	case WP_SMOKE_MARKER:

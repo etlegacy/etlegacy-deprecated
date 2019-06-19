@@ -2486,47 +2486,45 @@ static void registerWeaponConstants(lua_vm_t *vm)
 	lua_regconstinteger(vm->L, WP_MEDIC_SYRINGE);        // 11 - broken out from CLASS_SPECIAL per Id request
 	lua_regconstinteger(vm->L, WP_AMMO);                 // 12 - likewise
 	lua_regconstinteger(vm->L, WP_ARTY);                 // 13
-	lua_regconstinteger(vm->L, WP_SILENCER);             // 14 - used to be sp5
-	lua_regconstinteger(vm->L, WP_DYNAMITE);             // 15
-	lua_regconstinteger(vm->L, WP_SMOKETRAIL);           // 16
-	lua_regconstinteger(vm->L, WP_MAPMORTAR);            // 17
-	lua_regconstinteger(vm->L, VERYBIGEXPLOSION);        // 18 - explosion effect for airplanes
-	lua_regconstinteger(vm->L, WP_MEDKIT);               // 19
+	lua_regconstinteger(vm->L, WP_DYNAMITE);             // 14
+	lua_regconstinteger(vm->L, WP_SMOKETRAIL);           // 15
+	lua_regconstinteger(vm->L, WP_MAPMORTAR);            // 16
+	lua_regconstinteger(vm->L, VERYBIGEXPLOSION);        // 17 - explosion effect for airplanes
+	lua_regconstinteger(vm->L, WP_MEDKIT);               // 18
 
-	lua_regconstinteger(vm->L, WP_BINOCULARS);           // 20
-	lua_regconstinteger(vm->L, WP_PLIERS);               // 21
-	lua_regconstinteger(vm->L, WP_SMOKE_MARKER);         // 22 - changed name to cause less confusion
-	lua_regconstinteger(vm->L, WP_KAR98);                // 23 - WolfXP weapons
-	lua_regconstinteger(vm->L, WP_CARBINE);              // 24
-	lua_regconstinteger(vm->L, WP_GARAND);               // 25
-	lua_regconstinteger(vm->L, WP_LANDMINE);             // 26
-	lua_regconstinteger(vm->L, WP_SATCHEL);              // 27
-	lua_regconstinteger(vm->L, WP_SATCHEL_DET);          // 28
-	lua_regconstinteger(vm->L, WP_SMOKE_BOMB);           // 29
+	lua_regconstinteger(vm->L, WP_BINOCULARS);           // 19
+	lua_regconstinteger(vm->L, WP_PLIERS);               // 20
+	lua_regconstinteger(vm->L, WP_SMOKE_MARKER);         // 21 - changed name to cause less confusion
+	lua_regconstinteger(vm->L, WP_KAR98);                // 22 - WolfXP weapons
+	lua_regconstinteger(vm->L, WP_CARBINE);              // 23
+	lua_regconstinteger(vm->L, WP_GARAND);               // 24
+	lua_regconstinteger(vm->L, WP_LANDMINE);             // 25
+	lua_regconstinteger(vm->L, WP_SATCHEL);              // 26
+	lua_regconstinteger(vm->L, WP_SATCHEL_DET);          // 27
+	lua_regconstinteger(vm->L, WP_SMOKE_BOMB);           // 28
 
-	lua_regconstinteger(vm->L, WP_MOBILE_MG42);          // 30
-	lua_regconstinteger(vm->L, WP_K43);                  // 31
-	lua_regconstinteger(vm->L, WP_FG42);                 // 32
-	lua_regconstinteger(vm->L, WP_DUMMY_MG42);           // 33 - for storing heat on mounted mg42s...
-	lua_regconstinteger(vm->L, WP_MORTAR);               // 34
-	lua_regconstinteger(vm->L, WP_AKIMBO_COLT);          // 35
-	lua_regconstinteger(vm->L, WP_AKIMBO_LUGER);         // 36
+	lua_regconstinteger(vm->L, WP_MOBILE_MG42);          // 29
+	lua_regconstinteger(vm->L, WP_K43);                  // 30
+	lua_regconstinteger(vm->L, WP_FG42);                 // 31
+	lua_regconstinteger(vm->L, WP_DUMMY_MG42);           // 32 - for storing heat on mounted mg42s...
+	lua_regconstinteger(vm->L, WP_MORTAR);               // 33
+	lua_regconstinteger(vm->L, WP_AKIMBO_COLT);          // 34
+	lua_regconstinteger(vm->L, WP_AKIMBO_LUGER);         // 35
 
-	lua_regconstinteger(vm->L, WP_GPG40);                // 37
-	lua_regconstinteger(vm->L, WP_M7);                   // 38
-	lua_regconstinteger(vm->L, WP_SILENCED_COLT);        // 39
+	lua_regconstinteger(vm->L, WP_GPG40);                // 36
+	lua_regconstinteger(vm->L, WP_M7);                   // 37
 
-	lua_regconstinteger(vm->L, WP_MEDIC_ADRENALINE);     // 40
-	lua_regconstinteger(vm->L, WP_AKIMBO_SILENCEDCOLT);  // 41
-	lua_regconstinteger(vm->L, WP_AKIMBO_SILENCEDLUGER); // 42
+	lua_regconstinteger(vm->L, WP_MEDIC_ADRENALINE);     // 38
+	lua_regconstinteger(vm->L, WP_AKIMBO_SILENCEDCOLT);  // 39
+	lua_regconstinteger(vm->L, WP_AKIMBO_SILENCEDLUGER); // 40
 
 	// legacy weapons
-	lua_regconstinteger(vm->L, WP_KNIFE_KABAR);          // 43
-	lua_regconstinteger(vm->L, WP_MOBILE_BROWNING);      // 44
-	lua_regconstinteger(vm->L, WP_MORTAR2);              // 45
-	lua_regconstinteger(vm->L, WP_BAZOOKA);              // 46
-	lua_regconstinteger(vm->L, WP_MP34);                 // 47
-	lua_regconstinteger(vm->L, WP_AIRSTRIKE);            // 48
+	lua_regconstinteger(vm->L, WP_KNIFE_KABAR);          // 41
+	lua_regconstinteger(vm->L, WP_MOBILE_BROWNING);      // 42
+	lua_regconstinteger(vm->L, WP_MORTAR2);              // 43
+	lua_regconstinteger(vm->L, WP_BAZOOKA);              // 44
+	lua_regconstinteger(vm->L, WP_MP34);                 // 45
+	lua_regconstinteger(vm->L, WP_AIRSTRIKE);            // 46
 	lua_regconstinteger(vm->L, WP_NUM_WEAPONS);
 }
 
@@ -2547,7 +2545,6 @@ static void registerModConstants(lua_vm_t *vm)
 	lua_regconstinteger(vm->L, MOD_STEN);
 	lua_regconstinteger(vm->L, MOD_GARAND);
 
-	lua_regconstinteger(vm->L, MOD_SILENCER);
 	lua_regconstinteger(vm->L, MOD_FG42);
 	lua_regconstinteger(vm->L, MOD_FG42SCOPE);
 	lua_regconstinteger(vm->L, MOD_PANZERFAUST);
@@ -2586,7 +2583,6 @@ static void registerModConstants(lua_vm_t *vm)
 
 	lua_regconstinteger(vm->L, MOD_SMOKEBOMB);
 	lua_regconstinteger(vm->L, MOD_MOBILE_MG42);
-	lua_regconstinteger(vm->L, MOD_SILENCED_COLT);
 	lua_regconstinteger(vm->L, MOD_GARAND_SCOPE);
 
 	lua_regconstinteger(vm->L, MOD_CRUSH_CONSTRUCTION);

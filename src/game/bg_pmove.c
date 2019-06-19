@@ -2392,23 +2392,7 @@ static void PM_BeginWeaponChange(weapon_t oldWeapon, weapon_t newWeapon, qboolea
 			PM_StartWeaponAnim(GetWeaponTableData(oldWeapon)->altSwitchFrom);
 		}
 
-		// special case for silenced pistol
-		if ((GetWeaponTableData(oldWeapon)->type & WEAPON_TYPE_PISTOL) && (GetWeaponTableData(oldWeapon)->attributes & WEAPON_ATTRIBUT_SILENCED))
-		{
-			if (pm->ps->eFlags & EF_PRONE)
-			{
-				BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_UNDO_ALT_WEAPON_MODE_PRONE, qfalse, qfalse);
-			}
-			else
-			{
-				BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_UNDO_ALT_WEAPON_MODE, qfalse, qfalse);
-			}
-		}
-		else
-		{
-			// play an animation
-			BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DROPWEAPON, qfalse, qfalse);
-		}
+		BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DROPWEAPON, qfalse, qfalse);
 	}
 	else
 	{
@@ -2469,18 +2453,7 @@ static void PM_FinishWeaponChange(void)
 		pm->ps->weaponstate = WEAPON_RAISING;
 	}
 
-	if (GetWeaponTableData(newWeapon)->type & WEAPON_TYPE_PISTOL)
-	{
-		if (GetWeaponTableData(newWeapon)->attributes & WEAPON_ATTRIBUT_SILENCED)
-		{
-			pm->pmext->silencedSideArm |= WALTTYPE_SILENCER;
-		}
-		else
-		{
-			pm->pmext->silencedSideArm &= ~WALTTYPE_SILENCER;
-		}
-	}
-	else if (GetWeaponTableData(newWeapon)->type & WEAPON_TYPE_RIFLE)
+	if (GetWeaponTableData(newWeapon)->type & WEAPON_TYPE_RIFLE)
 	{
 		pm->pmext->silencedSideArm &= ~WALTTYPE_RIFLENADE;
 	}
@@ -2640,6 +2613,8 @@ static void PM_BeginAltWeaponChange(qboolean reload)
 			CrossProduct(axis[0], axis[2], axis[1]);
 			AxisToAngles(axis, pm->pmext->mountedWeaponAngles);
 		}
+
+		BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DROPWEAPON, qfalse, qfalse);
 	}
 	else if (GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_SCOPABLE)
 	{
@@ -2657,13 +2632,29 @@ static void PM_BeginAltWeaponChange(qboolean reload)
 				return;
 			}
 		}
+
+		BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DROPWEAPON, qfalse, qfalse);
+	}
+	else if (GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_SILENCEABLE)
+	{
+		if (!(pm->ps->stats[STAT_KEYS] & (1 << INV_SILENCER)))
+		{
+			return;
+		}
+
+		if (pm->ps->eFlags & EF_PRONE)
+		{
+			BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_UNDO_ALT_WEAPON_MODE_PRONE, qfalse, qfalse);
+		}
+		else
+		{
+			BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_UNDO_ALT_WEAPON_MODE, qfalse, qfalse);
+		}
 	}
 	else
 	{
 		return;
 	}
-
-	BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DROPWEAPON, qfalse, qfalse);
 
 	PM_AddEvent(EV_CHANGE_WEAPON_2);
 
@@ -2708,6 +2699,10 @@ static void PM_FinishAltWeaponChange()
 			pm->ps->aimSpreadScale      = AIMSPREAD_MAXSPREAD;           // initially at lowest accuracy
 			pm->ps->aimSpreadScaleFloat = AIMSPREAD_MAXSPREAD;           // initially at lowest accuracy
 		}
+	}
+	else if (GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_SILENCEABLE)
+	{
+		weaponAltType = WALTTYPE_SILENCER;
 	}
 	else
 	{

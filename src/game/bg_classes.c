@@ -150,7 +150,7 @@ bg_playerclass_t bg_playerClasses[2][NUM_PLAYER_CLASSES] =
 				{ WP_K43,                  SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 0, 20,  10,  INV_NONE     },
 			},
 			{
-				{ WP_SILENCER,             SK_LIGHT_WEAPONS,                            0, 24,  8,   INV_SILENCER },
+				{ WP_LUGER,                SK_LIGHT_WEAPONS,                            0, 24,  8,   INV_SILENCER },
 				{ WP_AKIMBO_SILENCEDLUGER, SK_LIGHT_WEAPONS,                            4, 48,  8,   INV_NONE     },
 			},
 			{ WP_GRENADE_LAUNCHER,     SK_LIGHT_WEAPONS,                            0, 2,   0,   INV_NONE     },
@@ -278,7 +278,7 @@ bg_playerclass_t bg_playerClasses[2][NUM_PLAYER_CLASSES] =
 				{ WP_GARAND,               SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS, 0, 20,  10,  INV_NONE     },
 			},
 			{
-				{ WP_SILENCED_COLT,        SK_LIGHT_WEAPONS,                            0, 24,  8,   INV_SILENCER },
+				{ WP_COLT,                 SK_LIGHT_WEAPONS,                            0, 24,  8,   INV_SILENCER },
 				{ WP_AKIMBO_SILENCEDCOLT,  SK_LIGHT_WEAPONS,                            4, 48,  8,   INV_NONE     },
 			},
 			{ WP_GRENADE_PINEAPPLE,    SK_LIGHT_WEAPONS,                            0, 2,   0,   INV_NONE     },

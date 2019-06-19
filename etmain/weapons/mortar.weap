@@ -22,7 +22,8 @@ weaponDef
 		//reloadFastSound	""									// some weapons have fast reloads due to the skill system
 		spinupSound			"sound/weapons/mortar/mortar_fire.wav"		// sound started when fire button goes down, and stepped on when the first fire event happens
 		//spindownSound		""									// sound called if the above is running but player doesn't follow through and fire
-		switchSound			"sound/weapons/mortar/mortar_on.wav"		// allow overriding of weaponswitch sound
+		switchSoundOn			"sound/weapons/mortar/mortar_on.wav"		// allow overriding of weaponswitch sound
+                switchSoundOff			"sound/weapons/mortar/mortar_off.wav"		// allow overriding of weaponswitch sound
 		noAmmoSound         "sound/weapons/misc/fire_dry.wav"
 
 		weaponIcon			"icons/iconw_mortar"

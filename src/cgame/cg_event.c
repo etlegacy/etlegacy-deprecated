@@ -2174,10 +2174,21 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 		trap_S_StartSound(NULL, es->number, CHAN_AUTO, cgs.media.selectSound);
 
 		// special switching sound for alt weapon
-		if (cg_weapons[GetWeaponTableData(es->weapon)->weapAlts].switchSound)
+		if (cg.pmext.silencedSideArm)
 		{
-			trap_S_StartSound(NULL, es->number, CHAN_WEAPON, cg_weapons[GetWeaponTableData(es->weapon)->weapAlts].switchSound);
+			if (cg_weapons[es->weapon].switchSoundOff)
+			{
+				trap_S_StartSound(NULL, es->number, CHAN_WEAPON, cg_weapons[es->weapon].switchSoundOff);
+			}
 		}
+		else
+		{
+			if (cg_weapons[GetWeaponTableData(es->weapon)->weapAlts].switchSoundOn)
+			{
+				trap_S_StartSound(NULL, es->number, CHAN_WEAPON, cg_weapons[es->weapon].switchSoundOn);
+			}
+		}
+
 		break;
 	case EV_FIRE_WEAPON_MOUNTEDMG42:
 	case EV_FIRE_WEAPON_MG42:

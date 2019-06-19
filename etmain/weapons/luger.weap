@@ -7,10 +7,11 @@ weaponDef
 		//pickupSound		"sound/misc/w_pkup.wav"
 		
 		weaponConfig		"models/weapons2/luger/weapon.cfg"
-		handsModel			"models/weapons2/luger/v_luger_hand.mdc"
+		handsModel		"models/weapons2/luger/v_luger_hand.mdc"
 		
 		flashDlightColor	1.0 0.6 0.23
-		flashSound			"sound/weapons/luger/luger_fire.wav"	// supports up to 4 flash sounds
+		flashSound		"sound/weapons/luger/luger_fire.wav"	// supports up to 4 flash sounds
+                flashSoundSilenced	"sound/weapons/luger/luger_silence.wav"	// supports up to 4 flash sounds
 		flashEchoSound		"sound/weapons/luger/luger_far.wav"		// supports up to 4 flash echo sounds
 		//lastShotSound		""										// supports up to 4 last shot sounds
 		
@@ -21,7 +22,8 @@ weaponDef
 		reloadFastSound		"sound/weapons/luger/luger_reload_fast.wav"		// some weapons have fast reloads due to the skill system
 		//spinupSound		""									// sound started when fire button goes down, and stepped on when the first fire event happens
 		//spindownSound		""									// sound called if the above is running but player doesn't follow through and fire
-		switchSound			"sound/weapons/misc/silence_off.wav"	// allow overriding of weaponswitch sound
+		switchSoundOn		"sound/weapons/misc/silence_on.wav"	// allow overriding of weaponswitch sound
+                switchSoundOff		"sound/weapons/misc/silence_off.wav"	// allow overriding of weaponswitch sound
 		noAmmoSound         "sound/weapons/misc/fire_dry.wav"
 		
 		weaponIcon			"icons/iconw_luger"
