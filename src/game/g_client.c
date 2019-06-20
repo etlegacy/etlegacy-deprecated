@@ -1101,6 +1101,12 @@ void AddWeaponToPlayer(gclient_t *client, weapon_t weapon, int ammo, int ammocli
 	if (attachment)
 	{
 		client->ps.stats[STAT_KEYS] |= (1 << attachment);
+
+		// got silenced weapon
+		if (GetWeaponTableData(weapon)->type & WEAPON_TYPE_SILENCEABLE)
+		{
+			client->pmext.silencedSideArm = WALTTYPE_SILENCER;
+		}
 	}
 
 	if (setcurrent)
@@ -1114,17 +1120,6 @@ void AddWeaponToPlayer(gclient_t *client, weapon_t weapon, int ammo, int ammocli
 	// add alternative weapon if exist for primary weapon
 	if (GetWeaponTableData(weapon)->weapAlts)
 	{
-		// Covertops got silenced secondary weapon
-		if ((GetWeaponTableData(weapon)->type & WEAPON_TYPE_PISTOL) && !(GetWeaponTableData(weapon)->attributes & WEAPON_ATTRIBUT_AKIMBO))
-		{
-			if (client->sess.playerType != PC_COVERTOPS)
-			{
-				return;
-			}
-
-			client->pmext.silencedSideArm = WALTTYPE_SILENCER;
-		}
-
 		COM_BitSet(client->ps.weapons, GetWeaponTableData(weapon)->weapAlts);
 
 #ifdef FEATURE_OMNIBOT
@@ -1180,7 +1175,7 @@ void SetWolfSpawnWeapons(gclient_t *client)
 	// knife
 	//
 	weaponClassInfo = &classInfo->classKnifeWeapon;
-        AddWeaponToPlayer(client, weaponClassInfo->weapon, weaponClassInfo->startingAmmo, weaponClassInfo->startingClip, qtrue, weaponClassInfo->attachment);
+	AddWeaponToPlayer(client, weaponClassInfo->weapon, weaponClassInfo->startingAmmo, weaponClassInfo->startingClip, qtrue, weaponClassInfo->attachment);
 
 	//
 	// grenade
@@ -3356,7 +3351,7 @@ float ClientHitboxMaxZ(gentity_t *hitEnt)
 		return PRONE_BODYHEIGHT;
 	}
 	else if (hitEnt->client->ps.eFlags & EF_CROUCHING &&
-		hitEnt->client->ps.velocity[0] == 0.f && hitEnt->client->ps.velocity[1] == 0.f)
+	         hitEnt->client->ps.velocity[0] == 0.f && hitEnt->client->ps.velocity[1] == 0.f)
 	{
 		// crouched idle animation is lower than the moving one
 		return CROUCH_IDLE_BODYHEIGHT;

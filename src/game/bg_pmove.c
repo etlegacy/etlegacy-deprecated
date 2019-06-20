@@ -2613,8 +2613,6 @@ static void PM_BeginAltWeaponChange(qboolean reload)
 			CrossProduct(axis[0], axis[2], axis[1]);
 			AxisToAngles(axis, pm->pmext->mountedWeaponAngles);
 		}
-
-		BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DROPWEAPON, qfalse, qfalse);
 	}
 	else if (GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_SCOPABLE)
 	{
@@ -2632,23 +2630,12 @@ static void PM_BeginAltWeaponChange(qboolean reload)
 				return;
 			}
 		}
-
-		BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DROPWEAPON, qfalse, qfalse);
 	}
 	else if (GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_SILENCEABLE)
 	{
 		if (!(pm->ps->stats[STAT_KEYS] & (1 << INV_SILENCER)))
 		{
 			return;
-		}
-
-		if (pm->ps->eFlags & EF_PRONE)
-		{
-			BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_UNDO_ALT_WEAPON_MODE_PRONE, qfalse, qfalse);
-		}
-		else
-		{
-			BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_UNDO_ALT_WEAPON_MODE, qfalse, qfalse);
 		}
 	}
 	else
@@ -2657,6 +2644,8 @@ static void PM_BeginAltWeaponChange(qboolean reload)
 	}
 
 	PM_AddEvent(EV_CHANGE_WEAPON_2);
+        
+        BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DROPWEAPON, qfalse, qfalse);
 
 	if (reload)
 	{
@@ -2713,25 +2702,34 @@ static void PM_FinishAltWeaponChange()
 	{
 		PM_StartWeaponAnim(WEAP_ALTSWITCHFROM);
 		pm->ps->weaponTime += GetWeaponTableData(pm->ps->weapon)->altSwitchTimeFinish;
+
+		if (pm->ps->eFlags & EF_PRONE)
+		{
+			BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_UNDO_ALT_WEAPON_MODE_PRONE, qfalse, qfalse);
+		}
+		else
+		{
+			BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_UNDO_ALT_WEAPON_MODE, qfalse, qfalse);
+		}
 	}
 	else
 	{
 		PM_StartWeaponAnim(WEAP_ALTSWITCHTO);
 		pm->ps->weaponTime += GetWeaponTableData(pm->ps->weapon)->altSwitchTimeBegin;
+
+		if (pm->ps->eFlags & EF_PRONE)
+		{
+			BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DO_ALT_WEAPON_MODE_PRONE, qfalse, qfalse);
+		}
+		else
+		{
+			BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DO_ALT_WEAPON_MODE, qfalse, qfalse);
+		}
 	}
 
 	pm->pmext->silencedSideArm ^= weaponAltType;
 
 	BG_UpdateConditionValue(pm->ps->clientNum, ANIM_COND_WEAPON, pm->ps->weapon, qtrue);
-
-	if (pm->ps->eFlags & EF_PRONE)
-	{
-		BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DO_ALT_WEAPON_MODE_PRONE, qfalse, qfalse);
-	}
-	else
-	{
-		BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DO_ALT_WEAPON_MODE, qfalse, qfalse);
-	}
 }
 
 /**
@@ -5004,11 +5002,6 @@ void PmoveSingle(pmove_t *pmove)
 
 	if (pm->ps->pm_flags & PMF_RESPAWNED)
 	{
-		if (pm->ps->stats[STAT_PLAYER_CLASS] == PC_COVERTOPS)
-		{
-			pm->pmext->silencedSideArm |= WALTTYPE_SILENCER;
-		}
-
 		// clear the respawned flag if attack button are cleared
 		// don't clear if a weapon change is needed to prevent early weapon change
 		if (pm->ps->stats[STAT_HEALTH] > 0 &&

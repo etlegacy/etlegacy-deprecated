@@ -2176,16 +2176,16 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 		// special switching sound for alt weapon
 		if (cg.pmext.silencedSideArm)
 		{
-			if (cg_weapons[es->weapon].switchSoundOff)
+			if (cg_weapons[es->weapon].switchSoundOn)
 			{
-				trap_S_StartSound(NULL, es->number, CHAN_WEAPON, cg_weapons[es->weapon].switchSoundOff);
+				trap_S_StartSound(NULL, es->number, CHAN_WEAPON, cg_weapons[es->weapon].switchSoundOn);
 			}
 		}
 		else
 		{
-			if (cg_weapons[GetWeaponTableData(es->weapon)->weapAlts].switchSoundOn)
+			if (cg_weapons[es->weapon].switchSoundOff)
 			{
-				trap_S_StartSound(NULL, es->number, CHAN_WEAPON, cg_weapons[es->weapon].switchSoundOn);
+				trap_S_StartSound(NULL, es->number, CHAN_WEAPON, cg_weapons[es->weapon].switchSoundOff);
 			}
 		}
 

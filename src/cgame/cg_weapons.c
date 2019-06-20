@@ -2545,6 +2545,10 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 	{
 		gun.hModel = weapon->modModels[0];
 	}
+	else if (!isFirstPerson && (GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_PISTOL) && (cg.pmext.silencedSideArm & WALTTYPE_SILENCER))
+	{
+		gun.hModel = weapon->modModels[0];
+	}
 	else
 	{
 		gun.hModel = weapon->weaponModel[modelViewType].model;
@@ -2683,6 +2687,15 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 		for (i = W_PART_1; i < W_MAX_PARTS; i++)
 		{
 			if ((GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & WALTTYPE_BIPOD) && (i == W_PART_4 || i == W_PART_5))
+			{
+				if (ps && !cg.renderingThirdPerson && cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
+				{
+					continue;
+				}
+			}
+
+			if ((GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_PISTOL) && !(cg.pmext.silencedSideArm & WALTTYPE_SILENCER) &&
+			    ((weaponNum == WP_LUGER && i == W_PART_4) || (weaponNum == WP_COLT && i == W_PART_5)))
 			{
 				if (ps && !cg.renderingThirdPerson && cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
 				{
@@ -3063,7 +3076,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 	if (weaponNum != WP_FLAMETHROWER)     // hide the flash also for now
 	{
 		// weapons that don't need to go any further as they have no flash or light
-		if (!flash.hModel)
+                if (!flash.hModel || (cg.pmext.silencedSideArm & WALTTYPE_SILENCER))
 		{
 			return;
 		}
