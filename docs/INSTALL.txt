@@ -98,7 +98,8 @@ For more information consult our website at http://www.etlegacy.com/.
 RASPBERRY PI INSTALLATION
 =========================
 
-ET: Legacy supports both OpenGL and OpenGL ES on the Raspberry Pi.
+ET: Legacy supports both OpenGL and OpenGL ES on the Raspberry Pi. The experimental OpenGL driver will provide
+better performance when playing ET: Legacy.
 
 In order to use full OpenGL, use the following instructions:
 
@@ -108,6 +109,7 @@ In order to use full OpenGL, use the following instructions:
     configure command. Otherwise, keep "BUNDLED_SDL=1" in "easybuild.sh".
 4.  Increase GPU memory split to at least 192mb.
 5.  Run "./easybuild.sh -RPI -j4" to build for Raspberry Pi.
+6.  Start the game in windowed mode. Full screen mode has issues currently.
 
 In order to use OpenGL ES, use the following instructions:
 
