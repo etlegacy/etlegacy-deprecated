@@ -281,6 +281,33 @@ Be sure to set the CMake variables (see above) beforehand.
   (and can safely be renamed), while the dedicated server is just a command-line binary named "etlded".
 
 
+### Raspberry Pi
+
+ET: Legacy supports both OpenGL and OpenGL ES on the Raspberry Pi. The experimental OpenGL driver will provide
+better performance when playing ET: Legacy.
+
+Install using experimental OpenGL driver:
+
+1.  Enable experimental OpenGL driver via the `raspi-config` command line application.
+2.  Modify `easybuild.sh` and set the `FEATURE_RENDERER_GLES` flag to 0 under the `RPI` section.
+3.  If building SDL from source, ensure you have passed `--host=armv7l-raspberry-linux-gnueabihf` when calling the
+    configure command. Otherwise, keep `BUNDLED_SDL=1` in `easybuild.sh`.
+4.  Increase GPU memory split to at least 192mb.
+5.  Run `./easybuild.sh -RPI -j4` to build for Raspberry Pi.
+6.  Start the game in windowed mode. Full screen mode has issues currently.
+
+Install using OpenGLES:
+
+1.  Ensure the legacy OpenGL driver is enabled via the `raspi-config` command line application (it is by default).
+2.  Modify `easybuild.sh` and set the `FEATURE_RENDERER_GLES` flag to 1 under the `RPI` section.
+3.  If building SDL from source, ensure you have passed
+    `--host=armv7l-raspberry-linux-gnueabihf --host=armv7l-raspberry-linux-gnueabihf --disable-pulseaudio
+        --disable-esd --disable-video-mir --disable-video-wayland --disable-video-x11 --disable-video-opengl`
+    when calling the configure command. This will ensure SDL is built with an OpenGL ES backend. Otherwise, keep `BUNDLED_SDL=1` in `easybuild.sh`.
+4.  Increase GPU memory split to at least 192mb.
+5.  Run `./easybuild.sh -RPI -j4` to build for Raspberry Pi.
+
+
 LICENSE
 =======
 
