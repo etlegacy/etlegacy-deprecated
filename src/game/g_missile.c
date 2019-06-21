@@ -195,11 +195,6 @@ void G_MissileImpact(gentity_t *ent, trace_t *trace, int impactDamage)
 	if ((!other->takedamage || !ent->damage) && (ent->s.eFlags & (EF_BOUNCE | EF_BOUNCE_HALF)))
 	{
 		G_BounceMissile(ent, trace);
-		// spotter White Phosphorous rounds shouldn't bounce noise
-		if (!Q_stricmp(ent->classname, "WP"))
-		{
-			return;
-		}
 
 		G_AddEvent(ent, EV_GRENADE_BOUNCE, BG_FootstepForSurface(trace->surfaceFlags));
 
@@ -255,7 +250,6 @@ void G_MissileImpact(gentity_t *ent, trace_t *trace, int impactDamage)
 
 	if (CHECKBITWISE(GetWeaponTableData(ent->s.weapon)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET))
 	{
-		temp->s.legsAnim = ent->s.legsAnim; // need this one as well
 		temp->r.svFlags |= SVF_BROADCAST;
 	}
 
@@ -494,10 +488,7 @@ void G_RunMissile(gentity_t *ent)
 		}
 	}
 
-	if (level.tracemapLoaded &&
-	    (CHECKBITWISE(GetWeaponTableData(ent->s.weapon)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET)
-	     || (GetWeaponTableData(ent->s.weapon)->type & (WEAPON_TYPE_GRENADE | WEAPON_TYPE_RIFLENADE))
-	     || ent->s.weapon == WP_AIRSTRIKE || ent->s.weapon == WP_ARTY))
+	if (level.tracemapLoaded && ent->s.pos.trType == TR_GRAVITY && ent->r.contents != CONTENTS_CORPSE)
 	{
 		if (ent->count)
 		{
@@ -577,7 +568,8 @@ void G_RunMissile(gentity_t *ent)
 	// ignoring interactions with the missile owner
 	trap_Trace(&tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, origin, ent->r.ownerNum, ent->clipmask);
 
-	if (CHECKBITWISE(GetWeaponTableData(ent->s.weapon)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET) && ent->count2 == 1)
+	if ((CHECKBITWISE(GetWeaponTableData(ent->s.weapon)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET) ||
+	     ent->s.weapon == WP_AIRSTRIKE || ent->s.weapon == WP_ARTY) && ent->count2 == 1)
 	{
 		if (ent->r.currentOrigin[2] > origin[2] && origin[2] - BG_GetGroundHeightAtPoint(origin) < 512)
 		{
@@ -598,9 +590,9 @@ void G_RunMissile(gentity_t *ent)
 				tent              = G_TempEntity(impactpos, EV_MORTAR_IMPACT);
 				tent->s.clientNum = ent->r.ownerNum;
 				tent->r.svFlags  |= SVF_BROADCAST;
+				tent->s.weapon    = ent->s.weapon;
 
-				ent->count2     = 2;
-				ent->s.legsAnim = 1;
+				ent->count2 = 2;                        // missile is about to impact, no more check in worldspace are required
 
 				/*{
 				    gentity_t *tent;
@@ -629,13 +621,8 @@ void G_RunMissile(gentity_t *ent)
 
 	if (tr.fraction != 1.f)
 	{
-		int impactDamage;
-
-		if (level.tracemapLoaded &&
-		    (CHECKBITWISE(GetWeaponTableData(ent->s.weapon)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET)
-		     || (GetWeaponTableData(ent->s.weapon)->type & (WEAPON_TYPE_GRENADE | WEAPON_TYPE_RIFLENADE))
-		     || ent->s.weapon == WP_AIRSTRIKE || ent->s.weapon == WP_ARTY)
-		    && (tr.surfaceFlags & SURF_SKY))
+		if (level.tracemapLoaded && ent->s.pos.trType == TR_GRAVITY && ent->r.contents != CONTENTS_CORPSE
+                && ((!tr.surfaceFlags && tr.startsolid)|| (tr.surfaceFlags & SURF_SKY)))
 		{
 			// goes through sky
 			ent->count = 1;
@@ -652,26 +639,16 @@ void G_RunMissile(gentity_t *ent)
 
 		//      G_SetOrigin( ent, tr.endpos );
 
-		if ((GetWeaponTableData(ent->s.weapon)->type & WEAPON_TYPE_PANZER)
-		    || CHECKBITWISE(GetWeaponTableData(ent->s.weapon)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET))
-		{
-			impactDamage = 999; // goes through pretty much any func_explosives
-		}
-		else
-		{
-			impactDamage = 20;  // "grenade"/"dynamite"     // probably adjust this based on velocity
-		}
-
 		if (ent->r.contents == CONTENTS_CORPSE)
 		{
 			if (ent->s.pos.trType != TR_STATIONARY)
 			{
-				G_MissileImpact(ent, &tr, impactDamage);
+				G_MissileImpact(ent, &tr, GetWeaponFireTableData(ent->s.weapon)->impactDamage);
 			}
 		}
 		else
 		{
-			G_MissileImpact(ent, &tr, impactDamage);
+			G_MissileImpact(ent, &tr, GetWeaponFireTableData(ent->s.weapon)->impactDamage);
 		}
 
 		if (ent->s.eType != ET_MISSILE)
@@ -1557,7 +1534,8 @@ void G_LandmineThink(gentity_t *self)
 			continue;
 		}
 
-		//if( !g_friendlyFire.integer && G_LandmineTeam( self ) == ent->client->sess.sessionTeam ) {
+		//if (!g_friendlyFire.integer && self->s.teamNum == ent->client->sess.sessionTeam)
+		//{
 		//   continue;
 		//}
 
@@ -1568,6 +1546,7 @@ void G_LandmineThink(gentity_t *self)
 			{
 				continue;
 			}
+
 			if (G_LandmineSpotted(self))
 			{
 				continue;
@@ -1658,8 +1637,25 @@ qboolean G_LandmineSnapshotCallback(int entityNum, int clientNum)
 {
 	gentity_t *ent   = &g_entities[entityNum];
 	gentity_t *clEnt = &g_entities[clientNum];
+	int       i;
+
+	// don't send if landmine is not in pvs
+	if (!trap_InPVS(clEnt->client->ps.origin, ent->r.currentOrigin))
+	{
+		return qfalse;
+	}
 
 	if (clEnt->client->sess.skill[SK_BATTLE_SENSE] >= 4)
+	{
+		return qtrue;
+	}
+
+	if (!G_LandmineArmed(ent))
+	{
+		return qtrue;
+	}
+
+	if (G_LandmineSpotted(ent))
 	{
 		return qtrue;
 	}
@@ -1675,12 +1671,25 @@ qboolean G_LandmineSnapshotCallback(int entityNum, int clientNum)
 		return qtrue;
 	}
 
-	// FIXME: do this for ettv
-	// allow ettv to see landmines
-	//if (clEnt->client->sess.sessionTeam == TEAM_SPECTATOR)
-	//{
-	//  return qtrue;
-	//}
+	// shoutcasters can see landmines
+	if (clEnt->client->sess.sessionTeam == TEAM_SPECTATOR && clEnt->client->sess.shoutcaster)
+	{
+		return qtrue;
+	}
+
+	// check also following shoutcasters
+	for (i = 0; i < level.numConnectedClients; i++)
+	{
+		gclient_t *cl = &level.clients[level.sortedClients[i]];
+
+		if (cl->sess.sessionTeam == TEAM_SPECTATOR &&
+			cl->sess.spectatorState == SPECTATOR_FOLLOW &&
+			cl->sess.spectatorClient == (clEnt - g_entities) &&
+			cl->sess.shoutcaster)
+		{
+			return qtrue;
+		}
+	}
 
 	return qfalse;
 }
@@ -1708,7 +1717,7 @@ gentity_t *fire_missile(gentity_t *self, vec3_t start, vec3_t dir, int weapon)
 
 	// no self->client for shooter_grenade's
 	// if grenade time left, add it to next think and reset it, else add default value
-	if (self->client && self->client->ps.grenadeTimeLeft)
+	if (GetWeaponTableData(weapon)->grenadeTime && self->client && self->client->ps.grenadeTimeLeft)
 	{
 		bolt->nextthink                  = level.time + self->client->ps.grenadeTimeLeft;
 		self->client->ps.grenadeTimeLeft = 0;   // reset grenade timer

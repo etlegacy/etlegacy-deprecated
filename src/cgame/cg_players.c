@@ -281,6 +281,9 @@ void CG_NewClientInfo(int clientNum)
 	v                 = Info_ValueForKey(configstring, "ref");
 	newInfo.refStatus = atoi(v);
 
+	v                   = Info_ValueForKey(configstring, "sc");
+	newInfo.shoutcaster = atoi(v);
+
 	// Detect rank/skill changes client side.
 	// Make sure we have some valid clientinfo, otherwise people are thrown
 	// into spectator on map starts.
@@ -308,7 +311,10 @@ void CG_NewClientInfo(int clientNum)
 		{
 			CG_SoundPlaySoundScript(GetRankTableData(cgs.clientinfo[cg.clientNum].team, newInfo.rank)->soundNames, NULL, -1, qtrue);
 
-			CG_AddPMItemBig(PM_RANK, va(CG_TranslateString("Promoted to rank %s!"), GetRankTableData(cgs.clientinfo[cg.clientNum].team, newInfo.rank)->names), rankicons[newInfo.rank][cgs.clientinfo[cg.clientNum].team == TEAM_AXIS ? 1 : 0][0].shader);
+			if (cg_popupBigFilter.integer & POPUP_BIG_FILTER_RANK)
+			{
+				CG_AddPMItemBig(PM_RANK, va(CG_TranslateString("Promoted to rank %s!"), GetRankTableData(cgs.clientinfo[cg.clientNum].team, newInfo.rank)->names), rankicons[newInfo.rank][cgs.clientinfo[cg.clientNum].team == TEAM_AXIS ? 1 : 0][0].shader);
+			}
 		}
 
 		// Make sure primary class and primary weapons are correct for
@@ -339,11 +345,14 @@ void CG_NewClientInfo(int clientNum)
 				if (!cgs.demoCamera.renderingFreeCam && !cgs.demoCamera.renderingWeaponCam)
 				{
 #endif
-				CG_AddPMItemBig(PM_SKILL, va(CG_TranslateString("Increased %s skill to level %i!"), CG_TranslateString(GetSkillTableData(i)->skillNames), newInfo.skill[i]), cgs.media.skillPics[i]);
+				if (cg_popupBigFilter.integer & POPUP_BIG_FILTER_SKILL)
+				{
+					CG_AddPMItemBig(PM_SKILL, va(CG_TranslateString("Increased %s skill to level %i!"), CG_TranslateString(GetSkillTableData(i)->skillNames), newInfo.skill[i]), cgs.media.skillPics[i]);
+				}
 
 				CG_PriorityCenterPrint(va(CG_TranslateString("You have been rewarded with %s"), CG_TranslateString(cg_skillRewards[i][newInfo.skill[i] - 1])), 400, cg_fontScaleCP.value, 99999);
 #ifdef FEATURE_EDV
-			}
+				}
 #endif
 			}
 		}
@@ -1898,100 +1907,6 @@ static void CG_PlayerFloatSprite(centity_t *cent, qhandle_t shader, int height, 
 }
 
 /**
- * @brief Float a sprite over the player's head
- * added height parameter
- * @param point
- * @param[out] x
- * @param[out] y
- * @return
- */
-qboolean CG_WorldCoordToScreenCoordFloat(vec3_t point, float *x, float *y)
-{
-	vec3_t trans;
-	float xc, yc;
-	float px, py;
-	float z;
-
-	px = (float)tan(DEG2RAD((double)cg.refdef.fov_x) / 2);
-	py = (float)tan(DEG2RAD((double)cg.refdef.fov_y) / 2);
-
-	VectorSubtract(point, cg.refdef.vieworg, trans);
-
-	xc = 640.0f / 2.0f;
-	yc = 480.0f / 2.0f;
-
-	z = DotProduct(trans, cg.refdef.viewaxis[0]);
-	if (z < 0.1f)
-	{
-		return qfalse;
-	}
-	px *= z;
-	py *= z;
-	if (px == 0.f || py == 0.f)
-	{
-		return qfalse;
-	}
-
-	*x = xc - (DotProduct(trans, cg.refdef.viewaxis[1]) * xc) / px;
-	*y = yc - (DotProduct(trans, cg.refdef.viewaxis[2]) * yc) / py;
-	*x = Ccg_WideX(*x);
-
-	return qtrue;
-}
-
-/**
- * @brief CG_AddOnScreenText
- * @param[in] text
- * @param[in] origin
- * @param[in] clientNum
- */
-void CG_AddOnScreenText(const char *text, vec3_t origin, int clientNum)
-{
-	float x, y;
-
-	if (!ISVALIDCLIENTNUM(clientNum))
-	{
-		return;
-	}
-
-	if (CG_WorldCoordToScreenCoordFloat(origin, &x, &y))
-	{
-		float scale, w, h;
-		float dist  = VectorDistance(origin, cg.refdef_current->vieworg);
-		float dist2 = (dist * dist) / (3600.0f);
-
-		if (dist2 > 2.0f)
-		{
-			dist2 = 2.0f;
-		}
-
-		scale = 2.4f - dist2 - dist / 6000.0f;
-		if (scale < 0.05f)
-		{
-			scale = 0.05f;
-		}
-
-		w = CG_Text_Width_Ext(text, scale, 0, &cgs.media.limboFont1);
-		h = CG_Text_Height_Ext(text, scale, 0, &cgs.media.limboFont1);
-
-		x -= w / 2;
-		y -= h / 2;
-
-		// save it
-		cg.specOnScreenNames[clientNum].x     = x;
-		cg.specOnScreenNames[clientNum].y     = y;
-		cg.specOnScreenNames[clientNum].scale = scale;
-		cg.specOnScreenNames[clientNum].text  = text;
-		VectorCopy(origin, cg.specOnScreenNames[clientNum].origin);
-		cg.specOnScreenNames[clientNum].visible = qtrue;
-	}
-	else
-	{
-		Com_Memset(&cg.specOnScreenNames[clientNum], 0, sizeof(cg.specOnScreenNames[clientNum]));
-	}
-}
-
-/**
  * @brief CG_PlayerFloatText
  * @param[in] cent
  * @param[in] text
@@ -2002,24 +1917,17 @@ static void CG_PlayerFloatText(centity_t *cent, const char *text, int height)
 	vec3_t origin;
 
 	VectorCopy(cent->lerpOrigin, origin);
+
 	origin[2] += height;
 
-	// Account for ducking
-	if (cent->currentState.clientNum == cg.snap->ps.clientNum)
+	// adjust label height
+	if (cent->currentState.eFlags & EF_CROUCHING ||
+	    cent->currentState.eFlags & EF_PRONE || cent->currentState.eFlags & EF_PRONE_MOVING)
 	{
-		if (cg.snap->ps.pm_flags & PMF_DUCKED)
-		{
-			origin[2] -= 18;
-		}
+		origin[2] -= 18;
 	}
-	else
-	{
-		if ((qboolean)cent->currentState.animMovetype)
-		{
-			origin[2] -= 18;
-		}
-	}
-	CG_AddOnScreenText(text, origin, cent->currentState.clientNum);
+
+	CG_AddOnScreenText(text, origin);
 }
 
 /**
@@ -2029,15 +1937,15 @@ static void CG_PlayerFloatText(centity_t *cent, const char *text, int height)
 static void CG_PlayerSprites(centity_t *cent)
 {
 	int team;
-	int numIcons     = 0;
-	clientInfo_t *ci = &cgs.clientinfo[cent->currentState.clientNum];
-	qboolean sameTeam;
-	int height = 48;
+	int numIcons       = 0;
+	int height         = 56;
+	clientInfo_t   *ci = &cgs.clientinfo[cent->currentState.clientNum];
+	fireteamData_t *ft;
+	qboolean       sameTeam;
 
-	if ((cent->currentState.powerups & (1 << PW_REDFLAG)) ||
-	    (cent->currentState.powerups & (1 << PW_BLUEFLAG)))
+	if ((cent->currentState.powerups & (1 << PW_REDFLAG)) || (cent->currentState.powerups & (1 << PW_BLUEFLAG)))
 	{
-		CG_PlayerFloatSprite(cent, cgs.media.objectiveShader, 56, numIcons++);
+		CG_PlayerFloatSprite(cent, cgs.media.objectiveShader, height, numIcons++);
 	}
 
 	if (cent->currentState.eFlags & EF_DEAD)
@@ -2047,39 +1955,36 @@ static void CG_PlayerSprites(centity_t *cent)
 
 	if (cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR)
 	{
-		if (cg_drawCrosshairNames.integer > 0)
+		if (cg_drawCrosshairNames.integer > 0 || cgs.clientinfo[cg.clientNum].shoutcaster)
 		{
-			CG_PlayerFloatText(cent, ci->name, height + 16);
+			CG_PlayerFloatText(cent, ci->name, height + 8);
 		}
 
-		// show some useful icons to spectators ...
+		// show some useful icons to spectators
+		if (cent->currentState.eFlags & EF_CONNECTION)
+		{
+			CG_PlayerFloatSprite(cent, cgs.media.disconnectIcon, height, numIcons++);
+			return;
+		}
+		if (cent->currentState.eFlags & EF_DEAD && cgs.clientinfo[cg.clientNum].shoutcaster)
+		{
+			CG_PlayerFloatSprite(cent, cgs.media.medicReviveShader, height, numIcons++);
+			return;
+		}
 		if (cent->currentState.powerups & (1 << PW_INVULNERABLE))
 		{
 			CG_PlayerFloatSprite(cent, cgs.media.spawnInvincibleShader, height, numIcons++);
 		}
-		if (cent->currentState.eFlags & EF_CONNECTION)
+		if (cent->currentState.powerups & (1 << PW_OPS_DISGUISED) && cgs.clientinfo[cg.clientNum].shoutcaster)
 		{
-			CG_PlayerFloatSprite(cent, cgs.media.disconnectIcon, height, numIcons++);
+			CG_PlayerFloatSprite(cent, cgs.media.friendShader, height, numIcons++);
 		}
-		if (cent->currentState.eFlags & EF_TALK)
-		{
-			CG_PlayerFloatSprite(cent, cgs.media.balloonShader, height, numIcons++);
-		}
-
-		//{ FIXME: do this for ettv
-		//	fireteamData_t *ft;
-		//
-		//	if ((ft = CG_IsOnFireteam(ci->clientNum)))
-		//	{
-		//		CG_PlayerFloatSprite(cent, cgs.media.fireteamicons[ft->ident], height + 8, numIcons++);
-		//	}
-		//}
 		return;
 	}
 
 	if (cent->currentState.powerups & (1 << PW_INVULNERABLE))
 	{
-		CG_PlayerFloatSprite(cent, cgs.media.spawnInvincibleShader, 8 + height, numIcons++);
+		CG_PlayerFloatSprite(cent, cgs.media.spawnInvincibleShader, height, numIcons++);
 	}
 
 	team     = ci->team;
@@ -2096,7 +2001,7 @@ static void CG_PlayerSprites(centity_t *cent)
 		CG_PlayerFloatSprite(cent, cgs.media.medicReviveShader, height, numIcons++);
 	}
 
-	if (cent->currentState.eFlags & EF_CONNECTION)    // shown for both teams now ...
+	if (cent->currentState.eFlags & EF_CONNECTION)
 	{
 		CG_PlayerFloatSprite(cent, cgs.media.disconnectIcon, height, numIcons++);
 	}
@@ -2106,7 +2011,7 @@ static void CG_PlayerSprites(centity_t *cent)
 	{
 		if (sameTeam)
 		{
-			CG_PlayerFloatSprite(cent, cent->voiceChatSprite, height + 8, numIcons++);
+			CG_PlayerFloatSprite(cent, cent->voiceChatSprite, height, numIcons++);
 		}
 	}
 
@@ -2116,33 +2021,29 @@ static void CG_PlayerSprites(centity_t *cent)
 		CG_PlayerFloatSprite(cent, cgs.media.balloonShader, height, numIcons++);
 	}
 
+	// draw disguised icon over disguised teammates and the fireteam icon of uniform source for enemies
+	if (cent->currentState.powerups & (1 << PW_OPS_DISGUISED))
 	{
-		fireteamData_t *ft;
-
-		// draw disguised icon over disguised teammates and the fireteam icon of uniform source for enemies
-		if (cent->currentState.powerups & (1 << PW_OPS_DISGUISED))
+		if (sameTeam)
 		{
-			if (sameTeam)
+			CG_PlayerFloatSprite(cent, cgs.media.friendShader, height, numIcons++);
+		}
+		else // !sameTeam
+		{
+			if (cgs.clientinfo[cent->currentState.number].disguiseClientNum > -1
+				&& (ft = CG_IsOnFireteam(cgs.clientinfo[cent->currentState.number].disguiseClientNum))
+				&& cgs.clientinfo[cgs.clientinfo[cent->currentState.number].disguiseClientNum].selected)
 			{
-				CG_PlayerFloatSprite(cent, cgs.media.friendShader, height + 8, numIcons++);
-			}
-			else // !sameTeam
-			{
-				if (cgs.clientinfo[cent->currentState.number].disguiseClientNum > -1
-				    && (ft = CG_IsOnFireteam(cgs.clientinfo[cent->currentState.number].disguiseClientNum))
-				    && cgs.clientinfo[cgs.clientinfo[cent->currentState.number].disguiseClientNum].selected)
-				{
-					CG_PlayerFloatSprite(cent, cgs.media.fireteamicons[ft->ident], height + 8, numIcons++);
-				}
+				CG_PlayerFloatSprite(cent, cgs.media.fireteamicons[ft->ident], height, numIcons++);
 			}
 		}
+	}
 
-		if ((ft = CG_IsOnFireteam(cent->currentState.number)))
+	if ((ft = CG_IsOnFireteam(cent->currentState.number)))
+	{
+		if ((ft == CG_IsOnFireteam(cg.clientNum)) && cgs.clientinfo[cent->currentState.number].selected)
 		{
-			if ((ft == CG_IsOnFireteam(cg.clientNum)) && cgs.clientinfo[cent->currentState.number].selected)
-			{
-				CG_PlayerFloatSprite(cent, cgs.media.fireteamicons[ft->ident], height + 8, numIcons++);
-			}
+			CG_PlayerFloatSprite(cent, cgs.media.fireteamicons[ft->ident], height, numIcons++);
 		}
 	}
 }
@@ -2800,9 +2701,10 @@ void CG_Player(centity_t *cent)
 #endif
 
 	// DEBUG
-	if (cg_debugPlayerHitboxes.integer)
+	if (cg_debugPlayerHitboxes.integer && cent->currentState.eType != ET_CORPSE &&
+			cent->currentState.number == cg.snap->ps.clientNum)
 	{
-		// position marker?
+		// position marker
 		if (cg_debugPlayerHitboxes.integer & 4)
 		{
 			int x, zd, zu;
@@ -2819,8 +2721,8 @@ void CG_Player(centity_t *cent)
 
 			VectorAdd(bmins, cent->lerpOrigin, bmins);
 			VectorAdd(bmaxs, cent->lerpOrigin, bmaxs);
-			// white
-			CG_RailTrail(tv(1.0f, 1.0f, 1.0f), bmins, bmaxs, 1, cent->currentState.number | HITBOXBIT_CLIENT);
+			// red
+			CG_RailTrail(tv(1.0f, 0.0f, 0.0f), bmins, bmaxs, 1, cent->currentState.number | HITBOXBIT_CLIENT);
 		}
 
 		// head axis
@@ -2846,38 +2748,50 @@ void CG_Player(centity_t *cent)
 			for (idx = 0; idx < 3; idx++)
 			{
 				VectorMA(start, 32.0f, axis[idx], ends[idx]);
-				// green
-				CG_RailTrail2(tv(0.0f, 1.0f, 0.0f), start, ends[idx], -1, -1);
+				// red
+				CG_RailTrail2(tv(1.0f, 0.0f, 0.0f), start, ends[idx], -1, -1);
 			}
 		}
 
 		// hitbox
 		if (cg_debugPlayerHitboxes.integer & 1)
 		{
-			vec3_t mins, maxs;
+			vec3_t mins, maxs, org, forward;
 
 			VectorCopy(cg.predictedPlayerState.mins, mins);
 			VectorCopy(cg.predictedPlayerState.maxs, maxs);
 
 			if (cg.predictedPlayerState.eFlags & EF_PRONE)
 			{
-				maxs[2] = maxs[2] - (cg.predictedPlayerState.standViewHeight - PRONE_VIEWHEIGHT + 8);
+				maxs[2] = maxs[2] - (cg.predictedPlayerState.standViewHeight - PRONE_BODYHEIGHT + 8);
+			}
+			else if (cg.predictedPlayerState.pm_flags & PMF_DUCKED
+				&& cg.predictedPlayerState.velocity[0] == 0.f && cg.predictedPlayerState.velocity[1] == 0.f)
+			{
+				maxs[2] = cg.predictedPlayerState.crouchMaxZ + DEFAULT_BODYHEIGHT_DELTA - CROUCH_IDLE_BODYHEIGHT_DELTA;
 			}
 			else if (cg.predictedPlayerState.pm_flags & PMF_DUCKED)
 			{
 				maxs[2] = cg.predictedPlayerState.crouchMaxZ;
 			}
+			else if (cg.predictedPlayerState.eFlags & EF_DEAD)
+			{
+				maxs[2] = cg.predictedPlayerState.deadViewHeight + DEAD_BODYHEIGHT_DELTA;
+			}
+			else
+			{
+				maxs[2] = cg.predictedPlayerState.standViewHeight + DEFAULT_BODYHEIGHT_DELTA;
+			}
 
 			VectorAdd(cent->lerpOrigin, mins, mins);
 			VectorAdd(cent->lerpOrigin, maxs, maxs);
-			// blue
-			CG_RailTrail(tv(0.0f, 0.0f, 1.f), mins, maxs, 1, cent->currentState.number | HITBOXBIT_CLIENT);
+			// red
+			CG_RailTrail(tv(1.0f, 0.0f, 0.0f), mins, maxs, 1, cent->currentState.number | HITBOXBIT_CLIENT);
 
-			if (cg.predictedPlayerState.eFlags & EF_PRONE)
+			// head and legs
+			if (cg.predictedPlayerState.eFlags & (EF_PRONE | EF_DEAD))
 			{
-				vec3_t org, forward;
-
-				// The legs
+				// legs
 				VectorCopy(playerlegsProneMins, mins);
 				VectorCopy(playerlegsProneMaxs, maxs);
 
@@ -2885,27 +2799,61 @@ void CG_Player(centity_t *cent)
 				forward[2] = 0;
 				VectorNormalizeFast(forward);
 
-				org[0] = cent->lerpOrigin[0] + forward[0] * -32;
-				org[1] = cent->lerpOrigin[1] + forward[1] * -32;
-				org[2] = cent->lerpOrigin[2] + cg.pmext.proneLegsOffset;
+				if (cg.predictedPlayerState.eFlags & EF_PRONE)
+				{
+					org[0] = cent->lerpOrigin[0] + forward[0] * -24;
+					org[1] = cent->lerpOrigin[1] + forward[1] * -24;
+					org[2] = cent->lerpOrigin[2] + cg.pmext.proneLegsOffset;
+				}
+				else // EF_DEAD
+				{
+					org[0] = cent->lerpOrigin[0] + forward[0] * 32;
+					org[1] = cent->lerpOrigin[1] + forward[1] * 32;
+					org[2] = cent->lerpOrigin[2] - cg.pmext.proneLegsOffset;
+				}
 
 				VectorAdd(org, mins, mins);
 				VectorAdd(org, maxs, maxs);
 				// red
 				CG_RailTrail(tv(1.0f, 0.0f, 0.0f), mins, maxs, 1, cent->currentState.number | HITBOXBIT_CLIENT | HITBOXBIT_LEGS);
 
-				// And the head
+				// head
 				VectorSet(mins, -6, -6, -22);
 				VectorSet(maxs, 6, 6, -10);
 
-				org[0] = cent->lerpOrigin[0] + forward[0] * 24;
-				org[1] = cent->lerpOrigin[1] + forward[1] * 24;
-				org[2] = cent->lerpOrigin[2] + 8;
+				if (cg.predictedPlayerState.eFlags & EF_PRONE)
+				{
+					org[0] = cent->lerpOrigin[0] + forward[0] * 24;
+					org[1] = cent->lerpOrigin[1] + forward[1] * 24;
+					org[2] = cent->lerpOrigin[2] + 8;
+				}
+				else // EF_DEAD
+				{
+					org[0] = cent->lerpOrigin[0] + forward[0] * -32;
+					org[1] = cent->lerpOrigin[1] + forward[1] * -32;
+					org[2] = cent->lerpOrigin[2] - 4;
+				}
 
 				VectorAdd(org, mins, mins);
 				VectorAdd(org, maxs, maxs);
-				// orange
-				CG_RailTrail(tv(1.0f, 0.5f, 1.f), mins, maxs, 1, cent->currentState.number | HITBOXBIT_CLIENT | HITBOXBIT_HEAD);
+				// red
+				CG_RailTrail(tv(1.0f, 0.0f, 0.0f), mins, maxs, 1, cent->currentState.number | HITBOXBIT_CLIENT | HITBOXBIT_HEAD);
+			}
+			else
+			{
+				org[0] = cent->lerpOrigin[0];
+				org[1] = cent->lerpOrigin[1];
+				org[2] = maxs[2] + 6;
+
+				// head
+				VectorSet(mins, -6, -6, -6);
+				VectorSet(maxs, 6, 6, 6);
+
+				VectorAdd(org, mins, mins);
+				VectorAdd(org, maxs, maxs);
+
+				// red
+				CG_RailTrail(tv(1.0f, 0.0f, 0.0f), mins, maxs, 1, cent->currentState.number | HITBOXBIT_CLIENT | HITBOXBIT_HEAD);
 			}
 		}
 	} // END DEBUG

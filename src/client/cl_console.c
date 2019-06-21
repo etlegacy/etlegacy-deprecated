@@ -282,11 +282,11 @@ void Con_CheckResize(void)
 			for (j = 0 ; j < numchars ; j++)
 			{
 				con.text[(con.maxTotalLines - 1 - i) * con.linewidth + j] =
-				    tbuf[((con.current - i + oldtotalLines) %
-				          oldtotalLines) * oldwidth + j];
+					tbuf[((con.current - i + oldtotalLines) %
+					      oldtotalLines) * oldwidth + j];
 				con.textColor[(con.maxTotalLines - 1 - i) * con.linewidth + j] =
-				    tbuff[((con.current - i + oldtotalLines) %
-				           oldtotalLines) * oldwidth + j];
+					tbuff[((con.current - i + oldtotalLines) %
+					       oldtotalLines) * oldwidth + j];
 			}
 		}
 
@@ -319,8 +319,8 @@ void Con_Init(void)
 	int i;
 
 	con_notifytime = Cvar_Get("con_notifytime", "7", 0); // increased per id req for obits
-	con_openspeed = Cvar_Get("con_openspeed", "3", 0);
-	con_autoclear = Cvar_Get("con_autoclear", "1", CVAR_ARCHIVE);
+	con_openspeed  = Cvar_Get("con_openspeed", "3", 0);
+	con_autoclear  = Cvar_Get("con_autoclear", "1", CVAR_ARCHIVE);
 
 	Field_Clear(&g_consoleField);
 	g_consoleField.widthInChars = g_console_field_width;
@@ -537,7 +537,32 @@ void Con_DrawVersion(void)
 		SCR_DrawSmallChar(cls.glconfig.vidWidth - (i - x + 1) * SMALLCHAR_WIDTH,
 		                  con.scanLines - 1.25f * SMALLCHAR_HEIGHT, version[x]);
 	}
+}
 
+/**
+ * @brief Draw system clock
+ */
+void Con_DrawClock(void)
+{
+	int       x, i;
+	char      clock[6];
+	time_t    longTime;
+	struct tm *localTime;
+
+	// get date from system
+	time(&longTime);
+	localTime = localtime(&longTime);
+
+	Com_sprintf(clock, sizeof(clock), _("%02d:%02d"), localTime->tm_hour, localTime->tm_min);
+
+	i = strlen(clock);
+
+	for (x = 0 ; x < i ; x++)
+	{
+		re.SetColor(g_color_table[ColorIndex(COLOR_MDGREY)]);
+
+		SCR_DrawSmallChar(cls.glconfig.vidWidth - (i - x + 2) * SMALLCHAR_WIDTH, 0.5f * SMALLCHAR_HEIGHT, clock[x]);
+	}
 }
 
 /**
@@ -575,6 +600,9 @@ void Con_DrawInput(void)
 	           SCREEN_WIDTH - 3 * SMALLCHAR_WIDTH, qtrue, qtrue);
 }
 
+extern cvar_t *con_numNotifies;
+#define clamp(min, max, value) ((value < min) ? min : (value > max) ? max : value)
+
 /**
  * @brief Draws the last few lines of output transparently over the game top
  */
@@ -586,17 +614,24 @@ void Con_DrawNotify(void)
 	int          i;
 	int          time;
 	int          currentColor = 7;
+	int          maxNotifies;
+
+	maxNotifies = clamp(0, NUM_CON_TIMES, con_numNotifies->integer);
+	if (maxNotifies == 0)
+	{
+		return;
+	}
 
 	re.SetColor(g_color_table[currentColor]);
 
-	for (i = con.current - NUM_CON_TIMES + 1 ; i <= con.current ; i++)
+	for (i = con.current - maxNotifies + 1 ; i <= con.current ; i++)
 	{
 		if (i < 0)
 		{
 			continue;
 		}
 
-		time = con.times[i % NUM_CON_TIMES];
+		time = con.times[i % maxNotifies];
 
 		if (time == 0)
 		{
@@ -639,6 +674,8 @@ void Con_DrawNotify(void)
 
 	re.SetColor(NULL);
 }
+
+#undef clamp
 
 /**
  * @brief Draw scrollbar
@@ -757,6 +794,8 @@ void Con_DrawSolidConsole(float frac)
 	Con_DrawScrollbar(y - 1.5f * SMALLCHAR_HEIGHT, SCREEN_WIDTH - 5, 3);
 	// draw the version number
 	Con_DrawVersion();
+	// draw system clock
+	Con_DrawClock();
 
 	// draw text
 	con.visibleLines = (con.scanLines - SMALLCHAR_HEIGHT) / SMALLCHAR_HEIGHT - 1;  // rows of text to draw

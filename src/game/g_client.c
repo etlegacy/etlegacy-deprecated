@@ -1089,6 +1089,18 @@ static void AddExtraSpawnAmmo(gclient_t *client, weapon_t weaponNum)
  */
 void AddWeaponToPlayer(gclient_t *client, weapon_t weapon, int ammo, int ammoclip, qboolean setcurrent)
 {
+	if (team_riflegrenades.integer == 0)
+	{
+		switch (weapon)
+		{
+			case WP_GPG40:
+			case WP_M7:
+				return;
+			default:
+				break;
+		}
+	}
+
 	COM_BitSet(client->ps.weapons, weapon);
 	client->ps.ammoclip[GetWeaponTableData(weapon)->clipIndex] = ammoclip;
 	client->ps.ammo[GetWeaponTableData(weapon)->ammoIndex]    += ammo;
@@ -1937,7 +1949,7 @@ void ClientUserinfoChanged(int clientNum)
 
 	// send over a subset of the userinfo keys so other clients can
 	// print scoreboards, display models, and play custom sounds
-	s = va("n\\%s\\t\\%i\\c\\%i\\lc\\%i\\r\\%i\\m\\%s\\s\\%s\\dn\\%i\\w\\%i\\lw\\%i\\sw\\%i\\mu\\%i\\ref\\%i\\u\\%u",
+	s = va("n\\%s\\t\\%i\\c\\%i\\lc\\%i\\r\\%i\\m\\%s\\s\\%s\\dn\\%i\\w\\%i\\lw\\%i\\sw\\%i\\mu\\%i\\ref\\%i\\sc\\%i\\u\\%u",
 	       client->pers.netname,
 	       client->sess.sessionTeam,
 	       client->sess.playerType,
@@ -1951,6 +1963,7 @@ void ClientUserinfoChanged(int clientNum)
 	       client->sess.latchPlayerWeapon2,
 	       client->sess.muted ? 1 : 0,
 	       client->sess.referee,
+		   client->sess.shoutcaster,
 	       client->sess.uci
 	       );
 
@@ -3299,8 +3312,6 @@ void ClientDisconnect(int clientNum)
 
 	trap_SetConfigstring(CS_PLAYERS + clientNum, "");
 
-	G_deleteStats(clientNum); // session related
-
 	CalculateRanks();
 
 	G_verifyMatchState((team_t)i);
@@ -3349,22 +3360,25 @@ float ClientHitboxMaxZ(gentity_t *hitEnt)
 
 	if (hitEnt->client->ps.eFlags & EF_DEAD)
 	{
-		return 4;
+		return DEAD_BODYHEIGHT;
 	}
 	else if (hitEnt->client->ps.eFlags & EF_PRONE)
 	{
-		return 4;
+		return PRONE_BODYHEIGHT;
+	}
+	else if (hitEnt->client->ps.eFlags & EF_CROUCHING &&
+		hitEnt->client->ps.velocity[0] == 0.f && hitEnt->client->ps.velocity[1] == 0.f)
+	{
+		// crouched idle animation is lower than the moving one
+		return CROUCH_IDLE_BODYHEIGHT;
 	}
 	else if (hitEnt->client->ps.eFlags & EF_CROUCHING)
 	{
-		// changed this because the crouched moving
-		// animation is higher than the idle one
-		// and that should be the most commonly used
-		//return 18;
-		return 24;
+		// crouched moving animation is higher than the idle one
+		return CROUCH_BODYHEIGHT;
 	}
 	else
 	{
-		return 36;
+		return DEFAULT_BODYHEIGHT;
 	}
 }

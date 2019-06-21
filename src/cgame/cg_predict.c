@@ -133,19 +133,24 @@ float CG_ClientHitboxMaxZ(entityState_t *hitEnt, float def)
 
 	if (hitEnt->eFlags & EF_DEAD)
 	{
-		return 4;
+		return DEAD_BODYHEIGHT;
 	}
 	else if (hitEnt->eFlags & EF_PRONE)
 	{
-		return 4;
+		return PRONE_BODYHEIGHT;
+	}
+	else if (hitEnt->eFlags & EF_CROUCHING &&
+			cg.predictedPlayerState.velocity[0] == 0.f && cg.predictedPlayerState.velocity[1] == 0.f)
+	{
+		return CROUCH_IDLE_BODYHEIGHT;
 	}
 	else if (hitEnt->eFlags & EF_CROUCHING)
 	{
-		return 24;
+		return CROUCH_BODYHEIGHT;
 	}
 	else
 	{
-		return 36;
+		return DEFAULT_BODYHEIGHT;
 	}
 }
 

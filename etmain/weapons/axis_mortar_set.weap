@@ -30,14 +30,32 @@ weaponDef
 		
 		missileModel		"models/multiplayer/mortar/mortar_shell_ax.md3"
 		missileSound		"sound/weapons/mortar/mortar_fly.wav"
+		missileFallSound        3 "sound/weapons/artillery/artillery_fly_"
 		missileTrailFunc	"GrenadeTrail"						// supports "GrenadeTrail", "RocketTrail", "PyroSmokeTrail" and "DynamiteTrail" (we REALLY want a particle system for this)
 		//missileDlight		0
 		missileDlightColor	1 0.7 0.5
 		
 		//ejectBrassFunc	""									// supports "MachineGunEjectBrass" and "PanzerFaustEjectBrass"
 		//ejectBrassOffset  0 0 0
+                
+                adjustLean 1 1 1
 		
 		//modModel 1		""
+                
+                impactSoundRange  400
+                impactSoundVolume 127
+                impactMarkRadius  64
+                impactFunction    "SmallExplosionImpact"  // supports "MeleeImpact", "BulletImpact", "SmallExplosionImpact", "BigExplosionImpact", "MapMortarImpact" and "DynamiteExplosionImpact"
+                
+                impactSound {
+                    default   "sound/weapons/mortar/mortar_expl.wav"
+                    far       "sound/weapons/mortar/mortar_expl_far.wav"
+                    water     "sound/weapons/grenade/gren_expl_water.wav"
+                }
+
+                impactMark {                    // each surface supports up to 1 marks shader. available surface : default, far, wood, metal, roof, gravel, glass, snow, water, flesh
+                    default "gfx/damage/burn_med_mrk"
+                }
 		
 		firstPerson {
 			model				"models/multiplayer/mortar/v_mortar_ax.md3"

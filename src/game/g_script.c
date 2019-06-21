@@ -36,14 +36,13 @@
  * according to each different scenario.
  */
 
-#include "../game/g_local.h"
+#include "g_local.h"
+#include "g_lua.h"
 #include "../qcommon/q_shared.h"
 
 #ifdef FEATURE_OMNIBOT
 #include "g_etbot_interface.h"
 #endif
-
-vmCvar_t g_scriptDebug;
 
 //====================================================================
 
@@ -274,8 +273,6 @@ void G_Script_ScriptLoad(void)
 	fileHandle_t f     = 0;
 	int          len   = 0;
 	qboolean     found = qfalse;
-
-	trap_Cvar_Register(&g_scriptDebug, "g_scriptDebug", "0", 0);
 
 	level.scriptEntity = NULL;
 
@@ -682,16 +679,17 @@ int G_Script_GetEventIndex(gentity_t *ent, const char *eventStr, const char *par
 	}
 
 	// show debugging info
-	if (g_scriptDebug.integer)
+	if (g_scriptDebug.integer &&
+	    (!g_scriptDebugTarget.string[0] || G_MatchString(g_scriptDebugTarget.string, ent->scriptName, qfalse)))
 	{
-		G_Printf("%i : (%s) GScript event: %s %s\n", level.time, ent->scriptName ? ent->scriptName : "n/a", eventStr, params ? params : "");
+		G_Printf("^7%i : (^5%s^7) ^9GScript Event: ^5%s %s\n", level.time, ent->scriptName ? ent->scriptName : "n/a", eventStr, params ? params : "");
 	}
 
 	if (eventNum < 0)
 	{
-		if (g_cheats.integer)        // dev mode
+		if (g_scriptDebug.integer)        // dev mode
 		{
-			G_Printf("devmode-> G_Script_GetEventIndex(), unknown event: '%s'\n", eventStr);
+			G_Printf("^7%i : (^5%s^7) ^3Unknown Event: '%s'\n", level.time, ent->scriptName ? ent->scriptName : "n/a", eventStr);
 		}
 		return -1;
 	}
@@ -713,7 +711,7 @@ int G_Script_GetEventIndex(gentity_t *ent, const char *eventStr, const char *par
 	// note for scripters: ignore (n/a) GScript events and pain events for game objects f.e. "(tank) GScript event not found: pain 1199 1200"
 	if (g_scriptDebug.integer)
 	{
-		G_Printf("%i : (%s) GScript event not found: %s %s\n", level.time, ent->scriptName ? ent->scriptName : "n/a", eventStr, params ? params : "");
+		G_Printf("^7%i : (^5%s^7) ^3GScript Event Not Handled: %s %s\n", level.time, ent->scriptName ? ent->scriptName : "n/a", eventStr, params ? params : "");
 	}
 	return -1;      // event not found/matched in this ent
 }
@@ -831,11 +829,12 @@ qboolean G_Script_ScriptRun(gentity_t *ent)
 	}
 
 	// show debugging info
-	if (g_scriptDebug.integer && ent->scriptStatus.scriptStackChangeTime == level.time)
+	if (g_scriptDebug.integer && ent->scriptStatus.scriptStackChangeTime == level.time &&
+	    (!g_scriptDebugTarget.string[0] || G_MatchString(g_scriptDebugTarget.string, ent->scriptName, qfalse)))
 	{
 		if (ent->scriptStatus.scriptStackHead < stack->numItems)
 		{
-			G_Printf("%i : (%s) GScript command: %s %s\n", level.time, ent->scriptName, stack->items[ent->scriptStatus.scriptStackHead].action->actionString, (stack->items[ent->scriptStatus.scriptStackHead].params ? stack->items[ent->scriptStatus.scriptStackHead].params : ""));
+			G_Printf("^7%i : (^5%s^7) ^9GScript Action: ^d%s %s\n", level.time, ent->scriptName, stack->items[ent->scriptStatus.scriptStackHead].action->actionString, (stack->items[ent->scriptStatus.scriptStackHead].params ? stack->items[ent->scriptStatus.scriptStackHead].params : ""));
 		}
 	}
 
@@ -859,11 +858,12 @@ qboolean G_Script_ScriptRun(gentity_t *ent)
 		//
 		ent->scriptStatus.scriptFlags |= SCFL_FIRST_CALL;
 		// show debugging info
-		if (g_scriptDebug.integer)
+		if (g_scriptDebug.integer &&
+		    (!g_scriptDebugTarget.string[0] || G_MatchString(g_scriptDebugTarget.string, ent->scriptName, qfalse)))
 		{
 			if (ent->scriptStatus.scriptStackHead < stack->numItems)
 			{
-				G_Printf("%i : (%s) GScript command: %s %s\n", level.time, ent->scriptName, stack->items[ent->scriptStatus.scriptStackHead].action->actionString, (stack->items[ent->scriptStatus.scriptStackHead].params ? stack->items[ent->scriptStatus.scriptStackHead].params : ""));
+				G_Printf("^7%i : (^5%s^7) ^9GScript Action: ^d%s %s\n", level.time, ent->scriptName, stack->items[ent->scriptStatus.scriptStackHead].action->actionString, (stack->items[ent->scriptStatus.scriptStackHead].params ? stack->items[ent->scriptStatus.scriptStackHead].params : ""));
 			}
 		}
 	}
@@ -903,13 +903,18 @@ void mountedmg42_fire(gentity_t *other)
 	//self->s.eFlags  |= EF_MG42_ACTIVE;
 	other->s.eFlags |= EF_MG42_ACTIVE;
 
-	if (self->s.density & 8)
+#ifdef FEATURE_LUA
+	if (!G_LuaHook_MountedMGFire(other->s.number))
+#endif
 	{
-		Fire_Lead_Ext(other, other, GetWeaponTableData(WP_DUMMY_MG42)->spread, GetWeaponTableData(WP_DUMMY_MG42)->damage, muzzle, forward, right, up, MOD_BROWNING);
-	}
-	else
-	{
-		Fire_Lead_Ext(other, other, GetWeaponTableData(WP_DUMMY_MG42)->spread, GetWeaponTableData(WP_DUMMY_MG42)->damage, muzzle, forward, right, up, MOD_MG42);
+		if (self->s.density & 8)
+		{
+			Fire_Lead_Ext(other, other, GetWeaponTableData(WP_DUMMY_MG42)->spread, GetWeaponTableData(WP_DUMMY_MG42)->damage, muzzle, forward, right, up, MOD_BROWNING);
+		}
+		else
+		{
+			Fire_Lead_Ext(other, other, GetWeaponTableData(WP_DUMMY_MG42)->spread, GetWeaponTableData(WP_DUMMY_MG42)->damage, muzzle, forward, right, up, MOD_MG42);
+		}
 	}
 }
 

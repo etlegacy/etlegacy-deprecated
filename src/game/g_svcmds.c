@@ -860,7 +860,7 @@ void Svcmd_ResetMatch_f(qboolean fDoReset, qboolean fDoRestart)
 /**
  * @brief Svcmd_ResetMatch
  */
-void Svcmd_ResetMatch()
+void Svcmd_ResetMatch(void)
 {
 	Svcmd_ResetMatch_f(qtrue, qtrue);
 }
@@ -915,7 +915,7 @@ void Svcmd_ShuffleTeamsXP_f(qboolean restart)
 /**
  * @brief Svcmd_ShuffleTeamsXP
  */
-void Svcmd_ShuffleTeamsXP()
+void Svcmd_ShuffleTeamsXP(void)
 {
 	Svcmd_ShuffleTeamsXP_f(qtrue);
 }
@@ -923,7 +923,7 @@ void Svcmd_ShuffleTeamsXP()
 /**
  * @brief Svcmd_ShuffleTeamsXPNoRestart
  */
-void Svcmd_ShuffleTeamsXPNoRestart()
+void Svcmd_ShuffleTeamsXPNoRestart(void)
 {
 	Svcmd_ShuffleTeamsXP_f(qfalse);
 }
@@ -958,7 +958,7 @@ void Svcmd_ShuffleTeamsSR_f(qboolean restart)
 /**
  * @brief Svcmd_ShuffleTeamsSR
  */
-void Svcmd_ShuffleTeamsSR()
+void Svcmd_ShuffleTeamsSR(void)
 {
 	Svcmd_ShuffleTeamsSR_f(qtrue);
 }
@@ -966,7 +966,7 @@ void Svcmd_ShuffleTeamsSR()
 /**
  * @brief Svcmd_ShuffleTeamsSRPNoRestart
  */
-void Svcmd_ShuffleTeamsSRNoRestart()
+void Svcmd_ShuffleTeamsSRNoRestart(void)
 {
 	Svcmd_ShuffleTeamsSR_f(qfalse);
 }
@@ -1053,7 +1053,7 @@ extern int FindClientByName(const char *name);
  * @brief Svcmd_RevivePlayer
  * @param[in] name
  */
-void Svcmd_RevivePlayer()
+void Svcmd_RevivePlayer(void)
 {
 	int       clientNum;
 	gentity_t *player;
@@ -2026,7 +2026,7 @@ void G_UpdateSvCvars(void)
 /**
  * @brief CC_cvarempty
  */
-void CC_cvarempty()
+void CC_cvarempty(void)
 {
 	Com_Memset(level.svCvars, 0, sizeof(level.svCvars));
 	level.svCvarsCount = 0;
@@ -2464,7 +2464,7 @@ void Svcmd_CSInfo_f(void)
 /**
  * @brief Svcmd_Ref_f
  */
-void Svcmd_Ref_f()
+void Svcmd_Ref_f(void)
 {
 	char cmd[MAX_TOKEN_CHARS];
 
@@ -2483,27 +2483,29 @@ void Svcmd_Ref_f()
 
 /**
  * @brief Svcmd_Say_f
- *
- * @todo FIXME this 'say' condition is never reached?!
  */
-void Svcmd_Say_f()
+qboolean Svcmd_Say_f(void)
 {
 	if (g_dedicated.integer)
 	{
 		trap_SendServerCommand(-1, va("cpm \"server: %s\n\"", Q_AddCR(ConcatArgs(1))));
+		return qtrue;
 	}
+	return qfalse;
 }
 
 /**
  * @brief Svcmd_Chat_f
  */
-void Svcmd_Chat_f()
+qboolean Svcmd_Chat_f(void)
 {
 	if (g_dedicated.integer)
 	{
 		// added for rcon/Lua chat
 		trap_SendServerCommand(-1, va("chat \"console: %s\"", Q_AddCR(ConcatArgs(1))));
+		return qtrue;
 	}
+	return qfalse;
 }
 /**
  * @var consoleCommandTable
@@ -2530,6 +2532,8 @@ static consoleCommandTable_t consoleCommandTable[] =
 #endif
 	{ "makeReferee",                G_MakeReferee                 },
 	{ "removeReferee",              G_RemoveReferee               },
+	{ "makeShoutcaster",            G_makesc_cmd                  },
+	{ "removeShoutcaster",          G_removesc_cmd                },
 	{ "mute",                       G_MuteClient                  },
 	{ "unmute",                     G_UnMuteClient                },
 	{ "ban",                        G_PlayerBan                   },
@@ -2559,8 +2563,6 @@ static consoleCommandTable_t consoleCommandTable[] =
 	{ "ae",                         Svcmd_PlayerAnimEvent         },    //ae <playername> <animEvent>
 #endif
 	{ "ref",                        Svcmd_Ref_f                   },    // console also gets ref commands
-	{ "say",                        Svcmd_Say_f                   },
-	{ "chat",                       Svcmd_Chat_f                  },
 };
 
 /**
@@ -2595,7 +2597,17 @@ qboolean ConsoleCommand(void)
 	{
 		return qtrue;
 	}
+	else
 #endif
+	// special cases for chat
+	if (Q_stricmp(cmd, "say") == 0)
+	{
+		return Svcmd_Say_f();
+	}
+	else if (Q_stricmp(cmd, "chat") == 0)
+	{
+		return Svcmd_Chat_f();
+	}
 
 	for (i = 0; i < sizeof(consoleCommandTable) / sizeof(consoleCommandTable_t); i++)
 	{

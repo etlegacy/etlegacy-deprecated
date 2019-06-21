@@ -2702,7 +2702,7 @@ int CG_LimboPanel_RenderCounter_ValueForButton(panel_button_t *button)
 
 			return 0;
 		}
-		if (CG_LimboPanel_GetTeam() == TEAM_SPECTATOR)
+		if (cgs.clientinfo[cg.clientNum].team == TEAM_SPECTATOR)
 		{
 			return 0;
 		}
@@ -3969,6 +3969,11 @@ qboolean CG_LimboPanel_TeamIsDisabled(team_t checkTeam)
 	if (checkTeam == TEAM_SPECTATOR)
 	{
 		return qfalse;
+	}
+
+	if (cgs.clientinfo[cg.clientNum].shoutcaster)
+	{
+		return qtrue;
 	}
 
 	if (CG_LimboPanel_TeamIsFull(checkTeam))

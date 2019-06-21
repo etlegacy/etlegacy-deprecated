@@ -1383,7 +1383,11 @@ void CG_Effect(centity_t *cent, vec3_t origin, vec3_t dir)
 
 	if (cent->currentState.eventParm & 1)      // fire
 	{
-		CG_MissileHitWall(WP_DYNAMITE, PS_FX_NONE, origin, dir, 0);
+		int effect;
+
+		effect = (CG_PointContents(origin, 0) & CONTENTS_WATER) ? PS_FX_WATER : PS_FX_NONE;
+
+		CG_MissileHitWall(WP_DYNAMITE, effect, origin, dir, 0, -1);
 		return;
 	}
 
@@ -1750,36 +1754,14 @@ void CG_Debris(centity_t *cent, vec3_t origin, vec3_t dir)
  * @brief CG_MortarImpact
  * @param[in] cent
  * @param[in] origin
- * @param[in] sfx
- * @param[in] dist
  */
-void CG_MortarImpact(centity_t *cent, vec3_t origin, int sfx, qboolean dist)
+void CG_MortarImpact(centity_t *cent, vec3_t origin)
 {
-	if (sfx >= 0)
+	if (cent->currentState.clientNum == cg.snap->ps.clientNum && cg.mortarImpactTime != -2)
 	{
-		trap_S_StartSound(origin, -1, CHAN_AUTO, cgs.media.sfx_mortarexp[sfx]);
-	}
-
-	if (dist)
-	{
-		vec3_t gorg, norm;
-		float  gdist;
-
-		VectorSubtract(origin, cg.refdef_current->vieworg, norm);
-		gdist = VectorNormalize(norm);
-		if (gdist > 1200 && gdist < 8000)      // 1200 is max cam shakey dist (2*600) use gorg as the new sound origin
-		{
-			VectorMA(cg.refdef_current->vieworg, 800, norm, gorg);     // non-distance falloff makes more sense; sfx2range was gdist*0.2
-			// sfx2range is variable to give us minimum volume control different explosion sizes (see mortar, panzerfaust, and grenade)
-			trap_S_StartSoundEx(gorg, -1, CHAN_WEAPON, cgs.media.sfx_mortarexpDist, SND_NOCUT);
-		}
-
-		if (cent->currentState.clientNum == cg.snap->ps.clientNum && cg.mortarImpactTime != -2)
-		{
-			VectorCopy(origin, cg.mortarImpactPos);
-			cg.mortarImpactTime     = cg.time;
-			cg.mortarImpactOutOfMap = qfalse;
-		}
+		VectorCopy(origin, cg.mortarImpactPos);
+		cg.mortarImpactTime     = cg.time;
+		cg.mortarImpactOutOfMap = qfalse;
 	}
 }
 
@@ -1801,6 +1783,82 @@ void CG_MortarMiss(centity_t *cent, vec3_t origin)
 		else
 		{
 			cg.mortarImpactOutOfMap = qfalse;
+		}
+	}
+}
+
+/**
+ * @brief CG_PlayGlobalSound
+ * @param[in] cent
+ * @param[in] index
+ */
+void CG_PlayGlobalSound(centity_t *cent, int index)
+{
+	sfxHandle_t sound = CG_GetGameSound(index);
+
+	if (sound)
+	{
+		// no origin!
+#ifdef FEATURE_EDV
+		if (cgs.demoCamera.renderingFreeCam || cgs.demoCamera.renderingWeaponCam)
+		{
+			trap_S_StartLocalSound(sound, CHAN_AUTO);
+		}
+		else
+		{
+			// no origin!
+			trap_S_StartSound(NULL, cg.snap->ps.clientNum, CHAN_AUTO, sound);
+
+		}
+#else
+		// no origin!
+		trap_S_StartSound(NULL, cg.snap->ps.clientNum, CHAN_AUTO, sound);
+#endif
+	}
+	else
+	{
+		if (index >= GAMESOUND_MAX)
+		{
+			const char *s;
+
+			s = CG_ConfigString(CS_SOUNDS + (index - GAMESOUND_MAX));
+
+			if (!strstr(s, ".wav") && !strstr(s, ".ogg"))         // sound script names haven't got file extensions
+			{
+				// origin is NULL!
+				if (CG_SoundPlaySoundScript(s, NULL, -1, qtrue))
+				{
+					return;
+				}
+			}
+
+			sound = CG_CustomSound(cent->currentState.number, s);
+			if (sound)
+			{
+#ifdef FEATURE_EDV
+				if (cgs.demoCamera.renderingFreeCam || cgs.demoCamera.renderingWeaponCam)
+				{
+					trap_S_StartLocalSound(sound, CHAN_AUTO);
+				}
+				else
+				{
+					// origin is NULL!
+					trap_S_StartSound(NULL, cg.snap->ps.clientNum, CHAN_AUTO, sound);
+				}
+#else
+				// origin is NULL!
+				trap_S_StartSound(NULL, cg.snap->ps.clientNum, CHAN_AUTO, sound);
+#endif
+
+			}
+			else
+			{
+				CG_Printf(S_COLOR_YELLOW "WARNING: CG_EntityEvent() cannot play EV_GLOBAL_SOUND sound '%s'\n", s);
+			}
+		}
+		else
+		{
+			CG_Printf(S_COLOR_YELLOW "WARNING: CG_EntityEvent() es->eventParm < GAMESOUND_MAX\n");
 		}
 	}
 }
@@ -2167,15 +2225,10 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 		{
 			break;
 		}
+
+		cent->akimboFire = (event == EV_FIRE_WEAPONB);         // akimbo firing
+
 		CG_FireWeapon(cent);
-		if (event == EV_FIRE_WEAPONB)     // akimbo firing
-		{
-			cent->akimboFire = qtrue;
-		}
-		else
-		{
-			cent->akimboFire = qfalse;
-		}
 		break;
 	case EV_FIRE_WEAPON_LASTSHOT:
 		CG_FireWeapon(cent);
@@ -2187,34 +2240,20 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 		}
 		break;
 	case EV_GRENADE_BOUNCE:
-		if (es->weapon == WP_SATCHEL)
+	{
+		sfxHandle_t    sfx;
+		soundSurface_t soundSurfaceIndex;
+
+		soundSurfaceIndex = CG_GetSoundSurfaceIndex(BG_SurfaceForFootstep(es->eventParm));
+
+		sfx = CG_GetRandomSoundSurface(cg_weapons[es->weapon].missileBouncingSound, soundSurfaceIndex, qtrue);
+
+		if (sfx)
 		{
-			trap_S_StartSound(NULL, es->number, CHAN_AUTO, cgs.media.satchelbounce1);
+			trap_S_StartSound(NULL, es->number, CHAN_AUTO, sfx);
 		}
-		else if (es->weapon == WP_DYNAMITE)
-		{
-			trap_S_StartSound(NULL, es->number, CHAN_AUTO, cgs.media.dynamitebounce1);
-		}
-		else if (es->weapon == WP_LANDMINE)
-		{
-			trap_S_StartSound(NULL, es->number, CHAN_AUTO, cgs.media.landminebounce1);
-		}
-		else
-		{
-			// GRENADES
-			if (es->eventParm != FOOTSTEP_TOTAL)
-			{
-				if (rand() & 1)
-				{
-					trap_S_StartSound(NULL, es->number, CHAN_AUTO, cgs.media.grenadebounce[es->eventParm][0]);
-				}
-				else
-				{
-					trap_S_StartSound(NULL, es->number, CHAN_AUTO, cgs.media.grenadebounce[es->eventParm][1]);
-				}
-			}
-		}
-		break;
+	}
+	break;
 	case EV_RAILTRAIL:
 	{
 		vec3_t color = { es->angles[0] / 255.f, es->angles[1] / 255.f, es->angles[2] / 255.f };
@@ -2238,17 +2277,6 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 
 		ByteToDir(es->eventParm, dir);
 		CG_MissileHitPlayer(cent, es->weapon, position, dir, es->otherEntityNum);
-		if (CHECKBITWISE(GetWeaponTableData(es->weapon)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET))
-		{
-			if (!es->legsAnim)
-			{
-				CG_MortarImpact(cent, position, 3, qtrue);
-			}
-			else
-			{
-				CG_MortarImpact(cent, position, -1, qtrue);
-			}
-		}
 	}
 	break;
 	case EV_MISSILE_MISS_SMALL:
@@ -2263,40 +2291,46 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 	case EV_MISSILE_MISS:
 	{
 		vec3_t dir;
+		int    effect;
+
+		effect = (CG_PointContents(position, 0) & CONTENTS_WATER) ? PS_FX_WATER : PS_FX_NONE;
 
 		ByteToDir(es->eventParm, dir);
-		CG_MissileHitWall(es->weapon, PS_FX_NONE, position, dir, 0);         // modified to send missilehitwall surface parameters
-		if (CHECKBITWISE(GetWeaponTableData(es->weapon)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET))
-		{
-			if (!es->legsAnim)
-			{
-				CG_MortarImpact(cent, position, 3, qtrue);
-			}
-			else
-			{
-				CG_MortarImpact(cent, position, -1, qtrue);
-			}
-		}
+		CG_MissileHitWall(es->weapon, effect, position, dir, 0, -1);
 	}
 	break;
 	case EV_MISSILE_MISS_LARGE:
 	{
 		vec3_t dir;
+		int    effect;
+
+		effect = (CG_PointContents(position, 0) & CONTENTS_WATER) ? PS_FX_WATER : PS_FX_NONE;
 
 		ByteToDir(es->eventParm, dir);
 		if (es->weapon == WP_ARTY || es->weapon == WP_AIRSTRIKE || es->weapon == WP_SMOKE_MARKER)
 		{
-			CG_MissileHitWall(es->weapon, PS_FX_NONE, position, dir, 0);           // modified to send missilehitwall surface parameters
+			CG_MissileHitWall(es->weapon, effect, position, dir, 0, -1);
 		}
 		else
 		{
-			CG_MissileHitWall(VERYBIGEXPLOSION, PS_FX_NONE, position, dir, 0);     // modified to send missilehitwall surface parameters
+			CG_MissileHitWall(VERYBIGEXPLOSION, effect, position, dir, 0, -1);
 		}
 	}
 	break;
 	case EV_MORTAR_IMPACT:
-		CG_MortarImpact(cent, position, rand() % 3, qfalse);
+	{
+		// Sound effect for spotter round, had to do this as half-second bomb warning
+		if (cg_weapons[es->weapon].missileFallSound.count)
+		{
+			int i = cg_weapons[es->weapon].missileFallSound.count;
+
+			i = rand() % i;
+
+			trap_S_StartSoundVControl(NULL, es->number, CHAN_AUTO, cg_weapons[es->weapon].missileFallSound.sounds[i], 255);
+		}
+		CG_MortarImpact(cent, position);
 		break;
+	}
 	case EV_MORTAR_MISS:
 		CG_MortarMiss(cent, position);
 		break;
@@ -2307,16 +2341,16 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 		//}
 		break;
 	case EV_MG42BULLET_HIT_WALL:
-		CG_Bullet(es->pos.trBase, es->otherEntityNum, qfalse, ENTITYNUM_WORLD, es->otherEntityNum2, es->origin2[0], es->effect1Time);
+		CG_Bullet(es->weapon, es->pos.trBase, es->otherEntityNum, qfalse, ENTITYNUM_WORLD, es->otherEntityNum2, es->origin2[0], es->effect1Time);
 		break;
 	case EV_MG42BULLET_HIT_FLESH:
-		CG_Bullet(es->pos.trBase, es->otherEntityNum, qtrue, es->eventParm, es->otherEntityNum2, 0, es->effect1Time);
+		CG_Bullet(es->weapon, es->pos.trBase, es->otherEntityNum, qtrue, es->eventParm, es->otherEntityNum2, 0, es->effect1Time);
 		break;
 	case EV_BULLET_HIT_WALL:
-		CG_Bullet(es->pos.trBase, es->otherEntityNum, qfalse, ENTITYNUM_WORLD, es->otherEntityNum2, es->origin2[0], 0);
+		CG_Bullet(es->weapon, es->pos.trBase, es->otherEntityNum, qfalse, ENTITYNUM_WORLD, es->otherEntityNum2, es->origin2[0], 0);
 		break;
 	case EV_BULLET_HIT_FLESH:
-		CG_Bullet(es->pos.trBase, es->otherEntityNum, qtrue, es->eventParm, es->otherEntityNum2, 0, 0);
+		CG_Bullet(es->weapon, es->pos.trBase, es->otherEntityNum, qtrue, es->eventParm, es->otherEntityNum2, 0, 0);
 		break;
 	case EV_GENERAL_SOUND:
 	{
@@ -2399,125 +2433,20 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 	}
 	break;
 	case EV_GLOBAL_TEAM_SOUND:
-		if (cgs.clientinfo[cg.snap->ps.clientNum].team != es->teamNum)
+		if (cgs.clientinfo[cg.snap->ps.clientNum].team == es->teamNum)
 		{
-			break;
-		} // fall through
+			CG_PlayGlobalSound(cent, es->eventParm);
+		}
+		break;
 	case EV_GLOBAL_SOUND:     // play from the player's head so it never diminishes
-	{
-		sfxHandle_t sound = CG_GetGameSound(es->eventParm);
-
-		if (sound)
-		{
-			// no origin!
-#ifdef FEATURE_EDV
-			if (cgs.demoCamera.renderingFreeCam || cgs.demoCamera.renderingWeaponCam)
-			{
-				trap_S_StartLocalSound(sound, CHAN_AUTO);
-			}
-			else
-			{
-				// no origin!
-				trap_S_StartSound(NULL, cg.snap->ps.clientNum, CHAN_AUTO, sound);
-
-			}
-#else
-			// no origin!
-			trap_S_StartSound(NULL, cg.snap->ps.clientNum, CHAN_AUTO, sound);
-#endif
-		}
-		else
-		{
-			if (es->eventParm >= GAMESOUND_MAX)
-			{
-				const char *s;
-
-				s = CG_ConfigString(CS_SOUNDS + (es->eventParm - GAMESOUND_MAX));
-
-				if (!strstr(s, ".wav") && !strstr(s, ".ogg"))         // sound script names haven't got file extensions
-				{
-					// origin is NULL!
-					if (CG_SoundPlaySoundScript(s, NULL, -1, qtrue))
-					{
-						break;
-					}
-				}
-
-				sound = CG_CustomSound(es->number, s);
-				if (sound)
-				{
-#ifdef FEATURE_EDV
-					if (cgs.demoCamera.renderingFreeCam || cgs.demoCamera.renderingWeaponCam)
-					{
-						trap_S_StartLocalSound(sound, CHAN_AUTO);
-					}
-					else
-					{
-						// origin is NULL!
-						trap_S_StartSound(NULL, cg.snap->ps.clientNum, CHAN_AUTO, sound);
-					}
-#else
-					// origin is NULL!
-					trap_S_StartSound(NULL, cg.snap->ps.clientNum, CHAN_AUTO, sound);
-#endif
-
-				}
-				else
-				{
-					CG_Printf(S_COLOR_YELLOW "WARNING: CG_EntityEvent() cannot play EV_GLOBAL_SOUND sound '%s'\n", s);
-				}
-			}
-			else
-			{
-				CG_Printf(S_COLOR_YELLOW "WARNING: CG_EntityEvent() es->eventParm < GAMESOUND_MAX\n");
-			}
-		}
-	}
-	break;
+		CG_PlayGlobalSound(cent, es->eventParm);
+		break;
 	case EV_GLOBAL_CLIENT_SOUND:
-	{
 		if (cg.snap->ps.clientNum == es->teamNum)
 		{
-			sfxHandle_t sound = CG_GetGameSound(es->eventParm);
-
-			if (sound)
-			{
-				trap_S_StartSound(NULL, cg.snap->ps.clientNum, CHAN_AUTO, sound);
-			}
-			else
-			{
-				if (es->eventParm >= GAMESOUND_MAX)
-				{
-					const char *s;
-
-					s = CG_ConfigString(CS_SOUNDS + (es->eventParm - GAMESOUND_MAX));
-
-					if (!strstr(s, ".wav") && !strstr(s, ".ogg"))         // sound script names haven't got file extensions
-					{
-						if (CG_SoundPlaySoundScript(s, NULL, -1, (es->effect1Time ? qfalse : qtrue)))
-						{
-							break;
-						}
-					}
-
-					sound = CG_CustomSound(es->number, s);
-					if (sound)
-					{
-						trap_S_StartSound(NULL, cg.snap->ps.clientNum, CHAN_AUTO, sound);
-					}
-					else
-					{
-						CG_Printf(S_COLOR_YELLOW "WARNING: CG_EntityEvent() cannot play EV_GLOBAL_CLIENT_SOUND sound '%s'\n", s);
-					}
-				}
-				else
-				{
-					CG_Printf(S_COLOR_YELLOW "WARNING: CG_EntityEvent() es->eventParm < GAMESOUND_MAX\n");
-				}
-			}
+			CG_PlayGlobalSound(cent, es->eventParm);
 		}
-	}
-	break;
+		break;
 	case EV_PAIN:
 		// local player sounds are triggered in CG_CheckLocalSounds,
 		// so ignore events on the player
@@ -2881,7 +2810,7 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 		default:     // shouldn't happen
 			break;
 		}
-	break;
+		break;
 	case EV_FLAG_INDICATOR:
 		cg.flagIndicator   = es->eventParm;
 		cg.redFlagCounter  = es->otherEntityNum;

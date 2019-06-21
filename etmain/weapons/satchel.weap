@@ -36,14 +36,33 @@ weaponDef
 		missileaxisskin		"models/multiplayer/satchel/satchel_axis.skin"
 		missilealliedskin	"models/multiplayer/satchel/satchel_allied.skin"
 		//missileSound		""
+                missileBouncingSound {
+                    default "sound/weapons/satchel/satchel_bounce.wav"
+                }
 		//missileTrailFunc	""									// supports "GrenadeTrail", "RocketTrail", "PyroSmokeTrail" and "DynamiteTrail" (we REALLY want a particle system for this)
 		//missileDlight		0
 		//missileDlightColor	0 0 0							// do we still use this?
 		
 		//ejectBrassFunc	""									// supports "MachineGunEjectBrass" and "PanzerFaustEjectBrass"
 		//ejectBrassOffset  0 0 0
+                
+                adjustLean 1 1 1
 		
 		//modModel 1		""
+                
+                impactSoundRange  400
+                impactFunction    "SmallExplosionImpact"  // supports "MeleeImpact", "BulletImpact", "SmallExplosionImpact", "BigExplosionImpact", "MapMortarImpact" and "DynamiteExplosionImpact"
+                impactSoundVolume 127
+                impactMarkRadius  64
+                impactSound {                           // each surface supports up to 5 hits sounds. available surface : default, far, wood, metal, roof, gravel, glass, snow, water, flesh
+                
+                    default "sound/weapons/satchel/satchel_expl.wav"
+                    far     "sound/weapons/satchel/satchel_expl_far.wav"
+                    water   "sound/weapons/grenade/gren_expl_water.wav"
+                }
+                impactMark {                    // each surface supports up to 1 marks shader. available surface : default, far, wood, metal, roof, gravel, glass, snow, water, flesh
+                    default "gfx/damage/burn_med_mrk"
+                }
 		
 		firstPerson {
 			model			"models/multiplayer/satchel/v_satchel.md3"

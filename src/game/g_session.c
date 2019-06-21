@@ -54,22 +54,22 @@ void G_WriteClientSessionData(gclient_t *client, qboolean restart)
 	const char *s;
 
 	// stats reset check
-	//if (level.fResetStats)
-	//{
-	G_deleteStats(client - level.clients);
-	//}
+	if (level.fResetStats)
+	{
+		G_deleteStats(client - level.clients);
+	}
 
 #ifdef FEATURE_MULTIVIEW
 #ifdef FEATURE_RATING
-	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i %i %i",
+	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i %i %i",
 #else
-	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
 #endif
 #else
 #ifdef FEATURE_RATING
-	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i",
+	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i",
 #else
-	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
 #endif
 #endif
 	       client->sess.sessionTeam,
@@ -84,6 +84,7 @@ void G_WriteClientSessionData(gclient_t *client, qboolean restart)
 	       client->sess.latchPlayerWeapon2,
 
 	       client->sess.referee,
+	       client->sess.shoutcaster,
 	       client->sess.spec_invite,
 	       client->sess.spec_team,
 	       client->sess.kills,
@@ -107,8 +108,8 @@ void G_WriteClientSessionData(gclient_t *client, qboolean restart)
 	       ((mvc >> 16) & 0xFFFF),
 #endif
 	       // Damage and rounds played rolled in with weapon stats (below)
-
 	       client->sess.muted,
+
 	       client->sess.ignoreClients[0],
 	       client->sess.ignoreClients[1],
 	       client->pers.enterTime,
@@ -269,15 +270,15 @@ void G_ReadSessionData(gclient_t *client)
 
 #ifdef FEATURE_MULTIVIEW
 #ifdef FEATURE_RATING
-	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i %i %i",
+	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i %i %i",
 #else
-	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
 #endif
 #else
 #ifdef FEATURE_RATING
-	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i",
+	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i",
 #else
-	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
 #endif
 #endif
 	       (int *)&client->sess.sessionTeam,
@@ -285,13 +286,14 @@ void G_ReadSessionData(gclient_t *client)
 	       (int *)&client->sess.spectatorState,
 	       &client->sess.spectatorClient,
 	       &client->sess.playerType,
-		   (int *)&client->sess.playerWeapon,
-		   (int *)&client->sess.playerWeapon2,
+	       (int *)&client->sess.playerWeapon,
+	       (int *)&client->sess.playerWeapon2,
 	       &client->sess.latchPlayerType,
-		   (int *)&client->sess.latchPlayerWeapon,
-		   (int *)&client->sess.latchPlayerWeapon2,
+	       (int *)&client->sess.latchPlayerWeapon,
+	       (int *)&client->sess.latchPlayerWeapon2,
 
 	       &client->sess.referee,
+	       &client->sess.shoutcaster,
 	       &client->sess.spec_invite,
 	       &client->sess.spec_team,
 	       &client->sess.kills,
@@ -300,6 +302,7 @@ void G_ReadSessionData(gclient_t *client)
 	       &client->sess.self_kills,
 	       &client->sess.team_kills,
 	       &client->sess.team_gibs,
+
 	       &client->sess.time_axis,
 	       &client->sess.time_allies,
 	       &client->sess.time_played,
@@ -315,6 +318,7 @@ void G_ReadSessionData(gclient_t *client)
 #endif
 	       // Damage and round count rolled in with weapon stats (below)
 	       (int *)&client->sess.muted,
+
 	       &client->sess.ignoreClients[0],
 	       &client->sess.ignoreClients[1],
 	       &client->pers.enterTime,
@@ -373,19 +377,19 @@ void G_ReadSessionData(gclient_t *client)
 
 	test = (g_altStopwatchMode.integer != 0 || g_currentRound.integer == 1);
 
-	        if (g_gametype.integer == GT_WOLF_STOPWATCH && g_gamestate.integer != GS_PLAYING && test)
+	if (g_gametype.integer == GT_WOLF_STOPWATCH && g_gamestate.integer != GS_PLAYING && test)
 	{
 		G_ClientSwap(client);
 	}
 
-	        if (g_swapteams.integer)
+	if (g_swapteams.integer)
 	{
 		trap_Cvar_Set("g_swapteams", "0");
 		G_ClientSwap(client);
 	}
 
-	        client->sess.startxptotal = 0;
-	        for (j = 0; j < SK_NUM_SKILLS; j++)
+	client->sess.startxptotal = 0;
+	for (j = 0; j < SK_NUM_SKILLS; j++)
 	{
 		client->sess.startskillpoints[j] = client->sess.skillpoints[j];
 		client->sess.startxptotal += client->sess.skillpoints[j];
@@ -399,40 +403,40 @@ void G_ReadSessionData(gclient_t *client)
  */
 void G_InitSessionData(gclient_t *client, const char *userinfo)
 {
-    clientSession_t *sess = &client->sess;
+	clientSession_t *sess = &client->sess;
 
-    // initial team determination
-    sess->sessionTeam = TEAM_SPECTATOR;
+	// initial team determination
+	sess->sessionTeam = TEAM_SPECTATOR;
 
-    sess->spectatorState = SPECTATOR_FREE;
-    sess->spectatorTime = level.time;
+	sess->spectatorState = SPECTATOR_FREE;
+	sess->spectatorTime = level.time;
 
-    sess->latchPlayerType = sess->playerType = 0;
-    sess->latchPlayerWeapon = sess->playerWeapon = WP_NONE;
-    sess->latchPlayerWeapon2 = sess->playerWeapon2 = WP_NONE;
+	sess->latchPlayerType = sess->playerType = 0;
+	sess->latchPlayerWeapon = sess->playerWeapon = WP_NONE;
+	sess->latchPlayerWeapon2 = sess->playerWeapon2 = WP_NONE;
 
-    sess->spawnObjectiveIndex = 0;
+	sess->spawnObjectiveIndex = 0;
 
-    Com_Memset(sess->ignoreClients, 0, sizeof(sess->ignoreClients));
+	Com_Memset(sess->ignoreClients, 0, sizeof(sess->ignoreClients));
 
-    sess->muted = qfalse;
-    Com_Memset(sess->skill, 0, sizeof(sess->skill));
-    Com_Memset(sess->skillpoints, 0, sizeof(sess->skillpoints));
-    Com_Memset(sess->startskillpoints, 0, sizeof(sess->startskillpoints));
-    Com_Memset(sess->medals, 0, sizeof(sess->medals));
-    sess->rank = 0;
-    sess->startxptotal = 0;
+	sess->muted = qfalse;
+	Com_Memset(sess->skill, 0, sizeof(sess->skill));
+	Com_Memset(sess->skillpoints, 0, sizeof(sess->skillpoints));
+	Com_Memset(sess->startskillpoints, 0, sizeof(sess->startskillpoints));
+	Com_Memset(sess->medals, 0, sizeof(sess->medals));
+	sess->rank = 0;
+	sess->startxptotal = 0;
 
-    // we set ref in ClientUserinfoChanged
-    sess->referee = RL_NONE; // (client->pers.localClient) ? RL_REFEREE : RL_NONE;
-    sess->spec_invite = 0;
-    sess->spec_team = 0;
-    // G_WriteClientSessionData calls this
-    //G_deleteStats(client - level.clients);
+	// we set ref in ClientUserinfoChanged
+	sess->referee = RL_NONE; // (client->pers.localClient) ? RL_REFEREE : RL_NONE;
+	sess->spec_invite = 0;
+	sess->spec_team = 0;
 
-    sess->uci = 0; // GeoIP
+	sess->uci = 0; // GeoIP
 
-    G_WriteClientSessionData(client, qfalse);
+	G_deleteStats(client - level.clients);
+
+	G_WriteClientSessionData(client, qfalse);
 }
 
 /**

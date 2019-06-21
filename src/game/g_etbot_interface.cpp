@@ -1687,11 +1687,7 @@ static int _GetEntityTeam(gentity_t *_ent)
 		return Bot_TeamGameToBot(BODY_TEAM(_ent));
 #ifndef LEGACY
 	case ET_MISSILE:
-
-		if (_ent->s.weapon == WP_LANDMINE
-		    || _ent->s.weapon == WP_DYNAMITE
-
-		    )
+		if (_ent->s.weapon == WP_LANDMINE || _ent->s.weapon == WP_DYNAMITE)
 		{
 			return Bot_TeamGameToBot(G_LandmineTeam(_ent));
 		}
@@ -6340,7 +6336,7 @@ int Bot_Interface_Shutdown()
 
 //////////////////////////////////////////////////////////////////////////
 
-void Bot_Interface_ConsoleCommand()
+void Bot_Interface_ConsoleCommand(void)
 {
 	enum { BuffSize=32 };
 	char buffer[BuffSize] = {};

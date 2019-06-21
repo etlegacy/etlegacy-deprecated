@@ -2053,6 +2053,14 @@ void Cmd_Team_f(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
 
 	G_TeamDataForString(s, ent->s.clientNum, &team, &specState, &specClient);
 
+	// don't allow shoutcasters to join teams
+	if (ent->client->sess.shoutcaster && (team == TEAM_ALLIES || team == TEAM_AXIS))
+	{
+		CP("print \"team: shoutcasters may not join a team\n\"");
+		CP("cp \"Shoutcasters may not join a team\n\"");
+		return;
+	}
+
 	playerType = -1;
 	if (*ptype)
 	{
@@ -3455,9 +3463,8 @@ void Cmd_Vote_f(gentity_t *ent)
 		level.voteInfo.voteNo++;
 		trap_SetConfigstring(CS_VOTE_NO, va("%i", level.voteInfo.voteNo));
 	}
-
-	// a majority will be determined in G_CheckVote, which will also account
-	// for players entering or leaving
+	// a majority will be determined in G_CheckVote,
+	// which will also account for players entering or leaving
 }
 
 /**
@@ -3508,7 +3515,6 @@ qboolean G_TankIsOccupied(gentity_t *ent)
 	{
 		return qfalse;
 	}
-
 	return qtrue;
 }
 
@@ -3549,7 +3555,6 @@ qboolean G_TankIsMountable(gentity_t *ent, gentity_t *other)
 	{
 		return qfalse;
 	}
-
 	return qtrue;
 }
 
@@ -3605,13 +3610,11 @@ qboolean Do_Activate2_f(gentity_t *ent, gentity_t *traceEnt)
 					{
 						BODY_VALUE(traceEnt) += 5;
 					}
-
 					return qtrue;
 				}
 			}
 		}
 	}
-
 	return qfalse;
 }
 
@@ -3761,7 +3764,6 @@ qboolean Do_Activate_f(gentity_t *ent, gentity_t *traceEnt)
 	{
 		return qfalse;
 	}
-
 	return qtrue;
 }
 
@@ -3969,9 +3971,8 @@ qboolean G_PushPlayer(gentity_t *ent, gentity_t *victim)
 		return qfalse;
 	}
 
-	// Prevent possible cheating, as well as annoying push after CPR revive
-	// check also if player has just been revived, so pushing after a normal spawn works..
-	if (ent->client->ps.powerups[PW_INVULNERABLE] && ent->props_frame_state != -1)
+	// Prevent possible cheating, as well as annoying push after revive and spawning
+	if (ent->client->ps.powerups[PW_INVULNERABLE])
 	{
 		return qfalse;
 	}
@@ -4002,13 +4003,14 @@ qboolean G_PushPlayer(gentity_t *ent, gentity_t *victim)
 	    (push[2] > Q_fabs(push[1])))
 	{
 		// player is being boosted
-		if (g_misc.integer & G_MISC_SHOVE_NOZ)
+		if (g_misc.integer & G_MISC_SHOVE_Z)
 		{
-			push[2] = 64;
+			// like in etpro, shoving up gives a bit more than JUMP_VELOCITY
+			push[2] = dir[2] * g_shove.integer * 5;
 		}
 		else
 		{
-			push[2] = dir[2] * g_shove.integer * 4;     // like in etpro, shoving up gives only 350 speed ( jump gives 270 )
+			push[2] = 64;
 		}
 	}
 	else
@@ -4044,7 +4046,7 @@ void Cmd_Activate2_f(gentity_t *ent)
 	vec3_t   forward, right, up, offset;
 	qboolean pass2 = qfalse;
 
-	if (ent->health <= 0)  // uch
+	if (ent->health <= 0)
 	{
 		return;
 	}
@@ -4447,6 +4449,12 @@ void G_CalcClientAccuracies(void)
 		{
 			for (j = 0; j < WS_MAX; j++)
 			{
+				// don't take into account weapon that can't do headshot
+				if (!aWeaponInfo[j].fHasHeadShots)
+				{
+					continue;
+				}
+
 				shots     += level.clients[i].sess.aWeaponStats[j].atts;
 				hits      += level.clients[i].sess.aWeaponStats[j].hits;
 				headshots += level.clients[i].sess.aWeaponStats[j].headshots;
@@ -4484,7 +4492,7 @@ void Cmd_IntermissionWeaponAccuracies_f(gentity_t *ent)
 	{
 		if (g_entities[i].inuse)
 		{
-			Q_strcat(buffer, sizeof(buffer), va("%.1f %.1f ", level.clients[i].acc > 100.f ? 100 : level.clients[i].acc, level.clients[i].hspct));
+			Q_strcat(buffer, sizeof(buffer), va("%.1f %.1f ", level.clients[i].acc, level.clients[i].hspct));
 		}
 		else
 		{
@@ -4770,6 +4778,12 @@ void ClientCommand(int clientNum)
 	}
 	else if (Q_stricmp(cmd, "say_buddy") == 0)
 	{
+		if (ent->client->sess.sessionTeam == TEAM_SPECTATOR || ent->client->sess.sessionTeam == TEAM_FREE)
+		{
+			trap_SendServerCommand(ent - g_entities, "print \"Can't buddy chat as spectator\n\"");
+			return;
+		}
+
 		if (!ent->client->sess.muted)
 		{
 			Cmd_Say_f(ent, SAY_BUDDY, qfalse);
@@ -4782,6 +4796,12 @@ void ClientCommand(int clientNum)
 	}
 	else if (Q_stricmp(cmd, "vsay_buddy") == 0)
 	{
+		if (ent->client->sess.sessionTeam == TEAM_SPECTATOR || ent->client->sess.sessionTeam == TEAM_FREE)
+		{
+			trap_SendServerCommand(ent - g_entities, "print \"Can't buddy chat as spectator\n\"");
+			return;
+		}
+
 		if (!ent->client->sess.muted)
 		{
 			Cmd_Voice_f(ent, SAY_BUDDY, qfalse, qfalse);

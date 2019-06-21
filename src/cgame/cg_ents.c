@@ -651,32 +651,54 @@ static void CG_Item(centity_t *cent)
 
 	item = BG_GetItem(es->modelindex);
 
-	if (cg_simpleItems.integer && (item->giType == IT_WEAPON || item->giType == IT_HEALTH || item->giType == IT_AMMO))
+	if (cg_simpleItems.integer == 1 ||
+	    (cg_simpleItems.integer > 1 && (item->giType == IT_WEAPON || item->giType == IT_HEALTH || item->giType == IT_AMMO)))
 	{
 		Com_Memset(&ent, 0, sizeof(ent));
-		ent.reType = RT_SPRITE;
 		VectorCopy(cent->lerpOrigin, ent.origin);
-		ent.radius = 14;
-		//ent.origin[0] += 7;
-		//ent.origin[1] += 7;
+		ent.reType     = RT_SPRITE;
+		ent.radius     = 14;
 		ent.origin[2] += 7;
 
-		if (item->giType == IT_AMMO)
+		switch (item->giType)
 		{
+		case IT_AMMO:
 			ent.customShader = cg_weapons[WP_AMMO].weaponIcon[1];
-		}
-		else if (item->giType == IT_HEALTH)
-		{
+			break;
+		case IT_HEALTH:
 			ent.customShader = cg_weapons[WP_MEDKIT].weaponIcon[1];
+			break;
+		case IT_TEAM:
+			ent.customShader = cgs.media.objectiveShader;
+			ent.origin[2]   += 9 + sin((cg.time + 1000) * 0.005) * 3;
+			break;
+		case IT_WEAPON:
+			ent.customShader = cg_weapons[item->giWeapon].weaponIcon[1];
+			break;
+		case IT_BAD:
+		default:
+			break;
+		}
+
+		if (item->giType == IT_AMMO || item->giType == IT_HEALTH || item->giType == IT_TEAM ||
+		    (item->giType == IT_WEAPON && item->giWeapon == WP_AMMO) ||
+		    BG_ClassHasWeapon(GetPlayerClassesData(TEAM_AXIS, cgs.clientinfo[cg.snap->ps.clientNum].cls), item->giWeapon) ||
+		    BG_ClassHasWeapon(GetPlayerClassesData(TEAM_ALLIES, cgs.clientinfo[cg.snap->ps.clientNum].cls), item->giWeapon) ||
+		    cgs.clientinfo[cg.snap->ps.clientNum].team == TEAM_SPECTATOR)
+		{
+			ent.shaderRGBA[0] = 255;
+			ent.shaderRGBA[1] = 255;
+			ent.shaderRGBA[2] = 255;
+			ent.shaderRGBA[3] = 255;
 		}
 		else
 		{
-			ent.customShader = cg_weapons[item->giWeapon].weaponIcon[1];
+			ent.shaderRGBA[0] = 255;
+			ent.shaderRGBA[1] = 0;
+			ent.shaderRGBA[2] = 0;
+			ent.shaderRGBA[3] = 255;
 		}
-		ent.shaderRGBA[0] = 255;
-		ent.shaderRGBA[1] = 255;
-		ent.shaderRGBA[2] = 255;
-		ent.shaderRGBA[3] = 255;
+
 		trap_R_AddRefEntityToScene(&ent);
 		return;
 	}
@@ -917,6 +939,30 @@ static void CG_Smoker(centity_t *cent)
 	cent->lastTrailTime = cg.time;  // time we were last received at the client
 }
 
+static void CG_DrawLandmine(centity_t *cent, refEntity_t *ent)
+{
+	int color = (int)255 - (255 * fabs(sin(cg.time * 0.002)));
+
+	if (cent->currentState.teamNum == TEAM_AXIS)
+	{
+		// red landmines
+		ent->shaderRGBA[0] = 255;
+		ent->shaderRGBA[1] = color;
+		ent->shaderRGBA[2] = color;
+		ent->shaderRGBA[3] = 255;
+	}
+	else
+	{
+		// blue landmines
+		ent->shaderRGBA[0] = color;
+		ent->shaderRGBA[1] = color;
+		ent->shaderRGBA[2] = 255;
+		ent->shaderRGBA[3] = 255;
+	}
+
+	ent->customShader = cgs.media.shoutcastLandmineShader;
+}
+
 /**
  * @brief CG_DrawMineMarkerFlag
  * @param[in] cent
@@ -977,6 +1023,23 @@ static void CG_DrawMineMarkerFlag(centity_t *cent, refEntity_t *ent, const weapo
 extern void CG_RocketTrail(centity_t *ent, const weaponInfo_t *wi);
 extern void CG_ScanForCrosshairMine(centity_t *cent);
 extern void CG_ScanForCrosshairDyna(centity_t *cent);
+
+/**
+ * @brief CG_PlayerFloatText
+ * @param[in] cent
+ * @param[in] text
+ * @param[in] height
+ */
+static void CG_EntityFloatText(centity_t *cent, const char *text, int height)
+{
+	vec3_t origin;
+
+	VectorCopy(cent->lerpOrigin, origin);
+
+	origin[2] += height;
+
+	CG_AddOnScreenText(text, origin);
+}
 
 /**
  * @brief CG_Missile
@@ -1064,6 +1127,7 @@ static void CG_Missile(centity_t *cent)
 		if (cent->currentState.effect1Time)
 		{
 			vec3_t velocity;
+			char   *timer;
 
 			BG_EvaluateTrajectoryDelta(&cent->currentState.pos, cg.time, velocity, qfalse, -1);
 			trap_S_AddLoopingSound(cent->lerpOrigin, velocity, weapon->spindownSound, 255, 0);
@@ -1071,6 +1135,13 @@ static void CG_Missile(centity_t *cent)
 			if (cgs.clientinfo[cg.snap->ps.clientNum].team == cent->currentState.teamNum)
 			{
 				CG_ScanForCrosshairDyna(cent);
+			}
+
+			// add dynamite counter to floating string list
+			if (cgs.clientinfo[cg.clientNum].team == TEAM_SPECTATOR && cgs.clientinfo[cg.clientNum].shoutcaster)
+			{
+				timer = va("%i", 30 - (cg.time - cent->currentState.effect1Time)/1000);
+				CG_EntityFloatText(cent, timer, 8);
 			}
 		}
 	}
@@ -1108,9 +1179,14 @@ static void CG_Missile(centity_t *cent)
 	}
 	ent.renderfx = weapon->missileRenderfx | RF_NOSHADOW;
 
-
 	if (cent->currentState.weapon == WP_LANDMINE)
 	{
+		// shoutcasters can see armed landmines
+		if (cgs.clientinfo[cg.clientNum].team == TEAM_SPECTATOR && !cgs.clientinfo[cg.clientNum].shoutcaster)
+		{
+			return;
+		}
+
 		VectorCopy(ent.origin, ent.lightingOrigin);
 		ent.renderfx |= RF_LIGHTING_ORIGIN;
 
@@ -1125,10 +1201,14 @@ static void CG_Missile(centity_t *cent)
 				{
 					ent.customShader = cgs.media.genericConstructionShader;
 				}
+				else if (cgs.clientinfo[cg.clientNum].shoutcaster)
+				{
+					CG_DrawLandmine(cent, &ent);
+				}
 				else if (!cent->currentState.modelindex2)
 				{
 					// see if we have the skill to see them and are close enough
-					if (cgs.clientinfo[cg.snap->ps.clientNum].team != TEAM_SPECTATOR && cgs.clientinfo[cg.snap->ps.clientNum].skill[SK_BATTLE_SENSE] >= 4)
+					if (cgs.clientinfo[cg.snap->ps.clientNum].skill[SK_BATTLE_SENSE] >= 4)
 					{
 						vec_t distSquared = DistanceSquared(cent->lerpOrigin, cg.predictedPlayerEntity.lerpOrigin);
 
@@ -1153,9 +1233,16 @@ static void CG_Missile(centity_t *cent)
 			}
 			else
 			{
-				CG_DrawMineMarkerFlag(cent, &ent, weapon);
-
-				CG_ScanForCrosshairMine(cent);
+				if (cgs.clientinfo[cg.clientNum].shoutcaster)
+				{
+					// shoutcasters can see landmines
+					CG_DrawLandmine(cent, &ent);
+				}
+				else
+				{
+					CG_DrawMineMarkerFlag(cent, &ent, weapon);
+					CG_ScanForCrosshairMine(cent);
+				}
 			}
 		}
 
@@ -1627,7 +1714,7 @@ void CG_MovePlane(centity_t *cent)
 	refEntity_t ent;
 
 	// allow the airstrike plane to be completely removed
-	if (!cg_visualEffects.integer)
+	if (!cg_visualEffects.integer || cent->currentState.time == -1)
 	{
 		return;
 	}

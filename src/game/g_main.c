@@ -204,12 +204,15 @@ vmCvar_t vote_allow_poll;
 vmCvar_t vote_allow_maprestart;
 
 vmCvar_t refereePassword;
+vmCvar_t shoutcastPassword;
 vmCvar_t g_debugConstruct;
 vmCvar_t g_landminetimeout;
 
 // Variable for setting the current level of debug printing/logging
 // enabled in bot scripts and regular scripts.
+vmCvar_t g_scriptDebug;
 vmCvar_t g_scriptDebugLevel;
+vmCvar_t g_scriptDebugTarget;
 vmCvar_t g_movespeed;
 
 vmCvar_t g_axismapxp;
@@ -288,6 +291,8 @@ vmCvar_t team_maxMachineguns;
 vmCvar_t team_maxRockets;
 vmCvar_t team_maxRiflegrenades;
 vmCvar_t team_maxLandmines;
+// misc
+vmCvar_t team_riflegrenades;
 // skills
 vmCvar_t skill_soldier;
 vmCvar_t skill_medic;
@@ -457,6 +462,7 @@ cvarTable_t gameCvarTable[] =
 	{ NULL,                                 "P",                                   "",                           CVAR_SERVERINFO_NOUPDATE,                        0, qfalse, qfalse },
 
 	{ &refereePassword,                     "refereePassword",                     "none",                       0,                                               0, qfalse, qfalse },
+	{ &shoutcastPassword,                   "shoutcastPassword",                   "none",                       0,                                               0, qfalse, qfalse },
 	{ &g_spectatorInactivity,               "g_spectatorInactivity",               "0",                          0,                                               0, qfalse, qfalse },
 	{ &match_latejoin,                      "match_latejoin",                      "1",                          0,                                               0, qfalse, qfalse },
 	{ &match_minplayers,                    "match_minplayers",                    MATCH_MINPLAYERS,             0,                                               0, qfalse, qfalse },
@@ -508,9 +514,9 @@ cvarTable_t gameCvarTable[] =
 	{ &g_debugConstruct,                    "g_debugConstruct",                    "0",                          CVAR_CHEAT,                                      0, qfalse, qfalse },
 
 	{ &g_scriptDebug,                       "g_scriptDebug",                       "0",                          CVAR_CHEAT,                                      0, qfalse, qfalse },
-
 	// What level of detail do we want script printing to go to.
 	{ &g_scriptDebugLevel,                  "g_scriptDebugLevel",                  "0",                          CVAR_CHEAT,                                      0, qfalse, qfalse },
+    { &g_scriptDebugTarget,                 "g_scriptDebugTarget",                 "",                           CVAR_CHEAT,                                      0, qfalse, qfalse },
 
 	// How fast do we want Allied single player movement?
 	{ &g_movespeed,                         "g_movespeed",                         "76",                         CVAR_CHEAT,                                      0, qfalse, qfalse },
@@ -599,7 +605,9 @@ cvarTable_t gameCvarTable[] =
 	{ &team_maxRockets,                     "team_maxPanzers",                     "-1",                         0,                                               0, qfalse, qfalse }, // keep ETPro compatibility
 	{ &team_maxRiflegrenades,               "team_maxRiflegrenades",               "-1",                         0,                                               0, qfalse, qfalse },
 	{ &team_maxLandmines,                   "team_maxLandmines",                   "10",                         0,                                               0, qfalse, qfalse },
-	//Skills
+	//misc
+	{ &team_riflegrenades,                  "team_riflegrenades",                  "1",                          0,                                               0, qfalse, qfalse },
+	//skills
 	{ &skill_soldier,                       "skill_soldier",                       "20 50 90 140",               CVAR_ARCHIVE,                                    0, qfalse, qfalse },
 	{ &skill_medic,                         "skill_medic",                         "20 50 90 140",               CVAR_ARCHIVE,                                    0, qfalse, qfalse },
 	{ &skill_fieldops,                      "skill_fieldops",                      "20 50 90 140",               CVAR_ARCHIVE,                                    0, qfalse, qfalse },
@@ -1935,6 +1943,15 @@ void G_UpdateCvars(void)
 				{
 					G_SetSkillLevelsByCvar(cv->vmCvar);
 					skillLevelPoints = qtrue;
+				}
+				else if (cv->vmCvar == &shoutcastPassword)
+				{
+					// logout all currently logged in shoutcasters
+					// when changing shoutcastPassword to '' or 'none'
+					if (!Q_stricmp(shoutcastPassword.string, "none") || !shoutcastPassword.string[0])
+					{
+						G_RemoveAllShoutcasters();
+					}
 				}
 #ifdef FEATURE_LUA
 				else if (cv->vmCvar == &lua_modules || cv->vmCvar == &lua_allowedModules)

@@ -584,7 +584,7 @@ void CL_Ping_f(void);
 qboolean CL_UpdateVisiblePings_f(int source);
 
 /// console
-#define NUM_CON_TIMES   4
+#define NUM_CON_TIMES   10
 
 #define CON_TEXTSIZE    131072
 
@@ -639,6 +639,7 @@ void Con_Shutdown(void);
 void Con_Linefeed(qboolean skipnotify);
 void CL_ConsolePrint(char *txt);
 
+void Con_DrawClock(void);
 void Con_DrawVersion(void);
 void Con_DrawInput(void);
 void Con_DrawScrollbar(int length, float x, float y);

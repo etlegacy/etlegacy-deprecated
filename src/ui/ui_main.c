@@ -1284,7 +1284,7 @@ void UI_LoadMenus(const char *menuFile, qboolean reset)
 		trap_PC_AddGlobalDefine("LEGACY");
 	}
 
-	trap_PC_AddGlobalDefine(va("__WINDOW_WIDTH %f", (uiInfo.uiDC.glconfig.windowAspect / RATIO43) * 640 ));
+	trap_PC_AddGlobalDefine(va("__WINDOW_WIDTH %f", (uiInfo.uiDC.glconfig.windowAspect / RATIO43) * 640));
 	trap_PC_AddGlobalDefine("__WINDOW_HEIGHT 480");
 
 	handle = trap_PC_LoadSource(menuFile);
@@ -2902,6 +2902,7 @@ static void UI_BuildPlayerList(void)
 				uiInfo.playerMuted[uiInfo.playerCount] = qfalse;
 			}
 			uiInfo.playerRefereeStatus[uiInfo.playerCount] = atoi(Info_ValueForKey(info, "ref"));
+			uiInfo.playerShoutcasterStatus[uiInfo.playerCount] = atoi(Info_ValueForKey( info, "sc" ));
 			uiInfo.playerCount++;
 			team2 = atoi(Info_ValueForKey(info, "t"));
 			if (team2 == team)
@@ -3492,6 +3493,23 @@ qboolean UI_OwnerDrawVisible(int flags)
 				vis = qfalse;
 			}
 			flags &= ~UI_SHOW_PLAYERREFEREE;
+		}
+
+		if (flags & UI_SHOW_PLAYERNOSHOUTCASTER)
+		{
+			if (uiInfo.playerShoutcasterStatus[uiInfo.playerIndex] != 0)
+			{
+				vis = qfalse;
+			}
+			flags &= ~UI_SHOW_PLAYERNOSHOUTCASTER;
+		}
+		if (flags & UI_SHOW_PLAYERSHOUTCASTER)
+		{
+			if (uiInfo.playerShoutcasterStatus[uiInfo.playerIndex] != 1)
+			{
+				vis = qfalse;
+			}
+			flags &= ~UI_SHOW_PLAYERSHOUTCASTER;
 		}
 		else
 		{
@@ -4918,6 +4936,7 @@ void UI_RunMenuScript(char **args)
 				}
 				else
 				{
+					trap_Cvar_SetValue("cg_ui_favorite", 1);
 					// successfully added
 					Com_Printf(trap_TranslateString("Added favorite server %s\n"), addr);
 				}
@@ -4925,6 +4944,27 @@ void UI_RunMenuScript(char **args)
 			else
 			{
 				Com_Printf("%s", trap_TranslateString("Can't add localhost to favorites\n"));
+			}
+		}
+		else if (Q_stricmp(name, "removeFavoriteIngame") == 0)
+		{
+			uiClientState_t cstate;
+			char            addr[MAX_NAME_LENGTH];
+
+			trap_GetClientState(&cstate);
+
+			addr[0] = '\0';
+			Q_strncpyz(addr, cstate.servername, MAX_NAME_LENGTH);
+			if (*addr && Q_stricmp(addr, "localhost"))
+			{
+				trap_LAN_RemoveServer(AS_FAVORITES, addr);
+				trap_Cvar_SetValue("cg_ui_favorite", 0);
+				// successfully removed
+				Com_Printf(trap_TranslateString("Removed favorite server %s\n"), addr);
+			}
+			else
+			{
+				Com_Printf("%s", trap_TranslateString("Can't remove localhost from favorites\n"));
 			}
 		}
 		else if (Q_stricmp(name, "orders") == 0)
@@ -5129,6 +5169,34 @@ void UI_RunMenuScript(char **args)
 			if (uiInfo.playerIndex >= 0 && uiInfo.playerIndex < uiInfo.playerCount)
 			{
 				trap_Cmd_ExecuteText(EXEC_APPEND, va("rcon removeReferee \"%s\"\n", uiInfo.playerNames[uiInfo.playerIndex]));
+			}
+		}
+		else if (Q_stricmp(name, "refMakeShoutcaster") == 0)
+		{
+			if (uiInfo.playerIndex >= 0 && uiInfo.playerIndex < uiInfo.playerCount)
+			{
+				trap_Cmd_ExecuteText(EXEC_APPEND, va("ref makeShoutcaster \"%s\"\n", uiInfo.playerNames[uiInfo.playerIndex]));
+			}
+		}
+		else if (Q_stricmp(name, "refRemoveShoutcaster") == 0)
+		{
+			if (uiInfo.playerIndex >= 0 && uiInfo.playerIndex < uiInfo.playerCount)
+			{
+				trap_Cmd_ExecuteText(EXEC_APPEND, va("ref removeShoutcaster \"%s\"\n", uiInfo.playerNames[uiInfo.playerIndex]));
+			}
+		}
+		else if (Q_stricmp(name, "rconMakeShoutcaster") == 0)
+		{
+			if (uiInfo.playerIndex >= 0 && uiInfo.playerIndex < uiInfo.playerCount)
+			{
+				trap_Cmd_ExecuteText(EXEC_APPEND, va("rcon makeShoutcaster %i\n", uiInfo.playerNumber));
+			}
+		}
+		else if (Q_stricmp(name, "rconRemoveShoutcaster") == 0)
+		{
+			if (uiInfo.playerIndex >= 0 && uiInfo.playerIndex < uiInfo.playerCount)
+			{
+				trap_Cmd_ExecuteText(EXEC_APPEND, va("rcon removeShoutcaster %i\n", uiInfo.playerNumber));
 			}
 		}
 		else if (Q_stricmp(name, "rconMute") == 0)
@@ -5440,6 +5508,17 @@ void UI_RunMenuScript(char **args)
 				trap_Cvar_SetValue("cg_ui_novote", 0);
 			}
 		}
+		else if (Q_stricmp(name, "clientCheckFavorite") == 0)
+		{
+			if (trap_LAN_ServerIsInFavoriteList(ui_netSource.integer, uiInfo.serverStatus.displayServers[uiInfo.serverStatus.currentServer]))
+			{
+				trap_Cvar_SetValue("cg_ui_favorite", 0);
+			}
+			else
+			{
+				trap_Cvar_SetValue("cg_ui_favorite", 1);
+			}
+		}
 		else if (Q_stricmp(name, "reconnect") == 0)
 		{
 			// TODO: if dumped because of cl_allowdownload problem, toggle on first (we don't have appropriate support for this yet)
@@ -5479,8 +5558,8 @@ void UI_RunMenuScript(char **args)
 		}
 		else if (Q_stricmp(name, "vidReset") == 0)
 		{
-			int   r_oldMode       = (int)(trap_Cvar_VariableValue("r_oldMode"));
-			int   r_oldFullscreen = (int)(trap_Cvar_VariableValue("r_oldFullscreen"));
+			int r_oldMode       = (int)(trap_Cvar_VariableValue("r_oldMode"));
+			int r_oldFullscreen = (int)(trap_Cvar_VariableValue("r_oldFullscreen"));
 
 			// reset mode to old settings
 			trap_Cvar_SetValue("r_mode", r_oldMode);
@@ -6232,7 +6311,7 @@ static void UI_BuildServerDisplayList(int force)
 					continue;
 				}
 				else if (!(ui_serverBrowserSettings.integer & UI_BROWSER_ALLOW_HUMANS_COUNT) &&
-				    Q_stristr(Info_ValueForKey(info, "game"), "legacy") == 0)
+				         Q_stristr(Info_ValueForKey(info, "game"), "legacy") == 0)
 				{
 					continue;
 				}
@@ -6450,16 +6529,16 @@ static void UI_BuildServerDisplayList(int force)
 	{
 		if (numinvisible > 0)
 		{
-			DC->setCVar("ui_tmp_ServersFiltered", va(trap_TranslateString("Filtered/Total: %04i/%04i"), numinvisible, count));
+			DC->setCVar("ui_tmp_ServersFiltered", va(trap_TranslateString("Filtered/Total: %03i/%03i"), numinvisible, count));
 		}
 		else
 		{
-			DC->setCVar("ui_tmp_ServersFiltered", va(trap_TranslateString("^3Check your filters - no servers found!              ^9Filtered/Total: ^3%04i^9/%04i"), numinvisible, count));
+			DC->setCVar("ui_tmp_ServersFiltered", va(trap_TranslateString("^3Check your filters - no servers found!              ^9Filtered/Total: ^3%03i^9/%03i"), numinvisible, count));
 		}
 	}
 	else
 	{
-		DC->setCVar("ui_tmp_ServersFiltered", trap_TranslateString("^1No Connection or master down - no servers found!    ^9Filtered/Total: ^10000^9/0000"));
+		DC->setCVar("ui_tmp_ServersFiltered", trap_TranslateString("^1No Connection or master down - no servers found!    ^9Filtered/Total: ^1000^9/000"));
 	}
 }
 
@@ -7051,7 +7130,7 @@ const char *UI_FeederItemText(int feederID, int index, int column, qhandle_t *ha
 					Com_sprintf(clientBuff, sizeof(clientBuff), "^W%i^9(+%i)/%i", humans, clients - humans, maxclients);
 				}
 				else if (Q_stristr(Info_ValueForKey(info, "game"), "legacy") != 0 &&
-				    strstr(Info_ValueForKey(info, "version"), PRODUCT_LABEL) != NULL)
+				         strstr(Info_ValueForKey(info, "version"), PRODUCT_LABEL) != NULL)
 				{
 					Com_sprintf(clientBuff, sizeof(clientBuff), "^W%i^9(+%i)/%i", humans, clients - humans, maxclients);
 				}
@@ -8619,7 +8698,6 @@ cvarTable_t cvarTable[] =
 	{ NULL,                             "cg_voiceSpriteTime",                  "6000",                       CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "cg_complaintPopUp",                   "1",                          CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "cg_printObjectiveInfo",               "1",                          CVAR_ARCHIVE,                   0 },
-	{ NULL,                             "cg_useScreenshotJPEG",                "1",                          CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "cg_drawGun",                          "1",                          CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "cg_drawCompass",                      "1",                          CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "cg_drawRoundTimer",                   "1",                          CVAR_ARCHIVE,                   0 },
@@ -8664,6 +8742,7 @@ cvarTable_t cvarTable[] =
 	{ NULL,                             "g_inactivity",                        "0",                          CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "g_maxLives",                          "0",                          CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "refereePassword",                     "none",                       CVAR_ARCHIVE,                   0 },
+	{ NULL,                             "shoutcastPassword",                   "none",                       CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "g_teamForceBalance",                  "0",                          CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "sv_maxRate",                          "0",                          CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "g_spectatorInactivity",               "0",                          CVAR_ARCHIVE,                   0 },

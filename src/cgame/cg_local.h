@@ -150,11 +150,11 @@
 #define ISVALIDCLIENTNUM(clientNum) ((clientNum) >= 0 && (clientNum) < MAX_CLIENTS)
 
 /**
- * @struct specName_s
- * @typedef specName_t
+ * @struct specLabel_s
+ * @typedef specLabel_t
  * @brief
  */
-typedef struct specName_s
+typedef struct specLabel_s
 {
 	float x;
 	float y;
@@ -165,7 +165,7 @@ typedef struct specName_s
 	int lastInvisibleTime;
 	qboolean visible;
 	float alpha;
-} specName_t;
+} specLabel_t;
 
 /**
  * @struct cg_window_s
@@ -620,6 +620,7 @@ typedef struct clientInfo_s
 	int latchedweapon;
 
 	int refStatus;
+	int shoutcaster;
 
 	bg_character_t *character;
 
@@ -695,6 +696,42 @@ typedef enum
 } modelViewType_t;
 
 /**
+ * @enum soundSurface_s
+ * @typedef impactSurface_t
+ * @brief index used to identify sound to play surface hit
+ * wood, metal, roof, stone, glass, water, snow, flesh, carpet
+ */
+typedef enum soundSurface_s
+{
+	W_SND_SURF_DEFAULT = 0,  ///< default sound in case of no sound found for given surface
+	W_SND_SURF_FAR,          ///< used sound when player is far from the origin
+	W_SND_SURF_METAL,
+	W_SND_SURF_WOOD,
+	W_SND_SURF_GRASS,
+	W_SND_SURF_GRAVEL,
+	W_SND_SURF_GLASS,
+	W_SND_SURF_SNOW,
+	W_SND_SURF_ROOF,
+	W_SND_SURF_CARPET,
+	W_SND_SURF_WATER,
+	W_SND_SURF_FLESH,
+	W_MAX_SND_SURF
+
+} soundSurface_t;
+
+/**
+ * @struct soundSurfaceTable_s
+ * @typedef soundSurfaceTable_t
+ * @brief Sound Surface Table
+ */
+typedef struct soundSurfaceTable_s
+{
+	int surfaceType;
+	const char *surfaceName;
+
+} soundSurfaceTable_t;
+
+/**
  * @struct partModel_s
  * @typedef partModel_t
  * @brief
@@ -716,6 +753,19 @@ typedef struct weaponModel_s
 	qhandle_t model;
 	qhandle_t skin[3];              ///< 0: neutral, 1: axis, 2: allied
 } weaponModel_t;
+
+#define MAX_WEAPON_SOUNDS   5
+
+/**
+ * @struct weaponSounds_s
+ * @typedef impactSounds_t
+ * @brief
+ */
+typedef struct weaponSounds_s
+{
+	int count;
+	sfxHandle_t sounds[MAX_WEAPON_SOUNDS];
+}weaponSounds_t;
 
 /**
  * @struct weaponInfo_s
@@ -740,9 +790,9 @@ typedef struct weaponInfo_s
 	qhandle_t modModels[6];             ///< like the scope for the rifles
 
 	vec3_t flashDlightColor;
-	sfxHandle_t flashSound[4];          ///< fast firing weapons randomly choose
-	sfxHandle_t flashEchoSound[4];      ///< distant gun firing sound
-	sfxHandle_t lastShotSound[4];       ///< sound of the last shot can be different (mauser doesn't have bolt action on last shot for example)
+	weaponSounds_t flashSound;          ///< fast firing weapons randomly choose
+	weaponSounds_t flashEchoSound;      ///< distant gun firing sound
+	weaponSounds_t lastShotSound;       ///< sound of the last shot can be different (mauser doesn't have bolt action on last shot for example)
 
 	qhandle_t weaponIcon[2];            ///< [0] is weap icon, [1] is highlight icon
 	int weaponIconScale;
@@ -756,6 +806,8 @@ typedef struct weaponInfo_s
 	qhandle_t missileAlliedSkin;
 	qhandle_t missileAxisSkin;
 	sfxHandle_t missileSound;
+	weaponSounds_t missileFallSound;
+	weaponSounds_t missileBouncingSound[W_MAX_SND_SURF];
 	void (*missileTrailFunc)(centity_t *, const struct weaponInfo_s *wi);
 	float missileDlight;
 	vec3_t missileDlightColor;
@@ -764,7 +816,10 @@ typedef struct weaponInfo_s
 	void (*ejectBrassFunc)(centity_t *);
 	vec3_t ejectBrassOffset;
 
-	sfxHandle_t readySound;             ///< an amibient sound the weapon makes when it's /not/ firing
+	vec3_t fireRecoil;                  ///< kick angle
+	vec3_t adjustLean;
+
+	sfxHandle_t readySound;             ///< an ambient sound the weapon makes when it's /not/ firing
 	sfxHandle_t firingSound;
 	sfxHandle_t overheatSound;
 	sfxHandle_t reloadSound;
@@ -775,6 +830,13 @@ typedef struct weaponInfo_s
 
 	sfxHandle_t switchSound;
 	sfxHandle_t noAmmoSound;
+
+	int impactSoundRange;
+	int impactSoundVolume;
+	float impactMarkRadius;
+	sfxHandle_t impactMark[W_MAX_SND_SURF];
+	weaponSounds_t impactSound[W_MAX_SND_SURF];
+	void (*impactFunc)(int weapon, int missileEffect, vec3_t origin, vec3_t dir, int surfFlags, float *radius, int *markDuration);
 } weaponInfo_t;
 
 #define MAX_VIEWDAMAGE  8
@@ -804,6 +866,8 @@ typedef struct
 
 #define MAX_BUFFERED_SOUNDSCRIPTS 16
 #define MAX_SOUNDSCRIPT_SOUNDS 16
+
+#define MAX_FLOATING_STRINGS 128
 
 /**
  * @struct soundScriptHandle_s
@@ -984,6 +1048,8 @@ typedef struct
 	int selectedScore;
 	int teamScores[2];
 	int teamPlayers[TEAM_NUM_TEAMS];         ///< for scoreboard
+	float teamPingMean[TEAM_NUM_TEAMS];
+	float teamPingSd[TEAM_NUM_TEAMS];
 	score_t scores[MAX_CLIENTS];
 	qboolean showScores;
 	qboolean scoreBoardShowing;
@@ -1291,7 +1357,8 @@ typedef struct
 	/// tracing bullet, predict hitboxes used on server
 	qboolean bulletTrace;
 
-	specName_t specOnScreenNames[MAX_CLIENTS];
+	specLabel_t specOnScreenLabels[MAX_FLOATING_STRINGS];
+	int         specStringCount;
 
 	vec3_t airstrikePlaneScale[2];
 
@@ -1313,8 +1380,6 @@ typedef struct
 } cg_t;
 
 #define MAX_LOCKER_DEBRIS   5
-
-#define MAX_IMPACT_SOUNDS   5
 
 /**
  * @struct cgMedia_t
@@ -1486,10 +1551,6 @@ typedef struct
 	qhandle_t wakeMarkShaderAnim;
 	qhandle_t bloodMarkShaders[5];
 	qhandle_t bloodDotShaders[5];
-	qhandle_t bulletMarkShader;
-	qhandle_t bulletMarkShaderMetal;
-	qhandle_t bulletMarkShaderWood;
-	qhandle_t bulletMarkShaderGlass;
 	qhandle_t burnMarkShader;
 
 	qhandle_t flamebarrel;
@@ -1503,7 +1564,7 @@ typedef struct
 	qhandle_t thirdPersonBinocModel;
 
 	// weapon effect shaders
-	qhandle_t rocketExplosionShader;
+	//qhandle_t rocketExplosionShader;
 
 	qhandle_t bloodCloudShader;
 	qhandle_t sparkParticleShader;
@@ -1525,15 +1586,10 @@ typedef struct
 	qhandle_t dirtParticle2Shader;
 
 	qhandle_t genericConstructionShader;
+	qhandle_t shoutcastLandmineShader;
 
 	qhandle_t alliedUniformShader;
 	qhandle_t axisUniformShader;
-
-	sfxHandle_t sfx_artilleryExp[3];
-	sfxHandle_t sfx_artilleryDist;
-
-	sfxHandle_t sfx_airstrikeExp[3];
-	sfxHandle_t sfx_airstrikeDist;
 
 	// sounds
 	sfxHandle_t noFireUnderwater;
@@ -1542,30 +1598,9 @@ typedef struct
 
 	sfxHandle_t footsteps[FOOTSTEP_TOTAL][4];
 	sfxHandle_t sfx_rockexp;
-	sfxHandle_t sfx_rockexpDist;
-	sfxHandle_t sfx_rockexpWater;
-	sfxHandle_t sfx_satchelexp;
-	sfxHandle_t sfx_satchelexpDist;
-	sfxHandle_t sfx_landmineexp;
-	sfxHandle_t sfx_landmineexpDist;
-	sfxHandle_t sfx_mortarexp[4];
-	sfxHandle_t sfx_mortarexpDist;
-	sfxHandle_t sfx_grenexp;
-	sfxHandle_t sfx_grenexpDist;
 	sfxHandle_t sfx_brassSound[BRASSSOUND_MAX][3][2];
 	sfxHandle_t sfx_rubbleBounce[3];
 
-	//sfxHandle_t sfx_bullet_fleshhit[MAX_IMPACT_SOUNDS];
-	sfxHandle_t sfx_bullet_metalhit[MAX_IMPACT_SOUNDS];
-	sfxHandle_t sfx_bullet_woodhit[MAX_IMPACT_SOUNDS];
-	sfxHandle_t sfx_bullet_glasshit[MAX_IMPACT_SOUNDS];
-	sfxHandle_t sfx_bullet_stonehit[MAX_IMPACT_SOUNDS];
-	sfxHandle_t sfx_bullet_waterhit[MAX_IMPACT_SOUNDS];
-
-	sfxHandle_t sfx_dynamiteexp;
-	sfxHandle_t sfx_dynamiteexpDist;
-
-	sfxHandle_t sfx_knifehit[5];
 	sfxHandle_t gibSound;
 	sfxHandle_t landSound[FOOTSTEP_TOTAL];
 
@@ -1579,8 +1614,6 @@ typedef struct
 	sfxHandle_t watrGaspSound;
 
 	sfxHandle_t underWaterSound;
-	sfxHandle_t fireSound;
-	sfxHandle_t waterSound;
 
 	sfxHandle_t countFight;
 	sfxHandle_t countPrepare;
@@ -1599,13 +1632,6 @@ typedef struct
 	sfxHandle_t flameStreamSound;
 
 	sfxHandle_t boneBounceSound;
-
-	sfxHandle_t grenadebounce[FOOTSTEP_TOTAL][2];
-
-	sfxHandle_t dynamitebounce1;
-	sfxHandle_t landminebounce1;
-
-	sfxHandle_t satchelbounce1;
 
 	qhandle_t cursor;
 
@@ -1890,6 +1916,13 @@ enum
 	POPUP_FILTER_MISSION  = BIT(2),
 	POPUP_FILTER_PICKUP   = BIT(3),
 	POPUP_FILTER_DEATH    = BIT(4),
+};
+
+// Big popup filters
+enum
+{
+	POPUP_BIG_FILTER_SKILL = BIT(0),
+	POPUP_BIG_FILTER_RANK  = BIT(1),
 };
 
 /// Locations
@@ -2472,7 +2505,6 @@ extern vmCvar_t cg_printObjectiveInfo;
 extern vmCvar_t cg_specHelp;
 #endif
 extern vmCvar_t cg_uinfo;
-extern vmCvar_t cg_useScreenshotJPEG;
 
 extern vmCvar_t demo_avifpsF1;
 extern vmCvar_t demo_avifpsF2;
@@ -2550,6 +2582,7 @@ extern vmCvar_t cg_drawTime;
 extern vmCvar_t cg_popupFadeTime;
 extern vmCvar_t cg_popupStayTime;
 extern vmCvar_t cg_popupFilter;
+extern vmCvar_t cg_popupBigFilter;
 extern vmCvar_t cg_graphicObituaries;
 
 extern vmCvar_t cg_fontScaleTP;
@@ -2589,6 +2622,7 @@ extern vmCvar_t cg_visualEffects;  ///< turn invisible (0) / visible (1) visual 
 #define PS_FX_NONE   0
 #define PS_FX_COMMON 1
 #define PS_FX_WATER  2
+#define PS_FX_FLESH  3
 
 // cg_atmospheric.c
 void CG_EffectParse(const char *effectstr);
@@ -2678,6 +2712,9 @@ void CG_TileClear(void);
 void CG_ColorForHealth(vec4_t hcolor);
 void CG_GetColorForHealth(int health, vec4_t hcolor);
 
+qboolean CG_WorldCoordToScreenCoordFloat(vec3_t point, float *x, float *y);
+void CG_AddOnScreenText(const char *text, vec3_t origin);
+
 // new hud stuff
 void CG_DrawRect(float x, float y, float width, float height, float size, const float *color);
 void CG_DrawRect_FixedBorder(float x, float y, float width, float height, int border, const float *color);
@@ -2730,6 +2767,7 @@ void CG_DrawWeapHeat(rectDef_t *rect, int align);
 void CG_DrawPlayerWeaponIcon(rectDef_t *rect, qboolean drawHighlighted, int align, vec4_t *refcolor);
 int CG_CalculateReinfTime(qboolean menu);
 float CG_CalculateReinfTime_Float(qboolean menu);
+int CG_CalculateShoutcasterReinfTime(team_t team);
 void CG_Fade(int r, int g, int b, int a, int time, int duration);
 
 // cg_player.c
@@ -2793,7 +2831,7 @@ void CG_RegisterItemVisuals(int itemNum);
 
 void CG_FireWeapon(centity_t *cent);
 
-void CG_MissileHitWall(int weapon, int missileEffect, vec3_t origin, vec3_t dir, int surfFlags);     // modified to send missilehitwall surface parameters
+void CG_MissileHitWall(int weapon, int missileEffect, vec3_t origin, vec3_t dir, int surfFlags, int entHit);     // modified to send missilehitwall surface parameters
 
 void CG_MissileHitWallSmall(vec3_t origin, vec3_t dir);
 void CG_DrawTracer(const vec3_t start, const vec3_t finish);
@@ -2803,7 +2841,7 @@ void CG_MortarEFX(centity_t *cent);
 
 void CG_MissileHitPlayer(centity_t *cent, int weapon, vec3_t origin, vec3_t dir, int entityNum);
 qboolean CG_CalcMuzzlePoint(int entityNum, vec3_t muzzle);
-void CG_Bullet(vec3_t end, int sourceEntityNum, qboolean flesh, int fleshEntityNum, int otherEntNum2, float waterfraction, int seed);
+void CG_Bullet(int weapon, vec3_t end, int sourceEntityNum, qboolean flesh, int fleshEntityNum, int otherEntNum2, float waterfraction, int seed);
 
 void CG_RailTrail(vec3_t color, vec3_t start, vec3_t end, int type, int index);
 void CG_RailTrail2(vec3_t color, vec3_t start, vec3_t end, int index, int sideNum);
@@ -2812,6 +2850,9 @@ void CG_AddViewWeapon(playerState_t *ps);
 void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent);
 
 void CG_OutOfAmmoChange(qboolean allowforceswitch);
+
+soundSurface_t CG_GetSoundSurfaceIndex(int surfFlags);
+sfxHandle_t CG_GetRandomSoundSurface(weaponSounds_t *weaponSounds, soundSurface_t surf, qboolean forceDefault);
 
 // added to header to access from outside cg_weapons.c
 void CG_AddDebris(vec3_t origin, vec3_t dir, int speed, int duration, int count, trace_t *trace);
@@ -3007,7 +3048,7 @@ void CG_AddToNotify(const char *str);
 const char *CG_LocalizeServerCommand(const char *buf);
 void CG_wstatsParse_cmd(void);
 
-void CG_parseWeaponStats_cmd(void(txt_dump) (const char *));
+void CG_parseWeaponStats_cmd(void (txt_dump) (const char *));
 //void CG_parseBestShotsStats_cmd(qboolean doTop, void(txt_dump) (const char *));
 //void CG_parseTopShotsStats_cmd(qboolean doTop, void(txt_dump) (const char *));
 //void CG_scores_cmd(void);

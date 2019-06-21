@@ -77,8 +77,19 @@
 #define DEFAULT_VIEWHEIGHT  40
 #define CROUCH_VIEWHEIGHT   16
 #define DEAD_VIEWHEIGHT     -16
-
 #define PRONE_VIEWHEIGHT    -8
+
+#define DEFAULT_BODYHEIGHT     36  ///< delta height -4
+#define CROUCH_BODYHEIGHT      24  ///< delta height 8
+#define CROUCH_IDLE_BODYHEIGHT 18  ///< delta height 2
+#define DEAD_BODYHEIGHT        4   ///< delta height 20
+#define PRONE_BODYHEIGHT       -8  ///< delta height 0
+
+#define DEFAULT_BODYHEIGHT_DELTA        -4  ///< default body height 36
+#define CROUCH_BODYHEIGHT_DELTA          8  ///< crouch  body height 24
+#define CROUCH_IDLE_BODYHEIGHT_DELTA     2  ///< crouch  idle body height 18
+#define DEAD_BODYHEIGHT_DELTA            20 ///< dead    body height 4
+#define PRONE_BODYHEIGHT_DELTA           0  ///< prone   body height -8
 
 extern vec3_t playerlegsProneMins;
 extern vec3_t playerlegsProneMaxs;
@@ -1165,11 +1176,6 @@ typedef struct weapontable_s
 
 	float knockback;                ///< bg -
 	int muzzlePointOffset[3];       ///< g - forward, left, up
-
-	float adjustLean;               ///< cg -
-
-	float fireRecoilPitch;          ///< cg -
-	float fireRecoilYaw;            ///< cg -
 
 	int weapRecoilDuration;         ///< bg -
 	float weapRecoilPitch[2];       ///< bg -
@@ -2712,6 +2718,7 @@ int BG_ClassTextToClass(const char *token);
 skillType_t BG_ClassSkillForClass(int classnum);
 
 int BG_FootstepForSurface(int surfaceFlags);
+int BG_SurfaceForFootstep(int surfaceFlags);
 
 #define MATCH_MINPLAYERS "4"///<"1"	// Minimum # of players needed to start a match
 
@@ -2949,9 +2956,9 @@ typedef enum
 	GAMESOUND_PLAYER_GURP2,        ///< "sound/player/gurp2.wav"
 	GAMESOUND_PLAYER_BUBBLE,
 	GAMESOUND_WPN_AIRSTRIKE_PLANE, ///< "sound/weapons/airstrike/airstrike_plane.wav"    Used by Airstrike marker after it triggers
-	GAMESOUND_WPN_ARTILLERY_FLY_1, ///< "sound/weapons/artillery/artillery_fly_1.wav"    Used by Artillery before impact
-	GAMESOUND_WPN_ARTILLERY_FLY_2, ///< "sound/weapons/artillery/artillery_fly_2.wav"
-	GAMESOUND_WPN_ARTILLERY_FLY_3, ///< "sound/weapons/artillery/artillery_fly_3.wav"
+	//GAMESOUND_WPN_ARTILLERY_FLY_1, ///< "sound/weapons/artillery/artillery_fly_1.wav"    Used by Artillery before impact // moved in weap file
+	//GAMESOUND_WPN_ARTILLERY_FLY_2, ///< "sound/weapons/artillery/artillery_fly_2.wav"                                    // moved in weap file
+	//GAMESOUND_WPN_ARTILLERY_FLY_3, ///< "sound/weapons/artillery/artillery_fly_3.wav"                                    // moved in weap file
 
 	GAMESOUND_MISC_REVIVE,         ///< "sound/misc/vo_revive.wav"                       Used by revival Needle
 	GAMESOUND_MISC_REFEREE,        ///< "sound/misc/referee.wav"                         Game Referee performs action

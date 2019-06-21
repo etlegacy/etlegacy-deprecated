@@ -646,6 +646,7 @@ typedef struct
 	int medals[SK_NUM_SKILLS];                          ///< medals
 
 	int referee;
+	int shoutcaster;
 	int rounds;
 	int spec_invite;
 	int spec_team;
@@ -1458,6 +1459,9 @@ qboolean G_MapIsValidCampaignStartMap(void);
 
 team_t G_GetTeamFromEntity(gentity_t *ent);
 
+const char *G_StringContains(const char *str1, const char *str2, int casesensitive);
+qboolean G_MatchString(const char *filter, const char *name, int casesensitive);
+
 /**
  * @struct grefEntity_t
  * @brief cut down refEntity_t w/ only stuff needed for player bone calculation
@@ -1872,7 +1876,9 @@ extern vmCvar_t pmove_fixed;
 extern vmCvar_t pmove_msec;
 
 extern vmCvar_t g_scriptName;               ///< name of script file to run (instead of default for that map)
-extern vmCvar_t g_scriptDebug;
+extern vmCvar_t g_scriptDebug;              ///< what level of detail do we want script printing to go to.
+extern vmCvar_t g_scriptDebugLevel;         ///< filter out script debug messages from other entities
+extern vmCvar_t g_scriptDebugTarget;
 
 extern vmCvar_t g_userAim;
 extern vmCvar_t g_developer;
@@ -1888,9 +1894,6 @@ extern vmCvar_t g_covertopsChargeTime;
 
 extern vmCvar_t g_debugConstruct;
 extern vmCvar_t g_landminetimeout;
-
-/// What level of detail do we want script printing to go to.
-extern vmCvar_t g_scriptDebugLevel;
 
 /// How fast do SP player and allied bots move?
 extern vmCvar_t g_movespeed;
@@ -1925,6 +1928,7 @@ extern vmCvar_t g_swapteams;
 extern vmCvar_t g_antilag;
 
 extern vmCvar_t refereePassword;
+extern vmCvar_t shoutcastPassword;
 extern vmCvar_t g_spectatorInactivity;
 extern vmCvar_t match_latejoin;
 extern vmCvar_t match_minplayers;
@@ -2026,6 +2030,8 @@ extern vmCvar_t team_maxMachineguns;
 extern vmCvar_t team_maxRockets;
 extern vmCvar_t team_maxRiflegrenades;
 extern vmCvar_t team_maxLandmines;
+// misc
+extern vmCvar_t team_riflegrenades;
 // skills
 extern vmCvar_t skill_soldier;
 extern vmCvar_t skill_medic;
@@ -2330,6 +2336,10 @@ void G_pause_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fPause);
 void G_players_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fDump);
 void G_ready_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fDump);
 void G_say_teamnl_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue);
+void G_sclogin_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue);
+void G_sclogout_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue);
+void G_makesc_cmd(void);
+void G_removesc_cmd(void);
 void G_scores_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue);
 void G_specinvite_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fLock);
 void G_speclock_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fLock);
@@ -2437,6 +2447,8 @@ void G_refSpeclockTeams_cmd(gentity_t *ent, qboolean fLock);
 void G_refWarmup_cmd(gentity_t *ent);
 void G_refWarning_cmd(gentity_t *ent);
 void G_refMute_cmd(gentity_t *ent, qboolean mute);
+void G_refMakeShoutcaster_cmd(gentity_t *ent);
+void G_refRemoveShoutcaster_cmd(gentity_t *ent);
 void G_refLogout_cmd(gentity_t *ent);
 int G_refClientnumForName(gentity_t *ent, const char *name);
 void G_refPrintf(gentity_t *ent, const char *fmt, ...) _attribute((format(printf, 2, 3)));
@@ -2445,6 +2457,11 @@ void G_MakeReferee(void);
 void G_RemoveReferee(void);
 void G_MuteClient(void);
 void G_UnMuteClient(void);
+qboolean G_IsShoutcastPasswordSet(void);
+qboolean G_IsShoutcastStatusAvailable(gentity_t *ent);
+void G_MakeShoutcaster(gentity_t *ent);
+void G_RemoveShoutcaster(gentity_t *ent);
+void G_RemoveAllShoutcasters(void);
 
 // g_team.c
 extern const char *aTeams[TEAM_NUM_TEAMS];
@@ -2520,7 +2537,6 @@ int EntsThatRadiusCanDamage(vec3_t origin, float radius, int *damagedList);
 qboolean G_LandmineTriggered(gentity_t *ent);
 qboolean G_LandmineArmed(gentity_t *ent);
 qboolean G_LandmineUnarmed(gentity_t *ent);
-team_t G_LandmineTeam(gentity_t *ent);
 qboolean G_LandmineSpotted(gentity_t *ent);
 qboolean G_AvailableAirstrike(gentity_t *ent);
 qboolean G_AvailableArtillery(gentity_t *ent);
@@ -2706,12 +2722,11 @@ void G_MapVoteInfoWrite(void);
 void G_MapVoteInfoRead(void);
 
 // g_misc flags
-#define G_MISC_SHOVE_NOZ               BIT(0)
+#define G_MISC_SHOVE_Z                 BIT(0)
 // BIT(1) unused
 // BIT(2) unused
 #define G_MISC_CROSSHAIR_DYNAMITE      BIT(3)
 #define G_MISC_CROSSHAIR_LANDMINE      BIT(4)
-#define G_MISC_LOOSE_SPAWN_PROTECTION  BIT(5)
 
 // g_voting flags
 #define VOTEF_USE_TOTAL_VOTERS      1   ///< use total voters instead of total players to decide if a vote passes
@@ -2738,20 +2753,21 @@ typedef struct weapFireTable_t
 {
 	weapon_t weapon;
 	gentity_t * (*fire)(gentity_t * ent); ///< -
-	void (*think)(gentity_t *ent);      ///< -
-	void (*free)(gentity_t *ent);       ///< -
-	int eType;                          ///< -
-	int eFlags;                         ///< -
-	int svFlags;                        ///< -
-	int contents;                       ///< -
-	int trType;                         ///< -
-	int trTime;                         ///< -
-	float boundingBox[2][3];            ///< - mins / maxs bounding box vectors (for missile ent)
-	int clipMask;                       ///< -
-	int nextThink;                      ///< -
-	int accuracy;                       ///< -
-	int health;                         ///< -
-	int timeStamp;                      ///< -
+	void (*think)(gentity_t *ent);        ///< -
+	void (*free)(gentity_t *ent);         ///< -
+	int eType;                            ///< -
+	int eFlags;                           ///< -
+	int svFlags;                          ///< -
+	int contents;                         ///< -
+	int trType;                           ///< -
+	int trTime;                           ///< -
+	float boundingBox[2][3];              ///< - mins / maxs bounding box vectors (for missile ent)
+	int clipMask;                         ///< -
+	int nextThink;                        ///< -
+	int accuracy;                         ///< -
+	int health;                           ///< -
+	int timeStamp;                        ///< -
+	int impactDamage;                     ///< - func_explosives damage, probably adjust this based on velocity for throwable missile
 
 } weapFireTable_t;
 
