@@ -7,11 +7,11 @@ weaponDef
 		//pickupSound		"sound/misc/w_pkup.wav"
 		
 		weaponConfig		"models/weapons2/colt/weapon.cfg"
-		handsModel			"models/weapons2/colt/v_colt_hand.mdc"
+		handsModel			"models/multiplayer/silencedcolt/v_silencedcolt_hand.md3"
 		
 		flashDlightColor	1.0 0.6 0.23
-		flashSound		"sound/weapons/colt/colt_fire.wav"		// supports up to 4 flash sounds
-                flashSoundSilenced      "sound/weapons/colt/colt_silence.wav"           // supports up to 4 flash sounds
+		flashSound			"sound/weapons/colt/colt_fire.wav"		// supports up to 4 flash sounds
+        flashSoundSilenced  "sound/weapons/colt/colt_silence.wav"   // supports up to 4 flash sounds
 		flashEchoSound		"sound/weapons/colt/colt_far.wav"		// supports up to 4 flash echo sounds
 		//lastShotSound		""										// supports up to 4 last shot sounds
 		

@@ -2545,7 +2545,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 	{
 		gun.hModel = weapon->modModels[0];
 	}
-	else if (!isFirstPerson && (GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_PISTOL) && (cg.pmext.silencedSideArm & WALTTYPE_SILENCER))
+	else if (!isFirstPerson && (GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_SILENCEABLE) && (cg.pmext.silencedSideArm & WALTTYPE_SILENCER))
 	{
 		gun.hModel = weapon->modModels[0];
 	}
@@ -2686,40 +2686,25 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 
 		for (i = W_PART_1; i < W_MAX_PARTS; i++)
 		{
-			if ((GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & WALTTYPE_BIPOD) && (i == W_PART_4 || i == W_PART_5))
-			{
-				if (ps && !cg.renderingThirdPerson && cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
-				{
-					continue;
-				}
-			}
-
-			if ((GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_PISTOL) && !(cg.pmext.silencedSideArm & WALTTYPE_SILENCER) &&
-			    ((weaponNum == WP_LUGER && i == W_PART_4) || (weaponNum == WP_COLT && i == W_PART_5)))
-			{
-				if (ps && !cg.renderingThirdPerson && cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
-				{
-					continue;
-				}
-			}
-
-			spunpart      = qfalse;
-			barrel.hModel = weapon->partModels[modelViewType][i].model;
+			spunpart = qfalse;
 
 			if ((GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & WALTTYPE_BIPOD))
 			{
-				if (i == W_PART_3)
+				if (ps && !cg.renderingThirdPerson && cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
 				{
-					if (ps && !cg.renderingThirdPerson && cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
+
+					if ((i == W_PART_4 || i == W_PART_5))
 					{
+						continue;
+					}
+					else if (i == W_PART_3)
+					{
+
 						angles[PITCH] = angles[YAW] = 0.f;
 						angles[ROLL]  = .8f * AngleNormalize180(cg.pmext.mountedWeaponAngles[YAW] - ps->viewangles[YAW]);
 						spunpart      = qtrue;
 					}
-				}
-				else if (i == W_PART_1 || i == W_PART_2)
-				{
-					if (ps && !cg.renderingThirdPerson && cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
+					else if (i == W_PART_1 || i == W_PART_2)
 					{
 						angles[YAW]   = angles[ROLL] = 0.f;
 						angles[PITCH] = -.4f * AngleNormalize180(cg.pmext.mountedWeaponAngles[PITCH] - ps->viewangles[PITCH]);
@@ -2727,6 +2712,17 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 					}
 				}
 			}
+			else if ((GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_SILENCEABLE) && !(cg.pmext.silencedSideArm & WALTTYPE_SILENCER) &&
+			         ((weaponNum == WP_LUGER && i == W_PART_5) || (weaponNum == WP_COLT && i == W_PART_6)))
+			{
+				if (ps && !cg.renderingThirdPerson && cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
+				{
+					continue;
+				}
+			}
+
+			barrel.hModel = weapon->partModels[modelViewType][i].model;
+
 			//else if (weaponNum == WP_MOBILE_MG42_SET || weaponNum == WP_MOBILE_BROWNING_SET)
 			//{
 			//}
@@ -3076,7 +3072,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 	if (weaponNum != WP_FLAMETHROWER)     // hide the flash also for now
 	{
 		// weapons that don't need to go any further as they have no flash or light
-                if (!flash.hModel || (cg.pmext.silencedSideArm & WALTTYPE_SILENCER))
+		if (!flash.hModel || (cg.pmext.silencedSideArm & WALTTYPE_SILENCER))
 		{
 			return;
 		}
@@ -4840,30 +4836,47 @@ void CG_FireWeapon(centity_t *cent)
 
 	if (!(cent->currentState.eFlags & EF_ZOOMING))       // don't play sounds or eject brass if zoomed in
 	{
-		int         c             = weap->flashSound.count;
+		int         c;
 		sfxHandle_t firesound     = 0;
 		sfxHandle_t fireEchosound = 0;
 
-		if (c)
+		if (((GetWeaponTableData(cent->currentState.weapon)->type & WEAPON_TYPE_SILENCEABLE) && (cg.pmext.silencedSideArm & WALTTYPE_SILENCER))
+		    /*|| GetWeaponTableData(cent->currentState.weapon)->attributes & WEAPON_ATTRIBUT_SILENCED*/)
 		{
-			c = rand() % c;
-
-			firesound     = weap->flashSound.sounds[c];
-			fireEchosound = weap->flashEchoSound.sounds[c];
-		}
-
-		// try to use the lastShotSound, but don't assume it's there.
-		// if a weapon without the sound calls it, keep regular fire sound
-		if ((cent->currentState.event & ~EV_EVENT_BITS) == EV_FIRE_WEAPON_LASTSHOT)
-		{
-			c = weap->lastShotSound.count;
+			c = weap->flashSoundSilenced.count;
 
 			if (c)
 			{
 				c = rand() % c;
 
-				firesound     = weap->lastShotSound.sounds[c];
+				firesound = weap->flashSoundSilenced.sounds[c];
+			}
+		}
+		else
+		{
+			c = weap->flashSound.count;
+
+			if (c)
+			{
+				c = rand() % c;
+
+				firesound     = weap->flashSound.sounds[c];
 				fireEchosound = weap->flashEchoSound.sounds[c];
+			}
+
+			// try to use the lastShotSound, but don't assume it's there.
+			// if a weapon without the sound calls it, keep regular fire sound
+			if ((cent->currentState.event & ~EV_EVENT_BITS) == EV_FIRE_WEAPON_LASTSHOT)
+			{
+				c = weap->lastShotSound.count;
+
+				if (c)
+				{
+					c = rand() % c;
+
+					firesound     = weap->lastShotSound.sounds[c];
+					fireEchosound = weap->flashEchoSound.sounds[c];
+				}
 			}
 		}
 
