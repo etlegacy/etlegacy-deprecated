@@ -1781,7 +1781,7 @@ void R_DebugPolygon(int color, int numPoints, float *points)
 
     // draw solid shade
 #ifdef FEATURE_RENDERER_GLES
-    qglColor4f( color&1, (color>>1)&1, (color>>2)&1, 1.0f );
+    qglColor4f( color & 1, (color >> 1) & 1, (color >> 2) & 1, 1.0f );
     qglVertexPointer  ( 3, GL_FLOAT, 0, points );
     qglDrawArrays( GL_TRIANGLE_FAN, 0, numPoints );
 #else

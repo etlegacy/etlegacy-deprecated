@@ -909,30 +909,48 @@ void RE_StretchRaw(int x, int y, int w, int h, int cols, int rows, const byte *d
 	qglColor3f(tr.identityLight, tr.identityLight, tr.identityLight);
 
 #ifdef FEATURE_RENDERER_GLES
-    GLfloat tex[] = {
-            0.5f / cols,  0.5f / rows,
-            ( cols - 0.5f ) / cols ,  0.5f / rows,
-            ( cols - 0.5f ) / cols, ( rows - 0.5f ) / rows,
-            0.5f / cols, ( rows - 0.5f ) / rows };
-    GLfloat vtx[] = {
-            x, y,
-            x+w, y,
-            x+w, y+h,
-            x, y+h };
+    GLfloat tex[] =
+    {
+        0.5f / cols,  0.5f / rows,
+        ( cols - 0.5f ) / cols ,  0.5f / rows,
+        ( cols - 0.5f ) / cols, ( rows - 0.5f ) / rows,
+        0.5f / cols, ( rows - 0.5f ) / rows
+    };
+    GLfloat vtx[] =
+    {
+        x, y,
+        x + w, y,
+        x + w, y + h,
+        x, y + h
+    };
     GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
     GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
+
     if (glcol)
+    {
         qglDisableClientState(GL_COLOR_ARRAY);
+    }
+
     if (!text)
+    {
         qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+    }
+
 	qglEnableClientState(GL_VERTEX_ARRAY);								   
     qglTexCoordPointer( 2, GL_FLOAT, 0, tex );
     qglVertexPointer  ( 2, GL_FLOAT, 0, vtx );
     qglDrawArrays( GL_TRIANGLE_FAN, 0, 4 );
+
     if (!text)
+    {
         qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
+    }
+
     if (glcol)
+    {
         qglEnableClientState(GL_COLOR_ARRAY);
+    }
+
 #else
 	qglBegin(GL_QUADS);
 	qglTexCoord2f(0.5f / cols, 0.5f / rows);

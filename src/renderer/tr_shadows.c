@@ -57,7 +57,7 @@ static int       numEdgeDefs[SHADER_MAX_VERTEXES];
 static int       facing[SHADER_MAX_INDEXES / 3];
 
 #ifdef FEATURE_RENDERER_GLES
-static unsigned short indexes[6*MAX_EDGE_DEFS*SHADER_MAX_VERTEXES];
+static unsigned short indexes[6 * MAX_EDGE_DEFS * SHADER_MAX_VERTEXES];
 static int idx = 0;
 #endif
 

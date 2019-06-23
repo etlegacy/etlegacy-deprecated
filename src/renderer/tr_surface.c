@@ -1755,34 +1755,47 @@ void RB_SurfaceAxis(void)
 
 #ifdef FEATURE_RENDERER_GLES
     GLfloat col[] = {
-	  1,0,0, 1,
-	  1,0,0, 1,
-	  0,1,0, 1,
-	  0,1,0, 1,
-	  0,0,1, 1,
-	  0,0,1, 1
+	  1, 0, 0, 1,
+	  1, 0, 0, 1,
+	  0, 1, 0, 1,
+	  0, 1, 0, 1,
+	  0, 0, 1, 1,
+	  0, 0, 1, 1
 	 };
 	 GLfloat vtx[] = {
-	  0,0,0,
-	  16,0,0,
-	  0,0,0,
-	  0,16,0,
-	  0,0,0,
-	  0,0,16
+	  0, 0, 0,
+	  16, 0, 0,
+	  0, 0, 0,
+	  0, 16, 0,
+	  0, 0, 0,
+	  0, 0, 16
 	 };
 	GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
 	GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
+
 	if (text)
-		qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
+	{
+	    qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
+	}
+
 	if (!glcol)
-		qglEnableClientState( GL_COLOR_ARRAY);
+	{
+	    qglEnableClientState( GL_COLOR_ARRAY);
+	}
+
 	qglColorPointer( 4, GL_UNSIGNED_BYTE, 0, col );
 	qglVertexPointer (3, GL_FLOAT, 0, vtx);
 	qglDrawArrays(GL_LINES, 0, 6);
+	
 	if (text)
-		qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+	{
+	    qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+	}
+
 	if (!glcol)
-        qglDisableClientState( GL_COLOR_ARRAY);
+	{
+	    qglDisableClientState( GL_COLOR_ARRAY);
+	}
 #else
     qglBegin(GL_LINES);
     qglColor3f(1, 0, 0);
