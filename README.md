@@ -298,7 +298,7 @@ v3d_freq=500
 ```
 
 You may be able to increase the overclock more than this, but increasing too far will be unstable and will likely crash
-your Pi.
+your Pi. If you experience crashes whilst having the overclock in place, decrease the values accordingly.
 
 Install using experimental OpenGL driver:
 
