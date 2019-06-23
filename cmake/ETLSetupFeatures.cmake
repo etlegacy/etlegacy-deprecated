@@ -37,6 +37,7 @@ if(BUILD_CLIENT)
 			set(COMMON_INCLUDE_DIRS
 					"/opt/vc/include"
 					"/opt/vc/include/interface/vcos"
+					"/opt/vc/include/interface/vmcs_host"
 					"/opt/vc/include/interface/vmcs_host/linux"
 					"/opt/vc/include/interface/vcos/pthreads"
 					)
@@ -46,6 +47,7 @@ if(BUILD_CLIENT)
 
 			LIST(APPEND CLIENT_LIBRARIES
 					bcm_host
+					pthread
 					)
 		endif()
 	endif()

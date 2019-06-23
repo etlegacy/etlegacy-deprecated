@@ -283,8 +283,22 @@ Be sure to set the CMake variables (see above) beforehand.
 
 ### Raspberry Pi
 
-ET: Legacy supports both OpenGL and OpenGL ES on the Raspberry Pi. The experimental OpenGL driver will provide
-better performance when playing ET: Legacy.
+ET: Legacy supports both OpenGL and OpenGL ES on the Raspberry Pi.
+
+Using the Raspbian Operating System, both OpenGL and GLES run the game providing good performance at low-mid settings, typically between 20-60 FPS.
+
+Using Ubuntu MATE, neither OpenGL or GLES work currently - tested with Ubuntu MATE 18.04 beta 1.
+
+It is advised to add a slight overclock to the GPU to provide a better experience. Run `sudo nano /boot/config.txt` and
+add the following to the config file:
+
+```
+core_freq=500
+v3d_freq=500
+```
+
+You may be able to increase the overclock more than this, but increasing too far will be unstable and will likely crash
+your Pi.
 
 Install using experimental OpenGL driver:
 
@@ -292,7 +306,7 @@ Install using experimental OpenGL driver:
 2.  Modify `easybuild.sh` and set the `FEATURE_RENDERER_GLES` flag to 0 under the `RPI` section.
 3.  If building SDL from source, ensure you have passed `--host=armv7l-raspberry-linux-gnueabihf` when calling the
     configure command. Otherwise, keep `BUNDLED_SDL=1` in `easybuild.sh`.
-4.  Increase GPU memory split to at least 192mb.
+4.  Increase GPU memory split to at least 256mb.
 5.  Run `./easybuild.sh -RPI -j4` to build for Raspberry Pi.
 6.  Start the game in windowed mode. Full screen mode has issues currently.
 
@@ -304,8 +318,10 @@ Install using OpenGLES:
     `--host=armv7l-raspberry-linux-gnueabihf --host=armv7l-raspberry-linux-gnueabihf --disable-pulseaudio
         --disable-esd --disable-video-mir --disable-video-wayland --disable-video-x11 --disable-video-opengl`
     when calling the configure command. This will ensure SDL is built with an OpenGL ES backend. Otherwise, keep `BUNDLED_SDL=1` in `easybuild.sh`.
-4.  Increase GPU memory split to at least 192mb.
+    Note: The host flag is necessary for SDL to correctly recognise Raspberry Pi 2 and greater.
+4.  Increase GPU memory split to at least 256mb.
 5.  Run `./easybuild.sh -RPI -j4` to build for Raspberry Pi.
+6.  Exit X11 to terminal in order to enable hardware accelerated rendering.
 
 
 LICENSE
