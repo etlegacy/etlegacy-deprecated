@@ -2418,7 +2418,7 @@ static void PM_BeginWeaponChange(weapon_t oldWeapon, weapon_t newWeapon, qboolea
 
 	if (newWeapon == GetWeaponTableData(oldWeapon)->weapAlts)
 	{
-		pm->ps->weaponTime += GetWeaponTableData(oldWeapon)->altSwitchTimeBegin;
+		pm->ps->weaponTime += GetWeaponTableData(oldWeapon)->altSwitchToTime;
 	}
 	else
 	{
@@ -2479,7 +2479,7 @@ static void PM_FinishWeaponChange(void)
 			return;
 		}
 
-		pm->ps->weaponTime += GetWeaponTableData(newWeapon)->altSwitchTimeFinish;
+		pm->ps->weaponTime += GetWeaponTableData(newWeapon)->altSwitchFromTime;
 		BG_UpdateConditionValue(pm->ps->clientNum, ANIM_COND_WEAPON, newWeapon, qtrue);
 
 		if (pm->ps->eFlags & EF_PRONE)
@@ -2704,7 +2704,7 @@ static void PM_FinishAltWeaponChange()
 	if (pm->pmext->silencedSideArm & weaponAltType)
 	{
 		PM_StartWeaponAnim(WEAP_ALTSWITCHFROM);
-		pm->ps->weaponTime += GetWeaponTableData(pm->ps->weapon)->altSwitchTimeFinish;
+		pm->ps->weaponTime += GetWeaponTableData(pm->ps->weapon)->altSwitchFromTime;
 
 		if (pm->ps->eFlags & EF_PRONE)
 		{
@@ -2718,7 +2718,7 @@ static void PM_FinishAltWeaponChange()
 	else
 	{
 		PM_StartWeaponAnim(WEAP_ALTSWITCHTO);
-		pm->ps->weaponTime += GetWeaponTableData(pm->ps->weapon)->altSwitchTimeBegin;
+		pm->ps->weaponTime += GetWeaponTableData(pm->ps->weapon)->altSwitchToTime;
 
 		if (pm->ps->eFlags & EF_PRONE)
 		{
