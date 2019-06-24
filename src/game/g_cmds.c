@@ -3543,7 +3543,7 @@ qboolean G_TankIsMountable(gentity_t *ent, gentity_t *other)
 		return qfalse;
 	}
 
-	if (ent->client->pmext.silencedSideArm & WALTTYPE_BIPOD)
+	if (other->client->pmext.silencedSideArm & WALTTYPE_BIPOD)
 	{
 		return qfalse;
 	}
