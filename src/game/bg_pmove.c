@@ -2382,6 +2382,9 @@ static void PM_BeginWeaponChange(weapon_t oldWeapon, weapon_t newWeapon, qboolea
 
 	pm->ps->nextWeapon = newWeapon;
 
+	// force unscoping weapon
+	pm->pmext->silencedSideArm &= ~WALTTYPE_SCOPE;
+
 	// it's an alt mode, play different anim
 	if (newWeapon == GetWeaponTableData(oldWeapon)->weapAlts)
 	{
@@ -2644,8 +2647,8 @@ static void PM_BeginAltWeaponChange(qboolean reload)
 	}
 
 	PM_AddEvent(EV_CHANGE_WEAPON_2);
-        
-        BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DROPWEAPON, qfalse, qfalse);
+
+	BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DROPWEAPON, qfalse, qfalse);
 
 	if (reload)
 	{
