@@ -2417,7 +2417,7 @@ static void CG_FlamethrowerFlame(centity_t *cent, vec3_t origin)
 	return;
 }
 
-/**
+/*
  * @brief CG_AddWeaponWithPowerups
  * @param[in] gun
  * @param powerups - unused
@@ -2425,13 +2425,15 @@ static void CG_FlamethrowerFlame(centity_t *cent, vec3_t origin)
  * @param cent - unused
  *
  * @todo cleanup ?
- */
+ * @note unused
+ *
 static void CG_AddWeaponWithPowerups(refEntity_t *gun, int powerups, playerState_t *ps, centity_t *cent)
 {
 	// add powerup effects
 	// no powerup effects on weapons
 	trap_R_AddRefEntityToScene(gun);
 }
+*/
 
 // TODO: unused ?
 //#define DEBUG_WEAPON
@@ -2470,7 +2472,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 	}
 
 	// don't draw weapon stuff when looking through a scope
-	if (cg.pmext.silencedSideArm & WALTTYPE_SCOPE)
+	if (cent->currentState.effect1Time & WALTTYPE_SCOPE)
 	{
 		if (isFirstPerson)
 		{
@@ -2541,11 +2543,11 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 	}
 
 	// deployed mortar use a specific model in 3rd person
-	if (!isFirstPerson && (GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & WALTTYPE_BIPOD))
+	if (!isFirstPerson && (GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_MORTAR) && (cent->currentState.effect1Time & WALTTYPE_BIPOD))
 	{
 		gun.hModel = weapon->modModels[0];
 	}
-	else if (!isFirstPerson && (GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_SILENCEABLE) && (cg.pmext.silencedSideArm & WALTTYPE_SILENCER))
+	else if (!isFirstPerson && (GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_SILENCEABLE) && (cent->currentState.effect1Time & WALTTYPE_SILENCER))
 	{
 		gun.hModel = weapon->modModels[0];
 	}
@@ -2600,7 +2602,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 		}
 	}
 
-	if (ps && !cg.renderingThirdPerson && (GetWeaponTableData(cg.predictedPlayerState.weapon)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & WALTTYPE_BIPOD)
+	if (ps && !cg.renderingThirdPerson && (GetWeaponTableData(cg.predictedPlayerState.weapon)->type & WEAPON_TYPE_MORTAR) && (cent->currentState.effect1Time & WALTTYPE_BIPOD)
 	    && cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
 	{
 		vec3_t angles;
@@ -2659,14 +2661,14 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 			}
 		}
 
-		CG_AddWeaponWithPowerups(&gun, cent->currentState.powerups, ps, cent);
+                trap_R_AddRefEntityToScene(&gun);
 	}
 
 	if ((!ps || cg.renderingThirdPerson) && GetWeaponTableData(weaponNum)->attributes & WEAPON_ATTRIBUT_AKIMBO)
 	{
 		// add to other hand as well
 		CG_PositionEntityOnTag(&gun, parent, "tag_weapon2", 0, NULL);
-		CG_AddWeaponWithPowerups(&gun, cent->currentState.powerups, ps, cent);
+		trap_R_AddRefEntityToScene(&gun);
 	}
 
 	Com_Memset(&barrel, 0, sizeof(barrel));
@@ -2688,7 +2690,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 		{
 			spunpart = qfalse;
 
-			if ((GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & WALTTYPE_BIPOD))
+			if ((GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_MORTAR) && (cent->currentState.effect1Time & WALTTYPE_BIPOD))
 			{
 				if (ps && !cg.renderingThirdPerson && cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
 				{
@@ -2712,7 +2714,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 					}
 				}
 			}
-			else if ((GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_SILENCEABLE) && !(cg.pmext.silencedSideArm & WALTTYPE_SILENCER) &&
+			else if ((GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_SILENCEABLE) && !(cent->currentState.effect1Time & WALTTYPE_SILENCER) &&
 			         ((weaponNum == WP_LUGER && i == W_PART_5) || (weaponNum == WP_COLT && i == W_PART_6)))
 			{
 				if (ps && !cg.renderingThirdPerson && cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
@@ -2745,7 +2747,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 
 				drawpart = CG_GetPartFramesFromWeap(cent, &barrel, parent, i, weapon);
 
-				if ((GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & WALTTYPE_BIPOD) && (i == W_PART_1 || i == W_PART_2))
+				if ((GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_MORTAR) && (cent->currentState.effect1Time & WALTTYPE_BIPOD) && (i == W_PART_1 || i == W_PART_2))
 				{
 					if (ps && !cg.renderingThirdPerson && cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
 					{
@@ -2781,7 +2783,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 						}
 					}
 
-					CG_AddWeaponWithPowerups(&barrel, cent->currentState.powerups, ps, cent);
+					trap_R_AddRefEntityToScene(&barrel);
 
 					if (weaponNum == WP_SATCHEL_DET && i == W_PART_1)
 					{
@@ -2815,11 +2817,11 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 						satchelDetPart.hModel = weapon->modModels[0];
 						CG_PositionEntityOnTag(&satchelDetPart, &barrel, "tag_rlight", 0, NULL);
 						satchelDetPart.customShader = inRange ? weapon->modModels[2] : weapon->modModels[3];
-						CG_AddWeaponWithPowerups(&satchelDetPart, cent->currentState.powerups, ps, cent);
+						trap_R_AddRefEntityToScene(&satchelDetPart);
 
 						CG_PositionEntityOnTag(&satchelDetPart, &barrel, "tag_glight", 0, NULL);
 						satchelDetPart.customShader = inRange ? weapon->modModels[5] : weapon->modModels[4];
-						CG_AddWeaponWithPowerups(&satchelDetPart, cent->currentState.powerups, ps, cent);
+						trap_R_AddRefEntityToScene(&satchelDetPart);
 
 						satchelDetPart.hModel = weapon->modModels[1];
 						angles[PITCH]         = angles[ROLL] = 0.f;
@@ -2836,9 +2838,9 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 						AnglesToAxis(angles, satchelDetPart.axis);
 						CG_PositionRotatedEntityOnTag(&satchelDetPart, &barrel, "tag_needle");
 						satchelDetPart.customShader = weapon->modModels[2];
-						CG_AddWeaponWithPowerups(&satchelDetPart, cent->currentState.powerups, ps, cent);
+						trap_R_AddRefEntityToScene(&satchelDetPart);
 					}
-					else if ((GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & WALTTYPE_BIPOD) && i == W_PART_3)
+					else if ((GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_MORTAR) && (cent->currentState.effect1Time & WALTTYPE_BIPOD) && i == W_PART_3)
 					{
 						if (ps && !cg.renderingThirdPerson && cg.predictedPlayerState.weaponstate != WEAPON_RAISING)
 						{
@@ -2851,11 +2853,11 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 
 							bipodLeg.hModel = weapon->partModels[modelViewType][3].model;
 							CG_PositionEntityOnTag(&bipodLeg, &barrel, "tag_barrel4", 0, NULL);
-							CG_AddWeaponWithPowerups(&bipodLeg, cent->currentState.powerups, ps, cent);
+							trap_R_AddRefEntityToScene(&bipodLeg);
 
 							bipodLeg.hModel = weapon->partModels[modelViewType][4].model;
 							CG_PositionEntityOnTag(&bipodLeg, &barrel, "tag_barrel5", 0, NULL);
-							CG_AddWeaponWithPowerups(&bipodLeg, cent->currentState.powerups, ps, cent);
+							trap_R_AddRefEntityToScene(&bipodLeg);
 						}
 					}
 				}
@@ -2882,7 +2884,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 						if (barrel.hModel)
 						{
 							CG_PositionEntityOnTag(&barrel, parent, "tag_scope", 0, NULL);
-							CG_AddWeaponWithPowerups(&barrel, cent->currentState.powerups, ps, cent);
+							trap_R_AddRefEntityToScene(&barrel);
 						}
 					}
 				}
@@ -2895,13 +2897,13 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 			if (barrel.hModel)
 			{
 				CG_PositionEntityOnTag(&barrel, &gun, (weaponNum == WP_GARAND) ? "tag_scope2" : "tag_scope", 0, NULL);
-				CG_AddWeaponWithPowerups(&barrel, cent->currentState.powerups, ps, cent);
+				trap_R_AddRefEntityToScene(&barrel);
 			}
 
 			barrel.hModel = weapon->modModels[1];
 			//if(barrel.hModel) {
 			CG_PositionEntityOnTag(&barrel, &gun, "tag_flash", 0, NULL);
-			CG_AddWeaponWithPowerups(&barrel, cent->currentState.powerups, ps, cent);
+			trap_R_AddRefEntityToScene(&barrel);
 			//}
 		}
 	}
@@ -2913,7 +2915,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 			// the holder
 			barrel.hModel = weapon->modModels[1];
 			CG_PositionEntityOnTag(&barrel, &gun, "tag_flash", 0, NULL);
-			CG_AddWeaponWithPowerups(&barrel, cent->currentState.powerups, ps, cent);
+			trap_R_AddRefEntityToScene(&barrel);
 
 			// the grenade - have to always enabled it, no means of telling if another person has a grenade loaded or not atm :/
 			//if( cg.snap->ps.weaponstate != WEAPON_FIRING && cg.snap->ps.weaponstate != WEAPON_RELOADING ) {
@@ -2921,7 +2923,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 			{
 				barrel.hModel = weapon->missileModel;
 				CG_PositionEntityOnTag(&barrel, &barrel, "tag_prj", 0, NULL);
-				CG_AddWeaponWithPowerups(&barrel, cent->currentState.powerups, ps, cent);
+				trap_R_AddRefEntityToScene(&barrel);
 			}
 		}
 		else if ((GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_RIFLE) && (GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_SCOPABLE))
@@ -2929,14 +2931,14 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 			// the holder
 			barrel.hModel = weapon->modModels[2];
 			CG_PositionEntityOnTag(&barrel, &gun, "tag_scope", 0, NULL);
-			CG_AddWeaponWithPowerups(&barrel, cent->currentState.powerups, ps, cent);
+			trap_R_AddRefEntityToScene(&barrel);
 		}
 		else if (GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_MG)
 		{
 			barrel.hModel = weapon->modModels[0];
-			barrel.frame  = !(cg.pmext.silencedSideArm & WALTTYPE_BIPOD);
+			barrel.frame  = !(cent->currentState.effect1Time & WALTTYPE_BIPOD);
 			CG_PositionEntityOnTag(&barrel, &gun, "tag_bipod", 0, NULL);
-			CG_AddWeaponWithPowerups(&barrel, cent->currentState.powerups, ps, cent);
+			trap_R_AddRefEntityToScene(&barrel);
 		}
 	}
 
@@ -3038,7 +3040,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 			}
 		}
 
-		if ((GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_MORTAR) && (cg.pmext.silencedSideArm & WALTTYPE_BIPOD))
+		if ((GetWeaponTableData(weaponNum)->type & WEAPON_TYPE_MORTAR) && (cent->currentState.effect1Time & WALTTYPE_BIPOD))
 		{
 			if (ps && !cg.renderingThirdPerson && cg.time - cent->muzzleFlashTime < 800)
 			{
@@ -3072,7 +3074,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 	if (weaponNum != WP_FLAMETHROWER)     // hide the flash also for now
 	{
 		// weapons that don't need to go any further as they have no flash or light
-		if (!flash.hModel || (cg.pmext.silencedSideArm & WALTTYPE_SILENCER))
+		if (!flash.hModel || (cent->currentState.effect1Time & WALTTYPE_SILENCER))
 		{
 			return;
 		}
@@ -3262,7 +3264,7 @@ void CG_AddViewWeapon(playerState_t *ps)
 		VectorMA(hand->origin, -10, cg.refdef_current->viewaxis[1], hand->origin);
 		VectorMA(hand->origin, (-8 + fovOffset), cg.refdef_current->viewaxis[2], hand->origin);
 
-		CG_AddWeaponWithPowerups(hand, cg.predictedPlayerEntity.currentState.powerups, ps, &cg.predictedPlayerEntity);
+		trap_R_AddRefEntityToScene(hand);
 
 		if (cg.time - cg.predictedPlayerEntity.overheatTime < 3000)
 		{
@@ -4840,7 +4842,7 @@ void CG_FireWeapon(centity_t *cent)
 		sfxHandle_t firesound     = 0;
 		sfxHandle_t fireEchosound = 0;
 
-		if (((GetWeaponTableData(cent->currentState.weapon)->type & WEAPON_TYPE_SILENCEABLE) && (cg.pmext.silencedSideArm & WALTTYPE_SILENCER))
+		if (((GetWeaponTableData(cent->currentState.weapon)->type & WEAPON_TYPE_SILENCEABLE) && (cent->currentState.effect1Time & WALTTYPE_SILENCER))
 		    /*|| GetWeaponTableData(cent->currentState.weapon)->attributes & WEAPON_ATTRIBUT_SILENCED*/)
 		{
 			c = weap->flashSoundSilenced.count;
@@ -6147,7 +6149,7 @@ qboolean CG_CalcMuzzlePoint(int entityNum, vec3_t muzzle)
 		{
 			muzzle[2] += PRONE_VIEWHEIGHT;
 
-			if ((GetWeaponTableData(cg.snap->ps.weapon)->type & WEAPON_TYPE_MG) && (cg.pmext.silencedSideArm & WALTTYPE_BIPOD))
+			if ((GetWeaponTableData(cg.snap->ps.weapon)->type & WEAPON_TYPE_MG) && (cent->currentState.effect1Time & WALTTYPE_BIPOD))
 			{
 				VectorMA(muzzle, 36, forward, muzzle);
 			}

@@ -140,7 +140,7 @@ float CG_ClientHitboxMaxZ(entityState_t *hitEnt, float def)
 		return PRONE_BODYHEIGHT;
 	}
 	else if (hitEnt->eFlags & EF_CROUCHING &&
-			cg.predictedPlayerState.velocity[0] == 0.f && cg.predictedPlayerState.velocity[1] == 0.f)
+	         cg.predictedPlayerState.velocity[0] == 0.f && cg.predictedPlayerState.velocity[1] == 0.f)
 	{
 		return CROUCH_IDLE_BODYHEIGHT;
 	}
@@ -1455,6 +1455,15 @@ void CG_PredictPlayerState(void)
 			CG_Printf("CG_PredictPlayerState: not moved\n");
 		}
 		return;
+	}
+
+	// store alternative weapon state in entity stat
+	// so we can track and play correct effect on weapon client side for each player
+	cg.predictedPlayerEntity.currentState.effect1Time = cg.pmext.silencedSideArm;
+
+	if ((cg.predictedPlayerEntity.currentState.effect1Time & WALTTYPE_SILENCER) && !(GetWeaponTableData(cg.predictedPlayerEntity.currentState.weapon)->type & WEAPON_TYPE_SILENCEABLE))
+	{
+		cg.predictedPlayerEntity.currentState.effect1Time &= ~WALTTYPE_SILENCER;
 	}
 
 	// restore pmext

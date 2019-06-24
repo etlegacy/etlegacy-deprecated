@@ -2127,6 +2127,15 @@ void ClientEndFrame(gentity_t *ent)
 		return;
 	}
 
+	// store alternative weapon state in entity stat
+	// so we can track and play correct effect on weapon client side for each player
+	ent->s.effect1Time = ent->client->pmext.silencedSideArm;
+
+	if ((ent->s.effect1Time & WALTTYPE_SILENCER) && !(GetWeaponTableData(ent->s.weapon)->type & WEAPON_TYPE_SILENCEABLE))
+	{
+		ent->s.effect1Time &= ~WALTTYPE_SILENCER;
+	}
+
 	// turn off any expired powerups (we do this for PW_INVULNERABLE and PW_ADRENALINE only !!!))
 	// range changed for MV
 	for (i = 1 ; i < PW_NUM_POWERUPS ; i++)  // start st PW_NONE + 1, PW_NONE is unused

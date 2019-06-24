@@ -1480,7 +1480,7 @@ void CG_PredictLean(centity_t *cent, vec3_t torsoAngles, vec3_t headAngles, int 
 	{
 		leaning = 0;    // not allowed to lean while dead
 	}
-	if ((cent->currentState.eFlags & EF_PRONE) || ((GetWeaponTableData(cent->currentState.weapon)->type & WEAPON_TYPE_MG) && (cg.pmext.silencedSideArm & WALTTYPE_BIPOD)))
+	if ((cent->currentState.eFlags & EF_PRONE) || ((GetWeaponTableData(cent->currentState.weapon)->type & WEAPON_TYPE_MG) && (cent->currentState.effect1Time & WALTTYPE_BIPOD)))
 	{
 		leaning = 0;    // not allowed to lean while prone
 	}
@@ -2555,9 +2555,9 @@ void CG_AnimPlayerConditions(bg_character_t *character, centity_t *cent)
 
 	BG_UpdateConditionValue(es->clientNum, ANIM_COND_FIRING, (es->eFlags & EF_FIRING) ? qtrue : qfalse, qtrue);
 
-	BG_UpdateConditionValue(es->clientNum, ANIM_COND_BIPOD, (cg.pmext.silencedSideArm & WALTTYPE_BIPOD) ? qtrue : qfalse, qtrue);
+	BG_UpdateConditionValue(es->clientNum, ANIM_COND_BIPOD, (es->effect1Time & WALTTYPE_BIPOD) ? qtrue : qfalse, qtrue);
 
-	BG_UpdateConditionValue(es->clientNum, ANIM_COND_SCOPED, (cg.pmext.silencedSideArm & WALTTYPE_SCOPE) ? qtrue : qfalse, qtrue);
+	BG_UpdateConditionValue(es->clientNum, ANIM_COND_SCOPED, (es->effect1Time & WALTTYPE_SCOPE) ? qtrue : qfalse, qtrue);
 
 	// reverse engineer the legs anim -> movetype (if possible)
 	legsAnim = es->legsAnim & ~ANIM_TOGGLEBIT;
