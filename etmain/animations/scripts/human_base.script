@@ -183,6 +183,18 @@ STATE COMBAT
 		{
 			legs stand_pistolB torso stand_akimbo
 		}
+		weapons Scoped M1 Garand, scoped
+		{
+			both stand_rifle
+		}
+		weapons FG 42 Paratroop Rifle, scoped
+		{
+			both stand_rifle
+		}
+		weapons K43 Rifle, scoped
+		{
+			both stand_rifle
+		}
 		weapons Scoped M1 Garand
 		{
 			both stand_srifle
