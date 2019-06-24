@@ -35,10 +35,6 @@
 
 #include "cg_local.h"
 
-#ifdef FEATURE_MULTIVIEW
-extern pmove_t cg_pmove;        // cg_predict.c
-#endif
-
 vec4_t colorGreen2 = { 0.305f, 0.475f, 0.305f, 0.48f }; // Slightly off from default fill
 
 /**

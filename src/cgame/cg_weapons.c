@@ -3728,8 +3728,6 @@ void CG_FinishWeaponChange(int lastWeapon, int newWeapon)
 	cg.weaponSelect = newWeapon;
 }
 
-extern pmove_t cg_pmove;
-
 /**
  * @brief For example, switching between WP_MAUSER and WP_SNIPERRIFLE
  */
