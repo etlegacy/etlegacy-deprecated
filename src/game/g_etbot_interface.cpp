@@ -2707,8 +2707,8 @@ public:
 			}
 		}
 
-		if ((!(bot->client->pmext.silencedSideArm & WALTTYPE_BIPOD) && (_input.m_CurrentWeapon == ET_WP_MORTAR_SET || _input.m_CurrentWeapon == ET_WP_MOBILE_MG42_SET))
-		    || ((bot->client->pmext.silencedSideArm & WALTTYPE_BIPOD) && (_input.m_CurrentWeapon == ET_WP_MORTAR || _input.m_CurrentWeapon == ET_WP_MOBILE_MG42)))
+		if (!(bot->client->oldwbuttons & WBUTTON_ATTACK2) && ((!(bot->client->pmext.silencedSideArm & WALTTYPE_BIPOD) && (_input.m_CurrentWeapon == ET_WP_MORTAR_SET || _input.m_CurrentWeapon == ET_WP_MOBILE_MG42_SET))
+		                                                      || ((bot->client->pmext.silencedSideArm & WALTTYPE_BIPOD) && (_input.m_CurrentWeapon == ET_WP_MORTAR || _input.m_CurrentWeapon == ET_WP_MOBILE_MG42))))
 		{
 			cmd.wbuttons |= WBUTTON_ATTACK2;
 		}
@@ -2867,7 +2867,7 @@ public:
 		{
 			//if(!(bot->s.eFlags & EF_ZOOMING))
 #ifdef LEGACY
-			if (!(bot->client->pmext.silencedSideArm & WALTTYPE_SCOPE) && (GetWeaponTableData(bot->client->ps.weapon)->type & WEAPON_TYPE_SCOPABLE))
+			if (!(bot->client->oldwbuttons & WBUTTON_ATTACK2) && !(bot->client->pmext.silencedSideArm & WALTTYPE_SCOPE) && (GetWeaponTableData(bot->client->ps.weapon)->type & WEAPON_TYPE_SCOPABLE))
 			{
 				cmd.wbuttons |= WBUTTON_ATTACK2;
 			}
