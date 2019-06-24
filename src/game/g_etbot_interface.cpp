@@ -703,15 +703,15 @@ static weapon_t _weaponBotToGame(int weapon)
 		return WP_SATCHEL_DET;
 	case ET_WP_SILENCED_COLT:
 #ifdef LEGACY
-            return WP_COLT;
+		return WP_COLT;
 #else
-            return WP_SILENCED_COLT;
+		return WP_SILENCED_COLT;
 #endif
 	case ET_WP_SILENCED_LUGER:
 #ifdef LEGACY
-            return WP_LUGER;
+		return WP_LUGER;
 #else
-            return WP_SILENCER;
+		return WP_SILENCER;
 #endif
 	case ET_WP_SMOKE_GRENADE:
 		return WP_SMOKE_BOMB;
@@ -788,7 +788,11 @@ static weapon_t _weaponBotToGame(int weapon)
 	}
 }
 
+#ifdef LEGACY
+int Bot_WeaponGameToBot(int weapon, int altType)
+#else
 int Bot_WeaponGameToBot(int weapon)
+#endif
 {
 	switch (weapon)
 	{
@@ -809,10 +813,24 @@ int Bot_WeaponGameToBot(int weapon)
 	case WP_CARBINE:
 		return ET_WP_CARBINE;
 	case WP_COLT:
+#ifdef LEGACY
+		if (altType & WALTTYPE_SILENCER)
+		{
+			return ET_WP_SILENCED_COLT;
+		}
+		else
+#endif
 		return ET_WP_COLT;
 	case WP_DYNAMITE:
 		return ET_WP_DYNAMITE;
 	case WP_FG42:
+#ifdef LEGACY
+		if (altType & WALTTYPE_SCOPE)
+		{
+			return ET_WP_FG42_SCOPE;
+		}
+		else
+#endif
 		return ET_WP_FG42;
 #ifndef LEGACY
 	case WP_FG42SCOPE:
@@ -821,6 +839,13 @@ int Bot_WeaponGameToBot(int weapon)
 	case WP_FLAMETHROWER:
 		return ET_WP_FLAMETHROWER;
 	case WP_GARAND:
+#ifdef LEGACY
+		if (altType & WALTTYPE_SCOPE)
+		{
+			return ET_WP_GARAND_SCOPE;
+		}
+		else
+#endif
 		return ET_WP_GARAND;
 #ifndef LEGACY
 	case WP_GARAND_SCOPE:
@@ -833,6 +858,13 @@ int Bot_WeaponGameToBot(int weapon)
 	case WP_GRENADE_LAUNCHER:
 		return ET_WP_GREN_AXIS;
 	case WP_K43:
+#ifdef LEGACY
+		if (altType & WALTTYPE_SCOPE)
+		{
+			return ET_WP_K43_SCOPE;
+		}
+		else
+#endif
 		return ET_WP_K43;
 #ifndef LEGACY
 	case WP_K43_SCOPE:
@@ -845,18 +877,39 @@ int Bot_WeaponGameToBot(int weapon)
 	case WP_LANDMINE:
 		return ET_WP_LANDMINE;
 	case WP_LUGER:
+#ifdef LEGACY
+		if (altType & WALTTYPE_SILENCER)
+		{
+			return ET_WP_SILENCED_LUGER;
+		}
+		else
+#endif
 		return ET_WP_LUGER;
 	case WP_M7:
 		return ET_WP_M7;
 	case WP_MEDKIT:
 		return ET_WP_MEDKIT;
 	case WP_MOBILE_MG42:
+#ifdef LEGACY
+		if (altType & WALTTYPE_BIPOD)
+		{
+			return ET_WP_MOBILE_MG42_SET;
+		}
+		else
+#endif
 		return ET_WP_MOBILE_MG42;
 #ifndef LEGACY
 	case WP_MOBILE_MG42_SET:
 		return ET_WP_MOBILE_MG42_SET;
 #endif
 	case WP_MORTAR:
+#ifdef LEGACY
+		if (altType & WALTTYPE_BIPOD)
+		{
+			return ET_WP_MORTAR_SET;
+		}
+		else
+#endif
 		return ET_WP_MORTAR;
 #ifndef LEGACY
 	case WP_MORTAR_SET:
@@ -936,9 +989,23 @@ int Bot_WeaponGameToBot(int weapon)
 #endif
 #ifdef LEGACY
 	case WP_MOBILE_BROWNING:
-		return ET_WP_MOBILE_MG42;
+		if (altType & WALTTYPE_BIPOD)
+		{
+			return ET_WP_MOBILE_MG42_SET;
+		}
+		else
+		{
+			return ET_WP_MOBILE_MG42;
+		}
 	case WP_MORTAR2:
-		return ET_WP_MORTAR;
+		if (altType & WALTTYPE_BIPOD)
+		{
+			return ET_WP_MORTAR_SET;
+		}
+		else
+		{
+			return ET_WP_MORTAR;
+		}
 	case WP_KNIFE_KABAR:
 		return ET_WP_KNIFE;
 	case WP_BAZOOKA:
@@ -1607,7 +1674,7 @@ static void ReTransmitWeapons(const gentity_t *bot)
 	{
 		if (COM_BitCheck(bot->client->ps.weapons, weapon))
 		{
-			Bot_Event_AddWeapon(bot - g_entities, Bot_WeaponGameToBot(weapon));
+			Bot_Event_AddWeapon(bot - g_entities, Bot_WeaponGameToBot(weapon, bot->client->pmext.silencedSideArm));
 		}
 	}
 }
@@ -1828,7 +1895,7 @@ static int _GetEntityClass(gentity_t *_ent)
 		}
 		else if (_ent->item && _ent->item->giType == IT_WEAPON)
 		{
-			return ET_CLASSEX_WEAPON + Bot_WeaponGameToBot(_ent->item->giWeapon);
+			return ET_CLASSEX_WEAPON + Bot_WeaponGameToBot(_ent->item->giWeapon, 0);
 		}
 		break;
 	}
@@ -5026,7 +5093,7 @@ public:
 			{
 				if (pEnt && pEnt->inuse && pEnt->client)
 				{
-					pMsg->m_WeaponId = Bot_WeaponGameToBot(pEnt->client->ps.weapon);
+					pMsg->m_WeaponId = Bot_WeaponGameToBot(pEnt->client->ps.weapon, pEnt->client->pmext.silencedSideArm);
 				}
 				else
 				{

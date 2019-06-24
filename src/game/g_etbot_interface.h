@@ -81,7 +81,11 @@ const char *_GetEntityName(gentity_t *_ent);
 //void Bot_Util_AddGoal(gentity_t *_ent, int _goaltype, int _team, const char *_tag, obUserData *_bud);
 void Bot_Util_SendTrigger(gentity_t *_ent, gentity_t *_activator, const char *_tagname, const char *_action);
 
+#ifdef LEGACY
+int Bot_WeaponGameToBot(int weapon, int altType);
+#else
 int Bot_WeaponGameToBot(int weapon);
+#endif
 int Bot_TeamGameToBot(int team);
 int Bot_PlayerClassGameToBot(int playerClass);
 

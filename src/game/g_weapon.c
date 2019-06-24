@@ -239,7 +239,7 @@ void Weapon_Medic_Ext(gentity_t *ent, vec3_t viewpos, vec3_t tosspos, vec3_t vel
 
 #ifdef FEATURE_OMNIBOT
 	// Omni-bot - Send a fire event.
-	Bot_Event_FireWeapon(ent - g_entities, Bot_WeaponGameToBot(ent->s.weapon), ent2);
+	Bot_Event_FireWeapon(ent - g_entities, Bot_WeaponGameToBot(ent->s.weapon, ent->client->pmext.silencedSideArm), ent2);
 #endif
 }
 
@@ -328,7 +328,7 @@ void Weapon_MagicAmmo_Ext(gentity_t *ent, vec3_t viewpos, vec3_t tosspos, vec3_t
 
 #ifdef FEATURE_OMNIBOT
 	// Omni-bot - Send a fire event.
-	Bot_Event_FireWeapon(ent - g_entities, Bot_WeaponGameToBot(ent->s.weapon), ent2);
+	Bot_Event_FireWeapon(ent - g_entities, Bot_WeaponGameToBot(ent->s.weapon, ent->client->pmext.silencedSideArm), ent2);
 #endif
 }
 
@@ -3082,7 +3082,7 @@ void Weapon_Artillery(gentity_t *ent)
 	ent->client->sess.aWeaponStats[WS_ARTILLERY].atts++;
 #ifdef FEATURE_OMNIBOT
 	// Omni-bot - Send a fire event.
-	Bot_Event_FireWeapon(ent - g_entities, Bot_WeaponGameToBot(WP_ARTY), 0);
+	Bot_Event_FireWeapon(ent - g_entities, Bot_WeaponGameToBot(WP_ARTY, ent->client->pmext.silencedSideArm), 0);
 #endif
 }
 
@@ -4170,7 +4170,7 @@ void FireWeapon(gentity_t *ent)
 		// Omni-bot - Send a fire event.
 		if (pFiredShot)
 		{
-			Bot_Event_FireWeapon(ent - g_entities, Bot_WeaponGameToBot(ent->s.weapon), pFiredShot);
+			Bot_Event_FireWeapon(ent - g_entities, Bot_WeaponGameToBot(ent->s.weapon, ent->client->pmext.silencedSideArm), pFiredShot);
 		}
 #endif
 	}

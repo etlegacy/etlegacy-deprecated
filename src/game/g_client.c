@@ -1123,12 +1123,12 @@ void AddWeaponToPlayer(gclient_t *client, weapon_t weapon, int ammo, int ammocli
 		COM_BitSet(client->ps.weapons, GetWeaponTableData(weapon)->weapAlts);
 
 #ifdef FEATURE_OMNIBOT
-		Bot_Event_AddWeapon(client->ps.clientNum, Bot_WeaponGameToBot(GetWeaponTableData(weapon)->weapAlts));
+		Bot_Event_AddWeapon(client->ps.clientNum, Bot_WeaponGameToBot(GetWeaponTableData(weapon)->weapAlts, client->pmext.silencedSideArm));
 #endif
 	}
 
 #ifdef FEATURE_OMNIBOT
-	Bot_Event_AddWeapon(client->ps.clientNum, Bot_WeaponGameToBot(weapon));
+	Bot_Event_AddWeapon(client->ps.clientNum, Bot_WeaponGameToBot(weapon, client->pmext.silencedSideArm));
 #endif
 }
 

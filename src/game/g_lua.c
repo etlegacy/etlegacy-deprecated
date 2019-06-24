@@ -842,7 +842,7 @@ static int _et_AddWeaponToPlayer(lua_State *L)
 	}
 
 #ifdef FEATURE_OMNIBOT
-	Bot_Event_AddWeapon(ent->client->ps.clientNum, Bot_WeaponGameToBot(weapon));
+	Bot_Event_AddWeapon(ent->client->ps.clientNum, Bot_WeaponGameToBot(weapon, ent->client->pmext.silencedSideArm));
 #endif
 
 	return 1;
@@ -883,7 +883,7 @@ static int _et_RemoveWeaponFromPlayer(lua_State *L)
 	}
 
 #ifdef FEATURE_OMNIBOT
-	Bot_Event_RemoveWeapon(client->ps.clientNum, Bot_WeaponGameToBot(weapon));
+	Bot_Event_RemoveWeapon(client->ps.clientNum, Bot_WeaponGameToBot(weapon, client->pmext.silencedSideArm));
 #endif
 
 	return 1;

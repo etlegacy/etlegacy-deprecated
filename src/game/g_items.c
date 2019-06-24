@@ -410,7 +410,7 @@ void G_DropWeapon(gentity_t *ent, weapon_t weapon)
 	client->ps.ammoclip[GetWeaponTableData(weapon)->clipIndex] = 0;
 
 #ifdef FEATURE_OMNIBOT
-	Bot_Event_RemoveWeapon(client->ps.clientNum, Bot_WeaponGameToBot(weapon));
+	Bot_Event_RemoveWeapon(client->ps.clientNum, Bot_WeaponGameToBot(weapon, client->pmext.silencedSideArm));
 #endif
 }
 
@@ -576,7 +576,7 @@ int Pickup_Weapon(gentity_t *ent, gentity_t *other)
 	}
 
 #ifdef FEATURE_OMNIBOT
-	Bot_Event_AddWeapon(other->client->ps.clientNum, Bot_WeaponGameToBot(ent->item->giWeapon));
+	Bot_Event_AddWeapon(other->client->ps.clientNum, Bot_WeaponGameToBot(ent->item->giWeapon, other->client->pmext.silencedSideArm));
 #endif
 
 	return RESPAWN_NEVER;
