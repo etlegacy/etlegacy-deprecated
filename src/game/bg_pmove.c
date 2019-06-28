@@ -2492,7 +2492,7 @@ static void PM_FinishWeaponChange(void)
 		}
 
 		// alt weapon switch was played when switching away, just go into idle
-		PM_StartWeaponAnim(WEAP_IDLE1);
+		PM_StartWeaponAnim(WEAP_ALTSWITCHTO);
 	}
 	else
 	{
