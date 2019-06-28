@@ -1779,18 +1779,31 @@ void R_DebugPolygon(int color, int numPoints, float *points)
 
 	GL_State(GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE);
 
-	// draw solid shade
-	qglColor3f(color & 1, (color >> 1) & 1, (color >> 2) & 1);
-	qglBegin(GL_POLYGON);
-	for (i = 0 ; i < numPoints ; i++)
-	{
-		qglVertex3fv(points + i * 3);
-	}
-	qglEnd();
+    // draw solid shade
+#ifdef FEATURE_RENDERER_GLES
+    qglColor4f( color & 1, (color >> 1) & 1, (color >> 2) & 1, 1.0f );
+    qglVertexPointer  ( 3, GL_FLOAT, 0, points );
+    qglDrawArrays( GL_TRIANGLE_FAN, 0, numPoints );
+#else
+    qglColor3f(color & 1, (color >> 1) & 1, (color >> 2) & 1);
+    qglBegin(GL_POLYGON);
+    for (i = 0 ; i < numPoints ; i++)
+    {
+        qglVertex3fv(points + i * 3);
+    }
+    qglEnd();
+#endif
 
-	// draw wireframe outline
+    // draw wireframe outline
+#ifndef FEATURE_RENDERER_GLES
 	GL_State(GLS_POLYMODE_LINE | GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE);
+#endif
 	qglDepthRange(0, 0);
+#ifdef FEATURE_RENDERER_GLES
+    qglColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
+    qglVertexPointer  ( 3, GL_FLOAT, 0, points );
+    qglDrawArrays( GL_LINES, 0, numPoints );
+#else
 	qglColor3f(1, 1, 1);
 	qglBegin(GL_POLYGON);
 	for (i = 0 ; i < numPoints ; i++)
@@ -1798,6 +1811,7 @@ void R_DebugPolygon(int color, int numPoints, float *points)
 		qglVertex3fv(points + i * 3);
 	}
 	qglEnd();
+#endif
 	qglDepthRange(0, 1);
 }
 

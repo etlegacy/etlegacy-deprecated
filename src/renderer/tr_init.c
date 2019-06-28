@@ -256,7 +256,7 @@ void GL_CheckErrors(void)
 		break;
 	}
 
-	ri.Error(ERR_VID_FATAL, "GL_CheckErrors: %s", s);
+    ri.Error(ERR_VID_FATAL, "GL_CheckErrors: %s", s);
 }
 
 /*
@@ -299,27 +299,60 @@ void GL_CheckErrors(void)
  */
 byte *RB_ReadPixels(int x, int y, int width, int height, size_t *offset, int *padlen)
 {
-	byte  *buffer, *bufstart;
-	int   padwidth, linelen;
-	GLint packAlign;
+    byte  *buffer, *bufstart;
+    int   padwidth, linelen;
+    GLint packAlign;
 
-	qglGetIntegerv(GL_PACK_ALIGNMENT, &packAlign);
+    qglGetIntegerv(GL_PACK_ALIGNMENT, &packAlign);
 
-	linelen  = width * 3;
-	padwidth = PAD(linelen, packAlign);
+    linelen  = width * 3;
+    padwidth = PAD(linelen, packAlign);
 
-	// Allocate a few more bytes so that we can choose an alignment we like
-	buffer = ri.Hunk_AllocateTempMemory(padwidth * height + *offset + packAlign - 1);
+    // Allocate a few more bytes so that we can choose an alignment we like
+    buffer = ri.Hunk_AllocateTempMemory(padwidth * height + *offset + packAlign - 1);
 
-	bufstart = PADP(( intptr_t ) buffer + *offset, packAlign);
-	qglReadPixels(x, y, width, height, GL_RGB, GL_UNSIGNED_BYTE, bufstart);
+#ifdef FEATURE_RENDERER_GLES
+    bufstart=buffer;
+	padwidth=linelen;
+	int p2width=1, p2height=1;
+	int xx, yy, aa;
 
-	*offset = bufstart - buffer;
-	*padlen = padwidth - linelen;
+	while (p2width<glConfig.vidWidth)
+	{
+	    p2width*=2;
+	}
 
-	return buffer;
+	while (p2height<glConfig.vidHeight)
+	{
+	  p2height*=2;
+	}
+
+	byte *source = (byte*) ri.Z_Malloc( p2width * p2height * 4 );
+	qglReadPixels( 0, 0, p2width, p2height, GL_RGBA, GL_UNSIGNED_BYTE, source );
+
+	for (yy=y; yy<height; yy++)
+	{
+	    for (xx=x; xx<width; xx++)
+	    {
+	        for (aa=0; aa<3; aa++)
+	        {
+	            buffer[yy*width*3+xx*3+aa]=source[(yy+y)*p2width*4+(xx+x)*4+aa];
+	        }
+	    }
+	}
+	ri.Free(source);
+#else
+    bufstart = PADP(( intptr_t ) buffer + *offset, packAlign);
+    qglReadPixels(x, y, width, height, GL_RGB, GL_UNSIGNED_BYTE, bufstart);
+#endif
+
+    *offset = bufstart - buffer;
+    *padlen = padwidth - linelen;
+
+    return buffer;
 }
 
+#ifndef FEATURE_RENDERER_GLES
 /**
  * @brief RB_ReadZBuffer
  * @param[in] x
@@ -353,7 +386,7 @@ byte *RB_ReadZBuffer(int x, int y, int width, int height, int *padlen)
 
 	return buffer;
 }
-
+#endif
 /*
  * @brief zbuffer writer for the future implementation of the Depth of field effect
  * @param[in] x
@@ -873,12 +906,18 @@ void GL_SetDefaultState(void)
 	// make sure our GL state vector is set correctly
 	glState.glStateBits = GLS_DEPTHTEST_DISABLE | GLS_DEPTHMASK_TRUE;
 
+#ifdef FEATURE_RENDERER_GLES
+    qglPixelStorei(GL_PACK_ALIGNMENT, 1);
+	qglPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+#else
 	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+#endif
 	qglDepthMask(GL_TRUE);
 	qglDisable(GL_DEPTH_TEST);
 	qglEnable(GL_SCISSOR_TEST);
 	qglDisable(GL_CULL_FACE);
 	qglDisable(GL_BLEND);
+    GL_CheckErrors();
 }
 
 /**
@@ -935,6 +974,11 @@ void GfxInfo_f(void)
 
 	// rendering primitives
 	{
+#ifdef FEATURE_RENDERER_GLES
+        Ren_Print("rendering primitives: ");
+        Ren_Print("single glDrawElements\n");
+#else
+
 		int primitives;
 
 		// default is to use triangles if compiled vertex arrays are present
@@ -967,13 +1011,15 @@ void GfxInfo_f(void)
 		{
 			Ren_Print("multiple glColor4ubv + glTexCoord2fv + glVertex3fv\n");
 		}
-	}
-
+#endif
+    }
 	Ren_Print("texturemode: %s\n", r_textureMode->string);
 	Ren_Print("picmip: %d\n", r_picMip->integer);
 	Ren_Print("texture bits: %d\n", r_textureBits->integer);
 	Ren_Print("multitexture: %s\n", enablestrings[qglActiveTextureARB != 0]);
+#ifndef FEATURE_RENDERER_GLES
 	Ren_Print("compiled vertex arrays: %s\n", enablestrings[qglLockArraysEXT != 0]);
+#endif
 	Ren_Print("texenv add: %s\n", enablestrings[glConfig.textureEnvAddAvailable != 0]);
 	Ren_Print("compressed textures: %s\n", enablestrings[glConfig.textureCompression != TC_NONE]);
 
@@ -1213,7 +1259,9 @@ void R_Init(void)
 
 	R_InitFreeType();
 
+#ifndef FEATURE_RENDERER_GLES
 	R_InitGamma();
+#endif
 
 	err = qglGetError();
 	if (err != GL_NO_ERROR)
@@ -1279,7 +1327,9 @@ void RE_Shutdown(qboolean destroyWindow)
 
 	R_DoneFreeType();
 
+#ifndef FEATURE_RENDERER_GLES
 	R_ShutdownGamma();
+#endif
 
 	// shut down platform specific OpenGL stuff
 	if (destroyWindow)

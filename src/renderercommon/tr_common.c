@@ -36,8 +36,6 @@
 
 #if defined(FEATURE_RENDERER2)
 #   include "../renderer2/tr_local.h"
-#elif defined(FEATURE_RENDERER_GLES)
-#   include "../rendererGLES/tr_local.h"
 #else // OpenGL 2 renderer
 #   include "../renderer/tr_local.h"
 #endif

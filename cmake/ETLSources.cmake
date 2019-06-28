@@ -148,12 +148,6 @@ FILE(GLOB RENDERER1_FILES
 	"src/renderer/*.h"
 )
 
-FILE(GLOB RENDERERGLES_FILES
-	"src/rendererGLES/*.c"
-	"src/rendererGLES/*.h"
-	"src/sdl/eglport.c"
-)
-
 FILE(GLOB RENDERER2_FILES
 	"src/renderer2/*.c"
 	"src/renderer2/*.h"

@@ -40,6 +40,7 @@
 #include <altivec.h>
 #endif
 
+#ifndef FEATURE_RENDERER_GLES
 /**
  * @brief R_ArrayElementDiscrete
  * @param[in] index
@@ -59,6 +60,7 @@ static void GLAPIENTRY R_ArrayElementDiscrete(GLint index)
 	qglVertex3fv(tess.xyz[index]);
 }
 
+
 /**
  * @brief This is just because of the GLEW and Windows idiocy. Straight call to glArrayElement brakes the build on function type mismatch.
  * @param[in] index
@@ -67,10 +69,12 @@ static void GLAPIENTRY R_ArrayElement(GLint index)
 {
 	qglArrayElement(index);
 }
-
+#endif
 static int c_vertexes;          // for seeing how long our average strips are
 static int c_begins;
 
+
+#ifndef FEATURE_RENDERER_GLES
 /**
  * @brief R_DrawStripElements
  * @param[in] numIndexes
@@ -171,6 +175,8 @@ static void R_DrawStripElements(int numIndexes, const glIndex_t *indexes, void(G
 	qglEnd();
 }
 
+#endif
+
 /**
  * @brief Optionally performs our own glDrawElements that looks for strip conditions
  * instead of using the single glDrawElements call that may be inefficient
@@ -181,6 +187,13 @@ static void R_DrawStripElements(int numIndexes, const glIndex_t *indexes, void(G
  */
 static void R_DrawElements(int numIndexes, const glIndex_t *indexes)
 {
+#ifdef FEATURE_RENDERER_GLES
+    qglDrawElements( GL_TRIANGLES,
+						numIndexes,
+						GL_INDEX_TYPE,
+						indexes );
+    return;
+#else
 	switch (r_primitives->integer)
 	{
 	case 0:
@@ -206,6 +219,7 @@ static void R_DrawElements(int numIndexes, const glIndex_t *indexes)
 	default: // anything else will cause no drawing
 		return;
 	}
+#endif
 }
 
 /*
@@ -337,6 +351,7 @@ static void DrawTris(shaderCommands_t *input)
 		GL_State(stateBits);
 		qglDepthRange(0, 0);
 	}
+#ifndef FEATURE_RENDERER_GLES
 #ifdef CELSHADING_HACK
 	else if (r_showtris->integer == 3)
 	{
@@ -354,27 +369,35 @@ static void DrawTris(shaderCommands_t *input)
 		qglEnable(GL_POLYGON_OFFSET_LINE);
 		qglPolygonOffset(r_offsetFactor->value, r_offsetUnits->value);
 	}
-
+#endif
 	qglDisableClientState(GL_COLOR_ARRAY);
 	qglDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
 	qglVertexPointer(3, GL_FLOAT, 16, input->xyz);   // padded for SIMD
 
+#ifndef FEATURE_RENDERER_GLES
 	if (qglLockArraysEXT)
 	{
 		qglLockArraysEXT(0, input->numVertexes);
 		Ren_LogComment("glLockArraysEXT\n");
 	}
+#endif
 
 	R_DrawElements(input->numIndexes, input->indexes);
 
+#ifndef FEATURE_RENDERER_GLES
 	if (qglUnlockArraysEXT)
 	{
 		qglUnlockArraysEXT();
 		Ren_LogComment("glUnlockArraysEXT\n");
 	}
+#endif
+
 	qglDepthRange(0, 1);
+
+#ifndef FEATURE_RENDERER_GLES
 	qglDisable(GL_POLYGON_OFFSET_LINE);
+#endif
 }
 
 /**
@@ -390,6 +413,7 @@ static void DrawNormals(shaderCommands_t *input)
 	qglDepthRange(0, 0);    // never occluded
 	GL_State(GLS_POLYMODE_LINE | GLS_DEPTHMASK_TRUE);
 
+#ifndef FEATURE_RENDERER_GLES
 	// light direction
 	if (r_showNormals->integer == 2)
 	{
@@ -434,17 +458,40 @@ static void DrawNormals(shaderCommands_t *input)
 	// normals drawing
 	else
 	{
+#endif
 		int i;
 
-		qglBegin(GL_LINES);
+#ifdef FEATURE_RENDERER_GLES
+        vec3_t vtx[2];
+#else
+        qglBegin(GL_LINES);
+#endif
+
 		for (i = 0 ; i < input->numVertexes ; i++)
 		{
+#ifndef FEATURE_RENDERER_GLES
 			qglVertex3fv(input->xyz[i]);
+#endif
+
 			VectorMA(input->xyz[i], r_normalLength->value, input->normal[i], temp);
-			qglVertex3fv(temp);
+
+#ifdef FEATURE_RENDERER_GLES
+            memcpy(vtx, input->xyz[i], sizeof(GLfloat)*3);
+		    memcpy(vtx+1, temp, sizeof(GLfloat)*3);
+		    qglVertexPointer (3, GL_FLOAT, 16, vtx);
+            qglDrawArrays(GL_LINES, 0, 2);
+#else
+            qglVertex3fv(temp);
+#endif
+
 		}
+#ifndef FEATURE_RENDERER_GLES
 		qglEnd();
+#endif
+
+#ifndef FEATURE_RENDERER_GLES
 	}
+#endif
 
 	qglDepthRange(0, 1);
 }
@@ -506,12 +553,14 @@ static void DrawMultitextured(shaderCommands_t *input, int stage)
 
 	GL_State(pStage->stateBits);
 
+#ifndef FEATURE_RENDERER_GLES
 	// this is an ugly hack to work around a GeForce driver
 	// bug with multitexture and clip planes
 	if (backEnd.viewParms.isPortal)
 	{
 		qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
+#endif
 
 	// base
 	GL_SelectTexture(0);
@@ -1731,11 +1780,14 @@ void RB_StageIteratorGeneric(void)
 
 	// lock XYZ
 	qglVertexPointer(3, GL_FLOAT, 16, input->xyz);   // padded for SIMD
+
+#ifndef FEATURE_RENDERER_GLES
 	if (qglLockArraysEXT)
 	{
 		qglLockArraysEXT(0, input->numVertexes);
 		Ren_LogComment("glLockArraysEXT\n");
 	}
+#endif
 
 	// enable color and texcoord arrays after the lock if necessary
 	if (!setArraysOnce)
@@ -1769,12 +1821,14 @@ void RB_StageIteratorGeneric(void)
 		RB_FogPass();
 	}
 
+#ifndef FEATURE_RENDERER_GLES
 	// unlock arrays
 	if (qglUnlockArraysEXT)
 	{
 		qglUnlockArraysEXT();
 		Ren_LogComment("glUnlockArraysEXT\n");
 	}
+#endif
 
 	// reset polygon offset
 	if (shader->polygonOffset)
@@ -1810,11 +1864,13 @@ void RB_StageIteratorVertexLitTexture(void)
 	qglTexCoordPointer(2, GL_FLOAT, 16, tess.texCoords[0][0]);
 	qglVertexPointer(3, GL_FLOAT, 16, input->xyz);
 
+#ifndef FEATURE_RENDERER_GLES
 	if (qglLockArraysEXT)
 	{
 		qglLockArraysEXT(0, input->numVertexes);
 		Ren_LogComment("glLockArraysEXT\n");
 	}
+#endif
 
 	// call special shade routine
 	R_BindAnimatedImage(&tess.xstages[0]->bundle[0]);
@@ -1842,12 +1898,14 @@ void RB_StageIteratorVertexLitTexture(void)
 		RB_FogPass();
 	}
 
+#ifndef FEATURE_RENDERER_GLES
 	// unlock arrays
 	if (qglUnlockArraysEXT)
 	{
 		qglUnlockArraysEXT();
 		Ren_LogComment("glUnlockArraysEXT\n");
 	}
+#endif
 }
 
 //define    REPLACE_MODE
@@ -1913,12 +1971,14 @@ void RB_StageIteratorLightmappedMultitexture(void)
 	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	qglTexCoordPointer(2, GL_FLOAT, 16, tess.texCoords[0][1]);
 
+#ifndef FEATURE_RENDERER_GLES
 	// lock arrays
 	if (qglLockArraysEXT)
 	{
 		qglLockArraysEXT(0, input->numVertexes);
 		Ren_LogComment("glLockArraysEXT\n");
 	}
+#endif
 
 	R_DrawElements(input->numIndexes, input->indexes);
 
@@ -1953,12 +2013,14 @@ void RB_StageIteratorLightmappedMultitexture(void)
 		RB_FogPass();
 	}
 
+#ifndef FEATURE_RENDERER_GLES
 	// unlock arrays
 	if (qglUnlockArraysEXT)
 	{
 		qglUnlockArraysEXT();
 		Ren_LogComment("glUnlockArraysEXT\n");
 	}
+#endif
 }
 
 /**

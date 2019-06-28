@@ -35,6 +35,7 @@
 
 #include "tr_local.h"
 
+#ifndef FEATURE_RENDERER_GLES
 typedef struct shaderProgram_s
 {
 	GLhandleARB program;
@@ -241,3 +242,4 @@ void R_ShutdownGamma(void)
 		screenImage = NULL;
 	}
 }
+#endif

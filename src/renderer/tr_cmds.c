@@ -449,6 +449,7 @@ void RE_BeginFrame(void)
 	tr.frameSceneNum = 0;
 
 	// do overdraw measurement
+#ifndef FEATURE_RENDERER_GLES
 	if (r_measureOverdraw->integer)
 	{
 		if (glConfig.stencilBits < 4)
@@ -482,6 +483,7 @@ void RE_BeginFrame(void)
 		}
 		r_measureOverdraw->modified = qfalse;
 	}
+#endif
 
 	// texturemode stuff
 	if (r_textureMode->modified)
@@ -520,6 +522,7 @@ void RE_BeginFrame(void)
 	}
 	cmd->commandId = RC_DRAW_BUFFER;
 
+#ifndef FEATURE_RENDERER_GLES
 	if (!Q_stricmp(r_drawBuffer->string, "GL_FRONT"))
 	{
 		cmd->buffer = (int)GL_FRONT;
@@ -528,6 +531,9 @@ void RE_BeginFrame(void)
 	{
 		cmd->buffer = (int)GL_BACK;
 	}
+#else
+    cmd->buffer = (int)GL_BACK;
+#endif
 }
 
 /**

@@ -42,12 +42,21 @@
 #include "../renderercommon/tr_common.h"
 #include "../renderercommon/qgl.h"
 
-#define GL_INDEX_TYPE       GL_UNSIGNED_INT
-typedef unsigned int glIndex_t;
+
+#ifdef FEATURE_RENDERER_GLES
+    #include "GLES/glext.h"
+    #define GL_RGBA4                0x8056
+    #define GL_RGB5                 0x8050
+    #define GL_INDEX_TYPE       GL_UNSIGNED_SHORT
+    typedef unsigned short glIndex_t;
+#else
+    #define GL_INDEX_TYPE       GL_UNSIGNED_INT
+    typedef unsigned int glIndex_t;
+#endif
 
 // 14 bits
 // can't be increased without changing bit packing for drawsurfs
-// see QSORT_SHADERNUM_SHIFT
+//// see QSORT_SHADERNUM_SHIFT
 #define SHADERNUM_BITS          14
 #define MAX_SHADERS             (1 << SHADERNUM_BITS)
 
@@ -1641,15 +1650,15 @@ typedef struct
  */
 typedef struct shaderCommands_s
 {
-	glIndex_t indexes[SHADER_MAX_INDEXES];
-	vec4_t normal[SHADER_MAX_INDEXES];
-	color4ub_t vertexColors[SHADER_MAX_INDEXES];
-	vec4_t xyz[SHADER_MAX_INDEXES];
-	vec2_t texCoords[SHADER_MAX_INDEXES][2];
+	glIndex_t indexes[SHADER_MAX_INDEXES] QALIGN(16);
+	vec4_t normal[SHADER_MAX_INDEXES] QALIGN(16);
+	color4ub_t vertexColors[SHADER_MAX_INDEXES] QALIGN(16);
+	vec4_t xyz[SHADER_MAX_INDEXES] QALIGN(16);
+	vec2_t texCoords[SHADER_MAX_INDEXES][2] QALIGN(16);
 
-	stageVars_t svars;
+	stageVars_t svars QALIGN(16);
 
-	color4ub_t constantColor255[SHADER_MAX_VERTEXES];
+	color4ub_t constantColor255[SHADER_MAX_VERTEXES] QALIGN(16);
 
 	shader_t *shader;
 	double shaderTime;

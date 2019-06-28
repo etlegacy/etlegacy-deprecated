@@ -235,6 +235,7 @@ void R_ImageList_f(void)
 		case 4:
 			Ren_Print("RGBA ");
 			break;
+#ifndef FEATURE_RENDERER_GLES
 		case GL_RGBA8:
 			Ren_Print("RGBA8");
 			break;
@@ -251,6 +252,7 @@ void R_ImageList_f(void)
 		case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
 			Ren_Print("S3TC ");
 			break;
+#endif
 		case GL_RGBA4:
 			Ren_Print("RGBA4");
 			break;
@@ -557,6 +559,109 @@ byte mipBlendColors[16][4] =
 	{ 0,   0,   255, 128 },
 };
 
+#ifdef FEATURE_RENDERER_GLES
+// helper function for GLES format conversions
+byte * gles_convertRGB(byte * data, int width, int height)
+{
+	byte * temp = (byte *) ri.Z_Malloc(width*height*3);
+	byte *src = data;
+	byte *dst = temp;
+	int i,j;
+
+	for (i=0; i<width*height; i++) {
+		for (j=0; j<3; j++)
+			*(dst++) = *(src++);
+		src++;
+	}
+
+	return temp;
+}
+byte *  gles_convertRGBA4(byte * data, int width, int height)
+{
+	byte * temp = (byte *) ri.Z_Malloc(width*height*2);
+	int i;
+
+	unsigned int * input = ( unsigned int *)(data);
+	unsigned short* output = (unsigned short*)(temp);
+
+	for (i = 0; i < width*height; i++) {
+		unsigned int pixel = input[i];
+
+		// Unpack the source data as 8 bit values
+		unsigned int r = pixel & 0xff;
+		unsigned int g = (pixel >> 8) & 0xff;
+		unsigned int b = (pixel >> 16) & 0xff;
+		unsigned int a = (pixel >> 24) & 0xff;
+
+		// Convert to 4 bit vales
+		r >>= 4; g >>= 4; b >>= 4; a >>= 4;
+		output[i] = r << 12 | g << 8 | b << 4 | a;
+	}
+
+	return temp;
+}
+byte * gles_convertRGB5(byte * data, int width, int height)
+{
+	byte * temp = (byte *) ri.Z_Malloc(width*height*2);
+	int i;
+
+	unsigned int * input = ( unsigned int *)(data);
+	unsigned short* output = (unsigned short*)(temp);
+
+	for (i = 0; i < width*height; i++) {
+		unsigned int pixel = input[i];
+
+		// Unpack the source data as 8 bit values
+		unsigned int r = pixel & 0xff;
+		unsigned int g = (pixel >> 8) & 0xff;
+		unsigned int b = (pixel >> 16) & 0xff;
+
+		// Convert to 4 bit vales
+		r >>= 3; g >>= 2; b >>= 3;
+		output[i] = r << 11 | g << 5 | b;
+	}
+
+	return temp;
+}
+byte * gles_convertLuminance(byte * data, int width, int height)
+{
+	byte * temp = (byte *) ri.Z_Malloc(width*height);
+	int i;
+
+	unsigned int * input = ( unsigned int *)(data);
+	byte* output = (byte*)(temp);
+
+	for (i = 0; i < width*height; i++) {
+		unsigned int pixel = input[i];
+
+		// Unpack the source data as 8 bit values
+		unsigned int r = pixel & 0xff;
+		output[i] = r;
+	}
+
+	return temp;
+}
+byte * gles_convertLuminanceAlpha(byte * data, int width, int height)
+{
+	byte * temp = (byte *) ri.Z_Malloc(width*height*2);
+	int i;
+
+	unsigned int * input = ( unsigned int *)(data);
+	unsigned short* output = (unsigned short*)(temp);
+
+	for (i = 0; i < width*height; i++) {
+		unsigned int pixel = input[i];
+
+		// Unpack the source data as 8 bit values
+		unsigned int r = pixel & 0xff;
+		unsigned int a = (pixel >> 24) & 0xff;
+		output[i] = r | a<<8;
+	}
+
+	return temp;
+}
+#endif
+
 /**
  * @brief Upload32
  * @param[in,out] data
@@ -682,157 +787,261 @@ static void Upload32(unsigned *data,
 			}
 		}
 		// select proper internal format
+#ifndef FEATURE_RENDERER_GLES
 		if (samples == 3)
+		{
+            if (r_greyScale->integer)
+            {
+                if (r_textureBits->integer == 16)
+                {
+                    internalFormat = GL_LUMINANCE8;
+                }
+                else if (r_textureBits->integer == 32)
+                {
+                    internalFormat = GL_LUMINANCE16;
+                }
+                else
+                {
+                    internalFormat = GL_LUMINANCE;
+                }
+            }
+            else
+            {
+                if (!noCompress && glConfig.textureCompression == TC_S3TC_ARB)
+                {
+                    internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+                }
+                else if (!noCompress && glConfig.textureCompression == TC_S3TC)
+                {
+                    internalFormat = GL_RGB4_S3TC;
+                }
+                else if (r_textureBits->integer == 16)
+                {
+                    internalFormat = GL_RGB5;
+                }
+                else if (r_textureBits->integer == 32)
+                {
+                    internalFormat = GL_RGB8;
+                }
+                else
+                {
+                    internalFormat = GL_RGB;
+                }
+            }
+		}
+        else if (samples == 4)
+        {
+            if (r_greyScale->integer)
+            {
+                if (r_textureBits->integer == 16)
+                {
+                    internalFormat = GL_LUMINANCE8_ALPHA8;
+                }
+                else if (r_textureBits->integer == 32)
+                {
+                    internalFormat = GL_LUMINANCE16_ALPHA16;
+                }
+                else
+                {
+                    internalFormat = GL_LUMINANCE_ALPHA;
+                }
+            }
+            else
+            {
+                if (!noCompress && glConfig.textureCompression == TC_S3TC_ARB)
+                {
+                    internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+                }
+                else if (r_textureBits->integer == 16)
+                {
+                    internalFormat = GL_RGBA4;
+                }
+                else if (r_textureBits->integer == 32)
+                {
+                    internalFormat = GL_RGBA8;
+                }
+                else
+                {
+                    internalFormat = GL_RGBA;
+                }
+            }
+        }
+#else
+        if (samples == 3)
 		{
 			if (r_greyScale->integer)
 			{
-				if (r_textureBits->integer == 16)
-				{
-					internalFormat = GL_LUMINANCE8;
-				}
-				else if (r_textureBits->integer == 32)
-				{
-					internalFormat = GL_LUMINANCE16;
-				}
-				else
-				{
-					internalFormat = GL_LUMINANCE;
-				}
+				internalFormat = GL_LUMINANCE;
 			}
 			else
 			{
-				if (!noCompress && glConfig.textureCompression == TC_S3TC_ARB)
-				{
-					internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-				}
-				else if (!noCompress && glConfig.textureCompression == TC_S3TC)
-				{
-					internalFormat = GL_RGB4_S3TC;
-				}
-				else if (r_textureBits->integer == 16)
-				{
-					internalFormat = GL_RGB5;
-				}
-				else if (r_textureBits->integer == 32)
-				{
-					internalFormat = GL_RGB8;
-				}
-				else
-				{
-					internalFormat = GL_RGB;
-				}
+                if (r_textureBits->integer == 16)
+                {
+                    internalFormat = GL_RGB5;
+                }
+                else
+                {
+                    internalFormat = GL_RGB;
+                }
 			}
 		}
 		else if (samples == 4)
 		{
 			if (r_greyScale->integer)
 			{
-				if (r_textureBits->integer == 16)
-				{
-					internalFormat = GL_LUMINANCE8_ALPHA8;
-				}
-				else if (r_textureBits->integer == 32)
-				{
-					internalFormat = GL_LUMINANCE16_ALPHA16;
-				}
-				else
-				{
-					internalFormat = GL_LUMINANCE_ALPHA;
-				}
+				internalFormat = GL_LUMINANCE_ALPHA;
 			}
 			else
 			{
-				if (!noCompress && glConfig.textureCompression == TC_S3TC_ARB)
-				{
-					internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-				}
-				else if (r_textureBits->integer == 16)
-				{
-					internalFormat = GL_RGBA4;
-				}
-				else if (r_textureBits->integer == 32)
-				{
-					internalFormat = GL_RGBA8;
-				}
-				else
-				{
-					internalFormat = GL_RGBA;
-				}
+			    if (r_textureBits->integer == 16)
+                {
+                    internalFormat = GL_RGBA4;
+                }
+                else
+                {
+                    internalFormat = GL_RGBA;
+                }
 			}
 		}
+#endif
 	}
 
-	// copy or resample data as appropriate for first MIP level
-	if ((scaled_width == width) &&
-	    (scaled_height == height))
-	{
-		if (!mipmap)
-		{
-			qglTexImage2D(GL_TEXTURE_2D, 0, internalFormat, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-			*pUploadWidth  = scaled_width;
-			*pUploadHeight = scaled_height;
-			*format        = internalFormat;
+#ifdef FEATURE_RENDERER_GLES
+    if ( ( scaled_width == width ) &&
+        ( scaled_height == height ) ) {
+        Com_Memcpy (scaledBuffer, data, width*height*4);
+    }
+    else
+    {
+        // use the normal mip-mapping function to go down from here
+        while ( width > scaled_width || height > scaled_height ) {
+            R_MipMap( (byte *)data, width, height );
+            width >>= 1;
+            height >>= 1;
+            if ( width < 1 ) {
+                width = 1;
+            }
+            if ( height < 1 ) {
+                height = 1;
+            }
+        }
+        Com_Memcpy( scaledBuffer, data, width * height * 4 );
+    }
+    R_LightScaleTexture (scaledBuffer, scaled_width, scaled_height, !mipmap );
 
-			goto done;
-		}
-		Com_Memcpy(scaledBuffer, data, width * height * 4);
-	}
-	else
-	{
-		// use the normal mip-mapping function to go down from here
-		while (width > scaled_width || height > scaled_height)
-		{
-			R_MipMap((byte *)data, width, height);
-			width  >>= 1;
-			height >>= 1;
-			if (width < 1)
-			{
-				width = 1;
-			}
-			if (height < 1)
-			{
-				height = 1;
-			}
-		}
-		Com_Memcpy(scaledBuffer, data, width * height * 4);
-	}
+    qglTexParameteri( GL_TEXTURE_2D, GL_GENERATE_MIPMAP, (mipmap)?GL_TRUE:GL_FALSE );
 
-	R_LightScaleTexture(scaledBuffer, scaled_width, scaled_height, !mipmap);
+    // and now, convert if needed and upload
+    // GLES doesn't do convertion itself, so we have to handle that
+    byte *temp;
+    switch ( internalFormat ) {
+     case GL_RGB5:
+        temp = gles_convertRGB5((byte*)scaledBuffer, scaled_width, scaled_height);
+        qglTexImage2D (GL_TEXTURE_2D, 0, GL_RGB, scaled_width, scaled_height, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, temp);
+        ri.Free(temp);
+        break;
+     case GL_RGBA4:
+        temp = gles_convertRGBA4((byte*)scaledBuffer, width, height);
+        qglTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, temp);
+        ri.Free(temp);
+        break;
+     case GL_RGB:
+        temp = gles_convertRGB((byte*)scaledBuffer, width, height);
+        qglTexImage2D (GL_TEXTURE_2D, 0, GL_RGB, scaled_width, scaled_height, 0, GL_RGB, GL_UNSIGNED_BYTE, temp);
+        ri.Free(temp);
+        break;
+     case GL_LUMINANCE:
+        temp = gles_convertLuminance((byte*)scaledBuffer, width, height);
+        qglTexImage2D (GL_TEXTURE_2D, 0, GL_LUMINANCE, scaled_width, scaled_height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, temp);
+        ri.Free(temp);
+        break;
+     case GL_LUMINANCE_ALPHA:
+        temp = gles_convertLuminanceAlpha((byte*)scaledBuffer, width, height);
+        qglTexImage2D (GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, scaled_width, scaled_height, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, temp);
+        ri.Free(temp);
+        break;
+     default:
+        internalFormat = GL_RGBA;
+        qglTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scaledBuffer);
+    }
 
-	*pUploadWidth  = scaled_width;
+	*pUploadWidth = scaled_width;
 	*pUploadHeight = scaled_height;
-	*format        = internalFormat;
+    *format = internalFormat;
+#else
+// copy or resample data as appropriate for first MIP level
+    if ((scaled_width == width) &&
+        (scaled_height == height))
+    {
+        if (!mipmap)
+        {
+            qglTexImage2D(GL_TEXTURE_2D, 0, internalFormat, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+            *pUploadWidth  = scaled_width;
+            *pUploadHeight = scaled_height;
+            *format        = internalFormat;
 
-	qglTexImage2D(GL_TEXTURE_2D, 0, internalFormat, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scaledBuffer);
+            goto done;
+        }
+        Com_Memcpy(scaledBuffer, data, width * height * 4);
+    }
+    else
+    {
+        // use the normal mip-mapping function to go down from here
+        while (width > scaled_width || height > scaled_height)
+        {
+            R_MipMap((byte *)data, width, height);
+            width  >>= 1;
+            height >>= 1;
+            if (width < 1)
+            {
+                width = 1;
+            }
+            if (height < 1)
+            {
+                height = 1;
+            }
+        }
+        Com_Memcpy(scaledBuffer, data, width * height * 4);
+    }
 
-	if (mipmap)
-	{
-		int miplevel = 0;
+    R_LightScaleTexture(scaledBuffer, scaled_width, scaled_height, !mipmap);
 
-		while (scaled_width > 1 || scaled_height > 1)
-		{
-			R_MipMap((byte *)scaledBuffer, scaled_width, scaled_height);
-			scaled_width  >>= 1;
-			scaled_height >>= 1;
-			if (scaled_width < 1)
-			{
-				scaled_width = 1;
-			}
-			if (scaled_height < 1)
-			{
-				scaled_height = 1;
-			}
-			miplevel++;
+    *pUploadWidth  = scaled_width;
+    *pUploadHeight = scaled_height;
+    *format        = internalFormat;
 
-			if (r_colorMipLevels->integer)
-			{
-				R_BlendOverTexture((byte *)scaledBuffer, scaled_width * scaled_height, mipBlendColors[miplevel]);
-			}
+    qglTexImage2D(GL_TEXTURE_2D, 0, internalFormat, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scaledBuffer);
 
-			qglTexImage2D(GL_TEXTURE_2D, miplevel, internalFormat, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scaledBuffer);
-		}
-	}
-done:
+    if (mipmap)
+    {
+        int miplevel = 0;
+
+        while (scaled_width > 1 || scaled_height > 1)
+        {
+            R_MipMap((byte *)scaledBuffer, scaled_width, scaled_height);
+            scaled_width  >>= 1;
+            scaled_height >>= 1;
+            if (scaled_width < 1)
+            {
+                scaled_width = 1;
+            }
+            if (scaled_height < 1)
+            {
+                scaled_height = 1;
+            }
+            miplevel++;
+
+            if (r_colorMipLevels->integer)
+            {
+                R_BlendOverTexture((byte *)scaledBuffer, scaled_width * scaled_height, mipBlendColors[miplevel]);
+            }
+
+            qglTexImage2D(GL_TEXTURE_2D, miplevel, internalFormat, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scaledBuffer);
+        }
+    }
+    done:
+
+#endif
 
 	if (mipmap)
 	{
@@ -1256,6 +1465,7 @@ static void R_CreateFogImage(void)
 	tr.fogImage = R_CreateImage("*fog", (byte *)data, FOG_S, FOG_T, qfalse, qfalse, GL_CLAMP_TO_EDGE);
 	ri.Hunk_FreeTempMemory(data);
 
+#ifndef FEATURE_RENDERER_GLES
 	// FIXME: the following lines are unecessary for new GL_CLAMP_TO_EDGE fog (?)
 	borderColor[0] = 1.0;
 	borderColor[1] = 1.0;
@@ -1263,6 +1473,7 @@ static void R_CreateFogImage(void)
 	borderColor[3] = 1;
 
 	qglTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+#endif
 }
 
 #define DEFAULT_SIZE    16
@@ -1441,10 +1652,17 @@ void R_SetColorMappings(void)
 		s_intensitytable[i] = j;
 	}
 
+#ifndef FEATURE_RENDERER_GLES
 	if (glConfig.deviceSupportsGamma && !GLEW_ARB_fragment_program)
 	{
 		ri.GLimp_SetGamma(s_gammatable, s_gammatable, s_gammatable);
 	}
+#else
+    if (glConfig.deviceSupportsGamma)
+	{
+		ri.GLimp_SetGamma(s_gammatable, s_gammatable, s_gammatable);
+	}
+#endif
 }
 
 /**

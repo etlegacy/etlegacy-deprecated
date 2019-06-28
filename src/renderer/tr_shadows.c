@@ -56,6 +56,11 @@ static edgeDef_t edgeDefs[SHADER_MAX_VERTEXES][MAX_EDGE_DEFS];
 static int       numEdgeDefs[SHADER_MAX_VERTEXES];
 static int       facing[SHADER_MAX_INDEXES / 3];
 
+#ifdef FEATURE_RENDERER_GLES
+static unsigned short indexes[6 * MAX_EDGE_DEFS * SHADER_MAX_VERTEXES];
+static int idx = 0;
+#endif
+
 /**
  * @brief R_AddEdgeDef
  * @param[in] i1
@@ -87,6 +92,10 @@ void R_RenderShadowEdges(void)
 	int i2;
 	// int c_edges = 0, c_rejected = 0;  // TODO: remove ?
 	int hit[2];
+
+#ifdef FEATURE_RENDERER_GLES
+    idx = 0;
+#endif
 
 	// an edge is NOT a silhouette edge if its face doesn't face the light,
 	// or if it has a reverse paired edge that also faces the light.
@@ -120,12 +129,22 @@ void R_RenderShadowEdges(void)
 			// triangle, it is a sil edge
 			if (hit[1] == 0)
 			{
-				qglBegin(GL_TRIANGLE_STRIP);
-				qglVertex3fv(tess.xyz[i]);
-				qglVertex3fv(tess.xyz[i + tess.numVertexes]);
-				qglVertex3fv(tess.xyz[i2]);
-				qglVertex3fv(tess.xyz[i2 + tess.numVertexes]);
-				qglEnd();
+#ifdef FEATURE_RENDERER_GLES
+                indexes[idx++] = i;
+				indexes[idx++] = i + tess.numVertexes;
+				indexes[idx++] = i2;
+				indexes[idx++] = i2;
+				indexes[idx++] = i + tess.numVertexes;
+                indexes[idx++] = i2 + tess.numVertexes;
+#else
+                qglBegin(GL_TRIANGLE_STRIP);
+                qglVertex3fv(tess.xyz[i]);
+                qglVertex3fv(tess.xyz[i + tess.numVertexes]);
+                qglVertex3fv(tess.xyz[i2]);
+                qglVertex3fv(tess.xyz[i2 + tess.numVertexes]);
+                qglEnd();
+#endif
+
 				// c_edges++;
 			}
 			/*
@@ -136,6 +155,10 @@ void R_RenderShadowEdges(void)
 			*/
 		}
 	}
+
+#ifdef FEATURE_RENDERER_GLES
+    qglDrawElements(GL_TRIANGLES, idx, GL_UNSIGNED_SHORT, indexes);
+#endif
 }
 
 /**
@@ -288,12 +311,33 @@ void RB_ShadowFinish(void)
 	qglColor3f(0.6f, 0.6f, 0.6f);
 	GL_State(GLS_DEPTHMASK_TRUE | GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_ZERO);
 
+#ifdef FEATURE_RENDERER_GLES
+    GLboolean text = qglIsEnabled(GL_TEXTURE_COORD_ARRAY);
+    GLboolean glcol = qglIsEnabled(GL_COLOR_ARRAY);
+    if (text)
+        qglDisableClientState( GL_TEXTURE_COORD_ARRAY );
+    if (glcol)
+        qglDisableClientState( GL_COLOR_ARRAY );
+    GLfloat vtx[] = {
+            -100,  100, -10,
+            100,  100, -10,
+            100, -100, -10,
+            -100, -100, -10
+    };
+    qglVertexPointer  ( 3, GL_FLOAT, 0, vtx );
+    qglDrawArrays( GL_TRIANGLE_FAN, 0, 4 );
+    if (text)
+        qglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+    if (glcol)
+        qglEnableClientState( GL_COLOR_ARRAY );
+#else
 	qglBegin(GL_QUADS);
 	qglVertex3f(-100, 100, -10);
 	qglVertex3f(100, 100, -10);
 	qglVertex3f(100, -100, -10);
 	qglVertex3f(-100, -100, -10);
 	qglEnd();
+#endif
 
 	qglColor4f(1, 1, 1, 1);
 	qglDisable(GL_STENCIL_TEST);
