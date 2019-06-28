@@ -1166,15 +1166,6 @@ typedef struct weapontable_s
 	const char *className;          ///< g -
 	const char *weapFile;           ///< cg -
 
-	int idleAnim;                   ///< bg -
-	int attackAnim;                 ///< bg -
-	int lastAttackAnim;             ///< bg -
-	int altSwitchFrom;              ///< bg -
-	int altSwitchTo;                ///< bg -
-	int reloadAnim;                 ///< bg -
-	int raiseAnim;                  ///< bg -
-	int dropAnim;                   ///< bg -
-
 	float chargeTimeCoeff[NUM_SKILL_LEVELS];      ///< bg -
 
 	meansOfDeath_t mod;                           ///< g - means of death

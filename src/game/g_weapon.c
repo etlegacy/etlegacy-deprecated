@@ -391,7 +391,7 @@ qboolean ReviveEntity(gentity_t *ent, gentity_t *traceEnt)
 	traceEnt->client->ps.weaponstate = oldweaponstate;
 
 	// set idle animation on weapon
-	traceEnt->client->ps.weapAnim = ((traceEnt->client->ps.weapAnim & ANIM_TOGGLEBIT) ^ ANIM_TOGGLEBIT) | GetWeaponTableData(traceEnt->client->ps.weapon)->idleAnim;
+	traceEnt->client->ps.weapAnim = ((traceEnt->client->ps.weapAnim & ANIM_TOGGLEBIT) ^ ANIM_TOGGLEBIT) | WEAP_IDLE1;
 
 	traceEnt->client->ps.classWeaponTime = oldclasstime;
 

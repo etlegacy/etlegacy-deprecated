@@ -133,7 +133,7 @@ int PM_ReloadAnimForWeapon(int weapon)
 		return WEAP_RELOAD2;        // faster reload
 	}
 
-	return GetWeaponTableData(weapon)->reloadAnim;
+	return WEAP_RELOAD1;
 }
 
 /**
@@ -1243,8 +1243,8 @@ static void PM_WalkMove(void)
 		{
 			// cap the max prone speed while reloading and mouting/unmouting alt weapon
 			if (pm->ps->weaponstate == WEAPON_RELOADING ||
-			    (pm->ps->weapAnim & ~ANIM_TOGGLEBIT) == GetWeaponTableData(pm->ps->weapon)->altSwitchFrom ||
-			    (pm->ps->weapAnim & ~ANIM_TOGGLEBIT) == GetWeaponTableData(pm->ps->weapon)->altSwitchTo)
+			    (pm->ps->weapAnim & ~ANIM_TOGGLEBIT) == WEAP_ALTSWITCHFROM ||
+			    (pm->ps->weapAnim & ~ANIM_TOGGLEBIT) == WEAP_ALTSWITCHTO)
 			{
 				wishspeed = (wishspeed < 40.f) ? pm->ps->speed * pm_proneSpeedScale : 40.f;
 			}
@@ -2295,7 +2295,7 @@ static void PM_BeginWeaponReload(weapon_t weapon)
 	{
 		if (pm->pmext->silencedSideArm & WALTTYPE_BIPOD)
 		{
-			PM_ContinueWeaponAnim(WEAP_RELOAD3);
+			PM_ContinueWeaponAnim(WEAP_RELOAD2);
 		}
 		else
 		{
@@ -2362,8 +2362,8 @@ static void PM_BeginWeaponChange(weapon_t oldWeapon, weapon_t newWeapon, qboolea
 	// don't allow another weapon switch when we're still swapping alt weap, to prevent animation breaking
 	// there we check the value of the animation to prevent any switch during raising and dropping alt weapon
 	// until the animation is ended
-	if ((pm->ps->weapAnim & ~ANIM_TOGGLEBIT) == GetWeaponTableData(oldWeapon)->altSwitchFrom ||
-	    (pm->ps->weapAnim & ~ANIM_TOGGLEBIT) == GetWeaponTableData(oldWeapon)->altSwitchTo)
+	if ((pm->ps->weapAnim & ~ANIM_TOGGLEBIT) == WEAP_ALTSWITCHFROM ||
+	    (pm->ps->weapAnim & ~ANIM_TOGGLEBIT) == WEAP_ALTSWITCHTO)
 	{
 		return;
 	}
@@ -2392,7 +2392,7 @@ static void PM_BeginWeaponChange(weapon_t oldWeapon, weapon_t newWeapon, qboolea
 		if (!(GetWeaponTableData(oldWeapon)->type & WEAPON_TYPE_RIFLENADE) || pm->ps->ammoclip[GetWeaponTableData(oldWeapon)->ammoIndex])
 		{
 			PM_AddEvent(EV_CHANGE_WEAPON_2);
-			PM_StartWeaponAnim(GetWeaponTableData(oldWeapon)->altSwitchFrom);
+			PM_StartWeaponAnim(WEAP_ALTSWITCHFROM);
 		}
 
 		BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DROPWEAPON, qfalse, qfalse);
@@ -2401,7 +2401,7 @@ static void PM_BeginWeaponChange(weapon_t oldWeapon, weapon_t newWeapon, qboolea
 	{
 		PM_AddEvent(EV_CHANGE_WEAPON);
 
-		PM_StartWeaponAnim(GetWeaponTableData(oldWeapon)->dropAnim);
+		PM_StartWeaponAnim(WEAP_DROP);
 
 		// play an animation
 		BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DROPWEAPON, qfalse, qfalse);
@@ -2492,7 +2492,7 @@ static void PM_FinishWeaponChange(void)
 		}
 
 		// alt weapon switch was played when switching away, just go into idle
-		PM_StartWeaponAnim(GetWeaponTableData(newWeapon)->altSwitchTo);
+		PM_StartWeaponAnim(WEAP_IDLE1);
 	}
 	else
 	{
@@ -2508,7 +2508,7 @@ static void PM_FinishWeaponChange(void)
 			BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_RAISEWEAPON, qfalse, qfalse);
 		}
 
-		PM_StartWeaponAnim(GetWeaponTableData(newWeapon)->raiseAnim);
+		PM_StartWeaponAnim(WEAP_RAISE);
 	}
 }
 
@@ -2536,8 +2536,8 @@ static void PM_BeginAltWeaponChange(qboolean reload)
 	// don't allow another weapon switch when we're still swapping alt weap, to prevent animation breaking
 	// there we check the value of the animation to prevent any switch during raising and dropping alt weapon
 	// until the animation is ended
-	if ((pm->ps->weapAnim & ~ANIM_TOGGLEBIT) == GetWeaponTableData(pm->ps->weapon)->altSwitchFrom ||
-	    (pm->ps->weapAnim & ~ANIM_TOGGLEBIT) == GetWeaponTableData(pm->ps->weapon)->altSwitchTo)
+	if ((pm->ps->weapAnim & ~ANIM_TOGGLEBIT) == WEAP_ALTSWITCHFROM ||
+	    (pm->ps->weapAnim & ~ANIM_TOGGLEBIT) == WEAP_ALTSWITCHTO)
 	{
 		return;
 	}
@@ -2777,7 +2777,7 @@ static void PM_FinishWeaponReload(void)
 	}
 	else
 	{
-		PM_StartWeaponAnim(GetWeaponTableData(pm->ps->weapon)->idleAnim);
+		PM_StartWeaponAnim(WEAP_IDLE1);
 	}
 }
 
@@ -3542,9 +3542,8 @@ static void PM_Weapon(void)
 		}
 		else
 		{
-			PM_StartWeaponAnim(GetWeaponTableData(pm->ps->weapon)->idleAnim);
+			PM_StartWeaponAnim(WEAP_IDLE1);
 		}
-
 		return;
 	case WEAPON_RAISING_TORELOAD:
 		pm->ps->weaponstate = WEAPON_READY;
@@ -3563,7 +3562,7 @@ static void PM_Weapon(void)
 		}
 		else
 		{
-			PM_ContinueWeaponAnim(GetWeaponTableData(pm->ps->weapon)->idleAnim);
+			PM_ContinueWeaponAnim(WEAP_IDLE1);
 		}
 		return;
 	}
@@ -3605,7 +3604,7 @@ static void PM_Weapon(void)
 			}
 			else
 			{
-				PM_ContinueWeaponAnim(GetWeaponTableData(pm->ps->weapon)->idleAnim);
+				PM_ContinueWeaponAnim(WEAP_IDLE1);
 			}
 
 		}
@@ -3685,7 +3684,7 @@ static void PM_Weapon(void)
 	if (pm->waterlevel == 3 && !(GetWeaponTableData(pm->ps->weapon)->attributes & WEAPON_ATTRIBUT_FIRE_UNDERWATER))
 	{
 		PM_AddEvent(EV_NOFIRE_UNDERWATER);      // event for underwater 'click' for nofire
-		PM_ContinueWeaponAnim(GetWeaponTableData(pm->ps->weapon)->idleAnim);
+		PM_ContinueWeaponAnim(WEAP_IDLE1);
 		pm->ps->weaponTime  = 500;
 		pm->ps->weaponDelay = 0;                // avoid insta-fire after water exit on delayed weapon attacks
 		return;
@@ -3716,7 +3715,7 @@ static void PM_Weapon(void)
 				// start at and count down
 				pm->ps->grenadeTimeLeft = GetWeaponTableData(pm->ps->weapon)->grenadeTime;
 
-				PM_StartWeaponAnim(GetWeaponTableData(pm->ps->weapon)->attackAnim);
+				PM_StartWeaponAnim(WEAP_ATTACK1);
 			}
 
 			pm->ps->weaponDelay = GetWeaponTableData(pm->ps->weapon)->fireDelayTime;
@@ -3745,12 +3744,12 @@ static void PM_Weapon(void)
 			else if (GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR)
 			{
 				PM_AddEvent(EV_SPINUP);
-				PM_StartWeaponAnim(GetWeaponTableData(pm->ps->weapon)->attackAnim);     // FIXME: returns WEAP_ATTACK1 anyway
+				PM_StartWeaponAnim(WEAP_ATTACK1);
 			}
 			else if (pm->ps->weapon == WP_SATCHEL_DET)
 			{
 				PM_AddEvent(EV_SPINUP);
-				PM_ContinueWeaponAnim(GetWeaponTableData(WP_SATCHEL_DET)->attackAnim);
+				PM_ContinueWeaponAnim(WEAP_ATTACK1);
 			}
 
 			pm->ps->weaponDelay = GetWeaponTableData(pm->ps->weapon)->fireDelayTime;
@@ -3773,7 +3772,7 @@ static void PM_Weapon(void)
 	if (GetWeaponTableData(pm->ps->weapon)->uses > PM_WeaponAmmoAvailable(pm->ps->weapon))
 	{
 		PM_AddEvent(EV_NOAMMO);
-		PM_ContinueWeaponAnim(GetWeaponTableData(pm->ps->weapon)->idleAnim);
+		PM_ContinueWeaponAnim(WEAP_IDLE1);
 		pm->ps->weaponTime += 500;
 
 		return;
@@ -3842,11 +3841,11 @@ static void PM_Weapon(void)
 		{
 			if (PM_WeaponClipEmpty(pm->ps->weapon))
 			{
-				weapattackanim = GetWeaponTableData(pm->ps->weapon)->lastAttackAnim;
+				weapattackanim = WEAP_ATTACK_LASTSHOT;
 			}
 			else
 			{
-				weapattackanim = GetWeaponTableData(pm->ps->weapon)->attackAnim;
+				weapattackanim = WEAP_ATTACK1;
 			}
 		}
 	}

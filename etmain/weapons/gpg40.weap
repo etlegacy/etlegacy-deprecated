@@ -7,8 +7,8 @@ weaponDef
 		//pickupModel			"models/multiplayer/mauser/mauser_pickup.md3"
 		//pickupSound		"sound/misc/w_pkup.wav"
 		
-		weaponConfig		"models/multiplayer/kar98/weapon.cfg"
-		handsModel			"models/multiplayer/kar98/v_kar98_hand.md3"
+		weaponConfig		"models/multiplayer/gpg40/weapon.cfg"
+		handsModel		"models/multiplayer/kar98/v_kar98_hand.md3"
 		
 		flashDlightColor	1.0 0.7 0.5
 		flashSound			"sound/weapons/k43/k43_fire_grenade.wav"	// supports up to 4 flash sounds
