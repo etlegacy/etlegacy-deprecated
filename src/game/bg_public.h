@@ -933,7 +933,6 @@ typedef enum
 	MOD_GARAND,
 
 	MOD_FG42,
-	MOD_FG42SCOPE,
 	MOD_PANZERFAUST,
 	MOD_GRENADE_LAUNCHER,
 	MOD_FLAMETHROWER,
@@ -970,14 +969,12 @@ typedef enum
 
 	MOD_SMOKEBOMB,
 	MOD_MOBILE_MG42,
-	MOD_GARAND_SCOPE,
 
 	MOD_CRUSH_CONSTRUCTION,
 	MOD_CRUSH_CONSTRUCTIONDEATH,
 	MOD_CRUSH_CONSTRUCTIONDEATH_NOATTACKER,
 
 	MOD_K43,
-	MOD_K43_SCOPE,
 
 	MOD_MORTAR,
 
@@ -1193,10 +1190,10 @@ typedef struct modtable_s
 
 	int weaponClassForMOD;                          ///< g
 	int noYellMedic;                                ///< g
-	const char *obituaryKillMessage1;               ///< g
-	const char *obituaryKillMessage2;               ///< g
-	const char *obituarySelfKillMessage;            ///< g
-	const char *obituaryNoAttackerMessage;          ///< g
+	const char *obituaryKillMessage1;               ///< cg
+	const char *obituaryKillMessage2;               ///< cg
+	const char *obituarySelfKillMessage;            ///< cg
+	const char *obituaryNoAttackerMessage;          ///< cg
 	const char *modName;                            ///< g - These are just for logging, the client prints its own messages
 	skillType_t skillType;                          ///< g
 	float defaultKillPoints;                        ///< g
