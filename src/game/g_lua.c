@@ -2546,7 +2546,6 @@ static void registerModConstants(lua_vm_t *vm)
 	lua_regconstinteger(vm->L, MOD_GARAND);
 
 	lua_regconstinteger(vm->L, MOD_FG42);
-	lua_regconstinteger(vm->L, MOD_FG42SCOPE);
 	lua_regconstinteger(vm->L, MOD_PANZERFAUST);
 	lua_regconstinteger(vm->L, MOD_GRENADE_LAUNCHER);
 	lua_regconstinteger(vm->L, MOD_FLAMETHROWER);
@@ -2583,14 +2582,12 @@ static void registerModConstants(lua_vm_t *vm)
 
 	lua_regconstinteger(vm->L, MOD_SMOKEBOMB);
 	lua_regconstinteger(vm->L, MOD_MOBILE_MG42);
-	lua_regconstinteger(vm->L, MOD_GARAND_SCOPE);
 
 	lua_regconstinteger(vm->L, MOD_CRUSH_CONSTRUCTION);
 	lua_regconstinteger(vm->L, MOD_CRUSH_CONSTRUCTIONDEATH);
 	lua_regconstinteger(vm->L, MOD_CRUSH_CONSTRUCTIONDEATH_NOATTACKER);
 
 	lua_regconstinteger(vm->L, MOD_K43);
-	lua_regconstinteger(vm->L, MOD_K43_SCOPE);
 
 	lua_regconstinteger(vm->L, MOD_MORTAR);
 

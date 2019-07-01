@@ -1325,7 +1325,7 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t
 	}
 
 	// set weapons means less knockback
-        if (targ->client && (targ->client->pmext.silencedSideArm & WALTTYPE_BIPOD))
+	if (targ->client && (targ->client->pmext.silencedSideArm & WALTTYPE_BIPOD))
 	{
 		knockback *= 0.5;
 	}
@@ -1482,7 +1482,7 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t
 		{
 			G_AddEvent(targ, EV_LOSE_HAT, DirToByte(dir));
 
-			if (mod != MOD_K43_SCOPE && mod != MOD_GARAND_SCOPE)
+			if ((mod != MOD_K43 && mod != MOD_GARAND) || !(attacker->client->pmext.silencedSideArm & WALTTYPE_SCOPE))
 			{
 				take *= .8f;    // helmet gives us some protection
 			}
