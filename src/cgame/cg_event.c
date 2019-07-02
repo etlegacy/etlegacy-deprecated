@@ -2174,7 +2174,7 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 		trap_S_StartSound(NULL, es->number, CHAN_AUTO, cgs.media.selectSound);
 
 		// special switching sound for alt weapon
-		if (es->effect1Time)
+		if (!es->effect1Time)
 		{
 			if (cg_weapons[es->weapon].switchSoundOn)
 			{
