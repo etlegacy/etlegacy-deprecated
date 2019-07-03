@@ -278,7 +278,7 @@ void COM_BitClear(int array[], int bitNum)
  */
 short ShortSwap(short l)
 {
-	unsigned short tmp = l
+	unsigned short tmp = l;
 	unsigned short b1  = (tmp & 0x00ff) << 8;
 	unsigned short b2  = (tmp & 0xff00) >> 8;
 
