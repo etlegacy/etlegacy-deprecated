@@ -271,7 +271,7 @@ void G_UpgradeSkill(gentity_t *ent, skillType_t skill)
 
 		if (skill == classInfo->classMiscWeapons[i].skill && ent->client->sess.skill[skill] == classInfo->classMiscWeapons[i].minSkillLevel)
 		{
-                    AddWeaponToPlayer(ent->client, weaponClassInfo->weapon, classInfo->classMiscWeapons[i].startingAmmo, classInfo->classMiscWeapons[i].startingClip, qfalse, INV_NONE);
+			AddWeaponToPlayer(ent->client, weaponClassInfo->weapon, classInfo->classMiscWeapons[i].startingAmmo, classInfo->classMiscWeapons[i].startingClip, qfalse, INV_NONE);
 		}
 	}
 }
@@ -530,7 +530,16 @@ void G_AddKillSkillPoints(gentity_t *attacker, meansOfDeath_t mod, hitRegion_t h
 		}
 	}
 
-	skillType = GetMODTableData(mod)->skillType;
+	// use of scoped weapon give scoped weapons skills ... logic, isn't it ?
+	if (attacker->client->pmext.silencedSideArm & WALTTYPE_SCOPE)
+	{
+		skillType = SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS;
+	}
+	else
+	{
+		skillType = GetMODTableData(mod)->skillType;
+	}
+
 
 	G_AddSkillPoints(attacker, skillType, points);
 	G_DebugAddSkillPoints(attacker, skillType, points, reason);
