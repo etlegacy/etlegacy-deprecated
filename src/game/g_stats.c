@@ -465,14 +465,25 @@ void G_AddSkillPoints(gentity_t *ent, skillType_t skill, float points)
  */
 void G_LoseKillSkillPoints(gentity_t *tker, meansOfDeath_t mod, hitRegion_t hr, qboolean splash)
 {
+	skillType_t skillType;
+
 	if (!tker->client)
 	{
 		return;
 	}
 
-	if (GetMODTableData(mod)->skillType < SK_NUM_SKILLS)
+	if (tker->client->pmext.silencedSideArm & WALTTYPE_SCOPE)
 	{
-		G_LoseSkillPoints(tker, GetMODTableData(mod)->skillType, GetMODTableData(mod)->defaultKillPoints);
+		skillType = SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS;
+	}
+	else
+	{
+		skillType = GetMODTableData(mod)->skillType;
+	}
+
+	if (skillType < SK_NUM_SKILLS)
+	{
+		G_LoseSkillPoints(tker, skillType, GetMODTableData(mod)->defaultKillPoints);
 	}
 
 	// prepare scoreboard
@@ -539,7 +550,6 @@ void G_AddKillSkillPoints(gentity_t *attacker, meansOfDeath_t mod, hitRegion_t h
 	{
 		skillType = GetMODTableData(mod)->skillType;
 	}
-
 
 	G_AddSkillPoints(attacker, skillType, points);
 	G_DebugAddSkillPoints(attacker, skillType, points, reason);
