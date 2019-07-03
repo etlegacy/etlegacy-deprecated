@@ -790,7 +790,7 @@ typedef struct weaponInfo_s
 
 	vec3_t flashDlightColor;
 	weaponSounds_t flashSound;          ///< fast firing weapons randomly choose
-        weaponSounds_t flashSoundSilenced;  ///< silenced firing weapons
+	weaponSounds_t flashSoundSilenced;      ///< silenced firing weapons
 	weaponSounds_t flashEchoSound;      ///< distant gun firing sound
 	weaponSounds_t lastShotSound;       ///< sound of the last shot can be different (mauser doesn't have bolt action on last shot for example)
 
@@ -829,7 +829,7 @@ typedef struct weaponInfo_s
 	sfxHandle_t spindownSound;      ///< sound called if the above is running but player doesn't follow through and fire
 
 	sfxHandle_t switchSoundOn;      ///< alt switch sound do
-        sfxHandle_t switchSoundOff;     ///< alt switch sound undo
+	sfxHandle_t switchSoundOff;         ///< alt switch sound undo
 	sfxHandle_t noAmmoSound;
 
 	int impactSoundRange;
@@ -1779,6 +1779,8 @@ typedef struct
 	qhandle_t fireteamicons[6];
 
 	qhandle_t countryFlags;         ///< GeoIP
+
+	qhandle_t silencer;
 
 } cgMedia_t;
 

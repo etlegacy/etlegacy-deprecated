@@ -336,6 +336,11 @@ void CG_DrawPlayerWeaponIcon(rectDef_t *rect, qboolean drawHighlighted, int alig
 
 		trap_R_SetColor(hcolor);
 		CG_DrawPic(x, y, w, h, icon);
+
+		if (cg.pmext.silencedSideArm & WALTTYPE_SILENCER && GetWeaponTableData(cg.predictedPlayerState.weapon)->type & WEAPON_TYPE_SILENCEABLE)
+		{
+                    CG_DrawPic(x, y + rect->h * 0.5f, w * 0.75f, h * 0.75f, cgs.media.silencer);
+		}
 	}
 }
 
@@ -434,7 +439,7 @@ void CG_DrawCursorhint(rectDef_t *rect)
 	case HINT_POWERUP:
 		icon = cgs.media.powerupHintShader;
 		break;
-        
+
 	// multiplayer hints
 	case HINT_BUILD:
 		icon = cgs.media.buildHintShader;
