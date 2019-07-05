@@ -4145,9 +4145,9 @@ void FireWeapon(gentity_t *ent)
 	{
 		if (!(GetWeaponTableData(ent->s.weapon)->attributes & WEAPON_ATTRIBUT_NEVER_LOST_DESGUISE))
 		{
-			if (!(GetWeaponTableData(ent->s.weapon)->attributes & WEAPON_ATTRIBUT_KEEP_DESGUISE)
-                        || (ent->client->pmext.silencedSideArm & 1) // silencer put on
-                        || G_PlayerCanBeSeenByOthers(ent))
+			if ((!(GetWeaponTableData(ent->s.weapon)->attributes & WEAPON_ATTRIBUT_KEEP_DESGUISE)
+			     && !(ent->client->pmext.silencedSideArm & 1))         // silencer put on
+			    || G_PlayerCanBeSeenByOthers(ent))
 			{
 				ent->client->ps.powerups[PW_OPS_DISGUISED] = 0;
 				ent->client->disguiseClientNum             = -1;
