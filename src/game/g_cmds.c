@@ -257,7 +257,7 @@ static void G_SendSkillRating(gentity_t *ent)
 		return;
 	}
 
-	Q_strncpyz(buffer, "sr ", sizeof(buffer));
+	Q_strncpyz(buffer, "sra ", sizeof(buffer));
 
 	// win probability
 	Q_strcat(buffer, sizeof(buffer), va("%.1f ", level.axisProb * 100.f));
@@ -1116,6 +1116,36 @@ void Cmd_Kill_f(gentity_t *ent)
 }
 
 /**
+ * @brief Cmd_DropObjective_f
+ * @param[in,out] ent
+ */
+void Cmd_DropObjective_f(gentity_t *ent)
+{
+	if (!ent || !ent->client)
+	{
+		return;
+	}
+
+	if (ent->health <= 0)
+	{
+		return;
+	}
+
+	if (!ent->client->ps.powerups[PW_REDFLAG] && !ent->client->ps.powerups[PW_BLUEFLAG])
+	{
+		return;
+	}
+
+	if (level.time - ent->client->pickObjectiveTime < 10000)
+	{
+		CP("cp \"You can't drop objective right after picking it up.\"");
+		return;
+	}
+
+	G_DropItems(ent);
+}
+
+/**
  * @brief G_TeamDataForString
  * @param[in] teamstr
  * @param[in] clientNum
@@ -1227,6 +1257,10 @@ void G_DropItems(gentity_t *self)
 		vec3_t    origin;
 		vec3_t    angles;
 		gentity_t *flag;
+		vec3_t    mins;
+		vec3_t    maxs;
+		vec3_t    viewpos;
+		trace_t   tr;
 
 		VectorCopy(self->client->ps.origin, origin);
 		// if the player hasn't died, then assume he's throwing objective
@@ -1241,6 +1275,31 @@ void G_DropItems(gentity_t *self)
 			VectorMA(self->client->ps.velocity, 96, forward, launchvel);
 			VectorMA(origin, 36.0f, forward, origin);
 			origin[2] += self->client->ps.viewheight;
+
+			// prevent stuck item in solid
+			VectorCopy(self->client->ps.origin, viewpos);
+			VectorSet(mins, -(ITEM_RADIUS + 8), -(ITEM_RADIUS + 8), 0);
+			VectorSet(maxs, (ITEM_RADIUS + 8), (ITEM_RADIUS + 8), 2 * (ITEM_RADIUS + 8));
+
+			trap_EngineerTrace(&tr, viewpos, mins, maxs, origin, self->s.number, MASK_MISSILESHOT);
+			if (tr.startsolid)
+			{
+				VectorCopy(forward, viewpos);
+				VectorNormalizeFast(viewpos);
+				VectorMA(self->r.currentOrigin, -24.f, viewpos, viewpos);
+
+				trap_EngineerTrace(&tr, viewpos, mins, maxs, origin, self->s.number, MASK_MISSILESHOT);
+
+				VectorCopy(tr.endpos, origin);
+			}
+			else if (tr.fraction < 1)       // oops, bad launch spot
+			{
+				VectorCopy(tr.endpos, origin);
+				SnapVectorTowards(origin, viewpos);
+			}
+
+			// set timer
+			self->client->dropObjectiveTime = level.time;
 		}
 
 		flag = LaunchItem(item, origin, launchvel, self->s.number);
@@ -2056,7 +2115,7 @@ void Cmd_Team_f(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
 	if (ent->client->sess.shoutcaster && (team == TEAM_ALLIES || team == TEAM_AXIS))
 	{
 		CP("print \"team: shoutcasters may not join a team\n\"");
-		CP("cp \"Shoutcasters may not join a team\n\"");
+		CP("cp \"Shoutcasters may not join a team.\n\"");
 		return;
 	}
 
@@ -3441,7 +3500,7 @@ void Cmd_Vote_f(gentity_t *ent)
 	{
 		if (ent->client->sess.sessionTeam != level.voteInfo.voteTeam)
 		{
-			CP("cp \"You cannot vote on the other team's surrender\"");
+			CP("cp \"You cannot vote on the other team's surrender.\"");
 			return;
 		}
 	}
@@ -4101,18 +4160,6 @@ void Cmd_Activate2_f(gentity_t *ent)
 		pass2 = qtrue;
 		trap_Trace(&tr, offset, NULL, NULL, end, ent->s.number, (CONTENTS_SOLID | CONTENTS_BODY | CONTENTS_CORPSE | CONTENTS_TRIGGER));
 	}
-
-	if (ent->client->ps.powerups[PW_REDFLAG] || ent->client->ps.powerups[PW_BLUEFLAG])
-	{
-		if (ent->client->ps.weapon != WP_KNIFE && ent->client->ps.weapon != WP_KNIFE_KABAR)
-		{
-			CP("cp \"You must switch to knife to drop objective\"");
-		}
-		else
-		{
-			G_DropItems(ent);
-		}
-	}
 }
 
 /**
@@ -4291,10 +4338,10 @@ void Cmd_IntermissionWeaponStats_f(gentity_t *ent)
 
 	// hit regions
 	Q_strcat(buffer, sizeof(buffer), va("%i %i %i %i ",
-		level.clients[clientNum].pers.playerStats.hitRegions[HR_HEAD],
-		level.clients[clientNum].pers.playerStats.hitRegions[HR_ARMS],
-		level.clients[clientNum].pers.playerStats.hitRegions[HR_BODY],
-		level.clients[clientNum].pers.playerStats.hitRegions[HR_LEGS]));
+	                                    level.clients[clientNum].pers.playerStats.hitRegions[HR_HEAD],
+	                                    level.clients[clientNum].pers.playerStats.hitRegions[HR_ARMS],
+	                                    level.clients[clientNum].pers.playerStats.hitRegions[HR_BODY],
+	                                    level.clients[clientNum].pers.playerStats.hitRegions[HR_LEGS]));
 
 	for (i = 0; i < WS_MAX; i++)
 	{
@@ -4985,6 +5032,10 @@ void ClientCommand(int clientNum)
 	else if (Q_stricmp(cmd, "kill") == 0)
 	{
 		Cmd_Kill_f(ent);
+	}
+	else if (Q_stricmp(cmd, "dropobj") == 0)
+	{
+		Cmd_DropObjective_f(ent);
 	}
 	else if (Q_stricmp(cmd, "follownext") == 0)
 	{

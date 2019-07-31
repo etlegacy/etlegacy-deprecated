@@ -796,6 +796,8 @@ typedef struct weaponInfo_s
 
 	qhandle_t weaponIcon[2];            ///< [0] is weap icon, [1] is highlight icon
 	int weaponIconScale;
+	qhandle_t weaponSimpleIcon;
+	vec2_t weaponSimpleIconScale;
 
 	qhandle_t weaponCardIcon;
 	vec2_t weaponCardScale;
@@ -1358,7 +1360,7 @@ typedef struct
 	qboolean bulletTrace;
 
 	specLabel_t specOnScreenLabels[MAX_FLOATING_STRINGS];
-	int         specStringCount;
+	int specStringCount;
 
 	vec3_t airstrikePlaneScale[2];
 
@@ -1439,6 +1441,7 @@ typedef struct
 	qhandle_t objectiveBothTEShader;
 	qhandle_t objectiveBothTDShader;
 	qhandle_t objectiveBothDEShader;
+	qhandle_t objectiveSimpleIcon;
 	qhandle_t readyShader;
 
 	qhandle_t destroyShader;
@@ -2342,6 +2345,7 @@ typedef struct cgs_s
 	char dbMaps[MAX_VOTE_MAPS][MAX_QPATH];
 	char dbMapDispName[MAX_VOTE_MAPS][128];
 	int dbMapVotes[MAX_VOTE_MAPS];
+	int dbMapVotesSum;
 	int dbMapID[MAX_VOTE_MAPS];
 	int dbMapLastPlayed[MAX_VOTE_MAPS];
 	int dbMapTotalVotes[MAX_VOTE_MAPS];
@@ -2413,6 +2417,7 @@ extern vmCvar_t cg_debugAnim;
 extern vmCvar_t cg_debugPosition;
 extern vmCvar_t cg_debugEvents;
 extern vmCvar_t cg_drawSpreadScale;
+extern vmCvar_t cg_railTrailTime;
 extern vmCvar_t cg_errorDecay;
 extern vmCvar_t cg_nopredict;
 extern vmCvar_t cg_noPlayerAnims;
@@ -3049,7 +3054,7 @@ void CG_AddToNotify(const char *str);
 const char *CG_LocalizeServerCommand(const char *buf);
 void CG_wstatsParse_cmd(void);
 
-void CG_parseWeaponStats_cmd(void (txt_dump) (const char *));
+void CG_parseWeaponStats_cmd(void(txt_dump) (const char *));
 //void CG_parseBestShotsStats_cmd(qboolean doTop, void(txt_dump) (const char *));
 //void CG_parseTopShotsStats_cmd(qboolean doTop, void(txt_dump) (const char *));
 //void CG_scores_cmd(void);
@@ -3687,5 +3692,45 @@ typedef enum
 #define IS_MOUNTED_TANK_BROWNING(entNum) (cg_entities[cg_entities[cg_entities[entNum].tagParent].tankparent].currentState.density & 8)
 
 extern qboolean resetmaxspeed; // CG_DrawSpeed
+
+/* HUD exports */
+
+typedef struct hudComponent_s
+{
+	rectDef_t location;
+	int visible;
+	int style;
+} hudComponent_t;
+
+typedef struct hudStructure_s
+{
+	int hudnumber;
+	hudComponent_t compas;
+	hudComponent_t staminabar;
+	hudComponent_t breathbar;
+	hudComponent_t healthbar;
+	hudComponent_t weaponchargebar;
+	hudComponent_t healthtext;
+	hudComponent_t xptext;
+	hudComponent_t ranktext;
+	hudComponent_t statsdisplay;
+	hudComponent_t weaponicon;
+	hudComponent_t weaponammo;
+	hudComponent_t fireteam;
+	hudComponent_t popupmessages;
+	hudComponent_t powerups;
+	hudComponent_t hudhead;
+
+	hudComponent_t cursorhint;
+	hudComponent_t weaponstability;
+	hudComponent_t livesleft;
+
+	hudComponent_t roundtimer;
+	hudComponent_t reinforcement;
+	hudComponent_t spawntimer;
+	hudComponent_t localtime;
+} hudStucture_t;
+
+hudStucture_t *CG_GetActiveHUD();
 
 #endif // #ifndef INCLUDE_CG_LOCAL_H

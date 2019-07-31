@@ -27,6 +27,8 @@ weaponDef
 		weaponIcon			"icons/iconw_dynamite"
 		weaponIconScale		1
 		weaponSelectedIcon	"icons/iconw_dynamite_1_select"
+		//weaponSimpleIcon	""
+		//weaponSimpleIconScale 1 1
 		
 		//weaponCardIcon    ""
 		//weaponCardScale   0 0

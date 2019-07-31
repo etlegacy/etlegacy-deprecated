@@ -1045,7 +1045,8 @@ typedef enum weaponType_s
 	WEAPON_TYPE_SCOPABLE  = BIT(10),
 	WEAPON_TYPE_SCOPED    = BIT(11),
 	WEAPON_TYPE_SETTABLE  = BIT(12),
-	WEAPON_TYPE_SET       = BIT(13)
+	WEAPON_TYPE_SET       = BIT(13),
+	WEAPON_TYPE_BEAM      = BIT(14)         ///< flamethrower
 
 } weaponType_t;
 
@@ -1171,8 +1172,8 @@ typedef struct weapontable_s
 
 	int switchTimeBegin;            ///< bg -
 	int switchTimeFinish;           ///< bg -
-	int altSwitchTimeBegin;         ///< bg -
-	int altSwitchTimeFinish;        ///< bg -
+	int altSwitchTimeFrom;          ///< bg -
+	int altSwitchTimeTo;            ///< bg -
 
 	float knockback;                ///< bg -
 	int muzzlePointOffset[3];       ///< g - forward, left, up
@@ -1183,15 +1184,6 @@ typedef struct weapontable_s
 
 	const char *className;          ///< g -
 	const char *weapFile;           ///< cg -
-
-	int idleAnim;                   ///< bg -
-	int attackAnim;                 ///< bg -
-	int lastAttackAnim;             ///< bg -
-	int altSwitchFrom;              ///< bg -
-	int altSwitchTo;                ///< bg -
-	int reloadAnim;                 ///< bg -
-	int raiseAnim;                  ///< bg -
-	int dropAnim;                   ///< bg -
 
 	float chargeTimeCoeff[NUM_SKILL_LEVELS];      ///< bg -
 
@@ -1575,15 +1567,15 @@ typedef enum
 	WEAP_IDLE2,
 	WEAP_ATTACK1,
 	WEAP_ATTACK2,
-	WEAP_ATTACK_LASTSHOT,  ///< used when firing the last round before having an empty clip.
+	WEAP_ATTACK_LASTSHOT,   ///< used when firing the last round before having an empty clip.
 	WEAP_DROP,
 	WEAP_RAISE,
 	WEAP_RELOAD1,
 	WEAP_RELOAD2,
-	WEAP_RELOAD3,
-	WEAP_ALTSWITCHFROM,///< switch from alt fire mode weap (scoped/silencer/etc)
-	WEAP_ALTSWITCHTO,  ///< switch to alt fire mode weap
-	WEAP_DROP2,
+	WEAP_RELOAD3,           ///< unused (was used as RAISE2)
+	WEAP_ALTSWITCHFROM,     ///< switch from alt fire mode weap (scoped/silencer/etc)
+	WEAP_ALTSWITCHTO,       ///< switch to alt fire mode weap
+	WEAP_DROP2,             ///< unused
 	MAX_WP_ANIMATIONS
 } weapAnimNumber_t;
 
@@ -2960,7 +2952,7 @@ typedef enum
 	//GAMESOUND_WPN_ARTILLERY_FLY_2, ///< "sound/weapons/artillery/artillery_fly_2.wav"                                    // moved in weap file
 	//GAMESOUND_WPN_ARTILLERY_FLY_3, ///< "sound/weapons/artillery/artillery_fly_3.wav"                                    // moved in weap file
 
-	GAMESOUND_MISC_REVIVE,         ///< "sound/misc/vo_revive.wav"                       Used by revival Needle
+	GAMESOUND_MISC_REVIVE = 8,     ///< "sound/misc/vo_revive.wav"                       Used by revival Needle
 	GAMESOUND_MISC_REFEREE,        ///< "sound/misc/referee.wav"                         Game Referee performs action
 	GAMESOUND_MISC_VOTE,           ///< "sound/misc/vote.wav"                            Vote is issued
 

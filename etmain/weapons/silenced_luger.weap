@@ -6,7 +6,7 @@ weaponDef
 		//pickupModel		""
 		//pickupSound		"sound/misc/w_pkup.wav"
 		
-		weaponConfig		"models/weapons2/silencer/weapon.cfg"
+		weaponConfig		"models/weapons2/luger/weapon.cfg"
 		handsModel			"models/weapons2/silencer/v_silencer_hand.mdc"
 		
 		flashDlightColor	1.0 0.6 0.23
@@ -27,6 +27,8 @@ weaponDef
 		weaponIcon			"icons/iconw_silencedluger"
 		weaponIconScale		2
 		weaponSelectedIcon	"icons/iconw_silencedluger_1_select"
+		//weaponSimpleIcon	""
+		//weaponSimpleIconScale 1 1
 		
 		weaponCardIcon      "gfx/limbo/weaponcard02"
 		weaponCardScale     0.5 1

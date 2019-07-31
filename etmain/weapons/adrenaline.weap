@@ -27,6 +27,8 @@ weaponDef
 		weaponIcon			"icons/iconw_syringe"
 		weaponIconScale		1
 		weaponSelectedIcon	"icons/iconw_syringe2_1_select"
+		//weaponSimpleIcon	""
+		//weaponSimpleIconScale 1 1
 		
 		//weaponCardIcon    ""
 		//weaponCardScale   0 0

@@ -650,7 +650,7 @@ void CG_RailTrail2(vec3_t color, vec3_t start, vec3_t end, int index, int sideNu
 
 	le->leType    = LE_CONST_RGB;
 	le->startTime = cg.time;
-	le->endTime   = cg.time + 50; // FIXME: make it sv_fps dependent?
+	le->endTime   = cg.time + cg_railTrailTime.integer;
 	le->lifeRate  = 1.0f / (le->endTime - le->startTime);
 
 	re->shaderTime   = cg.time / 1000.0f;
@@ -1599,6 +1599,22 @@ static qboolean CG_RW_ParseClient(int handle, weaponInfo_t *weaponInfo)
 
 			weaponInfo->weaponIcon[1] = trap_R_RegisterShaderNoMip(filename);
 		}
+		else if (!Q_stricmp(token.string, "weaponSimpleIcon"))
+		{
+			if (!PC_String_ParseNoAlloc(handle, filename, sizeof(filename)))
+			{
+				return CG_RW_ParseError(handle, "expected weaponSimpleIcon shadername");
+			}
+
+			weaponInfo->weaponSimpleIcon = trap_R_RegisterShaderNoMip(filename);
+		}
+		else if (!Q_stricmp(token.string, "weaponSimpleIconScale"))
+		{
+			if (!PC_Point_Parse(handle, &weaponInfo->weaponSimpleIconScale))
+			{
+				return CG_RW_ParseError(handle, "expected weaponSimpleIconScale X Y");
+			}
+		}
 		else if (!Q_stricmp(token.string, "weaponCardIcon"))
 		{
 			if (!PC_String_ParseNoAlloc(handle, filename, sizeof(filename)))
@@ -2145,7 +2161,7 @@ static void CG_RunWeapLerpFrame(clientInfo_t *ci, weaponInfo_t *wi, lerpFrame_t 
 	}
 	else if (newAnimation != lf->animationNumber)
 	{
-		if ((newAnimation & ~ANIM_TOGGLEBIT) == GetWeaponTableData(cg.snap->ps.nextWeapon)->raiseAnim)
+		if ((newAnimation & ~ANIM_TOGGLEBIT) == WEAP_RAISE)
 		{
 			CG_ClearWeapLerpFrame(wi, lf, newAnimation);     // clear when switching to raise (since it should be out of view anyway)
 		}
@@ -2839,7 +2855,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 			{
 				int anim = cg.snap->ps.weapAnim & ~ANIM_TOGGLEBIT;
 
-				if (anim == GetWeaponTableData(weaponNum)->altSwitchFrom || anim == GetWeaponTableData(weaponNum)->altSwitchTo || anim == GetWeaponTableData(weaponNum)->idleAnim)
+				if (anim == WEAP_ALTSWITCHFROM || anim == WEAP_ALTSWITCHTO || anim == WEAP_IDLE1 || anim == WEAP_IDLE2)
 				{
 					// prevent the flying nade effect (much visible with M7 when swapping while raising)
 					if (weaponNum == cent->currentState.nextWeapon)
@@ -3132,8 +3148,13 @@ void CG_AddViewWeapon(playerState_t *ps)
 		return;
 	}
 
-	// allow the gun to be completely removed
-	if (!cg_drawGun.integer)
+	// allow the gun to be completely removed (0)
+	// allow the gun to be completely removed but non-weapons, melee weapon, syringue and throwables including grenade (2)
+	if (!cg_drawGun.integer || (cg_drawGun.integer == 2
+	                            && GetWeaponTableData(cg.weaponSelect)->type
+	                            && !(GetWeaponTableData(cg.weaponSelect)->type & WEAPON_TYPE_GRENADE)
+	                            && !(GetWeaponTableData(cg.weaponSelect)->type & WEAPON_TYPE_MELEE)
+	                            && !(GetWeaponTableData(cg.weaponSelect)->type & WEAPON_TYPE_SYRINGUE)))
 	{
 		if ((cg.predictedPlayerState.eFlags & EF_FIRING) && !BG_PlayerMounted(cg.predictedPlayerState.eFlags))
 		{
@@ -3894,8 +3915,8 @@ void CG_AltWeapon_f(void)
 	// don't allow another weapon switch when we're still swapping alt weap, to prevent animation breaking
 	// there we check the value of the animation to prevent any switch during raising and dropping alt weapon
 	// until the animation is ended
-	if ((cg.snap->ps.weapAnim & ~ANIM_TOGGLEBIT) == GetWeaponTableData(cg.snap->ps.weapon)->altSwitchFrom ||
-	    (cg.snap->ps.weapAnim & ~ANIM_TOGGLEBIT) == GetWeaponTableData(cg.snap->ps.weapon)->altSwitchTo)
+	if ((cg.snap->ps.weapAnim & ~ANIM_TOGGLEBIT) == WEAP_ALTSWITCHFROM ||
+	    (cg.snap->ps.weapAnim & ~ANIM_TOGGLEBIT) == WEAP_ALTSWITCHTO)
 	{
 		return;
 	}
@@ -5105,16 +5126,6 @@ void CG_AddDebris(vec3_t origin, vec3_t dir, int speed, int duration, int count,
 	float         timeAdd;
 	int           i;
 
-	if (!cg_wolfparticles.integer)
-	{
-		return;
-	}
-
-	if (!cg_visualEffects.integer)
-	{
-		return;
-	}
-
 	for (i = 0; i < count; i++)
 	{
 		le = CG_AllocLocalEntity();
@@ -5153,7 +5164,7 @@ void CG_AddDebris(vec3_t origin, vec3_t dir, int speed, int duration, int count,
 		// TODO: find better models and/or extend ...
 		// TODO: make dependant from surface (snow etc and use related models/sounds) and or weapon
 		// TODO: find a client cvar so purists can disable (see CG_AddLocalEntities)
-		if (trace) // && user enabled
+		if (cg_visualEffects.integer && trace) // && user enabled
 		{
 			// airborn or solid with no surface set - just throw projectile fragments
 			if (trace->fraction == 1.0f || ((trace->contents & CONTENTS_SOLID) && !trace->surfaceFlags))
@@ -6093,7 +6104,7 @@ qboolean CG_CalcMuzzlePoint(int entityNum, vec3_t muzzle)
 			else
 			{
 				// fix firstperson tank muzzle origin if drawgun is off
-				if (!cg_drawGun.integer)
+				if (cg_drawGun.integer != 1)
 				{
 					VectorCopy(cg.snap->ps.origin, muzzle);
 					AngleVectors(cg.snap->ps.viewangles, forward, right, up);
