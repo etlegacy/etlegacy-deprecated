@@ -45,7 +45,7 @@
 qboolean Com_PowerOf2(int x)
 {
 	int bitsSet;
-	bitSet = x & (x - 1); /* bitwise trick to check if x is a power of two */ 
+	bitsSet = x & (x - 1); /* bitwise trick to check if x is a power of two */ 
 
 	return (qboolean)(bitsSet == 0);
 }
