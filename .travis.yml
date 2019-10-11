@@ -132,7 +132,7 @@ matrix:
         apt:
           packages:
             - doxygen
-        # Generate and deploy documentation
+        # Generate and deploy documentation.
         script: 
             - doxygen Doxyfile
         deploy:
