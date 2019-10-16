@@ -1492,7 +1492,7 @@ void ClientThink_real(gentity_t *ent, qboolean skipServerTime)
 	// save results of triggers and client events
 	if (ent->client->ps.eventSequence != oldEventSequence)
 	{
-		ent->eventTime = level.time;
+		ent->eventTime = level.time; 
 	}
 
 	// swap and latch button actions
