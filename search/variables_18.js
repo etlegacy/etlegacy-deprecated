@@ -1,0 +1,21 @@
+var searchData=
+[
+  ['x',['x',['../structspecLabel__s.html#ac1b18d274990304cb6a2c9326593f508',1,'specLabel_s::x()'],['../structcg__window__t.html#a8d2dedf49c1258c7cae690fefb20dbb8',1,'cg_window_t::x()'],['../structmapEntityData__t.html#ae6b7a7f48f0eb306e5282d1fcdc1ec66',1,'mapEntityData_t::x()'],['../structconsole__t.html#a26fcc7700a63d0a1abfab2968f10e166',1,'console_t::x()'],['../structMsg__PointContents.html#a36130233d4dbc5259f0a841caa4b2944',1,'Msg_PointContents::x()'],['../structobVec3.html#ad4be50414a0043dbdf3cf93f4ab518ac',1,'obVec3::x()'],['../structrectDef__s.html#ac92097cc1c48a9c2fa374f956368aa9c',1,'rectDef_s::x()'],['../structtrRefdef__t.html#a7b6d4d07497d302b0c2a5b1281f67969',1,'trRefdef_t::x()'],['../structstretchPicCommand__t.html#a14e708b7cd9074af91b7e99674eb3434',1,'stretchPicCommand_t::x()'],['../structscreenshotCommand__t.html#a224f02f32cbc841f2c6c9745baf4e45b',1,'screenshotCommand_t::x()'],['../structrenderToTextureCommand__t.html#a8e5d2ac246de53d009b2e1105934359e',1,'renderToTextureCommand_t::x()'],['../structrefdef__t.html#aab4d476edeebf5fb80c9b930e395cf10',1,'refdef_t::x()'],['../structmenucommon__s.html#a48b4703aa209432cdc7f17cf30227d27',1,'menucommon_s::x()']]],
+  ['x_5forigin',['x_origin',['../struct__TargaHeader.html#a834783b55aa927d403a2801148ab219a',1,'_TargaHeader']]],
+  ['xadjust',['xadjust',['../structconsole__t.html#a4c7a6e11d095e14e9aa679227b45e7ed',1,'console_t']]],
+  ['xhaircolor',['xhairColor',['../structcg__t.html#af0e47d22dca8753bc75385774e60f9e4',1,'cg_t::xhairColor()'],['../structuiInfo__t.html#aa9452f6791b02b167bcf51bad10bbc0a',1,'uiInfo_t::xhairColor()']]],
+  ['xhaircoloralt',['xhairColorAlt',['../structcg__t.html#a513910a3f17b16f1a24ad9e9f0ace09e',1,'cg_t::xhairColorAlt()'],['../structuiInfo__t.html#aef159dc5b04db024365f229eb7658f93',1,'uiInfo_t::xhairColorAlt()']]],
+  ['xmax',['xmax',['../structpcx__t.html#a8d9cc48aa409d03630cfadb55a207603',1,'pcx_t']]],
+  ['xmin',['xmin',['../structpcx__t.html#a8db0a9b6c7bd9a2abc0ccf648c7d8a45',1,'pcx_t']]],
+  ['xp',['xp',['../structcg__t.html#abf39beb58147278b0c7fd82cb86d6e3b',1,'cg_t']]],
+  ['xpchangetime',['xpChangeTime',['../structcg__t.html#a41e409e97e6a8ca19e19dd71f0093506',1,'cg_t']]],
+  ['xptext',['xptext',['../structhudStructure__s.html#aea91d9124524c95b4a740b7a44c5cf5a',1,'hudStructure_s']]],
+  ['xscale',['xscale',['../structdisplayContextDef__t.html#a817b08717c26555947951006e9f6f30a',1,'displayContextDef_t']]],
+  ['xsize',['xSize',['../structaxBone__t.html#ab079a833c2e6f878082899daffaffa36',1,'axBone_t']]],
+  ['xskip',['xSkip',['../structglyphInfo__t.html#a59d92d6819042e102cd06567b1bc0ffe',1,'glyphInfo_t']]],
+  ['xstages',['xstages',['../structshaderCommands__s.html#a3556c83f9cb3fc7b5887312d534135da',1,'shaderCommands_s']]],
+  ['xstart',['xStart',['../structscrollInfo__s.html#ac2a77e89a8590210b19f3082f11c38a5',1,'scrollInfo_s']]],
+  ['xyradius',['xyradius',['../structiqmbounds.html#a73bafbe58728b9962f52c93c8e97be40',1,'iqmbounds']]],
+  ['xyspeed',['xyspeed',['../structcg__t.html#a0d72e1dddda7bdc40f62d664389fc90d',1,'cg_t::xyspeed()'],['../structpmove__t.html#ab6fddd2c6c60a35a5db9d32ac24c0464',1,'pmove_t::xyspeed()']]],
+  ['xyz',['xyz',['../structmd3XyzNormal__t.html#ac873a1ccf59cf271b3bdf00a19247424',1,'md3XyzNormal_t::xyz()'],['../structmdcTag__t.html#a06dca53424a9a0aee880b6492a65d64f',1,'mdcTag_t::xyz()'],['../structdrawVert__t.html#aca83729343c4557bf8c10b20effdfdf5',1,'drawVert_t::xyz()'],['../structdecalVert__s.html#a68a6572661ab9345ca81f740028525c5',1,'decalVert_s::xyz()'],['../structsrfTriangles2__s.html#a7f067322dcab2e7a7a62ae55573d2257',1,'srfTriangles2_s::xyz()'],['../structsrfFoliage__t.html#a266348969eeb94f961f1933b94ebcf62',1,'srfFoliage_t::xyz()'],['../structshaderCommands__s.html#a6a5c95d2bcdc6edf0866e131f05cc6fb',1,'shaderCommands_s::xyz()'],['../structvertexHash__s.html#a1cbc239f580bce31ca71048d10605d47',1,'vertexHash_s::xyz()'],['../structsrfVert__t.html#a9506be418ff123dbd54cb02f381b10d0',1,'srfVert_t::xyz()'],['../structmdvXyz__t.html#acddcc665680ea8bf31009764761bfd7c',1,'mdvXyz_t::xyz()'],['../structpolyVert__t.html#ad93f67e91bd4bc77153efcc802ff666d',1,'polyVert_t::xyz()'],['../structpolyBuffer__s.html#a5bf2058ff1858b3bf03753bc77056bc8',1,'polyBuffer_s::xyz()']]]
+];
