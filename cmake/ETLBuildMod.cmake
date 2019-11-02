@@ -12,7 +12,6 @@ set_target_properties(cgame${LIB_SUFFIX}${ARCH}
 	LIBRARY_OUTPUT_DIRECTORY "legacy"
 	LIBRARY_OUTPUT_DIRECTORY_DEBUG "legacy"
 	LIBRARY_OUTPUT_DIRECTORY_RELEASE "legacy"
-	OSX_ARCHITECTURES "i386;x86_64"
 )
 
 #
@@ -76,8 +75,19 @@ set_target_properties(ui${LIB_SUFFIX}${ARCH}
 	LIBRARY_OUTPUT_DIRECTORY "legacy"
 	LIBRARY_OUTPUT_DIRECTORY_DEBUG "legacy"
 	LIBRARY_OUTPUT_DIRECTORY_RELEASE "legacy"
-	OSX_ARCHITECTURES "i386;x86_64"
 )
+
+# Build both arhitectures on older xcode versions
+if(APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET LESS_EQUAL "10.5")
+	set_target_properties(cgame${LIB_SUFFIX}${ARCH}
+		PROPERTIES
+		OSX_ARCHITECTURES "i386;x86_64"
+	)
+	set_target_properties(ui${LIB_SUFFIX}${ARCH}
+		PROPERTIES
+		OSX_ARCHITECTURES "i386;x86_64"
+	)
+endif()
 
 # install bins of cgame, ui and qgame
 if(BUILD_MOD_PK3)
