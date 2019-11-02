@@ -135,14 +135,14 @@ jobs:
     #       - libpulse-dev
 
     - os: osx
-      osx_image: xcode10.3
+      osx_image: xcode10.1
       before_install:
         - brew update
         - brew install gnu-sed nasm
         - brew outdated automake || brew upgrade automake
         - brew outdated autoconf || brew upgrade autoconf
       env:
-        - MACOSX_DEPLOYMENT_TARGET=10.3
+        - MACOSX_DEPLOYMENT_TARGET=10.1
         - CXX=clang++ CC=clang
         - CXXFLAGS="-g -lstdc++"
 
