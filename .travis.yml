@@ -20,6 +20,10 @@ env:
 
 matrix:
   include:
+	os: windows
+	env:
+		- CROSS_COMPILE32=1
+		- RELEASE_TYPE=release
 
 # 32 bit
 
@@ -34,7 +38,7 @@ matrix:
 #        - ubuntu-toolchain-r-test
 #        apt:
 #          packages:
-#          - g++-4.8-multilib 
+#          - g++-4.8-multilib
 #          - gcc-multilib
 #          - gcc-4.9-base:i386
 #          - nasm:i386
@@ -50,92 +54,92 @@ matrix:
 
 # 64 bit
 
-    - os: linux
-      env: RELEASE_TYPE=release
-      compiler: gcc
-      addons:
-        sources:
-        - ubuntu-toolchain-r-test
-        apt:
-          packages:
-          - nasm
+    # - os: linux
+    #   env: RELEASE_TYPE=release
+    #   compiler: gcc
+    #   addons:
+    #     sources:
+    #     - ubuntu-toolchain-r-test
+    #     apt:
+    #       packages:
+    #       - nasm
 
-          - libwayland-dev
-          - wayland-protocols
-          - libgl1-mesa-dev
-          - libglu1-mesa-dev  
+    #       - libwayland-dev
+    #       - wayland-protocols
+    #       - libgl1-mesa-dev
+    #       - libglu1-mesa-dev
 
-          - libasound2-dev
-          - pulseaudio
-          - libpulse-dev
+    #       - libasound2-dev
+    #       - pulseaudio
+    #       - libpulse-dev
 
-    - os: linux
-      compiler: gcc
-      env: RELEASE_TYPE=debug
-      addons:
-        sources:
-        - ubuntu-toolchain-r-test
-        apt:
-          packages:
-          - nasm
+    # - os: linux
+    #   compiler: gcc
+    #   env: RELEASE_TYPE=debug
+    #   addons:
+    #     sources:
+    #     - ubuntu-toolchain-r-test
+    #     apt:
+    #       packages:
+    #       - nasm
 
-          - libwayland-dev
-          - wayland-protocols
-          - libgl1-mesa-dev
-          - libglu1-mesa-dev 
+    #       - libwayland-dev
+    #       - wayland-protocols
+    #       - libgl1-mesa-dev
+    #       - libglu1-mesa-dev
 
-          - libasound2-dev
-          - pulseaudio
-          - libpulse-dev
+    #       - libasound2-dev
+    #       - pulseaudio
+    #       - libpulse-dev
 
-    - os: linux
-      env: RELEASE_TYPE=release
-      compiler: clang
-      addons:
-        sources:
-        - llvm-toolchain-trusty
-        apt:
-          packages:
-          - nasm
+    # - os: linux
+    #   env: RELEASE_TYPE=release
+    #   compiler: clang
+    #   addons:
+    #     sources:
+    #     - llvm-toolchain-trusty
+    #     apt:
+    #       packages:
+    #       - nasm
 
-          - libwayland-dev
-          - wayland-protocols
-          - libgl1-mesa-dev
-          - libglu1-mesa-dev 
+    #       - libwayland-dev
+    #       - wayland-protocols
+    #       - libgl1-mesa-dev
+    #       - libglu1-mesa-dev
 
-          - libasound2-dev
-          - pulseaudio
-          - libpulse-dev
+    #       - libasound2-dev
+    #       - pulseaudio
+    #       - libpulse-dev
 
-    - os: linux
-      env: RELEASE_TYPE=debug
-      compiler: clang
-      addons:
-        sources:
-        - llvm-toolchain-trusty
-        apt:
-          packages:
-          - nasm
+    # - os: linux
+    #   env: RELEASE_TYPE=debug
+    #   compiler: clang
+    #   addons:
+    #     sources:
+    #     - llvm-toolchain-trusty
+    #     apt:
+    #       packages:
+    #       - nasm
 
-          - libwayland-dev
-          - wayland-protocols
-          - libgl1-mesa-dev
-          - libglu1-mesa-dev 
+    #       - libwayland-dev
+    #       - wayland-protocols
+    #       - libgl1-mesa-dev
+    #       - libglu1-mesa-dev
 
-          - libasound2-dev
-          - pulseaudio
-          - libpulse-dev
-          
-    #- os: osx
-    #  osx_image: xcode8.3
-    #  before_install:
-    #    - brew update
-    #    - brew install gnu-sed nasm
-    #    - brew outdated automake || brew upgrade automake
-    #    - brew outdated autoconf || brew upgrade autoconf
-    #  env:
-    #    - CXX=clang++ CC=clang
-    #    - CXXFLAGS="-g -lstdc++"
+    #       - libasound2-dev
+    #       - pulseaudio
+    #       - libpulse-dev
+
+    - os: osx
+      osx_image: xcode10.3
+      before_install:
+        - brew update
+        - brew install gnu-sed nasm
+        - brew outdated automake || brew upgrade automake
+        - brew outdated autoconf || brew upgrade autoconf
+      env:
+        - CXX=clang++ CC=clang
+        - CXXFLAGS="-g -lstdc++"
 
 install:
   ############################################################################
@@ -153,7 +157,9 @@ install:
   - cd ${TRAVIS_BUILD_DIR}
 
 script:
-  - ./easybuild.sh
+  - 'if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then     ./easybuild.sh                   ;fi'
+  - 'if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then       ./easybuild.sh -64 clean build   ;fi'
+  - 'if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then     easybuild.bat clean build      ;fi'
 
 notifications:
   irc:
