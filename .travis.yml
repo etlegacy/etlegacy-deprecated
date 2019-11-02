@@ -166,6 +166,13 @@ script:
   - 'if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then       ./easybuild.sh -64 clean build                ;fi'
   - 'if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then     cmd.exe /C "easybuild.bat clean build"      ;fi'
 
+after_success:
+  - chmod +x misc/discord-send.sh
+  - misc/discord-send.sh success $WEBHOOK_URL
+after_failure:
+  - chmod +x misc/discord-send.sh
+  - misc/discord-send.sh failure $WEBHOOK_URL
+
 notifications:
   irc:
     template:
