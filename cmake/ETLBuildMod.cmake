@@ -78,7 +78,7 @@ set_target_properties(ui${LIB_SUFFIX}${ARCH}
 )
 
 # Build both arhitectures on older xcode versions
-if(APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET LESS_EQUAL "10.5")
+if(APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET LESS_EQUAL "10.12" AND NOT OSX_NOX86)
 	set_target_properties(cgame${LIB_SUFFIX}${ARCH}
 		PROPERTIES
 		OSX_ARCHITECTURES "i386;x86_64"
