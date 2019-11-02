@@ -6,7 +6,7 @@ language: cpp
 dist: xenial
 
 os:
-  - linux
+#   - linux
   - osx
   - windows
 
@@ -161,9 +161,9 @@ install:
   - cd ${TRAVIS_BUILD_DIR}
 
 script:
-  - 'if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then     ./easybuild.sh                   ;fi'
-  - 'if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then       ./easybuild.sh -64 clean build   ;fi'
-  - 'if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then     easybuild.bat clean build      ;fi'
+  - 'if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then     ./easybuild.sh                                ;fi'
+  - 'if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then       ./easybuild.sh -64 clean build                ;fi'
+  - 'if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then     cmd.exe /C "easybuild.bat clean build"      ;fi'
 
 notifications:
   irc:
