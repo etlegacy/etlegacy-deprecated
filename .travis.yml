@@ -4,7 +4,11 @@
 language: cpp
 #dist: trusty
 dist: xenial
-sudo: false
+
+os:
+  - linux
+  - osx
+  - windows
 
 env:
   global:
@@ -18,12 +22,12 @@ env:
     - BUNDLED_OGG=1
     - INSTALL_EXTRA=0
 
-matrix:
+jobs:
   include:
-	os: windows
-	env:
-		- CROSS_COMPILE32=1
-		- RELEASE_TYPE=release
+    - os: windows
+      env:
+        - CROSS_COMPILE32=1
+        - RELEASE_TYPE=release
 
 # 32 bit
 
