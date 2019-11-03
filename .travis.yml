@@ -175,7 +175,7 @@ jobs:
           packages:
             - nasm
 
-            - g++-4.8-multilib
+            - g++-multilib
             - gcc-multilib
             - libc6-dev-i386
             - gcc-4.9-base:i386
@@ -186,14 +186,14 @@ jobs:
             # - fglrx:i386
             # - fglrx-dev:i386
 
-            - libwayland-dev:i386
-            - wayland-protocols
-            - libgl1-mesa-dev:i386
-            - libglu1-mesa-dev:i386
+            # - libwayland-dev:i386
+            # - wayland-protocols
+            # - libgl1-mesa-dev:i386
+            # - libglu1-mesa-dev:i386
 
-            - libasound2-dev:i386
-            - pulseaudio:i386
-            - libpulse-dev:i386
+            # - libasound2-dev:i386
+            # - pulseaudio:i386
+            # - libpulse-dev:i386
       script:
         - ./easybuild.sh clean build -mod -noextra
         - curl -T "{$(echo build/legacy/*.pk3 | tr ' ' ',')}" --ftp-create-dirs --user ${FTP_USER}:${FTP_PASSWORD} ${FTP_URL}travis/${TRAVIS_BUILD_NUMBER}/lnx/
