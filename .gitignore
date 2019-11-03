@@ -10,6 +10,9 @@
 CMakeLists.txt.user
 etmain/ui/git_version.h
 
+# Travis specifig
+/deps/
+
 #
 # OS specific
 #
