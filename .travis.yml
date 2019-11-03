@@ -166,8 +166,10 @@ jobs:
       stage: merge-pk3
       script:
         - mkdir -p build && cd build
-        - wget --no-verbose --no-parent --cut-dirs 2 -nH --recursive --level=2 --user=${FTP_USER} --password=${FTP_PASSWORD} ${FTP_URL}travis/${TRAVIS_BUILD_NUMBER}/
-        - ls -la
+        - wget --no-verbose --passive-ftp --no-parent --cut-dirs 3 -nH --recursive --level=2 --user=${FTP_USER} --password=${FTP_PASSWORD} ${FTP_URL}travis/${TRAVIS_BUILD_NUMBER}/
+        - find -name 'etl_bin*.pk3' -exec sh -c 'unzip -d combined "$1"' _ {} \;
+        - zip -r -j $(basename */etl_bin*.pk3) combined
+        - curl -T "$(basename etl_bin*.pk3)" --ftp-create-dirs --user ${FTP_USER}:${FTP_PASSWORD} ${FTP_URL}travis/${TRAVIS_BUILD_NUMBER}/combined/
 
     # - os: windows
     #   stage: build
@@ -212,12 +214,12 @@ script:
   - 'if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then       ./easybuild.sh -64 clean build                ;fi'
   - 'if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then     cmd.exe /C "easybuild.bat clean build"      ;fi'
 
-after_success:
-  - chmod +x misc/discord-send.sh
-  - misc/discord-send.sh success $WEBHOOK_URL
-after_failure:
-  - chmod +x misc/discord-send.sh
-  - misc/discord-send.sh failure $WEBHOOK_URL
+# after_success:
+#   - chmod +x misc/discord-send.sh
+#   - misc/discord-send.sh success $WEBHOOK_URL
+# after_failure:
+#   - chmod +x misc/discord-send.sh
+#   - misc/discord-send.sh failure $WEBHOOK_URL
 
 notifications:
   irc:
