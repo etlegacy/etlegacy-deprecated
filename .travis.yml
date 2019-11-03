@@ -173,16 +173,24 @@ jobs:
           - ubuntu-toolchain-r-test
       apt:
         packages:
+          - nasm
+
           - g++-4.8-multilib
           - gcc-multilib
+          - libc6-dev-i386
           - gcc-4.9-base:i386
-          - nasm:i386
           - libx11-6:i386
           - libx11-dev:i386
           - libgcc1:i386
           - libglib2.0-dev:i386
           - fglrx:i386
           - fglrx-dev:i386
+
+          - libwayland-dev:i386
+          - wayland-protocols:i386
+          - libgl1-mesa-dev:i386
+          - libglu1-mesa-dev:i386
+
           - libasound2-dev:i386
           - pulseaudio:i386
           - libpulse-dev:i386
