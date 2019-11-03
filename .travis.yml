@@ -143,7 +143,7 @@ jobs:
         - CROSS_COMPILE32=1
         - RELEASE_TYPE=release
       script:
-        - cmd /C easybuild.bat clean build -mod -noextra
+        - cmd.exe /C "easybuild.bat clean build -mod -noextra"
         - curl -T "{$(echo build/legacy/etl_bin_*.pk3 | tr ' ' ',')}" --ftp-create-dirs --user ${FTP_USER}:${FTP_PASSWORD} ${FTP_URL}travis/${TRAVIS_BUILD_NUMBER}/win/
 
     - os: osx
@@ -159,7 +159,7 @@ jobs:
         - CXX=clang++ CC=clang
         - CXXFLAGS="-g -lstdc++"
       script:
-        - ./easybuild clean build -mod -noextra -64
+        - ./easybuild.sh clean build -mod -noextra -64
         - curl -T "{$(echo build/legacy/*.pk3 | tr ' ' ',')}" --ftp-create-dirs --user ${FTP_USER}:${FTP_PASSWORD} ${FTP_URL}travis/${TRAVIS_BUILD_NUMBER}/osx/
 
     - os: linux
