@@ -22,12 +22,15 @@ dist: xenial
 #     - BUNDLED_OGG=1
 #     - INSTALL_EXTRA=0
 
+stages:
+  - test-build
+  - build-mod
+  - merge-pk3
+  - build
+  - docker
+
 jobs:
   include:
-    - os: windows
-      env:
-        - CROSS_COMPILE32=1
-        - RELEASE_TYPE=release
 
 # 32 bit
 
@@ -134,8 +137,18 @@ jobs:
     #       - pulseaudio
     #       - libpulse-dev
 
+    - os: windows
+      stage: build-mod
+      env:
+        - CROSS_COMPILE32=1
+        - RELEASE_TYPE=release
+      script:
+        - cmd /C easybuild.bat clean build -mod -noextra
+        - curl -T "{$(echo build/legacy/etl_bin_*.pk3 | tr ' ' ',')}" --ftp-create-dirs --user ${FTP_USER}:${FTP_PASSWORD} ${FTP_URL}travis/${TRAVIS_BUILD_NUMBER}/win/
+
     - os: osx
       osx_image: xcode9.4
+      stage: build-mod
       before_install:
         - brew update
         - brew install gnu-sed nasm
@@ -145,6 +158,39 @@ jobs:
         - MACOSX_DEPLOYMENT_TARGET=10.7
         - CXX=clang++ CC=clang
         - CXXFLAGS="-g -lstdc++"
+      script:
+        - ./easybuild clean build -mod -noextra -64
+        - curl -T "{$(echo build/legacy/*.pk3 | tr ' ' ',')}" --ftp-create-dirs --user ${FTP_USER}:${FTP_PASSWORD} ${FTP_URL}travis/${TRAVIS_BUILD_NUMBER}/osx/
+
+    - os: linux
+      stage: merge-pk3
+      script:
+        - mkdir -p build && cd build
+        - wget --no-verbose --no-parent --cut-dirs 2 -nH --recursive --level=2 --user=${FTP_USER} --password=${FTP_PASSWORD} ${FTP_URL}travis/${TRAVIS_BUILD_NUMBER}/
+        - ls -la
+
+    # - os: windows
+    #   stage: build
+    #   env:
+    #     - CROSS_COMPILE32=1
+    #     - RELEASE_TYPE=release
+    #   script:
+    #     - cmd /C easybuild.bat clean build
+
+    # - os: osx
+    #   osx_image: xcode9.4
+    #   stage: build
+    #   before_install:
+    #     - brew update
+    #     - brew install gnu-sed nasm
+    #     - brew outdated automake || brew upgrade automake
+    #     - brew outdated autoconf || brew upgrade autoconf
+    #   env:
+    #     - MACOSX_DEPLOYMENT_TARGET=10.7
+    #     - CXX=clang++ CC=clang
+    #     - CXXFLAGS="-g -lstdc++"
+    #   script:
+    #     - ./easybuild clean build -64
 
 install:
   ############################################################################
