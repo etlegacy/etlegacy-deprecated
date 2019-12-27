@@ -4,7 +4,7 @@
 
 ETL_BIN=etl
 
-if [ ! -f etl.app ]; then
+if [ -d etl.app ]; then
     ETL_BIN=etl.app/Contents/MacOS/etl
 fi
 
