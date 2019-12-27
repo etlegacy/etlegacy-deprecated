@@ -1,5 +1,11 @@
 #!/bin/sh
 # Simple script to start ET Legacy client with experimental new renderer
 #
-#./etl +set cl_renderer opengl1 +set com_hunkmegs 128 
-./etl +set cl_renderer opengl2 +set com_hunkmegs 512  
+
+ETL_BIN=etl
+
+if [ ! -f etl.app ]; then
+    ETL_BIN=etl.app/Contents/MacOS/etl
+fi
+
+./$ETL_BIN +set cl_renderer opengl2 +set com_hunkmegs 512  
