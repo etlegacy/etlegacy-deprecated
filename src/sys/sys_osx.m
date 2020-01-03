@@ -188,19 +188,19 @@ int needsOSXQuarantineFix()
 
 	if (isQuarantined)
 	{
-		//strip etl.app from string, to get the directory
+		// strip etl.app from string to get the directory
 		NSMutableString *tempPath = [NSMutableString stringWithString: [newPath.path stringByReplacingOccurrencesOfString:@"/etl.app" withString:@""]];
 		NSString *tempPathBin = @"/etl.app";
 
 		// assemble dialog text
-		NSMutableString *permissiontext = [NSMutableString stringWithString: @"The game runs in a hidden folder, to prevent possible dangerous apps. As this prevents loading the game files, a command needs to be executed to run the game from it's original path.\r\n\r\nShould the following command be executed now?\r\n\r\n/usr/bin/xattr -cr "];
+		NSMutableString *permissiontext = [NSMutableString stringWithString: @"The game runs in a hidden folder, to prevent possible dangerous apps. As this prevents loading the game files, a command needs to be executed to run the game from its original path.\r\n\r\nShould the following command be executed now?\r\n\r\n/usr/bin/xattr -cr "];
 		[permissiontext appendString:tempPath];
 
-		//ask user if we should fix it programmatically
+		// ask user if we should fix it programmatically
 		dialogReturn = Sys_Dialog(DT_YES_NO, [permissiontext UTF8String], "App Translocation detected");
 		if (dialogReturn == DR_YES)
 		{
-			//remove quarantine flag
+			// remove quarantine flag
 			@try
 			{
 				NSTask *xattrTask = [NSTask launchedTaskWithLaunchPath:@"/usr/bin/xattr" arguments:@[@"-cr", (NSURL *)tempPath]];
@@ -220,7 +220,7 @@ int needsOSXQuarantineFix()
 				return 2;
 			}
 
-			//relaunch, using 'open'
+			// relaunch, using 'open'
 			@try
 			{
 				// readd "/etl.app" to path
