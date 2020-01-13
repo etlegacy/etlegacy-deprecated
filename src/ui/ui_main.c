@@ -668,7 +668,7 @@ void Text_Paint(float x, float y, float scale, vec4_t color, const char *text, f
 }
 
 /**
- * @brief Text_PaintWithCursor
+ * @brief Text_PaintWithCursor_Ext
  * @param[in] x
  * @param[in] y
  * @param[in] scale
@@ -679,12 +679,11 @@ void Text_Paint(float x, float y, float scale, vec4_t color, const char *text, f
  * @param[in] limit
  * @param[in] style
  */
-void Text_PaintWithCursor(float x, float y, float scale, vec4_t color, const char *text, int cursorPos, const char *cursor, int limit, int style)
+void Text_PaintWithCursor_Ext(float x, float y, float scale, vec4_t color, const char *text, int cursorPos, const char *cursor, int limit, int style, fontHelper_t *font)
 {
-	vec4_t       newColor = { 0, 0, 0, 0 };
-	glyphInfo_t  *glyph, *glyph2;
-	fontHelper_t *font    = &uiInfo.uiDC.Assets.fonts[uiInfo.activeFont];
-	float        useScale = scale * Q_UTF8_GlyphScale(font);
+	vec4_t      newColor = { 0, 0, 0, 0 };
+	glyphInfo_t *glyph, *glyph2;
+	float       useScale = scale * Q_UTF8_GlyphScale(font);
 
 	if (text)
 	{
@@ -772,6 +771,25 @@ void Text_PaintWithCursor(float x, float y, float scale, vec4_t color, const cha
 
 		trap_R_SetColor(NULL);
 	}
+}
+
+/**
+ * @brief Text_PaintWithCursor
+ * @param[in] x
+ * @param[in] y
+ * @param[in] scale
+ * @param[in] color
+ * @param[in] text
+ * @param[in] cursorPos
+ * @param[in] cursor
+ * @param[in] limit
+ * @param[in] style
+ */
+void Text_PaintWithCursor(float x, float y, float scale, vec4_t color, const char *text, int cursorPos, const char *cursor, int limit, int style)
+{
+	fontHelper_t *font = &uiInfo.uiDC.Assets.fonts[uiInfo.activeFont];
+
+	Text_PaintWithCursor_Ext(x, y, scale, color, text, cursorPos, cursor, limit, style, font);
 }
 
 /**
@@ -1284,7 +1302,7 @@ void UI_LoadMenus(const char *menuFile, qboolean reset)
 		trap_PC_AddGlobalDefine("LEGACY");
 	}
 
-	trap_PC_AddGlobalDefine(va("__WINDOW_WIDTH %f", (uiInfo.uiDC.glconfig.windowAspect / RATIO43) * 640 ));
+	trap_PC_AddGlobalDefine(va("__WINDOW_WIDTH %f", (uiInfo.uiDC.glconfig.windowAspect / RATIO43) * 640));
 	trap_PC_AddGlobalDefine("__WINDOW_HEIGHT 480");
 
 	handle = trap_PC_LoadSource(menuFile);
@@ -2845,7 +2863,7 @@ static void UI_DrawRedBlue(rectDef_t *rect, float scale, vec4_t color, int textS
  */
 static void UI_DrawCrosshair(rectDef_t *rect, float scale, vec4_t color)
 {
-	float size = cg_crosshairSize.integer;
+	float size = ui_cg_crosshairSize.integer;
 
 	if (uiInfo.currentCrosshair < 0 || uiInfo.currentCrosshair >= NUM_CROSSHAIRS)
 	{
@@ -2901,7 +2919,8 @@ static void UI_BuildPlayerList(void)
 			{
 				uiInfo.playerMuted[uiInfo.playerCount] = qfalse;
 			}
-			uiInfo.playerRefereeStatus[uiInfo.playerCount] = atoi(Info_ValueForKey(info, "ref"));
+			uiInfo.playerRefereeStatus[uiInfo.playerCount]     = atoi(Info_ValueForKey(info, "ref"));
+			uiInfo.playerShoutcasterStatus[uiInfo.playerCount] = atoi(Info_ValueForKey(info, "sc"));
 			uiInfo.playerCount++;
 			team2 = atoi(Info_ValueForKey(info, "t"));
 			if (team2 == team)
@@ -3492,6 +3511,23 @@ qboolean UI_OwnerDrawVisible(int flags)
 				vis = qfalse;
 			}
 			flags &= ~UI_SHOW_PLAYERREFEREE;
+		}
+
+		if (flags & UI_SHOW_PLAYERNOSHOUTCASTER)
+		{
+			if (uiInfo.playerShoutcasterStatus[uiInfo.playerIndex] != 0)
+			{
+				vis = qfalse;
+			}
+			flags &= ~UI_SHOW_PLAYERNOSHOUTCASTER;
+		}
+		if (flags & UI_SHOW_PLAYERSHOUTCASTER)
+		{
+			if (uiInfo.playerShoutcasterStatus[uiInfo.playerIndex] != 1)
+			{
+				vis = qfalse;
+			}
+			flags &= ~UI_SHOW_PLAYERSHOUTCASTER;
 		}
 		else
 		{
@@ -5153,6 +5189,34 @@ void UI_RunMenuScript(char **args)
 				trap_Cmd_ExecuteText(EXEC_APPEND, va("rcon removeReferee \"%s\"\n", uiInfo.playerNames[uiInfo.playerIndex]));
 			}
 		}
+		else if (Q_stricmp(name, "refMakeShoutcaster") == 0)
+		{
+			if (uiInfo.playerIndex >= 0 && uiInfo.playerIndex < uiInfo.playerCount)
+			{
+				trap_Cmd_ExecuteText(EXEC_APPEND, va("ref makeShoutcaster \"%s\"\n", uiInfo.playerNames[uiInfo.playerIndex]));
+			}
+		}
+		else if (Q_stricmp(name, "refRemoveShoutcaster") == 0)
+		{
+			if (uiInfo.playerIndex >= 0 && uiInfo.playerIndex < uiInfo.playerCount)
+			{
+				trap_Cmd_ExecuteText(EXEC_APPEND, va("ref removeShoutcaster \"%s\"\n", uiInfo.playerNames[uiInfo.playerIndex]));
+			}
+		}
+		else if (Q_stricmp(name, "rconMakeShoutcaster") == 0)
+		{
+			if (uiInfo.playerIndex >= 0 && uiInfo.playerIndex < uiInfo.playerCount)
+			{
+				trap_Cmd_ExecuteText(EXEC_APPEND, va("rcon makeShoutcaster %i\n", uiInfo.playerNumber));
+			}
+		}
+		else if (Q_stricmp(name, "rconRemoveShoutcaster") == 0)
+		{
+			if (uiInfo.playerIndex >= 0 && uiInfo.playerIndex < uiInfo.playerCount)
+			{
+				trap_Cmd_ExecuteText(EXEC_APPEND, va("rcon removeShoutcaster %i\n", uiInfo.playerNumber));
+			}
+		}
 		else if (Q_stricmp(name, "rconMute") == 0)
 		{
 			if (uiInfo.playerIndex >= 0 && uiInfo.playerIndex < uiInfo.playerCount)
@@ -5464,13 +5528,47 @@ void UI_RunMenuScript(char **args)
 		}
 		else if (Q_stricmp(name, "clientCheckFavorite") == 0)
 		{
-			if (trap_LAN_ServerIsInFavoriteList(ui_netSource.integer, uiInfo.serverStatus.displayServers[uiInfo.serverStatus.currentServer]))
+			if (trap_LAN_ServerIsInFavoriteList(AS_FAVORITES, uiInfo.serverStatus.displayServers[uiInfo.serverStatus.currentServer]))
 			{
 				trap_Cvar_SetValue("cg_ui_favorite", 0);
 			}
 			else
 			{
 				trap_Cvar_SetValue("cg_ui_favorite", 1);
+			}
+		}
+		else if (Q_stricmp(name, "clientCheckSecondaryWeapon") == 0)
+		{
+			uiClientState_t cs;
+			char            info[MAX_INFO_STRING];
+			char            *skillStr, skillLW, skillHW;
+
+			trap_GetClientState(&cs);
+			trap_GetConfigString(CS_PLAYERS + cs.clientNum, info, MAX_INFO_STRING);
+
+			if (info[0])
+			{
+				skillStr = Info_ValueForKey(info, "s");
+				skillLW  = skillStr[SK_LIGHT_WEAPONS];
+				skillHW  = skillStr[SK_HEAVY_WEAPONS];
+
+				if (atoi(&skillLW) >= 4)
+				{
+					trap_Cvar_SetValue("cg_ui_secondary_lw", 1);
+				}
+				else
+				{
+					trap_Cvar_SetValue("cg_ui_secondary_lw", 0);
+				}
+
+				if (atoi(&skillHW) >= 4)
+				{
+					trap_Cvar_SetValue("cg_ui_secondary_hw", 1);
+				}
+				else
+				{
+					trap_Cvar_SetValue("cg_ui_secondary_hw", 0);
+				}
 			}
 		}
 		else if (Q_stricmp(name, "reconnect") == 0)
@@ -5512,8 +5610,8 @@ void UI_RunMenuScript(char **args)
 		}
 		else if (Q_stricmp(name, "vidReset") == 0)
 		{
-			int   r_oldMode       = (int)(trap_Cvar_VariableValue("r_oldMode"));
-			int   r_oldFullscreen = (int)(trap_Cvar_VariableValue("r_oldFullscreen"));
+			int r_oldMode       = (int)(trap_Cvar_VariableValue("r_oldMode"));
+			int r_oldFullscreen = (int)(trap_Cvar_VariableValue("r_oldFullscreen"));
 
 			// reset mode to old settings
 			trap_Cvar_SetValue("r_mode", r_oldMode);
@@ -6265,7 +6363,7 @@ static void UI_BuildServerDisplayList(int force)
 					continue;
 				}
 				else if (!(ui_serverBrowserSettings.integer & UI_BROWSER_ALLOW_HUMANS_COUNT) &&
-				    Q_stristr(Info_ValueForKey(info, "game"), "legacy") == 0)
+				         Q_stristr(Info_ValueForKey(info, "game"), "legacy") == 0)
 				{
 					continue;
 				}
@@ -7084,7 +7182,7 @@ const char *UI_FeederItemText(int feederID, int index, int column, qhandle_t *ha
 					Com_sprintf(clientBuff, sizeof(clientBuff), "^W%i^9(+%i)/%i", humans, clients - humans, maxclients);
 				}
 				else if (Q_stristr(Info_ValueForKey(info, "game"), "legacy") != 0 &&
-				    strstr(Info_ValueForKey(info, "version"), PRODUCT_LABEL) != NULL)
+				         strstr(Info_ValueForKey(info, "version"), PRODUCT_LABEL) != NULL)
 				{
 					Com_sprintf(clientBuff, sizeof(clientBuff), "^W%i^9(+%i)/%i", humans, clients - humans, maxclients);
 				}
@@ -7981,70 +8079,71 @@ void UI_Init(int legacyClient, int clientVersion)
 	}
 
 	//UI_Load();
-	uiInfo.uiDC.registerShaderNoMip  = &trap_R_RegisterShaderNoMip;
-	uiInfo.uiDC.setColor             = &trap_R_SetColor;
-	uiInfo.uiDC.drawHandlePic        = &UI_DrawHandlePic;
-	uiInfo.uiDC.drawStretchPic       = &trap_R_DrawStretchPic;
-	uiInfo.uiDC.drawText             = &Text_Paint;
-	uiInfo.uiDC.drawTextExt          = &Text_Paint_Ext;
-	uiInfo.uiDC.textWidth            = &Text_Width;
-	uiInfo.uiDC.textWidthExt         = &Text_Width_Ext;
-	uiInfo.uiDC.multiLineTextWidth   = &Multiline_Text_Width;
-	uiInfo.uiDC.textHeight           = &Text_Height;
-	uiInfo.uiDC.textHeightExt        = &Text_Height_Ext;
-	uiInfo.uiDC.multiLineTextHeight  = &Multiline_Text_Height;
-	uiInfo.uiDC.textFont             = &Text_SetActiveFont;
-	uiInfo.uiDC.registerModel        = &trap_R_RegisterModel;
-	uiInfo.uiDC.modelBounds          = &trap_R_ModelBounds;
-	uiInfo.uiDC.fillRect             = &UI_FillRect;
-	uiInfo.uiDC.drawRect             = &_UI_DrawRect;
-	uiInfo.uiDC.drawSides            = &_UI_DrawSides;
-	uiInfo.uiDC.drawTopBottom        = &_UI_DrawTopBottom;
-	uiInfo.uiDC.clearScene           = &trap_R_ClearScene;
-	uiInfo.uiDC.addRefEntityToScene  = &trap_R_AddRefEntityToScene;
-	uiInfo.uiDC.renderScene          = &trap_R_RenderScene;
-	uiInfo.uiDC.registerFont         = &trap_R_RegisterFont;
-	uiInfo.uiDC.ownerDrawItem        = &UI_OwnerDraw;
-	uiInfo.uiDC.getValue             = &UI_GetValue;
-	uiInfo.uiDC.ownerDrawVisible     = &UI_OwnerDrawVisible;
-	uiInfo.uiDC.runScript            = &UI_RunMenuScript;
-	uiInfo.uiDC.getTeamColor         = &UI_GetTeamColor;    // not implemented
-	uiInfo.uiDC.setCVar              = trap_Cvar_Set;
-	uiInfo.uiDC.getCVarString        = trap_Cvar_VariableStringBuffer;
-	uiInfo.uiDC.getCVarValue         = trap_Cvar_VariableValue;
-	uiInfo.uiDC.drawTextWithCursor   = &Text_PaintWithCursor;
-	uiInfo.uiDC.setOverstrikeMode    = &trap_Key_SetOverstrikeMode;
-	uiInfo.uiDC.getOverstrikeMode    = &trap_Key_GetOverstrikeMode;
-	uiInfo.uiDC.startLocalSound      = &trap_S_StartLocalSound;
-	uiInfo.uiDC.ownerDrawHandleKey   = &UI_OwnerDrawHandleKey;
-	uiInfo.uiDC.feederCount          = &UI_FeederCount;
-	uiInfo.uiDC.feederItemImage      = &UI_FeederItemImage;
-	uiInfo.uiDC.feederItemText       = &UI_FeederItemText;
-	uiInfo.uiDC.fileText             = &UI_FileText;
-	uiInfo.uiDC.feederSelection      = &UI_FeederSelection;
-	uiInfo.uiDC.feederSelectionClick = &UI_FeederSelectionClick;
-	uiInfo.uiDC.feederAddItem        = &UI_FeederAddItem; // not implemented
-	uiInfo.uiDC.setBinding           = &trap_Key_SetBinding;
-	uiInfo.uiDC.getBindingBuf        = &trap_Key_GetBindingBuf;
-	uiInfo.uiDC.getKeysForBinding    = &trap_Key_KeysForBinding;
-	uiInfo.uiDC.keynumToStringBuf    = &trap_Key_KeynumToStringBuf;
-	uiInfo.uiDC.keyIsDown            = &trap_Key_IsDown;
-	uiInfo.uiDC.getClipboardData     = &trap_GetClipboardData;
-	uiInfo.uiDC.executeText          = &trap_Cmd_ExecuteText;
-	uiInfo.uiDC.Error                = &Com_Error;
-	uiInfo.uiDC.Print                = &Com_Printf;
-	uiInfo.uiDC.Pause                = &UI_Pause;
-	uiInfo.uiDC.ownerDrawWidth       = &UI_OwnerDrawWidth;
-	uiInfo.uiDC.registerSound        = &trap_S_RegisterSound;
-	uiInfo.uiDC.startBackgroundTrack = &trap_S_StartBackgroundTrack;
-	uiInfo.uiDC.stopBackgroundTrack  = &trap_S_StopBackgroundTrack;
-	uiInfo.uiDC.playCinematic        = &UI_PlayCinematic;
-	uiInfo.uiDC.stopCinematic        = &UI_StopCinematic;
-	uiInfo.uiDC.drawCinematic        = &UI_DrawCinematic;
-	uiInfo.uiDC.runCinematicFrame    = &UI_RunCinematicFrame;
-	uiInfo.uiDC.translateString      = &trap_TranslateString;
-	uiInfo.uiDC.checkAutoUpdate      = &trap_CheckAutoUpdate;
-	uiInfo.uiDC.getAutoUpdate        = &trap_GetAutoUpdate;
+	uiInfo.uiDC.registerShaderNoMip   = &trap_R_RegisterShaderNoMip;
+	uiInfo.uiDC.setColor              = &trap_R_SetColor;
+	uiInfo.uiDC.drawHandlePic         = &UI_DrawHandlePic;
+	uiInfo.uiDC.drawStretchPic        = &trap_R_DrawStretchPic;
+	uiInfo.uiDC.drawText              = &Text_Paint;
+	uiInfo.uiDC.drawTextExt           = &Text_Paint_Ext;
+	uiInfo.uiDC.textWidth             = &Text_Width;
+	uiInfo.uiDC.textWidthExt          = &Text_Width_Ext;
+	uiInfo.uiDC.multiLineTextWidth    = &Multiline_Text_Width;
+	uiInfo.uiDC.textHeight            = &Text_Height;
+	uiInfo.uiDC.textHeightExt         = &Text_Height_Ext;
+	uiInfo.uiDC.multiLineTextHeight   = &Multiline_Text_Height;
+	uiInfo.uiDC.textFont              = &Text_SetActiveFont;
+	uiInfo.uiDC.registerModel         = &trap_R_RegisterModel;
+	uiInfo.uiDC.modelBounds           = &trap_R_ModelBounds;
+	uiInfo.uiDC.fillRect              = &UI_FillRect;
+	uiInfo.uiDC.drawRect              = &_UI_DrawRect;
+	uiInfo.uiDC.drawSides             = &_UI_DrawSides;
+	uiInfo.uiDC.drawTopBottom         = &_UI_DrawTopBottom;
+	uiInfo.uiDC.clearScene            = &trap_R_ClearScene;
+	uiInfo.uiDC.addRefEntityToScene   = &trap_R_AddRefEntityToScene;
+	uiInfo.uiDC.renderScene           = &trap_R_RenderScene;
+	uiInfo.uiDC.registerFont          = &trap_R_RegisterFont;
+	uiInfo.uiDC.ownerDrawItem         = &UI_OwnerDraw;
+	uiInfo.uiDC.getValue              = &UI_GetValue;
+	uiInfo.uiDC.ownerDrawVisible      = &UI_OwnerDrawVisible;
+	uiInfo.uiDC.runScript             = &UI_RunMenuScript;
+	uiInfo.uiDC.getTeamColor          = &UI_GetTeamColor;   // not implemented
+	uiInfo.uiDC.setCVar               = trap_Cvar_Set;
+	uiInfo.uiDC.getCVarString         = trap_Cvar_VariableStringBuffer;
+	uiInfo.uiDC.getCVarValue          = trap_Cvar_VariableValue;
+	uiInfo.uiDC.drawTextWithCursor    = &Text_PaintWithCursor;
+	uiInfo.uiDC.drawTextWithCursorExt = &Text_PaintWithCursor_Ext;
+	uiInfo.uiDC.setOverstrikeMode     = &trap_Key_SetOverstrikeMode;
+	uiInfo.uiDC.getOverstrikeMode     = &trap_Key_GetOverstrikeMode;
+	uiInfo.uiDC.startLocalSound       = &trap_S_StartLocalSound;
+	uiInfo.uiDC.ownerDrawHandleKey    = &UI_OwnerDrawHandleKey;
+	uiInfo.uiDC.feederCount           = &UI_FeederCount;
+	uiInfo.uiDC.feederItemImage       = &UI_FeederItemImage;
+	uiInfo.uiDC.feederItemText        = &UI_FeederItemText;
+	uiInfo.uiDC.fileText              = &UI_FileText;
+	uiInfo.uiDC.feederSelection       = &UI_FeederSelection;
+	uiInfo.uiDC.feederSelectionClick  = &UI_FeederSelectionClick;
+	uiInfo.uiDC.feederAddItem         = &UI_FeederAddItem; // not implemented
+	uiInfo.uiDC.setBinding            = &trap_Key_SetBinding;
+	uiInfo.uiDC.getBindingBuf         = &trap_Key_GetBindingBuf;
+	uiInfo.uiDC.getKeysForBinding     = &trap_Key_KeysForBinding;
+	uiInfo.uiDC.keynumToStringBuf     = &trap_Key_KeynumToStringBuf;
+	uiInfo.uiDC.keyIsDown             = &trap_Key_IsDown;
+	uiInfo.uiDC.getClipboardData      = &trap_GetClipboardData;
+	uiInfo.uiDC.executeText           = &trap_Cmd_ExecuteText;
+	uiInfo.uiDC.Error                 = &Com_Error;
+	uiInfo.uiDC.Print                 = &Com_Printf;
+	uiInfo.uiDC.Pause                 = &UI_Pause;
+	uiInfo.uiDC.ownerDrawWidth        = &UI_OwnerDrawWidth;
+	uiInfo.uiDC.registerSound         = &trap_S_RegisterSound;
+	uiInfo.uiDC.startBackgroundTrack  = &trap_S_StartBackgroundTrack;
+	uiInfo.uiDC.stopBackgroundTrack   = &trap_S_StopBackgroundTrack;
+	uiInfo.uiDC.playCinematic         = &UI_PlayCinematic;
+	uiInfo.uiDC.stopCinematic         = &UI_StopCinematic;
+	uiInfo.uiDC.drawCinematic         = &UI_DrawCinematic;
+	uiInfo.uiDC.runCinematicFrame     = &UI_RunCinematicFrame;
+	uiInfo.uiDC.translateString       = &trap_TranslateString;
+	uiInfo.uiDC.checkAutoUpdate       = &trap_CheckAutoUpdate;
+	uiInfo.uiDC.getAutoUpdate         = &trap_GetAutoUpdate;
 
 	uiInfo.uiDC.descriptionForCampaign = &UI_DescriptionForCampaign;
 	uiInfo.uiDC.nameForCampaign        = &UI_NameForCampaign;
@@ -8580,17 +8679,17 @@ vmCvar_t ui_currentCampaignCompleted;
 
 // cgame mappings
 vmCvar_t ui_blackout;       // For speclock
-vmCvar_t cg_crosshairColor;
-vmCvar_t cg_crosshairColorAlt;
-vmCvar_t cg_crosshairAlpha;
-vmCvar_t cg_crosshairAlphaAlt;
-vmCvar_t cg_crosshairSize;
+vmCvar_t ui_cg_crosshairColor;
+vmCvar_t ui_cg_crosshairColorAlt;
+vmCvar_t ui_cg_crosshairAlpha;
+vmCvar_t ui_cg_crosshairAlphaAlt;
+vmCvar_t ui_cg_crosshairSize;
 
 vmCvar_t cl_bypassMouseInput;
 
 vmCvar_t ui_serverBrowserSettings;
 
-cvarTable_t cvarTable[] =
+static cvarTable_t cvarTable[] =
 {
 	{ NULL,                             "ui_textfield_temp",                   "",                           CVAR_TEMP,                      0 },
 	{ &ui_glCustom,                     "ui_glCustom",                         "4",                          CVAR_ARCHIVE,                   0 },
@@ -8682,11 +8781,11 @@ cvarTable_t cvarTable[] =
 
 	// cgame mappings
 	{ &ui_blackout,                     "ui_blackout",                         "0",                          CVAR_ROM,                       0 },
-	{ &cg_crosshairAlpha,               "cg_crosshairAlpha",                   "1.0",                        CVAR_ARCHIVE,                   0 },
-	{ &cg_crosshairAlphaAlt,            "cg_crosshairAlphaAlt",                "1.0",                        CVAR_ARCHIVE,                   0 },
-	{ &cg_crosshairColor,               "cg_crosshairColor",                   "White",                      CVAR_ARCHIVE,                   0 },
-	{ &cg_crosshairColorAlt,            "cg_crosshairColorAlt",                "White",                      CVAR_ARCHIVE,                   0 },
-	{ &cg_crosshairSize,                "cg_crosshairSize",                    "48",                         CVAR_ARCHIVE,                   0 },
+	{ &ui_cg_crosshairAlpha,            "cg_crosshairAlpha",                   "1.0",                        CVAR_ARCHIVE,                   0 },
+	{ &ui_cg_crosshairAlphaAlt,         "cg_crosshairAlphaAlt",                "1.0",                        CVAR_ARCHIVE,                   0 },
+	{ &ui_cg_crosshairColor,            "cg_crosshairColor",                   "White",                      CVAR_ARCHIVE,                   0 },
+	{ &ui_cg_crosshairColorAlt,         "cg_crosshairColorAlt",                "White",                      CVAR_ARCHIVE,                   0 },
+	{ &ui_cg_crosshairSize,             "cg_crosshairSize",                    "48",                         CVAR_ARCHIVE,                   0 },
 
 	// game mappings (for create server option)
 	{ NULL,                             "g_altStopwatchMode",                  "0",                          CVAR_ARCHIVE,                   0 },
@@ -8696,6 +8795,7 @@ cvarTable_t cvarTable[] =
 	{ NULL,                             "g_inactivity",                        "0",                          CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "g_maxLives",                          "0",                          CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "refereePassword",                     "none",                       CVAR_ARCHIVE,                   0 },
+	{ NULL,                             "shoutcastPassword",                   "none",                       CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "g_teamForceBalance",                  "0",                          CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "sv_maxRate",                          "0",                          CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "g_spectatorInactivity",               "0",                          CVAR_ARCHIVE,                   0 },
@@ -8722,12 +8822,8 @@ cvarTable_t cvarTable[] =
 	{ NULL,                             "vote_allow_nextmap",                  "1",                          CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "vote_allow_config",                   "1",                          CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "vote_allow_referee",                  "0",                          CVAR_ARCHIVE,                   0 },
-	{ NULL,                             "vote_allow_shuffleteamsxp",           "1",                          CVAR_ARCHIVE,                   0 },
-	{ NULL,                             "vote_allow_shuffleteamsxp_norestart", "1",                          CVAR_ARCHIVE,                   0 },
-#ifdef FEATURE_RATING
-	{ NULL,                             "vote_allow_shuffleteamssr",           "1",                          CVAR_ARCHIVE,                   0 },
-	{ NULL,                             "vote_allow_shuffleteamssr_norestart", "1",                          CVAR_ARCHIVE,                   0 },
-#endif
+	{ NULL,                             "vote_allow_shuffleteams",             "1",                          CVAR_ARCHIVE,                   0 },
+	{ NULL,                             "vote_allow_shuffleteams_norestart",   "1",                          CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "vote_allow_swapteams",                "1",                          CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "vote_allow_friendlyfire",             "1",                          CVAR_ARCHIVE,                   0 },
 	{ NULL,                             "vote_allow_timelimit",                "0",                          CVAR_ARCHIVE,                   0 },
@@ -8765,7 +8861,7 @@ cvarTable_t cvarTable[] =
 	{ NULL,                             "cg_allowGeoIP",                       "1",                          CVAR_ARCHIVE | CVAR_USERINFO,   0 },
 };
 
-const unsigned int cvarTableSize = sizeof(cvarTable) / sizeof(cvarTable[0]);
+static const unsigned int cvarTableSize = sizeof(cvarTable) / sizeof(cvarTable[0]);
 
 /**
  * @brief UI_RegisterCvars
@@ -8775,7 +8871,7 @@ void UI_RegisterCvars(void)
 	unsigned int i;
 	cvarTable_t  *cv;
 
-	Com_Printf("%u UI cvars in use.\n", cvarTableSize);
+	Com_Printf("%u UI cvars in use\n", cvarTableSize);
 
 	for (i = 0, cv = cvarTable ; i < cvarTableSize ; i++, cv++)
 	{
@@ -8788,8 +8884,8 @@ void UI_RegisterCvars(void)
 
 	// Always force this to 0 on init
 	trap_Cvar_Set("ui_blackout", "0");
-	BG_setCrosshair(cg_crosshairColor.string, uiInfo.xhairColor, cg_crosshairAlpha.value, "cg_crosshairColor");
-	BG_setCrosshair(cg_crosshairColorAlt.string, uiInfo.xhairColorAlt, cg_crosshairAlphaAlt.value, "cg_crosshairColorAlt");
+	BG_setCrosshair(ui_cg_crosshairColor.string, uiInfo.xhairColor, ui_cg_crosshairAlpha.value, "cg_crosshairColor");
+	BG_setCrosshair(ui_cg_crosshairColorAlt.string, uiInfo.xhairColorAlt, ui_cg_crosshairAlphaAlt.value, "cg_crosshairColorAlt");
 }
 
 /**
@@ -8809,14 +8905,14 @@ void UI_UpdateCvars(void)
 			{
 				cv->modificationCount = cv->vmCvar->modificationCount;
 
-				if (cv->vmCvar == &cg_crosshairColor || cv->vmCvar == &cg_crosshairAlpha)
+				if (cv->vmCvar == &ui_cg_crosshairColor || cv->vmCvar == &ui_cg_crosshairAlpha)
 				{
-					BG_setCrosshair(cg_crosshairColor.string, uiInfo.xhairColor, cg_crosshairAlpha.value, "cg_crosshairColor");
+					BG_setCrosshair(ui_cg_crosshairColor.string, uiInfo.xhairColor, ui_cg_crosshairAlpha.value, "cg_crosshairColor");
 				}
 
-				if (cv->vmCvar == &cg_crosshairColorAlt || cv->vmCvar == &cg_crosshairAlphaAlt)
+				if (cv->vmCvar == &ui_cg_crosshairColorAlt || cv->vmCvar == &ui_cg_crosshairAlphaAlt)
 				{
-					BG_setCrosshair(cg_crosshairColorAlt.string, uiInfo.xhairColorAlt, cg_crosshairAlphaAlt.value, "cg_crosshairColorAlt");
+					BG_setCrosshair(ui_cg_crosshairColorAlt.string, uiInfo.xhairColorAlt, ui_cg_crosshairAlphaAlt.value, "cg_crosshairColorAlt");
 				}
 			}
 		}

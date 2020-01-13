@@ -80,12 +80,8 @@ static const vote_reference_t aVoteInfo[] =
 	{ 0x1ff, "mutespecs",                G_Mutespecs_v,                "Mute Spectators",                  " <0|1>^7\n  Mutes in-game spectator chat"                            },
 	{ 0x1ff, "nextmap",                  G_Nextmap_v,                  "Load Next Map",                    "^7\n  Loads the next map or campaign in the map queue"               },
 	{ 0x1ff, "referee",                  G_Referee_v,                  "Referee",                          " <player_id>^7\n  Elects a player to have admin abilities"           },
-	{ 0x1ff, "shuffleteamsxp",           G_ShuffleTeamsXP_v,           "Shuffle Teams by XP",              " ^7\n  Randomly place players on each team, based on XP"             },
-	{ 0x1ff, "shuffleteamsxp_norestart", G_ShuffleTeamsXP_NoRestart_v, "Shuffle Teams by XP (No Restart)", " ^7\n  Randomly place players on each team, based on XP"             },
-#ifdef FEATURE_RATING
-	{ 0x1ff, "shuffleteamssr",           G_ShuffleTeamsSR_v,           "Shuffle Teams by SR",              " ^7\n  Randomly place players on each team, based on Skill Rating"   },
-	{ 0x1ff, "shuffleteamssr_norestart", G_ShuffleTeamsSR_NoRestart_v, "Shuffle Teams by SR (No Restart)", " ^7\n  Randomly place players on each team, based on Skill Rating"   },
-#endif
+	{ 0x1ff, "shuffleteams",             G_ShuffleTeams_v,             "Shuffle Teams",                    " ^7\n  Randomly place players on each team"                          },
+	{ 0x1ff, "shuffleteams_norestart",   G_ShuffleTeams_NoRestart_v,   "Shuffle Teams by (No Restart)",    " ^7\n  Randomly place players on each team"                          },
 	{ 0x1ff, "startmatch",               G_StartMatch_v,               "Start Match",                      " ^7\n  Sets all players to \"ready\" status to start the match"      },
 	{ 0x1ff, "swapteams",                G_SwapTeams_v,                "Swap Teams",                       " ^7\n  Switch the players on each team"                              },
 	{ 0x1ff, "friendlyfire",             G_FriendlyFire_v,             "Friendly Fire",                    " <0|1>^7\n  Toggles ability to hurt teammates"                       },
@@ -478,6 +474,12 @@ int G_Kick_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, qb
 		if (level.clients[pid].sess.referee)
 		{
 			G_refPrintf(ent, "Can't vote to kick referees!");
+			return G_INVALID;
+		}
+
+		if (level.clients[pid].sess.shoutcaster)
+		{
+			G_refPrintf(ent, "Can't vote to kick shoutcasters!");
 			return G_INVALID;
 		}
 
@@ -1047,7 +1049,7 @@ int G_Referee_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2,
 }
 
 /**
- * @brief Shuffle teams by XP
+ * @brief Shuffle teams
  * @param[in] ent
  * @param[in] dwVoteIndex
  * @param[in] arg
@@ -1055,7 +1057,7 @@ int G_Referee_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2,
  * @param[in] fRefereeCmd
  * @return
  */
-int G_ShuffleTeamsXP_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, qboolean fRefereeCmd)
+int G_ShuffleTeams_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, qboolean fRefereeCmd)
 {
 	// Vote request (vote is being initiated)
 	if (arg)
@@ -1065,7 +1067,7 @@ int G_ShuffleTeamsXP_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char
 			G_refPrintf(ent, "Usage: ^3%s %s%s\n", ((fRefereeCmd) ? "\\ref" : "\\callvote"), arg, aVoteInfo[dwVoteIndex].pszVoteHelp);
 			return G_INVALID;
 		}
-		else if (!vote_allow_shuffleteamsxp.integer && ent && !ent->client->sess.referee)
+		else if (!vote_allow_shuffleteams.integer && ent && !ent->client->sess.referee)
 		{
 			G_voteDisableMessage(ent, arg);
 			return G_INVALID;
@@ -1075,48 +1077,20 @@ int G_ShuffleTeamsXP_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char
 	else
 	{
 		// Shuffle the teams!
-		Svcmd_ShuffleTeamsXP_f(qtrue);
-	}
-
-	return G_OK;
-}
-
 #ifdef FEATURE_RATING
-/**
- * @brief Shuffle teams by SR
- * @param[in] ent
- * @param[in] dwVoteIndex
- * @param[in] arg
- * @param arg2 - unused
- * @param[in] fRefereeCmd
- * @return
- */
-int G_ShuffleTeamsSR_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, qboolean fRefereeCmd)
-{
-	// Vote request (vote is being initiated)
-	if (arg)
-	{
-		if (trap_Argc() > 2)
+		if (g_skillRating.integer)
 		{
-			G_refPrintf(ent, "Usage: ^3%s %s%s\n", ((fRefereeCmd) ? "\\ref" : "\\callvote"), arg, aVoteInfo[dwVoteIndex].pszVoteHelp);
-			return G_INVALID;
+			Svcmd_ShuffleTeamsSR_f(qtrue);
 		}
-		else if (!vote_allow_shuffleteamssr.integer && ent && !ent->client->sess.referee)
+		else
+#endif
 		{
-			G_voteDisableMessage(ent, arg);
-			return G_INVALID;
+			Svcmd_ShuffleTeamsXP_f(qtrue);
 		}
-		// Vote action (vote has passed)
-	}
-	else
-	{
-		// Shuffle the teams!
-		Svcmd_ShuffleTeamsSR_f(qtrue);
 	}
 
 	return G_OK;
 }
-#endif
 
 /**
  * @brief Start Match
@@ -1541,7 +1515,11 @@ int G_Unreferee_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg
 		gclient_t *cl = &level.clients[atoi(level.voteInfo.vote_value)];
 
 		cl->sess.referee     = RL_NONE;
-		cl->sess.spec_invite = 0;
+		// don't remove shoutcaster invitation
+		if (!cl->sess.shoutcaster)
+		{
+			cl->sess.spec_invite = 0;
+		}
 		AP(va("cp \"%s^7\nis no longer a referee\n\"", cl->pers.netname));
 		ClientUserinfoChanged(atoi(level.voteInfo.vote_value));
 	}
@@ -1713,7 +1691,7 @@ void G_IntermissionVoteTally(gentity_t *ent)
 // MAPVOTE END
 
 /**
- * @brief Shuffle teams by XP without restart
+ * @brief Shuffle teams without restart
  * @param[in] ent
  * @param[in] dwVoteIndex
  * @param[in] arg
@@ -1721,7 +1699,7 @@ void G_IntermissionVoteTally(gentity_t *ent)
  * @param[in] fRefereeCmd
  * @return
  */
-int G_ShuffleTeamsXP_NoRestart_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, qboolean fRefereeCmd)
+int G_ShuffleTeams_NoRestart_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, qboolean fRefereeCmd)
 {
 	// Vote request (vote is being initiated)
 	if (arg)
@@ -1732,7 +1710,7 @@ int G_ShuffleTeamsXP_NoRestart_v(gentity_t *ent, unsigned int dwVoteIndex, char 
 			G_refPrintf(ent, "Usage: ^3%s %s%s\n", ((fRefereeCmd) ? "\\ref" : "\\callvote"), arg, aVoteInfo[dwVoteIndex].pszVoteHelp);
 			return G_INVALID;
 		}
-		else if (!vote_allow_shuffleteamsxp_norestart.integer && ent && !ent->client->sess.referee)
+		else if (!vote_allow_shuffleteams_norestart.integer && ent && !ent->client->sess.referee)
 		{
 			G_voteDisableMessage(ent, arg);
 			return G_INVALID;
@@ -1742,49 +1720,20 @@ int G_ShuffleTeamsXP_NoRestart_v(gentity_t *ent, unsigned int dwVoteIndex, char 
 	else
 	{
 		// Shuffle the teams!
-		Svcmd_ShuffleTeamsXP_f(qfalse);
-	}
-
-	return G_OK;
-}
-
 #ifdef FEATURE_RATING
-/**
- * @brief Shuffle teams by SR without restart
- * @param[in] ent
- * @param[in] dwVoteIndex
- * @param[in] arg
- * @param arg2 - unused
- * @param[in] fRefereeCmd
- * @return
- */
-int G_ShuffleTeamsSR_NoRestart_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, qboolean fRefereeCmd)
-{
-	// Vote request (vote is being initiated)
-	if (arg)
-	{
-		if (trap_Argc() > 2)
+		if (g_skillRating.integer)
 		{
-			// CHRUKER: b047 - Removed unneeded linebreak
-			G_refPrintf(ent, "Usage: ^3%s %s%s\n", ((fRefereeCmd) ? "\\ref" : "\\callvote"), arg, aVoteInfo[dwVoteIndex].pszVoteHelp);
-			return G_INVALID;
+			Svcmd_ShuffleTeamsSR_f(qfalse);
 		}
-		else if (!vote_allow_shuffleteamssr_norestart.integer && ent && !ent->client->sess.referee)
+		else
+#endif
 		{
-			G_voteDisableMessage(ent, arg);
-			return G_INVALID;
+			Svcmd_ShuffleTeamsXP_f(qfalse);
 		}
-		// Vote action (vote has passed)
-	}
-	else
-	{
-		// Shuffle the teams!
-		Svcmd_ShuffleTeamsSR_f(qfalse);
 	}
 
 	return G_OK;
 }
-#endif
 
 /**
  * @brief G_Surrender_v

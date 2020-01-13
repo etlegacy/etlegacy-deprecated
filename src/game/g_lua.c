@@ -1013,7 +1013,7 @@ static const gentity_field_t gclient_fields[] =
 	_et_gclient_addfield(sess.playerType,                   FIELD_INT,                 0),
 	_et_gclient_addfield(sess.playerWeapon,                 FIELD_INT,                 0),
 	_et_gclient_addfield(sess.playerWeapon2,                FIELD_INT,                 0),
-	_et_gclient_addfield(sess.spawnObjectiveIndex,          FIELD_INT,                 0),
+	_et_gclient_addfield(sess.userSpawnPointValue,          FIELD_INT,                 0),
 	_et_gclient_addfield(sess.latchPlayerType,              FIELD_INT,                 0),
 	_et_gclient_addfield(sess.latchPlayerWeapon,            FIELD_INT,                 0),
 	_et_gclient_addfield(sess.latchPlayerWeapon2,           FIELD_INT,                 0),
@@ -1026,6 +1026,7 @@ static const gentity_field_t gclient_fields[] =
 	_et_gclient_addfield(sess.rank,                         FIELD_INT,                 0),
 	_et_gclient_addfield(sess.medals,                       FIELD_INT_ARRAY,           0),
 	_et_gclient_addfield(sess.referee,                      FIELD_INT,                 0),
+	_et_gclient_addfield(sess.shoutcaster,                  FIELD_INT,                 0),
 	_et_gclient_addfield(sess.rounds,                       FIELD_INT,                 0),
 	_et_gclient_addfield(sess.spec_invite,                  FIELD_INT,                 0),
 	_et_gclient_addfield(sess.spec_team,                    FIELD_INT,                 0),
@@ -2106,7 +2107,6 @@ qboolean G_LuaRunIsolated(const char *modName)
 {
 	int          freeVM, flen = 0;
 	static char  allowedModules[MAX_CVAR_VALUE_STRING];
-	static char  buff[MAX_CVAR_VALUE_STRING];
 	char         *code, *signature;
 	fileHandle_t f;
 	lua_vm_t     *vm;

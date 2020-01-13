@@ -73,7 +73,7 @@
 
 /**
  * @brief G_SkillRatingDB_Init
- * @return 0 if database is successfully initiallized, 1 otherwise.
+ * @return 0 if database is successfully initialized, 1 otherwise.
  */
 int G_SkillRatingDB_Init()
 {
@@ -124,7 +124,7 @@ int G_SkillRatingDB_Init()
 	// open db
 	if (db_mode == 1)
 	{
-		result = sqlite3_open_v2(level.database.path, &level.database.db, (SQLITE_OPEN_READWRITE | SQLITE_OPEN_MEMORY | SQLITE_OPEN_SHAREDCACHE), NULL);
+		result = sqlite3_open_v2(level.database.path, &level.database.db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_MEMORY | SQLITE_OPEN_SHAREDCACHE, NULL);
 
 		if (result != SQLITE_OK)
 		{
@@ -146,7 +146,7 @@ int G_SkillRatingDB_Init()
 		char         *err_msg = NULL;
 		sqlite3_stmt *sqlstmt;
 
-		result = sqlite3_open_v2(level.database.path, &level.database.db, (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE), NULL);
+		result = sqlite3_open_v2(level.database.path, &level.database.db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,NULL);
 
 		if (result != SQLITE_OK)
 		{
@@ -200,7 +200,7 @@ int G_SkillRatingDB_Init()
 
 /**
  * @brief G_SkillRatingDB_DeInit
- * @return 0 if database is successfully deinitiallized, 1 otherwise.
+ * @return 0 if database is successfully deinitialized, 1 otherwise.
  */
 int G_SkillRatingDB_DeInit()
 {
@@ -229,16 +229,16 @@ int G_SkillRatingDB_DeInit()
 
 /**
  * @brief Checks if database exists, if tables exist and if schemas are correct
- * @param[in] dbpath
+ * @param[in] db_path
  * @param[in] db_mode
  * @return 0 if database check is successful, 1 otherwise.
  */
-int G_SkillRatingDB_Check(char *dbpath, int db_mode)
+int G_SkillRatingDB_Check(char *db_path, int db_mode)
 {
 	int     result;
 	sqlite3 *db;
 
-	if (!dbpath || dbpath[0] == '\0')
+	if (!db_path || db_path[0] == '\0')
 	{
 		G_Printf("G_SkillRatingDB_Check: invalid path specified\n");
 		return 1;
@@ -247,11 +247,11 @@ int G_SkillRatingDB_Check(char *dbpath, int db_mode)
 	// check if database can be opened
 	if (db_mode == 1)
 	{
-		result = sqlite3_open_v2(dbpath, &db, (SQLITE_OPEN_READWRITE | SQLITE_OPEN_MEMORY | SQLITE_OPEN_SHAREDCACHE), NULL);
+		result = sqlite3_open_v2(db_path, &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_MEMORY | SQLITE_OPEN_SHAREDCACHE, NULL);
 	}
 	else // db_mode 2
 	{
-		result = sqlite3_open_v2(dbpath, &db, SQLITE_OPEN_READWRITE, NULL);
+		result = sqlite3_open_v2(db_path, &db, SQLITE_OPEN_READWRITE, NULL);
 	}
 
 	if (result != SQLITE_OK)
@@ -308,7 +308,7 @@ int G_SkillRatingDB_Check(char *dbpath, int db_mode)
 
 /**
  * @brief Ensure rating_match table is empty
- * @return 0 if rating_table is successful emptied, 1 otherwise.
+ * @return 0 if rating_table is successfully emptied, 1 otherwise.
  */
 int G_SkillRatingPrepareMatchRating(void)
 {
@@ -359,7 +359,7 @@ int G_SkillRatingPrepareMatchRating(void)
 /**
  * @brief Retrieve rating from the rating_match table
  * @param[in] sr_data
- * @return 0 if if successful, 0 otherwise.
+ * @return 0 if successful, 2 if data is not found, 1 otherwise.
  */
 int G_SkillRatingGetMatchRating(srData_t *sr_data)
 {
@@ -367,6 +367,7 @@ int G_SkillRatingGetMatchRating(srData_t *sr_data)
 	char         *err_msg = NULL;
 	char         *sql;
 	sqlite3_stmt *sqlstmt;
+	qboolean     datafound = qtrue;
 
 	if (!level.database.initialized)
 	{
@@ -405,6 +406,8 @@ int G_SkillRatingGetMatchRating(srData_t *sr_data)
 			sr_data->sigma       = SIGMA;
 			sr_data->time_axis   = 0;
 			sr_data->time_allies = 0;
+
+			datafound = qfalse;
 		}
 		else
 		{
@@ -424,13 +427,17 @@ int G_SkillRatingGetMatchRating(srData_t *sr_data)
 		return 1;
 	}
 
+	if (!datafound)
+	{
+		return 2;
+	}
 	return 0;
 }
 
 /**
  * @brief Sets or updates rating and time played in the rating_match table
  * @param[in] sr_data
- * @return 0 if if successful, 0 otherwise.
+ * @return 0 if successful, 1 otherwise.
  */
 int G_SkillRatingSetMatchRating(srData_t *sr_data)
 {
@@ -497,24 +504,166 @@ int G_SkillRatingSetMatchRating(srData_t *sr_data)
 }
 
 /**
- * @brief Retrieve rating from the rating_user table
- * @param[in] cl
- * @param[in] firstTime
+ * @brief Retrieve rating from the rating_users table
+ * @param[in] sr_data
+ * @return 0 if successful, 1 otherwise.
  */
-void G_SkillRatingGetUserRating(gclient_t *cl, qboolean firstTime)
+int G_SkillRatingGetUserRating(srData_t *sr_data)
 {
-	char         userinfo[MAX_INFO_STRING];
-	char         *guid;
-	int          clientNum;
 	int          result;
 	char         *err_msg = NULL;
 	char         *sql;
 	sqlite3_stmt *sqlstmt;
-	srData_t     sr_data;
 
 	if (!level.database.initialized)
 	{
 		G_Printf("G_SkillRatingGetUserRating: access to non-initialized database\n");
+		return 1;
+	}
+
+	sql = va(SRUSERS_SQLWRAP_SELECT, sr_data->guid);
+
+	result = sqlite3_prepare(level.database.db, sql, strlen(sql), &sqlstmt, NULL);
+
+	if (result != SQLITE_OK)
+	{
+		G_Printf("G_SkillRatingGetUserRating: sqlite3_prepare failed: %s\n", err_msg);
+		sqlite3_free(err_msg);
+		return 1;
+	}
+
+	result = sqlite3_step(sqlstmt);
+
+	if (result == SQLITE_ROW)
+	{
+		// assign match data
+		sr_data->mu          = sqlite3_column_double(sqlstmt, 1);
+		sr_data->sigma       = sqlite3_column_double(sqlstmt, 2);
+		sr_data->time_axis   = 0;
+		sr_data->time_allies = 0;
+	}
+	else
+	{
+		// no entry found or other failure
+		if (result == SQLITE_DONE)
+		{
+			// assign default values
+			sr_data->mu          = MU;
+			sr_data->sigma       = SIGMA;
+			sr_data->time_axis   = 0;
+			sr_data->time_allies = 0;
+		}
+		else
+		{
+			sqlite3_finalize(sqlstmt);
+
+			G_Printf("G_SkillRatingGetUserRating: sqlite3_step failed: %s\n", err_msg);
+			sqlite3_free(err_msg);
+			return 1;
+		}
+	}
+
+	result = sqlite3_finalize(sqlstmt);
+
+	if (result != SQLITE_OK)
+	{
+		G_Printf("G_SkillRatingGetUserRating: sqlite3_finalize failed\n");
+		return 1;
+	}
+
+	return 0;
+}
+
+/**
+ * @brief Sets or updates rating and timestamps in the rating_users table
+ * @param[in] sr_data
+ * @return 0 if successful, 1 otherwise.
+ */
+int G_SkillRatingSetUserRating(srData_t *sr_data)
+{
+	int          result;
+	char         *err_msg = NULL;
+	char         *sql;
+	sqlite3_stmt *sqlstmt;
+
+	if (!level.database.initialized)
+	{
+		G_Printf("G_SkillRatingSetUserRating: access to non-initialized database\n");
+		return 1;
+	}
+
+	sql = va(SRUSERS_SQLWRAP_SELECT, sr_data->guid);
+
+	result = sqlite3_prepare(level.database.db, sql, strlen(sql), &sqlstmt, NULL);
+
+	if (result != SQLITE_OK)
+	{
+		G_Printf("G_SkillRatingSetUserRating: sqlite3_prepare failed: %s\n", err_msg);
+		sqlite3_free(err_msg);
+		return 1;
+	}
+
+	result = sqlite3_step(sqlstmt);
+
+	if (result == SQLITE_DONE)
+	{
+		sql = va(SRUSERS_SQLWRAP_INSERT, sr_data->guid, sr_data->mu, sr_data->sigma);
+
+		result = sqlite3_exec(level.database.db, sql, NULL, NULL, &err_msg);
+
+		if (result != SQLITE_OK)
+		{
+			G_Printf("G_SkillRatingSetUserRating: sqlite3_exec:INSERT failed: %s\n", err_msg);
+			sqlite3_free(err_msg);
+			return 1;
+		}
+	}
+	else
+	{
+		sql = va(SRUSERS_SQLWRAP_UPDATE, sr_data->mu, sr_data->sigma, sr_data->guid);
+
+		result = sqlite3_exec(level.database.db, sql, NULL, NULL, &err_msg);
+
+		if (result != SQLITE_OK)
+		{
+			G_Printf("G_SkillRatingSetUserRating: sqlite3_exec:UPDATE failed: %s\n", err_msg);
+			sqlite3_free(err_msg);
+			return 1;
+		}
+	}
+
+	result = sqlite3_finalize(sqlstmt);
+
+	if (result != SQLITE_OK)
+	{
+		G_Printf("G_SkillRatingSetUserRating: sqlite3_finalize failed\n");
+		return 1;
+	}
+
+	return 0;
+}
+
+/**
+ * @brief Retrieve rating for client
+ *         Called on ClientConnect and on G_UpdateSkillRating
+ * @param[in] cl
+ */
+void G_SkillRatingGetClientRating(gclient_t *cl)
+{
+	char         userinfo[MAX_INFO_STRING];
+	char         *guid;
+	int          clientNum;
+	srData_t     sr_data;
+
+	// disable for these game types
+	if (g_gametype.integer == GT_WOLF_STOPWATCH || g_gametype.integer == GT_WOLF_LMS)
+	{
+		return;
+	}
+
+	if (!level.database.initialized)
+	{
+		G_Printf("G_SkillRatingGetClientRating: access to non-initialized database\n");
 		return;
 	}
 
@@ -529,60 +678,28 @@ void G_SkillRatingGetUserRating(gclient_t *cl, qboolean firstTime)
 	trap_GetUserinfo(clientNum, userinfo, sizeof(userinfo));
 	guid = Info_ValueForKey(userinfo, "cl_guid");
 
-	// retrieve current rating_users or assign default values
-	// use level.startTime workaround for warmup players not getting rating_users data when GS_PLAYING starts
-	if (firstTime || level.warmupTime || level.intermissiontime || level.intermissionQueued || (level.time - level.startTime) < 1000)
+	// assign guid
+	sr_data.guid = (const unsigned char *)guid;
+
+	// retrieve current rating or assign default values
+	if (level.warmupTime || level.intermissionQueued || level.intermissiontime)
 	{
-		// check general rating_users values or generate new default values
-		sql = va(SRUSERS_SQLWRAP_SELECT, guid);
-
-		result = sqlite3_prepare(level.database.db, sql, strlen(sql), &sqlstmt, NULL);
-
-		if (result != SQLITE_OK)
+		// retrieve rating from rating_users table
+		if (G_SkillRatingGetUserRating(&sr_data))
 		{
-			G_Printf("G_SkillRatingGetUserRating: sqlite3_prepare failed: %s\n", err_msg);
-			sqlite3_free(err_msg);
-			return;
-		}
-
-		result = sqlite3_step(sqlstmt);
-
-		if (result == SQLITE_ROW)
-		{
-			// assign user data
-			sr_data.mu    = sqlite3_column_double(sqlstmt, 1);
-			sr_data.sigma = sqlite3_column_double(sqlstmt, 2);
-		}
-		else
-		{
-			// no entry found or other failure
-			if (result == SQLITE_DONE)
-			{
-				// assign default values
-				sr_data.mu    = MU;
-				sr_data.sigma = SIGMA;
-			}
-			else
-			{
-				sqlite3_finalize(sqlstmt);
-
-				G_Printf("G_SkillRatingGetUserRating: sqlite3_step failed: %s\n", err_msg);
-				sqlite3_free(err_msg);
-				return;
-			}
-		}
-
-		result = sqlite3_finalize(sqlstmt);
-
-		if (result != SQLITE_OK)
-		{
-			G_Printf("G_SkillRatingGetUserRating: sqlite3_finalize failed\n");
 			return;
 		}
 
 		// assign user data to session
-		cl->sess.mu    = sr_data.mu;
-		cl->sess.sigma = sr_data.sigma;
+		cl->sess.mu          = sr_data.mu;
+		cl->sess.sigma       = sr_data.sigma;
+
+		// ensure auto statsdump is correct
+		if (!level.intermissionQueued && !level.intermissiontime)
+		{
+			cl->sess.time_axis   = 0;
+			cl->sess.time_allies = 0;
+		}
 
 		// prepare delta rating
 		if (!level.intermissionQueued)
@@ -591,55 +708,67 @@ void G_SkillRatingGetUserRating(gclient_t *cl, qboolean firstTime)
 			cl->sess.oldsigma = sr_data.sigma;
 		}
 	}
-	else
+	else // playing
 	{
-		// assign guid
-		sr_data.guid = (const unsigned char *)guid;
-
-		// retrieve rating in rating_match table
-		if (G_SkillRatingGetMatchRating(&sr_data))
+		// retrieve rating from rating_match or rating_users table or set default values
+		switch (G_SkillRatingGetMatchRating(&sr_data))
 		{
-			return;
+			case 1:
+				// error occurred
+				return;
+			case 2:
+				// data not found in rating_match
+				G_SkillRatingGetUserRating(&sr_data);
+				break;
+			case 0:
+				// data found
+			default:
+				break;
 		}
-		else
-		{
-			// assign match data to session
-			cl->sess.mu          = sr_data.mu;
-			cl->sess.sigma       = sr_data.sigma;
-			cl->sess.time_axis   = sr_data.time_axis;
-			cl->sess.time_allies = sr_data.time_allies;
 
-			// prepare delta rating
-			cl->sess.oldmu    = sr_data.mu;
-			cl->sess.oldsigma = sr_data.sigma;
-		}
+		// assign match data to session
+		cl->sess.mu          = sr_data.mu;
+		cl->sess.sigma       = sr_data.sigma;
+		cl->sess.time_axis   = sr_data.time_axis;
+		cl->sess.time_allies = sr_data.time_allies;
+
+		// prepare delta rating
+		cl->sess.oldmu    = sr_data.mu;
+		cl->sess.oldsigma = sr_data.sigma;
 	}
-
-	return;
 }
 
 /**
- * @brief Sets or updates rating and timestamp in the rating_user table
+ * @brief Sets or updates rating and timestamp for client
+ *         Called on ClientDisconnect and on G_LogExit before intermissionQueued
  * @param[in] cl
  */
-void G_SkillRatingSetUserRating(gclient_t *cl)
+void G_SkillRatingSetClientRating(gclient_t *cl)
 {
 	char         userinfo[MAX_INFO_STRING];
 	char         *guid;
 	int          clientNum;
-	int          result;
-	char         *err_msg = NULL;
-	char         *sql;
-	sqlite3_stmt *sqlstmt;
 	srData_t     sr_data;
+
+	// disable for these game types
+	if (g_gametype.integer == GT_WOLF_STOPWATCH || g_gametype.integer == GT_WOLF_LMS)
+	{
+		return;
+	}
 
 	if (!level.database.initialized)
 	{
-		G_Printf("G_SkillRatingSetUserRating: access to non-initialized database\n");
+		G_Printf("G_SkillRatingSetClientRating: access to non-initialized database\n");
 		return;
 	}
 
 	if (!cl)
+	{
+		return;
+	}
+
+	// don't record any data in warmup
+	if (level.warmupTime)
 	{
 		return;
 	}
@@ -674,125 +803,12 @@ void G_SkillRatingSetUserRating(gclient_t *cl)
 	}
 	else
 	{
-		sql = va(SRUSERS_SQLWRAP_SELECT, guid);
-
-		result = sqlite3_prepare(level.database.db, sql, strlen(sql), &sqlstmt, NULL);
-
-		if (result != SQLITE_OK)
+		// save or update rating in rating_users table
+		if (G_SkillRatingSetUserRating(&sr_data))
 		{
-			G_Printf("G_SkillRatingSetUserRating: sqlite3_prepare failed: %s\n", err_msg);
-			sqlite3_free(err_msg);
-			return;
-		}
-
-		result = sqlite3_step(sqlstmt);
-
-		if (result == SQLITE_DONE)
-		{
-			sql = va(SRUSERS_SQLWRAP_INSERT, guid, sr_data.mu, sr_data.sigma);
-
-			result = sqlite3_exec(level.database.db, sql, NULL, NULL, &err_msg);
-
-			if (result != SQLITE_OK)
-			{
-				G_Printf("G_SkillRatingSetUserRating: sqlite3_exec:INSERT failed: %s\n", err_msg);
-				sqlite3_free(err_msg);
-				return;
-			}
-		}
-		else
-		{
-			sql = va(SRUSERS_SQLWRAP_UPDATE, sr_data.mu, sr_data.sigma, guid);
-
-			result = sqlite3_exec(level.database.db, sql, NULL, NULL, &err_msg);
-
-			if (result != SQLITE_OK)
-			{
-				G_Printf("G_SkillRatingSetUserRating: sqlite3_exec:UPDATE failed: %s\n", err_msg);
-				sqlite3_free(err_msg);
-				return;
-			}
-		}
-
-		result = sqlite3_finalize(sqlstmt);
-
-		if (result != SQLITE_OK)
-		{
-			G_Printf("G_SkillRatingSetUserRating: sqlite3_finalize failed\n");
 			return;
 		}
 	}
-
-	return;
-}
-
-/**
- * @brief Sets or updates rating and timestamps in the rating_user table
- * @param[in] sr_data
- * @return 0 if if successful, 0 otherwise.
- */
-int G_SkillRatingSetUserRatingData(srData_t *sr_data)
-{
-	int          result;
-	char         *err_msg = NULL;
-	char         *sql;
-	sqlite3_stmt *sqlstmt;
-
-	if (!level.database.initialized)
-	{
-		G_Printf("G_SkillRatingSetUserRatingData: access to non-initialized database\n");
-		return 1;
-	}
-
-	sql = va(SRUSERS_SQLWRAP_SELECT, sr_data->guid);
-
-	result = sqlite3_prepare(level.database.db, sql, strlen(sql), &sqlstmt, NULL);
-
-	if (result != SQLITE_OK)
-	{
-		G_Printf("G_SkillRatingSetUserRatingData: sqlite3_prepare failed: %s\n", err_msg);
-		sqlite3_free(err_msg);
-		return 1;
-	}
-
-	result = sqlite3_step(sqlstmt);
-
-	if (result == SQLITE_DONE)
-	{
-		sql = va(SRUSERS_SQLWRAP_INSERT, sr_data->guid, sr_data->mu, sr_data->sigma);
-
-		result = sqlite3_exec(level.database.db, sql, NULL, NULL, &err_msg);
-
-		if (result != SQLITE_OK)
-		{
-			G_Printf("G_SkillRatingSetUserRatingData: sqlite3_exec:INSERT failed: %s\n", err_msg);
-			sqlite3_free(err_msg);
-			return 1;
-		}
-	}
-	else
-	{
-		sql = va(SRUSERS_SQLWRAP_UPDATE, sr_data->mu, sr_data->sigma, sr_data->guid);
-
-		result = sqlite3_exec(level.database.db, sql, NULL, NULL, &err_msg);
-
-		if (result != SQLITE_OK)
-		{
-			G_Printf("G_SkillRatingSetUserRatingData: sqlite3_exec:UPDATE failed: %s\n", err_msg);
-			sqlite3_free(err_msg);
-			return 1;
-		}
-	}
-
-	result = sqlite3_finalize(sqlstmt);
-
-	if (result != SQLITE_OK)
-	{
-		G_Printf("G_SkillRatingSetUserRatingData: sqlite3_finalize failed\n");
-		return 1;
-	}
-
-	return 0;
 }
 
 /**
@@ -808,6 +824,12 @@ float G_SkillRatingGetMapRating(char *mapname)
 	char         *err_msg = NULL;
 	char         *sql;
 	sqlite3_stmt *sqlstmt;
+
+	// disable for these game types
+	if (g_gametype.integer == GT_WOLF_STOPWATCH || g_gametype.integer == GT_WOLF_LMS)
+	{
+		return 0.5f;
+	}
 
 	if (!level.database.initialized)
 	{
@@ -956,12 +978,11 @@ void G_SkillRatingSetMapRating(char *mapname, int winner)
 		G_Printf("G_SkillRatingSetMapRating: sqlite3_finalize failed\n");
 		return;
 	}
-
-	return;
 }
 
 /**
  * @brief Calculate skill ratings
+ *         Called when intermissionQueued is triggered
  * @details Rate players in this map based on team performance
  */
 void G_CalculateSkillRatings(void)
@@ -969,6 +990,12 @@ void G_CalculateSkillRatings(void)
 	char cs[MAX_STRING_CHARS];
 	char *buf;
 	int  winner;
+
+	// disable for these game types
+	if (g_gametype.integer == GT_WOLF_STOPWATCH || g_gametype.integer == GT_WOLF_LMS)
+	{
+		return;
+	}
 
 	// determine winner
 	trap_GetConfigstring(CS_MULTI_MAPWINNER, cs, sizeof(cs));
@@ -989,7 +1016,7 @@ void G_CalculateSkillRatings(void)
 	}
 
 	// log
-	G_LogPrintf("SKILL_RATING: Map: %s, Winner: %d, Time: %d, Timelimit: %d\n",
+	G_LogPrintf("SkillRating: Map: %s, Winner: %d, Time: %d, Timelimit: %d\n",
 	            level.rawmapname, winner, level.intermissionQueued - level.startTime - level.timeDelta, g_timelimit.integer * 60000);
 
 	// update map rating
@@ -997,6 +1024,8 @@ void G_CalculateSkillRatings(void)
 	{
 		G_SkillRatingSetMapRating(level.rawmapname, winner);
 		level.mapProb = G_SkillRatingGetMapRating(level.rawmapname);
+
+		G_LogPrintf("SkillRating: Map bias: %.6f\n", level.mapProb);
 
 		// update map bias on intermission scoreboard
 		trap_GetConfigstring(CS_LEGACYINFO, cs, sizeof(cs));
@@ -1015,7 +1044,7 @@ void G_CalculateSkillRatings(void)
  */
 float pdf(float x)
 {
-	return exp(-0.5f * pow(x, 2)) / sqrt(M_TAU_F);
+	return exp(-0.5f * pow(x, 2)) / sqrtf(M_TAU_F);
 }
 
 /**
@@ -1091,20 +1120,19 @@ void G_UpdateSkillRating(int winner)
 
 	int       i, playerTeam, rankFactor;
 	float     c, v, w, t, winningMu, losingMu, muFactor, sigmaFactor;
-	float     mapProb, mapMu, mapSigma, mapBeta;
+	float     oldMu, oldSigma;
 	gclient_t *cl;
 
-	float teamMuX      = 0;
-	float teamMuL      = 0;
-	float teamSigmaSqX = 0;
-	float teamSigmaSqL = 0;
+	float teamMuX      = 0.f;
+	float teamMuL      = 0.f;
+	float teamSigmaSqX = 0.f;
+	float teamSigmaSqL = 0.f;
 	int   numPlayersX  = 0;
 	int   numPlayersL  = 0;
-
-	mapProb  = 0.f;
-	mapMu    = 0.f;
-	mapSigma = 0.f;
-	mapBeta  = 0.f;
+	float mapProb      = 0.f;
+	float mapMu        = 0.f;
+	float mapSigma     = 0.f;
+	float mapBeta      = 0.f;
 
 	// total play time
 	int totalTime = level.intermissionQueued - level.startTime - level.timeDelta;
@@ -1120,7 +1148,7 @@ void G_UpdateSkillRating(int winner)
 	{
 		mapProb  = G_MapWinProb(winner);
 		mapMu    = 2 * MU * mapProb;
-		mapSigma = 2 * MU * sqrt(mapProb * (1.0f - mapProb));
+		mapSigma = 2 * MU * sqrtf(mapProb * (1.0f - mapProb));
 		mapBeta  = mapSigma / 2;
 	}
 
@@ -1225,6 +1253,10 @@ void G_UpdateSkillRating(int winner)
 		sr_data.time_axis   = sqlite3_column_int(sqlstmt, 3);
 		sr_data.time_allies = sqlite3_column_int(sqlstmt, 4);
 
+		// track old data
+		oldMu    = sr_data.mu;
+		oldSigma = sr_data.sigma;
+
 		// player has not played at all
 		if (sr_data.time_axis == 0 && sr_data.time_allies == 0)
 		{
@@ -1256,10 +1288,17 @@ void G_UpdateSkillRating(int winner)
 		sr_data.sigma = sqrt((pow(sr_data.sigma, 2) + pow(TAU, 2)) * (1 - sigmaFactor * w));
 
 		// save or update rating in rating_users table
-		if (G_SkillRatingSetUserRatingData(&sr_data))
+		if (G_SkillRatingSetUserRating(&sr_data))
 		{
 			return;
 		}
+
+		G_LogPrintf("SkillRating: GUID: %s, Delta SR: %+.6f, SR: %.6f (%.6f, %.6f), Old SR: %.6f (%.6f, %.6f), Time X/L: %d/%d\n",
+		            sr_data.guid,
+		            (sr_data.mu - 3 * sr_data.sigma) - (oldMu - 3 * oldSigma),
+		            sr_data.mu - 3 * sr_data.sigma, sr_data.mu, sr_data.sigma,
+		            oldMu - 3 * oldSigma, oldMu, oldSigma,
+		            sr_data.time_axis, sr_data.time_allies);
 	}
 
 	result = sqlite3_finalize(sqlstmt);
@@ -1275,7 +1314,7 @@ void G_UpdateSkillRating(int winner)
 	{
 		cl = level.clients + level.sortedClients[i];
 
-		G_SkillRatingGetUserRating(cl, qfalse);
+		G_SkillRatingGetClientRating(cl);
 
 		// update rank
 		G_CalcRank(cl);
@@ -1293,20 +1332,24 @@ float G_CalculateWinProbability(int team)
 {
 	int       i;
 	float     c, t, winningMu, losingMu;
-	float     mapProb, mapMu, mapSigma, mapBeta;
 	gclient_t *cl;
 
-	float teamMuX      = 0;
-	float teamMuL      = 0;
-	float teamSigmaSqX = 0;
-	float teamSigmaSqL = 0;
+	float teamMuX      = 0.f;
+	float teamMuL      = 0.f;
+	float teamSigmaSqX = 0.f;
+	float teamSigmaSqL = 0.f;
 	int   numPlayersX  = 0;
 	int   numPlayersL  = 0;
+	float mapProb      = 0.f;
+	float mapMu        = 0.f;
+	float mapSigma     = 0.f;
+	float mapBeta      = 0.f;
 
-	mapProb  = 0.f;
-	mapMu    = 0.f;
-	mapSigma = 0.f;
-	mapBeta  = 0.f;
+	// disable for these game types
+	if (g_gametype.integer == GT_WOLF_STOPWATCH || g_gametype.integer == GT_WOLF_LMS)
+	{
+		return 0.5f;
+	}
 
 	// current play time
 	int currentTime = level.timeCurrent - level.startTime - level.timeDelta;
@@ -1316,7 +1359,7 @@ float G_CalculateWinProbability(int team)
 	{
 		mapProb  = G_MapWinProb(team);
 		mapMu    = 2 * MU * mapProb;
-		mapSigma = 2 * MU * sqrt(mapProb * (1.0f - mapProb));
+		mapSigma = 2 * MU * sqrtf(mapProb * (1.0f - mapProb));
 		mapBeta  = mapSigma / 2;
 	}
 

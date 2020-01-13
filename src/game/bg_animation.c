@@ -256,7 +256,7 @@ typedef struct
 	animStringItem_t *values;
 } animConditionTable_t;
 
-static animStringItem_t animConditionsStr[] =
+static animStringItem_t animConditionsStr[NUM_ANIM_CONDITIONS + 1] =
 {
 	{ "WEAPONS",        -1 },
 	{ "ENEMY_POSITION", -1 },
@@ -281,6 +281,7 @@ static animStringItem_t animConditionsStr[] =
 	{ "AISTATE",        -1 },
 	{ "BIPOD",          -1 },
 	{ "SCOPED",         -1 },
+    { "SUICIDE",        -1 },
 
 	{ NULL,             -1 },
 };
@@ -1996,4 +1997,8 @@ void BG_AnimUpdatePlayerStateConditions(pmove_t *pmove)
 			}
 		}
 	}
+
+	BG_UpdateConditionValue(ps->clientNum, ANIM_COND_IMPACT_POINT, IMPACTPOINT_UNUSED, qtrue);
+	BG_UpdateConditionValue(ps->clientNum, ANIM_COND_STUNNED, 0, qtrue);
+    BG_UpdateConditionValue(ps->clientNum, ANIM_COND_SUICIDE, 0, qtrue);
 }

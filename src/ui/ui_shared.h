@@ -44,7 +44,7 @@
 
 #define MAX_MENUDEFFILE   4096
 #define MAX_MENUFILE     32768
-#define MAX_MENUS          128
+#define MAX_MENUS          256
 #define MAX_MENUDEPTH        8
 #define MAX_MENUITEMS      128       ///< ioquake3 has 96
 #define MAX_COLOR_RANGES    10
@@ -490,6 +490,7 @@ typedef struct
 	float (*getCVarValue)(const char *cvar);
 	void (*setCVar)(const char *cvar, const char *value);
 	void (*drawTextWithCursor)(float x, float y, float scale, vec4_t color, const char *text, int cursorPos, const char *cursor, int limit, int style);
+	void (*drawTextWithCursorExt)(float x, float y, float scale, vec4_t color, const char *text, int cursorPos, const char *cursor, int limit, int style, fontHelper_t *font);
 	void (*setOverstrikeMode)(qboolean b);
 	qboolean (*getOverstrikeMode)(void);
 	void (*startLocalSound)(sfxHandle_t sfx, int channelNum);

@@ -98,6 +98,7 @@ void P_DamageFeedback(gentity_t *player)
 	{
 		player->pain_debounce_time = level.time + 700;
 		G_AddEvent(player, EV_PAIN, player->health);
+		//BG_AnimScriptEvent(&client->ps, client->pers.character->animModelInfo, ANIM_ET_PAIN, qfalse, qtrue);
 	}
 
 	client->ps.damageEvent++;   // always increment this since we do multiple view damage anims
@@ -631,6 +632,11 @@ void SpectatorThink(gentity_t *ent, usercmd_t *ucmd)
 		ent->client->pmext.sprintTime = SPRINTTIME;
 	}
 
+	if (ent->flags & FL_NOSTAMINA)
+	{
+		ent->client->ps.classWeaponTime = 0;
+	}
+
 	client->oldbuttons = client->buttons;
 	client->buttons    = ucmd->buttons;
 
@@ -745,9 +751,9 @@ qboolean ClientInactivityTimer(gclient_t *client)
 	    (client->pers.cmd.wbuttons & (WBUTTON_ATTACK2 | WBUTTON_LEANLEFT | WBUTTON_LEANRIGHT))  ||
 	    (client->pers.cmd.buttons & BUTTON_ATTACK) ||
 	    BG_PlayerMounted(client->ps.eFlags) ||
-	    (client->ps.pm_flags & PMF_LIMBO) ||
 	    ((client->ps.eFlags & EF_PRONE) && (client->pmext.silencedSideArm & WALTTYPE_BIPOD)) ||
-	    (client->ps.pm_type == PM_DEAD))
+	    (client->ps.pm_flags & PMF_LIMBO) || (client->ps.pm_type == PM_DEAD) ||
+	    client->sess.shoutcaster)
 	{
 		client->inactivityWarning = qfalse;
 
@@ -771,9 +777,7 @@ qboolean ClientInactivityTimer(gclient_t *client)
 	// start countdown
 	if (!client->inactivityWarning)
 	{
-		if (g_inactivity.integer &&
-		    (level.time > client->inactivityTime - inactivity) &&
-		    inTeam)
+		if (g_inactivity.integer && (level.time > client->inactivityTime - inactivity) && inTeam)
 		{
 			client->inactivityWarning     = qtrue;
 			client->inactivityTime        = level.time + 1000 * inactivity;
@@ -782,8 +786,7 @@ qboolean ClientInactivityTimer(gclient_t *client)
 		// if a player will not be kicked from the server (because there are still free slots),
 		// do not display messages for inactivity-drop/kick.
 		else if (doDrop && g_spectatorInactivity.integer &&
-		         (level.time > client->inactivityTime - inactivityspec) &&
-		         !inTeam)
+		         (level.time > client->inactivityTime - inactivityspec) && !inTeam)
 		{
 			client->inactivityWarning     = qtrue;
 			client->inactivityTime        = level.time + 1000 * inactivityspec;
@@ -823,29 +826,26 @@ qboolean ClientInactivityTimer(gclient_t *client)
 	}
 	else
 	{
-		if (level.time > client->inactivityTime) // failsafe
+		if (inTeam && g_inactivity.integer)
 		{
-			if (inTeam && g_inactivity.integer)
-			{
-				SetTeam(&g_entities[client - level.clients], "s", qtrue, WP_NONE, WP_NONE, qfalse);
-				client->inactivityWarning     = qfalse;
-				client->inactivityTime        = level.time + 1000 * inactivityspec;
-				client->inactivitySecondsLeft = inactivityspec;
+			SetTeam(&g_entities[client - level.clients], "s", qtrue, WP_NONE, WP_NONE, qfalse);
+			client->inactivityWarning     = qfalse;
+			client->inactivityTime        = level.time + 1000 * inactivityspec;
+			client->inactivitySecondsLeft = inactivityspec;
 
-				G_Printf("Moved to spectator for inactivity: %s\n", client->pers.netname);
-			}
-			else if (doDrop && g_spectatorInactivity.integer && !inTeam)
-			{
-				// slots occupied by bots should be considered "free",
-				// because bots will disconnect if a human player connects..
-				G_Printf("Spectator dropped for inactivity: %s\n", client->pers.netname);
-				trap_DropClient(client - level.clients, "Dropped due to inactivity", 0);
-				return qfalse;
-			}
+			G_Printf("Moved to spectator for inactivity: %s\n", client->pers.netname);
+		}
+		else if (doDrop && g_spectatorInactivity.integer && !inTeam)
+		{
+			// slots occupied by bots should be considered "free",
+			// because bots will disconnect if a human player connects..
+			G_Printf("Spectator dropped for inactivity: %s\n", client->pers.netname);
+			trap_DropClient(client - level.clients, "Dropped due to inactivity", 0);
+			return qfalse;
 		}
 	}
 
-	// do not kick by default..
+	// do not kick by default
 	return qtrue;
 }
 
@@ -865,32 +865,35 @@ void ClientTimerActions(gentity_t *ent, int msec)
 		client->timeResidual -= 1000;
 
 		// regenerate
-		if (client->sess.playerType == PC_MEDIC)
+		if (ent->health < client->ps.stats[STAT_MAX_HEALTH])
 		{
-			if (ent->health < client->ps.stats[STAT_MAX_HEALTH])
+			// medic only
+			if (client->sess.playerType == PC_MEDIC)
 			{
 				ent->health += 3;
-				if (ent->health > client->ps.stats[STAT_MAX_HEALTH] * 1.1)
+				if (ent->health > client->ps.stats[STAT_MAX_HEALTH] / 1.11)
 				{
-					ent->health = client->ps.stats[STAT_MAX_HEALTH] * 1.1;
+					ent->health += 2;
+
+					if (ent->health > client->ps.stats[STAT_MAX_HEALTH])
+					{
+						ent->health = client->ps.stats[STAT_MAX_HEALTH];
+					}
+				}
+				else
+				{
+					ent->health += 3;
+					if (ent->health > client->ps.stats[STAT_MAX_HEALTH] / 1.1)
+					{
+						ent->health = client->ps.stats[STAT_MAX_HEALTH] / 1.1;
+					}
 				}
 			}
-			else if (ent->health < client->ps.stats[STAT_MAX_HEALTH] * 1.12)
-			{
-				ent->health += 2;
-				if (ent->health > client->ps.stats[STAT_MAX_HEALTH] * 1.12)
-				{
-					ent->health = client->ps.stats[STAT_MAX_HEALTH] * 1.12;
-				}
-			}
+
 		}
-		else
+		else if (ent->health > client->ps.stats[STAT_MAX_HEALTH])               // count down health when over max
 		{
-			// count down health when over max
-			if (ent->health > client->ps.stats[STAT_MAX_HEALTH])
-			{
-				ent->health--;
-			}
+			ent->health--;
 		}
 	}
 }
@@ -1153,7 +1156,7 @@ void WolfFindMedic(gentity_t *self)
  *
  * @param[in,out] ent Entity
  */
-void ClientThink_real(gentity_t *ent, qboolean skipServerTime)
+void ClientThink_real(gentity_t *ent)
 {
 	int       msec, oldEventSequence;
 	pmove_t   pm;
@@ -1209,18 +1212,15 @@ void ClientThink_real(gentity_t *ent, qboolean skipServerTime)
 	// end zinx etpro antiwarp
 
 	// sanity check the command time to prevent speedup cheating
-	if (!skipServerTime)
+	if (ucmd->serverTime > level.time + 200 && !G_DoAntiwarp(ent))
 	{
-		if (ucmd->serverTime > level.time + 200)
-		{
-			ucmd->serverTime = level.time + 200;
-			//G_Printf("serverTime <<<<<\n" );
-		}
-		if (ucmd->serverTime < level.time - 1000)
-		{
-			ucmd->serverTime = level.time - 1000;
-			//G_Printf("serverTime >>>>>\n" );
-		}
+		ucmd->serverTime = level.time + 200;
+		//G_Printf("serverTime <<<<<\n" );
+	}
+	if (ucmd->serverTime < level.time - 1000 && !G_DoAntiwarp(ent))
+	{
+		ucmd->serverTime = level.time - 1000;
+		//G_Printf("serverTime >>>>>\n" );
 	}
 
 	msec = ucmd->serverTime - client->ps.commandTime;
@@ -1247,7 +1247,7 @@ void ClientThink_real(gentity_t *ent, qboolean skipServerTime)
 
 	// zinx etpro antiwarp
 	client->pers.pmoveMsec = pmove_msec.integer;
-	if (!skipServerTime && (pmove_fixed.integer || client->pers.pmoveFixed))
+	if (!G_DoAntiwarp(ent) && (pmove_fixed.integer || client->pers.pmoveFixed))
 	{
 		ucmd->serverTime = ((ucmd->serverTime + client->pers.pmoveMsec - 1) /
 		                    client->pers.pmoveMsec) * client->pers.pmoveMsec;
@@ -1525,6 +1525,11 @@ void ClientThink_real(gentity_t *ent, qboolean skipServerTime)
 		ent->client->pmext.sprintTime = SPRINTTIME;
 	}
 
+	if (ent->flags & FL_NOSTAMINA)
+	{
+		ent->client->ps.classWeaponTime = 0;
+	}
+
 	if (g_entities[ent->client->ps.identifyClient].inuse && g_entities[ent->client->ps.identifyClient].client &&
 	    (ent->client->sess.sessionTeam == g_entities[ent->client->ps.identifyClient].client->sess.sessionTeam ||
 	     g_entities[ent->client->ps.identifyClient].client->ps.powerups[PW_OPS_DISGUISED]))
@@ -1632,11 +1637,11 @@ void ClientThink_real(gentity_t *ent, qboolean skipServerTime)
  * @param[in,out] ent Entity
  * @param[in]     cmd User Command
  */
-void ClientThink_cmd(gentity_t *ent, usercmd_t *cmd, qboolean skipServerTime)
+void ClientThink_cmd(gentity_t *ent, usercmd_t *cmd)
 {
 	ent->client->pers.oldcmd = ent->client->pers.cmd;
 	ent->client->pers.cmd    = *cmd;
-	ClientThink_real(ent, skipServerTime);
+	ClientThink_real(ent);
 }
 
 /**
@@ -1662,7 +1667,7 @@ void ClientThink(int clientNum)
 		}
 		else
 		{
-			ClientThink_cmd(ent, &newcmd, qfalse);
+			ClientThink_cmd(ent, &newcmd);
 		}
 	}
 }
@@ -2106,6 +2111,13 @@ void ClientEndFrame(gentity_t *ent)
 	// don't count skulled player time
 	if (g_gamestate.integer == GS_PLAYING && !(ent->client->sess.sessionTeam == TEAM_SPECTATOR || (ent->client->ps.pm_flags & PMF_LIMBO) || ent->client->ps.stats[STAT_HEALTH] <= 0))
 	{
+		// ensure time played is always smaller or equal than time spent in teams
+		// work around for unreset data of slow connecters
+		if ((ent->client->sess.time_played > (ent->client->sess.time_axis + ent->client->sess.time_allies)) &&
+		    !(g_gametype.integer == GT_WOLF_STOPWATCH && g_currentRound.integer == 1))
+		{
+			ent->client->sess.time_played = 0;
+		}
 		ent->client->sess.time_played += level.time - level.previousTime;
 	}
 
@@ -2235,7 +2247,27 @@ void ClientEndFrame(gentity_t *ent)
 	// apply all the damage taken this frame
 	P_DamageFeedback(ent);
 
-	ent->client->ps.stats[STAT_HEALTH] = ent->health;
+	// increases stats[STAT_MAX_HEALTH] based on # of medics in game
+	// AddMedicTeamBonus() now adds medic team bonus and stores in ps.stats[STAT_MAX_HEALTH].
+	AddMedicTeamBonus(ent->client);
+
+	// all players are init in game, we can set properly starting health
+	if (level.startTime == level.time - (GAME_INIT_FRAMES * FRAMETIME))
+	{
+		if (ent->client->sess.skill[SK_BATTLE_SENSE] >= 3)
+		{
+			// We get some extra max health, but don't spawn with that much
+			ent->health = ent->client->ps.stats[STAT_HEALTH] = ent->client->ps.stats[STAT_MAX_HEALTH] - 15;
+		}
+		else
+		{
+			ent->health = ent->client->ps.stats[STAT_HEALTH] = ent->client->ps.stats[STAT_MAX_HEALTH];
+		}
+	}
+	else
+	{
+		ent->client->ps.stats[STAT_HEALTH] = ent->health;
+	}
 
 	G_SetClientSound(ent);
 

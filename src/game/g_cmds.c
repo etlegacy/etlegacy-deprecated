@@ -257,7 +257,7 @@ static void G_SendSkillRating(gentity_t *ent)
 		return;
 	}
 
-	Q_strncpyz(buffer, "sr ", sizeof(buffer));
+	Q_strncpyz(buffer, "sra ", sizeof(buffer));
 
 	// win probability
 	Q_strcat(buffer, sizeof(buffer), va("%.1f ", level.axisProb * 100.f));
@@ -266,7 +266,7 @@ static void G_SendSkillRating(gentity_t *ent)
 	for (i = 0; i < level.numConnectedClients; i++)
 	{
 		cl = &level.clients[level.sortedClients[i]];
-		Q_strcat(buffer, sizeof(buffer), va("%.3f ", MIN(MAX(cl->sess.mu - 3 * cl->sess.sigma, 0.f), 2 * MU)));
+		Q_strcat(buffer, sizeof(buffer), va("%.3f ", cl->sess.mu - 3 * cl->sess.sigma));
 	}
 
 	trap_SendServerCommand(ent - g_entities, buffer);
@@ -1076,6 +1076,47 @@ void Cmd_Noclip_f(gentity_t *ent)
 }
 
 /**
+ * @brief Sets client to nostamina
+ * @param[in,out] ent
+ *
+ * @note argv(0) nostamina
+ */
+void Cmd_Nostamina_f(gentity_t *ent)
+{
+	char *msg;
+	char *name = ConcatArgs(1);
+
+	if (!CheatsOk(ent))
+	{
+		return;
+	}
+
+	if (!Q_stricmp(name, "on") || atoi(name))
+	{
+		ent->flags |= FL_NOSTAMINA;
+	}
+	else if (!Q_stricmp(name, "off") || !Q_stricmp(name, "0"))
+	{
+		ent->flags &= ~FL_NOSTAMINA;
+	}
+	else
+	{
+		ent->flags ^= FL_NOSTAMINA;
+	}
+
+	if (!(ent->flags & FL_NOSTAMINA))
+	{
+		msg = "nostamina OFF\n";
+	}
+	else
+	{
+		msg = "nostamina ON\n";
+	}
+
+	trap_SendServerCommand(ent - g_entities, va("print \"%s\"", msg));
+}
+
+/**
  * @brief Cmd_Kill_f
  * @param[in,out] ent
  */
@@ -1113,6 +1154,36 @@ void Cmd_Kill_f(gentity_t *ent)
 	ent->client->ps.persistant[PERS_HWEAPON_USE] = 0; // if using /kill while at MG42
 
 	player_die(ent, ent, ent, (g_gamestate.integer == GS_PLAYING) ? 100000 : 135, MOD_SUICIDE);
+}
+
+/**
+ * @brief Cmd_DropObjective_f
+ * @param[in,out] ent
+ */
+void Cmd_DropObjective_f(gentity_t *ent)
+{
+	if (!ent || !ent->client)
+	{
+		return;
+	}
+
+	if (ent->health <= 0)
+	{
+		return;
+	}
+
+	if (!ent->client->ps.powerups[PW_REDFLAG] && !ent->client->ps.powerups[PW_BLUEFLAG])
+	{
+		return;
+	}
+
+	if (level.time - ent->client->pickObjectiveTime < 10000)
+	{
+		CP("cp \"You can't drop objective right after picking it up.\"");
+		return;
+	}
+
+	G_DropItems(ent);
 }
 
 /**
@@ -1227,10 +1298,13 @@ void G_DropItems(gentity_t *self)
 		vec3_t    origin;
 		vec3_t    angles;
 		gentity_t *flag;
+		vec3_t    mins;
+		vec3_t    maxs;
+		vec3_t    viewpos;
+		trace_t   tr;
 
 		VectorCopy(self->client->ps.origin, origin);
-		// if the player hasn't died, then assume he's
-		//      throwing objective per g_dropObj
+		// if the player hasn't died, then assume he's throwing objective
 		if (self->health > 0)
 		{
 			VectorCopy(self->client->ps.viewangles, angles);
@@ -1242,6 +1316,31 @@ void G_DropItems(gentity_t *self)
 			VectorMA(self->client->ps.velocity, 96, forward, launchvel);
 			VectorMA(origin, 36.0f, forward, origin);
 			origin[2] += self->client->ps.viewheight;
+
+			// prevent stuck item in solid
+			VectorCopy(self->client->ps.origin, viewpos);
+			VectorSet(mins, -(ITEM_RADIUS + 8), -(ITEM_RADIUS + 8), 0);
+			VectorSet(maxs, (ITEM_RADIUS + 8), (ITEM_RADIUS + 8), 2 * (ITEM_RADIUS + 8));
+
+			trap_EngineerTrace(&tr, viewpos, mins, maxs, origin, self->s.number, MASK_MISSILESHOT);
+			if (tr.startsolid)
+			{
+				VectorCopy(forward, viewpos);
+				VectorNormalizeFast(viewpos);
+				VectorMA(self->r.currentOrigin, -24.f, viewpos, viewpos);
+
+				trap_EngineerTrace(&tr, viewpos, mins, maxs, origin, self->s.number, MASK_MISSILESHOT);
+
+				VectorCopy(tr.endpos, origin);
+			}
+			else if (tr.fraction < 1)       // oops, bad launch spot
+			{
+				VectorCopy(tr.endpos, origin);
+				SnapVectorTowards(origin, viewpos);
+			}
+
+			// set timer
+			self->client->dropObjectiveTime = level.time;
 		}
 
 		flag = LaunchItem(item, origin, launchvel, self->s.number);
@@ -1471,8 +1570,6 @@ qboolean SetTeam(gentity_t *ent, const char *s, qboolean force, weapon_t w1, wea
 	//{
 	//	G_deleteStats(clientNum);
 	//}
-
-	G_UpdateSpawnCounts();
 
 	if (g_gamestate.integer == GS_PLAYING && (client->sess.sessionTeam == TEAM_AXIS || client->sess.sessionTeam == TEAM_ALLIES))
 	{
@@ -2053,11 +2150,23 @@ void Cmd_Team_f(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
 
 	G_TeamDataForString(s, ent->s.clientNum, &team, &specState, &specClient);
 
-	playerType = -1;
+	// don't allow shoutcasters to join teams
+	if (ent->client->sess.shoutcaster && (team == TEAM_ALLIES || team == TEAM_AXIS))
+	{
+		CP("print \"team: shoutcasters may not join a team\n\"");
+		CP("cp \"Shoutcasters may not join a team.\n\"");
+		return;
+	}
+
 	if (*ptype)
 	{
 		playerType = atoi(ptype);
 	}
+	else
+	{
+		playerType = ent->client->sess.playerType;
+	}
+
 	if (playerType < PC_SOLDIER || playerType > PC_COVERTOPS)
 	{
 		playerType = PC_SOLDIER;
@@ -2076,6 +2185,32 @@ void Cmd_Team_f(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
 	else
 	{
 		classChange = qfalse;
+
+		// "swap" team, try to keep the previous selected weapons or equivalent if no one were selected
+		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+		{
+			// primary weapon
+			if (!w)
+			{
+				w = ent->client->sess.playerWeapon;
+
+				if (GetWeaponTableData(ent->client->sess.playerWeapon)->weapEquiv)
+				{
+					w = GetWeaponTableData(ent->client->sess.playerWeapon)->weapEquiv;
+				}
+			}
+
+			// secondary weapon
+			if (!w2)
+			{
+				w2 = ent->client->sess.playerWeapon2;
+
+				if (GetWeaponTableData(ent->client->sess.playerWeapon2)->weapEquiv)
+				{
+					w2 = GetWeaponTableData(ent->client->sess.playerWeapon2)->weapEquiv;
+				}
+			}
+		}
 	}
 
 	ent->client->sess.latchPlayerType = playerType;
@@ -3434,7 +3569,7 @@ void Cmd_Vote_f(gentity_t *ent)
 	{
 		if (ent->client->sess.sessionTeam != level.voteInfo.voteTeam)
 		{
-			CP("cp \"You cannot vote on the other team's surrender\"");
+			CP("cp \"You cannot vote on the other team's surrender.\"");
 			return;
 		}
 	}
@@ -3668,6 +3803,28 @@ qboolean Do_Activate_f(gentity_t *ent, gentity_t *traceEnt)
 			}
 			traceEnt->active = qtrue;
 			traceEnt->touch(traceEnt, ent, &trace);
+		}
+	}
+	else if (traceEnt->s.eType == ET_CABINET_A || traceEnt->s.eType == ET_CABINET_H)
+	{
+		trace_t trace;
+
+		if (ent->client->sess.sessionTeam == TEAM_SPECTATOR)
+		{
+			return qfalse;
+		}
+
+		Com_Memset(&trace, 0, sizeof(trace));
+
+		// parent trigger hold touch
+		if (traceEnt->parent && traceEnt->parent->touch)
+		{
+			if (ent->client->pers.autoActivate == PICKUP_ACTIVATE)
+			{
+				ent->client->pers.autoActivate = PICKUP_FORCE;          // force pickup
+			}
+
+			traceEnt->parent->touch(traceEnt->parent, ent, &trace);
 		}
 	}
 	else if (traceEnt->s.eType == ET_MOVER && G_TankIsMountable(traceEnt, ent))
@@ -4097,69 +4254,6 @@ void Cmd_Activate2_f(gentity_t *ent)
 }
 
 /**
- * @brief G_UpdateSpawnCounts
- */
-void G_UpdateSpawnCounts(void)
-{
-	int  i, j;
-	char cs[MAX_STRING_CHARS];
-	int  current, count, team;
-
-	for (i = 0; i < level.numspawntargets; i++)
-	{
-		trap_GetConfigstring(CS_MULTI_SPAWNTARGETS + i, cs, sizeof(cs));
-
-		current = atoi(Info_ValueForKey(cs, "c"));
-		team    = atoi(Info_ValueForKey(cs, "t")) & ~256;
-
-		count = 0;
-		for (j = 0; j < level.numConnectedClients; j++)
-		{
-			gclient_t *client = &level.clients[level.sortedClients[j]];
-
-			if (client->sess.sessionTeam != TEAM_AXIS && client->sess.sessionTeam != TEAM_ALLIES)
-			{
-				continue;
-			}
-
-			if (client->sess.sessionTeam == team && client->sess.spawnObjectiveIndex == i + 1)
-			{
-				count++;
-				continue;
-			}
-
-			if (client->sess.spawnObjectiveIndex == 0)
-			{
-				if (client->sess.sessionTeam == TEAM_AXIS)
-				{
-					if (level.axisAutoSpawn == i)
-					{
-						count++;
-						continue;
-					}
-				}
-				else
-				{
-					if (level.alliesAutoSpawn == i)
-					{
-						count++;
-						continue;
-					}
-				}
-			}
-		}
-
-		if (count == current)
-		{
-			continue;
-		}
-
-		Info_SetValueForKey(cs, "c", va("%i", count));
-		trap_SetConfigstring(CS_MULTI_SPAWNTARGETS + i, cs);
-	}
-}
-
-/**
  * @brief SetPlayerSpawn
  * @param[in,out] ent
  * @param[in] spawn
@@ -4167,15 +4261,39 @@ void G_UpdateSpawnCounts(void)
  */
 void SetPlayerSpawn(gentity_t *ent, int spawn, qboolean update)
 {
-	ent->client->sess.spawnObjectiveIndex = spawn;
-	if (ent->client->sess.spawnObjectiveIndex >= MAX_MULTI_SPAWNTARGETS || ent->client->sess.spawnObjectiveIndex < 0)
+	int               resolvedSpawnPoint;
+	int               targetSpawnPoint;
+	spawnPointState_t *spawnPointState;
+	spawnPointState_t *targetSpawnPointState;
+	ent->client->sess.userSpawnPointValue = spawn;
+	if (ent->client->sess.sessionTeam != TEAM_ALLIES && ent->client->sess.sessionTeam != TEAM_AXIS)
 	{
-		ent->client->sess.spawnObjectiveIndex = 0;
+		trap_SendServerCommand((int)(ent - g_entities), "print \"^3Warning! To select spawn points you should be in game.\n\"");
+		return;
+	}
+	if (spawn < 0 || spawn > level.numSpawnPoints)
+	{
+		trap_SendServerCommand((int)(ent - g_entities), "print \"^3Warning! Spawn point is out of bounds. Selecting 'Auto Pick'.\n\"");
+		trap_SendServerCommand((int)(ent - g_entities), "print \"         ^3Use '/listspawnpt' command to list available spawn points.\n\"");
+		ent->client->sess.userSpawnPointValue = 0;
 	}
 
 	if (update)
 	{
-		G_UpdateSpawnCounts();
+		G_UpdateSpawnPointStatePlayerCounts();
+	}
+
+	resolvedSpawnPoint = Com_Clamp(0, (level.numSpawnPoints - 1), ent->client->sess.resolvedSpawnPointIndex);
+	targetSpawnPoint   = Com_Clamp(0, (level.numSpawnPoints - 1), (ent->client->sess.userSpawnPointValue - 1));
+	spawnPointState    = &level.spawnPointStates[resolvedSpawnPoint];
+	if (spawn > 0 && targetSpawnPoint != resolvedSpawnPoint)
+	{
+		targetSpawnPointState = &level.spawnPointStates[targetSpawnPoint];
+		trap_SendServerCommand((int)(ent - g_entities), va("print \"^9Spawning at '^2%s^9', near the selected '^2%s^9'.\n\"", spawnPointState->description, targetSpawnPointState->description));
+	}
+	else
+	{
+		trap_SendServerCommand((int)(ent - g_entities), va("print \"^9Spawning at '^2%s^9'.\n\"", spawnPointState->description));
 	}
 }
 
@@ -4185,11 +4303,14 @@ void SetPlayerSpawn(gentity_t *ent, int spawn, qboolean update)
  */
 void Cmd_SetSpawnPoint_f(gentity_t *ent)
 {
-	char arg[MAX_TOKEN_CHARS];
-	int  val, i;
+	char              arg[MAX_TOKEN_CHARS];
+	int               val, i;
+	spawnPointState_t *spawnPointState;
 
 	if (trap_Argc() != 2)
 	{
+		trap_SendServerCommand((int)(ent - g_entities), "print \"^3Warning! Spawn point number expected.\n\"");
+		trap_SendServerCommand((int)(ent - g_entities), "print \"         ^3Use '/listspawnpt' command to list available spawn points.\n\"");
 		return;
 	}
 
@@ -4203,13 +4324,20 @@ void Cmd_SetSpawnPoint_f(gentity_t *ent)
 
 	for (i = 0; i < level.numLimboCams; i++)
 	{
-		int x = (g_entities[level.limboCams[i].targetEnt].count - CS_MULTI_SPAWNTARGETS) + 1;
-
-		if (level.limboCams[i].spawn && x == val)
+		int targetSpawnPoint = g_entities[level.limboCams[i].targetEnt].count - CS_MULTI_SPAWNTARGETS;
+		if (level.limboCams[i].spawn && (targetSpawnPoint + 1) == val)
 		{
+			spawnPointState = &level.spawnPointStates[targetSpawnPoint];
+			// don't allow checking opposite team's spawn camp
+			if (ent->client &&
+			    ent->client->sess.sessionTeam != TEAM_SPECTATOR &&
+			    ent->client->sess.sessionTeam != spawnPointState->team)
+			{
+				break;
+			}
 			VectorCopy(level.limboCams[i].origin, ent->s.origin2);
 			ent->r.svFlags |= SVF_SELF_PORTAL_EXCLUSIVE;
-			trap_SendServerCommand(ent - g_entities, va("portalcampos %i %i %i %i %i %i %i %i", val - 1, (int)level.limboCams[i].origin[0], (int)level.limboCams[i].origin[1], (int)level.limboCams[i].origin[2], (int)level.limboCams[i].angles[0], (int)level.limboCams[i].angles[1], (int)level.limboCams[i].angles[2], level.limboCams[i].hasEnt ? level.limboCams[i].targetEnt : -1));
+			trap_SendServerCommand((int)(ent - g_entities), va("portalcampos %i %i %i %i %i %i %i %i", val - 1, (int)level.limboCams[i].origin[0], (int)level.limboCams[i].origin[1], (int)level.limboCams[i].origin[2], (int)level.limboCams[i].angles[0], (int)level.limboCams[i].angles[1], (int)level.limboCams[i].angles[2], level.limboCams[i].hasEnt ? level.limboCams[i].targetEnt : -1));
 			break;
 		}
 	}
@@ -4272,10 +4400,10 @@ void Cmd_IntermissionWeaponStats_f(gentity_t *ent)
 
 	// hit regions
 	Q_strcat(buffer, sizeof(buffer), va("%i %i %i %i ",
-		level.clients[clientNum].pers.playerStats.hitRegions[HR_HEAD],
-		level.clients[clientNum].pers.playerStats.hitRegions[HR_ARMS],
-		level.clients[clientNum].pers.playerStats.hitRegions[HR_BODY],
-		level.clients[clientNum].pers.playerStats.hitRegions[HR_LEGS]));
+	                                    level.clients[clientNum].pers.playerStats.hitRegions[HR_HEAD],
+	                                    level.clients[clientNum].pers.playerStats.hitRegions[HR_ARMS],
+	                                    level.clients[clientNum].pers.playerStats.hitRegions[HR_BODY],
+	                                    level.clients[clientNum].pers.playerStats.hitRegions[HR_LEGS]));
 
 	for (i = 0; i < WS_MAX; i++)
 	{
@@ -4410,7 +4538,7 @@ void Cmd_IntermissionSkillRating_f(gentity_t *ent)
 		{
 			cl = &level.clients[i];
 			Q_strcat(buffer, sizeof(buffer), va("%.3f %.3f ",
-			                                    MIN(MAX(cl->sess.mu - 3 * cl->sess.sigma, 0.f), 2 * MU),
+			                                    cl->sess.mu - 3 * cl->sess.sigma,
 			                                    cl->sess.mu - 3 * cl->sess.sigma - (cl->sess.oldmu - 3 * cl->sess.oldsigma)));
 		}
 		else
@@ -4441,6 +4569,12 @@ void G_CalcClientAccuracies(void)
 		{
 			for (j = 0; j < WS_MAX; j++)
 			{
+				// don't take into account weapon that can't do headshot
+				if (!aWeaponInfo[j].fHasHeadShots)
+				{
+					continue;
+				}
+
 				shots     += level.clients[i].sess.aWeaponStats[j].atts;
 				hits      += level.clients[i].sess.aWeaponStats[j].hits;
 				headshots += level.clients[i].sess.aWeaponStats[j].headshots;
@@ -4478,7 +4612,7 @@ void Cmd_IntermissionWeaponAccuracies_f(gentity_t *ent)
 	{
 		if (g_entities[i].inuse)
 		{
-			Q_strcat(buffer, sizeof(buffer), va("%.1f %.1f ", level.clients[i].acc > 100.f ? 100 : level.clients[i].acc, level.clients[i].hspct));
+			Q_strcat(buffer, sizeof(buffer), va("%.1f %.1f ", level.clients[i].acc, level.clients[i].hspct));
 		}
 		else
 		{
@@ -4716,12 +4850,6 @@ void ClientCommand(int clientNum)
 	}
 	else if (Q_stricmp(cmd, "say_team") == 0)
 	{
-		if (ent->client->sess.sessionTeam == TEAM_SPECTATOR || ent->client->sess.sessionTeam == TEAM_FREE)
-		{
-			trap_SendServerCommand(ent - g_entities, "print \"Can't team chat as spectator\n\"");
-			return;
-		}
-
 		if (!ent->client->sess.muted)
 		{
 			Cmd_Say_f(ent, SAY_TEAM, qfalse);
@@ -4764,6 +4892,12 @@ void ClientCommand(int clientNum)
 	}
 	else if (Q_stricmp(cmd, "say_buddy") == 0)
 	{
+		if (ent->client->sess.sessionTeam == TEAM_SPECTATOR || ent->client->sess.sessionTeam == TEAM_FREE)
+		{
+			trap_SendServerCommand(ent - g_entities, "print \"Can't buddy chat as spectator\n\"");
+			return;
+		}
+
 		if (!ent->client->sess.muted)
 		{
 			Cmd_Say_f(ent, SAY_BUDDY, qfalse);
@@ -4776,6 +4910,12 @@ void ClientCommand(int clientNum)
 	}
 	else if (Q_stricmp(cmd, "vsay_buddy") == 0)
 	{
+		if (ent->client->sess.sessionTeam == TEAM_SPECTATOR || ent->client->sess.sessionTeam == TEAM_FREE)
+		{
+			trap_SendServerCommand(ent - g_entities, "print \"Can't buddy chat as spectator\n\"");
+			return;
+		}
+
 		if (!ent->client->sess.muted)
 		{
 			Cmd_Voice_f(ent, SAY_BUDDY, qfalse, qfalse);
@@ -4839,7 +4979,7 @@ void ClientCommand(int clientNum)
 #ifdef FEATURE_RATING
 	else if (!Q_stricmp(cmd, "imsr"))
 	{
-		if (g_skillRating.integer > 0)
+		if (g_skillRating.integer)
 		{
 			Cmd_IntermissionSkillRating_f(ent);
 		}
@@ -4945,9 +5085,17 @@ void ClientCommand(int clientNum)
 	{
 		Cmd_Noclip_f(ent);
 	}
+	else if (Q_stricmp(cmd, "nostamina") == 0)
+	{
+		Cmd_Nostamina_f(ent);
+	}
 	else if (Q_stricmp(cmd, "kill") == 0)
 	{
 		Cmd_Kill_f(ent);
+	}
+	else if (Q_stricmp(cmd, "dropobj") == 0)
+	{
+		Cmd_DropObjective_f(ent);
 	}
 	else if (Q_stricmp(cmd, "follownext") == 0)
 	{

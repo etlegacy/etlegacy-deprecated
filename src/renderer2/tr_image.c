@@ -637,8 +637,8 @@ static void R_MipNormalMap(byte *in, int width, int height)
 	}
 
 	out = in;
-	//width >>= 1;
-	width  <<= 2;
+	width >>= 1;
+	//width  <<= 2; // why is this *4 ??  mipmaps that get wider and wider?
 	height >>= 1;
 
 	for (i = 0; i < height; i++, in += width)
@@ -669,9 +669,10 @@ static void R_MipNormalMap(byte *in, int width, int height)
 
 			if (length != 0.f)
 			{
-				n[0] /= length;
-				n[1] /= length;
-				n[2] /= length;
+				float length1 = 1.0 / length;
+				n[0] *= length1;
+				n[1] *= length1;
+				n[2] *= length1;
 			}
 			else
 			{
@@ -1923,33 +1924,6 @@ static qboolean ParseMakeAlpha(char **text, byte **pic, int *width, int *height,
 
 	return qtrue;
 }
-
-/**
- * @struct imageExtToLoaderMap_s
- * @brief
- */
-typedef struct
-{
-	char *ext;
-	void (*ImageLoader)(const char *, unsigned char **, int *, int *, byte);
-} imageExtToLoaderMap_t;
-
-/**
- * @var imageLoaders
- * @brief Note that the ordering indicates the order of preference used
- * when there are multiple images of different formats available
- */
-static imageExtToLoaderMap_t imageLoaders[] =
-{
-	{ "png",  R_LoadPNG },
-	{ "tga",  R_LoadTGA },
-	{ "jpg",  R_LoadJPG },
-	{ "jpeg", R_LoadJPG },
-	{ "pcx",  R_LoadPCX },
-	{ "bmp",  R_LoadBMP }
-};
-
-static int numImageLoaders = sizeof(imageLoaders) / sizeof(imageLoaders[0]);
 
 /**
  * @brief This is a hack to get the common imageloaders working properly
@@ -3431,11 +3405,27 @@ void R_CreateBuiltinImages(void)
 	// we use a solid white image instead of disabling texturing
 	Com_Memset(data, 255, sizeof(data));
 	tr.whiteImage = R_CreateImage("_white", (byte *) data, 8, 8, IF_NOPICMIP, FT_LINEAR, WT_REPEAT);
-
+	//TODO: we need a fake one for this as a specular, specular shouldnt be zero
+	//adjusted to 0.2 wich seems pretty fine
 	// we use a solid black image instead of disabling texturing
 	Com_Memset(data, 0, sizeof(data));
 	tr.blackImage = R_CreateImage("_black", (byte *) data, 8, 8, IF_NOPICMIP, FT_LINEAR, WT_REPEAT);
 
+
+	//this can be used later as a specular created image..
+	/*for (x = 0; x < DEFAULT_SIZE; x++)
+	{
+		for (y = 0; y < DEFAULT_SIZE; y++)
+		{
+			data[y][x][0] = 123;
+			data[y][x][1] = 118;
+			data[y][x][2] = 117;
+			data[y][x][3] = 255;
+		}
+	}
+	
+	tr.SpecImage = R_CreateImage("_Spec", (byte *) data, 8, 8, IF_NOPICMIP, FT_LINEAR, WT_REPEAT);*/
+	// this is for depth rendering
 	// red
 	for (x = 0; x < DEFAULT_SIZE; x++)
 	{
@@ -3449,7 +3439,7 @@ void R_CreateBuiltinImages(void)
 	}
 	tr.redImage = R_CreateImage("_red", (byte *) data, 8, 8, IF_NOPICMIP, FT_LINEAR, WT_REPEAT);
 
-	// green
+	/* green
 	for (x = 0; x < DEFAULT_SIZE; x++)
 	{
 		for (y = 0; y < DEFAULT_SIZE; y++)
@@ -3474,7 +3464,7 @@ void R_CreateBuiltinImages(void)
 		}
 	}
 	tr.blueImage = R_CreateImage("_blue", (byte *) data, 8, 8, IF_NOPICMIP, FT_LINEAR, WT_REPEAT);
-
+	*/
 	// generate a default normalmap with a zero heightmap
 	for (x = 0; x < DEFAULT_SIZE; x++)
 	{
@@ -3659,7 +3649,7 @@ void R_InitImages(void)
 	Com_Memset(r_imageHashTable, 0, sizeof(r_imageHashTable));
 	Com_InitGrowList(&tr.images, 4096);
 	Com_InitGrowList(&tr.lightmaps, 128);
-	Com_InitGrowList(&tr.deluxemaps, 128);
+	//Com_InitGrowList(&tr.deluxemaps, 128);
 
 	// build brightness translation tables
 	R_SetColorMappings();
@@ -3707,7 +3697,7 @@ void R_ShutdownImages(void)
 
 	Com_DestroyGrowList(&tr.images);
 	Com_DestroyGrowList(&tr.lightmaps);
-	Com_DestroyGrowList(&tr.deluxemaps);
+	//Com_DestroyGrowList(&tr.deluxemaps);
 	Com_DestroyGrowList(&tr.cubeProbes);
 #if 0 // cubeProbe hash values
 	// the cubeProbe hash values can also be freed (the images have just been removed)

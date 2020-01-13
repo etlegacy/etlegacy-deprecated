@@ -49,7 +49,7 @@ typedef struct
 	char *pszCommandName;
 	qboolean fAnytime;
 	qboolean fValue;
-	void (*pCommand)(gentity_t * ent, unsigned int dwCommand, qboolean fValue);
+	void (*pCommand)(gentity_t *ent, unsigned int dwCommand, qboolean fValue);
 	const char *pszHelpInfo;
 } cmd_reference_t;
 
@@ -80,8 +80,11 @@ static const cmd_reference_t aCommandInfo[] =
 	{ "ref",            qtrue,  qtrue,  G_ref_cmd,             " <password>:^7 Become a referee (admin access)"                                             },
 //  { "remove",         qtrue,  qtrue,  NULL, " <player_ID>:^7 Removes a player from the team" },
 	{ "say_teamnl",     qtrue,  qtrue,  G_say_teamnl_cmd,      "<msg>:^7 Sends a team chat without location info"                                           },
+	{ "sclogin",        qtrue,  qfalse, G_sclogin_cmd,         " <password>:^7 Become a shoutcaster"                                                        },
+	{ "sclogout",       qtrue,  qfalse, G_sclogout_cmd,        ":^7 Removes shoutcaster status"                                                             },
 	{ "scores",         qtrue,  qtrue,  G_scores_cmd,          ":^7 Displays current match stat info"                                                       },
 	{ "specinvite",     qtrue,  qtrue,  G_specinvite_cmd,      ":^7 Invites a player to spectate a speclock'ed team"                                        },
+	{ "specuninvite",   qtrue,  qtrue,  G_specuninvite_cmd,    ":^7 Uninvites a spectator of a speclock'ed team"                                        },
 	{ "speclock",       qtrue,  qtrue,  G_speclock_cmd,        ":^7 Locks a player's team from spectators"                                                  },
 //  { "speconly",       qtrue,  qtrue,  NULL, ":^7 Toggles option to stay as a spectator in 1v1" },
 	{ "specunlock",     qtrue,  qfalse, G_speclock_cmd,        ":^7 Unlocks a player's team from spectators"                                                },
@@ -205,7 +208,7 @@ void G_noTeamControls(gentity_t *ent)
  */
 void G_commands_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
 {
-	int i, rows, num_cmds = sizeof(aCommandInfo) / sizeof(aCommandInfo[0]) - 1;
+	int i, rows, num_cmds = sizeof(aCommandInfo) / sizeof(aCommandInfo[0]);
 
 	rows = num_cmds / HELP_COLUMNS;
 	if (num_cmds % HELP_COLUMNS)
@@ -377,33 +380,33 @@ void G_players_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fDump)
 	int       user_rate, user_snaps;
 	gclient_t *cl;
 	gentity_t *cl_ent;
-	char      n2[MAX_NETNAME], ready[16], ref[8], rate[32];
-	char      *s, *tc, *ign, *muted, userinfo[MAX_INFO_STRING];
+	char      guid[MAX_GUID_LENGTH + 1], n2[MAX_NETNAME], ready[16], ref[8], rate[32], version[32];
+	char      *s, *tc, *spec, *ign, *muted, *special, userinfo[MAX_INFO_STRING], *user_version;
 
 	if (g_gamestate.integer == GS_PLAYING)
 	{
 		if (ent)
 		{
-			CP("print \"^7 ID : Player                    Nudge  Rate  MaxPkts  Snaps  Specials\n\"");
-			CP("print \"^7----------------------------------------------------------------------\n\"");
+			CP("print \"^7GUID       ID : Player                    Nudge  Rate  MaxPkts  Snaps  Specials\n\"");
+			CP("print \"^7-------------------------------------------------------------------------------\n\"");
 		}
 		else
 		{
-			G_Printf(" ID : Player                    Nudge  Rate  MaxPkts  Snaps  Specials\n");
-			G_Printf("---------------------------------------------------------------------\n");
+			G_Printf("GUID       ID : Player                    Nudge  Rate  MaxPkts  Snaps  Specials\n");
+			G_Printf("-------------------------------------------------------------------------------\n");
 		}
 	}
 	else
 	{
 		if (ent)
 		{
-			CP("print \"^7Status   : ID : Player                    Nudge  Rate  MaxPkts  Snaps  Specials\n\"");
-			CP("print \"^7-------------------------------------------------------------------------------\n\"");
+			CP("print \"^7GUID      Status   : ID : Player                    Nudge  Rate  MaxPkts  Snaps  Specials\n\"");
+			CP("print \"^7-----------------------------------------------------------------------------------------\n\"");
 		}
 		else
 		{
-			G_Printf("Status   : ID : Player                    Nudge  Rate  MaxPkts  Snaps  Specials\n");
-			G_Printf("-------------------------------------------------------------------------------\n");
+			G_Printf("GUID      Status   : ID : Player                    Nudge  Rate  MaxPkts  Snaps  Specials\n");
+			G_Printf("-----------------------------------------------------------------------------------------\n");
 		}
 	}
 
@@ -415,10 +418,24 @@ void G_players_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fDump)
 		cl     = &level.clients[idnum];
 		cl_ent = g_entities + idnum;
 
+		SanitizeString(cl->pers.cl_guid, guid, qfalse);
 		SanitizeString(cl->pers.netname, n2, qfalse);
 		n2[26]   = 0;
 		ref[0]   = 0;
 		ready[0] = 0;
+
+		// GUID
+		if (cl_ent->r.svFlags & SVF_BOT)
+		{
+			// omnibot requires 9 chars (OMNIBOT01)
+			guid[9] = '\0';
+		}
+		else
+		{
+			// display only 8 char with * for humans
+			guid[8] = '\0';
+			strcat(guid, "*");
+		}
 
 		// Rate info
 		if (cl_ent->r.svFlags & SVF_BOT)
@@ -438,6 +455,19 @@ void G_players_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fDump)
 			user_snaps = atoi(s);
 
 			Q_strncpyz(rate, va("%5d%6d%9d%7d", cl->pers.clientTimeNudge, user_rate, cl->pers.clientMaxPackets, user_snaps), sizeof(rate));
+		}
+
+		// Version info
+		if (cl_ent->r.svFlags & SVF_BOT)
+		{
+			Q_strncpyz(version, va("%s", "--"), sizeof(version));
+		}
+		else
+		{
+			trap_GetUserinfo(idnum, userinfo, sizeof(userinfo));
+			user_version = Info_ValueForKey(userinfo, "cg_etVersion");
+
+			Q_strncpyz(version, user_version, sizeof(version));
 		}
 
 		if (g_gamestate.integer != GS_PLAYING)
@@ -461,6 +491,27 @@ void G_players_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fDump)
 			strcpy(ref, "REF ");
 		}
 
+		if (cl->sess.shoutcaster && !(cl_ent->r.svFlags & SVF_BOT))
+		{
+			spec = "SC ";
+		}
+		else if ((cl->sess.spec_invite & TEAM_AXIS) && (cl->sess.spec_invite & TEAM_ALLIES))
+		{
+			spec = "SB ";
+		}
+		else if (cl->sess.spec_invite & TEAM_AXIS)
+		{
+			spec = "SX ";
+		}
+		else if (cl->sess.spec_invite & TEAM_ALLIES)
+		{
+			spec = "SL ";
+		}
+		else
+		{
+			spec = "";
+		}
+
 		if (ent && COM_BitCheck(ent->client->sess.ignoreClients, idnum))
 		{
 			ign = "IGN ";
@@ -478,6 +529,8 @@ void G_players_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fDump)
 		{
 			muted = "";
 		}
+
+		special = va("%s%s%s%s", ref, spec, ign, muted);
 
 		tc = (ent) ? "^7 " : " ";
 		if (g_gametype.integer >= GT_WOLF)
@@ -502,11 +555,11 @@ void G_players_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fDump)
 
 		if (ent)
 		{
-			CP(va("print \"%s%s%2d :%s %-26s^7%s  ^3%s%s%s^7\n\"", ready, tc, idnum, ((ref[0]) ? "^3" : "^7"), n2, rate, ref, ign, muted));
+			CP(va("print \"%-9s %s%s%2d : %s%-26s^7%s  ^3%-8s^7  ^9%s^7\n\"", guid, ready, tc, idnum, ((ref[0]) ? "^3" : "^7"), n2, rate, special, version));
 		}
 		else
 		{
-			G_Printf("%s%s%2d : %-26s%s  %s%s\n", ready, tc, idnum, n2, rate, ref, muted);
+			G_Printf("%-9s %s%s%2d : %-26s%s  %-8s  %s\n", guid, ready, tc, idnum, n2, rate, special, version);
 		}
 
 		cnt++;
@@ -514,11 +567,11 @@ void G_players_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fDump)
 
 	if (ent)
 	{
-		CP(va("print \"\n^3%2d^7 total players\n\n\"", cnt));
+		CP(va("print \"\n^3%2d^7 total player%s\n\n\"", cnt, cnt > 1 ? "s" : ""));
 	}
 	else
 	{
-		G_Printf("\n%2d total players\n\n", cnt);
+		G_Printf("\n%2d total player%s\n\n", cnt, cnt > 1 ? "s" : "");
 	}
 
 	// Team speclock info
@@ -620,6 +673,200 @@ void G_say_teamnl_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
 }
 
 /**
+ * @brief Request for shoutcaster status
+ * @param[in] ent
+ * @param dwCommand - unused
+ * @param fValue - unused
+ */
+void G_sclogin_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
+{
+	char cmd[MAX_TOKEN_CHARS], pwd[MAX_TOKEN_CHARS];
+
+	if (!ent || !ent->client)
+	{
+		return;
+	}
+
+	trap_Argv(0, cmd, sizeof(cmd));
+
+	if (!G_IsShoutcastStatusAvailable(ent))
+	{
+		CP("print \"Sorry, shoutcaster status disabled on this server.\n\"");
+		return;
+	}
+
+	if (ent->client->sess.shoutcaster)
+	{
+		CP("print \"Sorry, you are already logged in as shoutcaster.\n\"");
+		return;
+	}
+
+	if (trap_Argc() < 2)
+	{
+		CP(va("print \"Usage: %s [password]\n\"", cmd));
+		return;
+	}
+
+	trap_Argv(1, pwd, sizeof(pwd));
+
+	if (Q_stricmp(pwd, shoutcastPassword.string))
+	{
+		CP("print \"Invalid shoutcaster password!\n\"");
+		return;
+	}
+
+	G_MakeShoutcaster(ent);
+}
+
+/**
+ * @brief Removes shoutcaster status
+ * @param[in] ent
+ * @param dwCommand - unused
+ * @param fValue - unused
+ */
+
+void G_sclogout_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
+{
+	char cmd[MAX_TOKEN_CHARS];
+
+	if (!ent || !ent->client)
+	{
+		return;
+	}
+
+	trap_Argv(0, cmd, sizeof(cmd));
+
+	if (!G_IsShoutcastStatusAvailable(ent))
+	{
+		CP("print \"Sorry, shoutcaster status disabled on this server.\n\"");
+		return;
+	}
+
+	if (!ent->client->sess.shoutcaster)
+	{
+		CP("print \"Sorry, you are not logged in as shoutcaster.\n\"");
+		return;
+	}
+
+	G_RemoveShoutcaster(ent);
+}
+
+/**
+ * @brief Set shoutcaster command.
+ */
+void G_makesc_cmd(void)
+{
+	char      cmd[MAX_TOKEN_CHARS], name[MAX_NAME_LENGTH];
+	int       pcount, pids[MAX_CLIENTS];
+	gentity_t *ent;
+
+	trap_Argv(0, cmd, sizeof(cmd));
+
+	if (trap_Argc() != 2)
+	{
+		G_Printf("Usage: %s <slot#|name>\n", cmd);
+		return;
+	}
+
+	if (!G_IsShoutcastPasswordSet())
+	{
+		G_Printf("%s: Sorry, shoutcaster status disabled on this server.\n", cmd);
+		return;
+	}
+
+	trap_Argv(1, name, sizeof(name));
+	pcount = ClientNumbersFromString(name, pids);
+
+	if (pcount > 1)
+	{
+		G_Printf("%s: More than one player matches. "
+		         "Be more specific or use the slot number.\n", cmd);
+		return;
+	}
+	else if (pcount < 1)
+	{
+		G_Printf("%s: No connected player found with that "
+		         "name or slot number.\n", cmd);
+		return;
+	}
+
+	ent = pids[0] + g_entities;
+
+	if (!ent || !ent->client)
+	{
+		return;
+	}
+
+	// ignore bots
+	if (ent->r.svFlags & SVF_BOT)
+	{
+		G_Printf("%s: Sorry, a bot can not be a shoutcaster.\n", cmd);
+		return;
+	}
+
+	if (ent->client->sess.shoutcaster)
+	{
+		G_Printf("%s: Sorry, %s^7 is already a shoutcaster.\n", cmd, ent->client->pers.netname);
+		return;
+	}
+
+	G_MakeShoutcaster(ent);
+}
+
+/**
+ * @brief Remove shoutcaster command.
+ */
+void G_removesc_cmd(void)
+{
+	char      cmd[MAX_TOKEN_CHARS], name[MAX_NAME_LENGTH];
+	int       pcount, pids[MAX_CLIENTS];
+	gentity_t *ent;
+
+	trap_Argv(0, cmd, sizeof(cmd));
+
+	if (trap_Argc() != 2)
+	{
+		G_Printf("Usage: %s <slot#|name>\n", cmd);
+		return;
+	}
+
+	if (!G_IsShoutcastPasswordSet())
+	{
+		G_Printf("%s: Sorry, shoutcaster status disabled on this server.\n", cmd);
+		return;
+	}
+
+	trap_Argv(1, name, sizeof(name));
+	pcount = ClientNumbersFromString(name, pids);
+
+	if (pcount > 1)
+	{
+		G_Printf("%s: More than one player matches. Be more specific or use the slot number.\n", cmd);
+		return;
+	}
+	else if (pcount < 1)
+	{
+		G_Printf("%s: No connected player found with that name or slot number.\n", cmd);
+		return;
+	}
+
+	ent = pids[0] + g_entities;
+
+	if (!ent || !ent->client)
+	{
+		return;
+	}
+
+	if (!ent->client->sess.shoutcaster)
+	{
+		G_Printf("%s: Sorry, %s^7 is not a shoutcaster.\n", cmd, ent->client->pers.netname);
+		return;
+	}
+
+	G_RemoveShoutcaster(ent);
+}
+
+/**
  * @brief Shows match stats to the requesting client.
  * @param[in] ent
  * @param dwCommand - unused
@@ -661,7 +908,7 @@ void G_specinvite_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fLock)
 			return;
 		}
 
-		// Find the player to invite.
+		// Find the player to invite
 		trap_Argv(1, arg, sizeof(arg));
 		if ((pid = ClientNumberFromString(ent, arg)) == -1)
 		{
@@ -677,7 +924,7 @@ void G_specinvite_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fLock)
 			return;
 		}
 
-		// Can't invite an active player.
+		// Can't invite an active player
 		if (player->client->sess.sessionTeam != TEAM_SPECTATOR)
 		{
 			CP("cpm \"You can't specinvite a non-spectator!\n\"");
@@ -694,6 +941,113 @@ void G_specinvite_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fLock)
 	else
 	{
 		CP("cpm \"Spectators can't specinvite players!\n\"");
+	}
+}
+
+/**
+ * @brief Remove invitation of a player to spectate a team.
+ * @param[in] ent
+ * @param[in] dwCommand
+ * @param fLock - unused
+ */
+void G_specuninvite_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fLock)
+{
+	gentity_t *player;
+	char      arg[MAX_TOKEN_CHARS];
+
+	if (team_nocontrols.integer)
+	{
+		G_noTeamControls(ent);
+		return;
+	}
+	if (!G_cmdDebounce(ent, aCommandInfo[dwCommand].pszCommandName))
+	{
+		return;
+	}
+
+	if (ent->client->sess.sessionTeam == TEAM_AXIS || ent->client->sess.sessionTeam == TEAM_ALLIES)
+	{
+		int pid;
+
+		if (!teamInfo[ent->client->sess.sessionTeam].spec_lock)
+		{
+			CP("cpm \"Your team isn't locked from spectators!\n\"");
+			return;
+		}
+
+		// Find the player to invite
+		trap_Argv(1, arg, sizeof(arg));
+		if ((pid = ClientNumberFromString(ent, arg)) == -1)
+		{
+			return;
+		}
+
+		player = g_entities + pid;
+
+		// Can't uninvite self
+		if (player->client == ent->client)
+		{
+			CP("cpm \"You can't specuninvite yourself!\n\"");
+			return;
+		}
+
+		// Can't uninvite an active player
+		if (player->client->sess.sessionTeam != TEAM_SPECTATOR)
+		{
+			CP("cpm \"You can't specuninvite a non-spectator!\n\"");
+			return;
+		}
+
+		// Can't uninvite referre
+		if (player->client->sess.referee)
+		{
+			CP("cpm \"You can't specuninvite a referee!\n\"");
+			return;
+		}
+
+		// Can't uninvite shoutcaster
+		if (player->client->sess.shoutcaster)
+		{
+			CP("cpm \"You can't specuninvite a shoutcaster!\n\"");
+			return;
+		}
+
+		if (player->client->sess.spectatorState == SPECTATOR_FOLLOW)
+		{
+			StopFollowing(player);
+			player->client->sess.spec_team &= ~ent->client->sess.sessionTeam;
+		}
+		player->client->sess.spec_invite &= ~ent->client->sess.sessionTeam;
+
+		// Notify sender/recipient
+		CP(va("print \"%s^7 has been sent an uninvite spectator notification.\n\"", player->client->pers.netname));
+		G_printFull(va("*** You've been uninvited to spectate the %s team!", aTeams[ent->client->sess.sessionTeam]), player);
+
+	}
+	else
+	{
+		// Referee can't specuninvite oneself
+		if (ent->client->sess.referee)
+		{
+			CP("cpm \"Referee can't specuninvite oneself!\n\"");
+			return;
+		}
+
+		// Shoutcaster can't specuninvite oneself
+		if (ent->client->sess.shoutcaster)
+		{
+			CP("cpm \"Shoutcaster can't specuninvite oneself!\n\"");
+			return;
+		}
+
+		// Spectators can uninvite themselves from current spectated team
+		if (ent->client->sess.spectatorState == SPECTATOR_FOLLOW)
+		{
+			StopFollowing(ent);
+			ent->client->sess.spec_team &= ~ent->client->sess.sessionTeam;
+		}
+		ent->client->sess.spec_invite &= ~ent->client->sess.sessionTeam;
+		CP("cpm \"You have uninvited yourself!\n\"");
 	}
 }
 

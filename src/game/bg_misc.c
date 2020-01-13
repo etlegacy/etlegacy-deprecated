@@ -39,6 +39,7 @@
 
 #ifdef GAMEDLL
 extern vmCvar_t g_developer;
+extern vmCvar_t team_riflegrenades;
 #endif
 
 // *INDENT-OFF*
@@ -2355,6 +2356,20 @@ qboolean BG_AddMagicAmmo(playerState_t *ps, int *skill, team_t teamNum, int numO
 			int      maxAmmo;
 			weapon_t clip;
 
+#ifdef GAMEDLL
+			if (team_riflegrenades.integer == 0)
+			{
+				switch (weapon)
+				{
+				case WP_GPG40:
+				case WP_M7:
+					continue;
+				default:
+					break;
+				}
+			}
+#endif
+
 			// special case for grenades, they must be linked to the correct team
 			// and they may don't appear in weapons bit-wise (see PM_SwitchIfEmpty and Add_Ammo)
 			if (GetWeaponTableData(weapon)->type & WEAPON_TYPE_GRENADE)
@@ -2452,21 +2467,9 @@ qboolean BG_CanItemBeGrabbed(const entityState_t *ent, const playerState_t *ps, 
 	case IT_AMMO:
 		return qfalse;
 	case IT_HEALTH:
-		// ps->teamNum is really class.... thx whoever decided on that...
-		if (ps->teamNum == PC_MEDIC)
+		if (ps->stats[STAT_HEALTH] >= ps->stats[STAT_MAX_HEALTH])
 		{
-			// medics can go up to 12% extra on max health as they have perm. regen
-			if (ps->stats[STAT_HEALTH] >= (int)(ps->stats[STAT_MAX_HEALTH] * 1.12))
-			{
-				return qfalse;
-			}
-		}
-		else
-		{
-			if (ps->stats[STAT_HEALTH] >= ps->stats[STAT_MAX_HEALTH])
-			{
-				return qfalse;
-			}
+			return qfalse;
 		}
 		return qtrue;
 	case IT_TEAM:     // team items, such as flags
@@ -3090,8 +3093,6 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec3_t result, qb
 		}
 
 		break;
-	// TODO : case not handle
-	//case TR_LINEAR_STOP_BACK:
 	default:
 		Com_Error(ERR_DROP, "BG_EvaluateTrajectory: unknown trType: %i", tr->trTime);
 	}
@@ -3114,6 +3115,7 @@ void BG_EvaluateTrajectoryDelta(const trajectory_t *tr, int atTime, vec3_t resul
 	{
 	case TR_STATIONARY:
 	case TR_INTERPOLATE:
+	case TR_GRAVITY_PAUSED:
 		VectorClear(result);
 		break;
 	case TR_LINEAR:
@@ -3172,9 +3174,6 @@ void BG_EvaluateTrajectoryDelta(const trajectory_t *tr, int atTime, vec3_t resul
 	case TR_LINEAR_PATH:
 		VectorClear(result);
 		break;
-	// TODO : case not handle
-	//case TR_LINEAR_STOP_BACK:
-	//case TR_GRAVITY_PAUSED:
 	default:
 		Com_Error(ERR_DROP, "BG_EvaluateTrajectoryDelta: unknown trType: %i", tr->trTime);
 	}
@@ -3528,6 +3527,10 @@ void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *s, int time, 
 		s->event     = ps->events[seq] | ((ps->entityEventSequence & 3) << 8);
 		s->eventParm = ps->eventParms[seq];
 		ps->entityEventSequence++;
+	}
+	else if (ps->eventSequence == 0)
+	{
+		s->eventSequence = 0;
 	}
 
 	// now using a circular list of events for all entities
@@ -4234,32 +4237,28 @@ const char *bg_fireteamNamesAxis[MAX_FIRETEAMS / 2] =
 
 const voteType_t voteToggles[] =
 {
-	{ "vote_allow_config",                   CV_SVF_CONFIG                   },
-	{ "vote_allow_gametype",                 CV_SVF_GAMETYPE                 },
-	{ "vote_allow_kick",                     CV_SVF_KICK                     },
-	{ "vote_allow_map",                      CV_SVF_MAP                      },
-	{ "vote_allow_matchreset",               CV_SVF_MATCHRESET               },
-	{ "vote_allow_mutespecs",                CV_SVF_MUTESPECS                },
-	{ "vote_allow_nextmap",                  CV_SVF_NEXTMAP                  },
-	{ "vote_allow_referee",                  CV_SVF_REFEREE                  },
-	{ "vote_allow_shuffleteamsxp",           CV_SVF_SHUFFLETEAMSXP           },
-	{ "vote_allow_shuffleteamsxp_norestart", CV_SVF_SHUFFLETEAMSXP_NORESTART },
-#ifdef FEATURE_RATING
-	{ "vote_allow_shuffleteamssr",           CV_SVF_SHUFFLETEAMSSR           },
-	{ "vote_allow_shuffleteamssr_norestart", CV_SVF_SHUFFLETEAMSSR_NORESTART },
-#endif
-	{ "vote_allow_swapteams",                CV_SVF_SWAPTEAMS                },
-	{ "vote_allow_friendlyfire",             CV_SVF_FRIENDLYFIRE             },
-	{ "vote_allow_timelimit",                CV_SVF_TIMELIMIT                },
-	{ "vote_allow_warmupdamage",             CV_SVF_WARMUPDAMAGE             },
-	{ "vote_allow_antilag",                  CV_SVF_ANTILAG                  },
-	{ "vote_allow_balancedteams",            CV_SVF_BALANCEDTEAMS            },
-	{ "vote_allow_muting",                   CV_SVF_MUTING                   },
-	{ "vote_allow_surrender",                CV_SVF_SURRENDER                },
-	{ "vote_allow_restartcampaign",          CV_SVF_RESTARTCAMPAIGN          },
-	{ "vote_allow_nextcampaign",             CV_SVF_NEXTCAMPAIGN             },
-	{ "vote_allow_poll",                     CV_SVF_POLL                     },
-	{ "vote_allow_maprestart",               CV_SVF_MAPRESTART               }
+	{ "vote_allow_config",                 CV_SVF_CONFIG                 },
+	{ "vote_allow_gametype",               CV_SVF_GAMETYPE               },
+	{ "vote_allow_kick",                   CV_SVF_KICK                   },
+	{ "vote_allow_map",                    CV_SVF_MAP                    },
+	{ "vote_allow_matchreset",             CV_SVF_MATCHRESET             },
+	{ "vote_allow_mutespecs",              CV_SVF_MUTESPECS              },
+	{ "vote_allow_nextmap",                CV_SVF_NEXTMAP                },
+	{ "vote_allow_referee",                CV_SVF_REFEREE                },
+	{ "vote_allow_shuffleteams",           CV_SVF_SHUFFLETEAMS           },
+	{ "vote_allow_shuffleteams_norestart", CV_SVF_SHUFFLETEAMS_NORESTART },
+	{ "vote_allow_swapteams",              CV_SVF_SWAPTEAMS              },
+	{ "vote_allow_friendlyfire",           CV_SVF_FRIENDLYFIRE           },
+	{ "vote_allow_timelimit",              CV_SVF_TIMELIMIT              },
+	{ "vote_allow_warmupdamage",           CV_SVF_WARMUPDAMAGE           },
+	{ "vote_allow_antilag",                CV_SVF_ANTILAG                },
+	{ "vote_allow_balancedteams",          CV_SVF_BALANCEDTEAMS          },
+	{ "vote_allow_muting",                 CV_SVF_MUTING                 },
+	{ "vote_allow_surrender",              CV_SVF_SURRENDER              },
+	{ "vote_allow_restartcampaign",        CV_SVF_RESTARTCAMPAIGN        },
+	{ "vote_allow_nextcampaign",           CV_SVF_NEXTCAMPAIGN           },
+	{ "vote_allow_poll",                   CV_SVF_POLL                   },
+	{ "vote_allow_maprestart",             CV_SVF_MAPRESTART             }
 };
 
 int numVotesAvailable = sizeof(voteToggles) / sizeof(voteType_t);
@@ -4278,9 +4277,9 @@ const weap_ws_t aWeaponInfo[WS_MAX] =
 	{ qtrue,  "TMPS", "Thompson"   },  // 5  WS_THOMPSON
 	{ qtrue,  "STEN", "Sten"       },  // 6  WS_STEN
 	{ qtrue,  "FG42", "FG 42"      },  // 7  WS_FG42
-	{ qtrue,  "PNZR", "Panzer"     },  // 8  WS_PANZERFAUST
-	{ qtrue,  "BZKA", "Bazooka"    },  // 9  WS_BAZOOKA
-	{ qtrue,  "FLAM", "F.Thrower"  },  // 10 WS_FLAMETHROWER
+	{ qfalse, "PNZR", "Panzer"     },  // 8  WS_PANZERFAUST
+	{ qfalse, "BZKA", "Bazooka"    },  // 9  WS_BAZOOKA
+	{ qfalse, "FLAM", "F.Thrower"  },  // 10 WS_FLAMETHROWER
 	{ qfalse, "GRND", "Grenade"    },  // 11 WS_GRENADE
 	{ qfalse, "MRTR", "Mortar"     },  // 12 WS_MORTAR
 	{ qfalse, "GRWF", "Granatwerf" },  // 13 WS_MORTAR2
@@ -4290,8 +4289,8 @@ const weap_ws_t aWeaponInfo[WS_MAX] =
 	{ qfalse, "STCH", "Satchel"    },  // 17 WS_SATCHEL
 	{ qfalse, "GRLN", "G.Launchr"  },  // 18 WS_GRENADELAUNCHER
 	{ qfalse, "LNMN", "Landmine"   },  // 19 WS_LANDMINE
-	{ qtrue,  "MG42", "MG 42 Gun"  },  // 20 WS_MG42
-	{ qtrue,  "BRNG", "Browning"   },  // 21 WS_BROWNING
+	{ qfalse, "MG42", "MG 42 Gun"  },  // 20 WS_MG42
+	{ qfalse, "BRNG", "Browning"   },  // 21 WS_BROWNING
 	{ qtrue,  "GARN", "Garand"     },  // 22 WS_CARBINE
 	{ qtrue,  "K-43", "K43 Rifle"  },  // 23 WS_KAR98
 	{ qtrue,  "SGRN", "Scp.Garand" },  // 24 WS_GARAND

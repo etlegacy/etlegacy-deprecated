@@ -294,15 +294,7 @@ void Field_VariableSizeDraw(field_t *edit, int x, int y, int width, int size, qb
 	str[drawLen] = 0;
 
 	// draw it
-	if (size == SMALLCHAR_WIDTH)
-	{
-		SCR_DrawSmallString(x, y, str, colorWhite, qfalse, noColorEscape);
-	}
-	else
-	{
-		// draw big string with drop shadow
-		SCR_DrawBigString(x, y, str, colorWhite, noColorEscape);
-	}
+	SCR_DrawSmallString(x, y, str, colorWhite, qfalse, noColorEscape);
 
 	// draw the cursor
 	if (showCursor)
@@ -329,16 +321,7 @@ void Field_VariableSizeDraw(field_t *edit, int x, int y, int width, int size, qb
 		}
 		i = drawLen - strlen(str);
 
-		if (size == SMALLCHAR_WIDTH)
-		{
-			SCR_DrawSmallChar(x + (edit->cursor - prestep - i) * size, y, cursorChar);
-		}
-		else
-		{
-			str[0] = cursorChar;
-			str[1] = 0;
-			SCR_DrawBigString(x + (edit->cursor - prestep - i) * size, y, str, colorWhite, qfalse);
-		}
+		SCR_DrawSmallChar(x + (edit->cursor - prestep - i) * size, y, cursorChar);
 	}
 }
 
@@ -354,22 +337,6 @@ void Field_VariableSizeDraw(field_t *edit, int x, int y, int width, int size, qb
 void Field_Draw(field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape)
 {
 	Field_VariableSizeDraw(edit, x, y, width, SMALLCHAR_WIDTH, showCursor, noColorEscape);
-}
-
-/**
- * @brief Field_BigDraw
- * @param[in] edit
- * @param[in] x
- * @param[in] y
- * @param[in] width
- * @param[in] showCursor
- * @param[in] noColorEscape
- *
- * @note Unused
- */
-void Field_BigDraw(field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape)
-{
-	Field_VariableSizeDraw(edit, x, y, width, BIGCHAR_WIDTH, showCursor, noColorEscape);
 }
 
 /**
@@ -1122,9 +1089,9 @@ void Key_Bindlist_f(void)
 {
 	int i;
 	int freeKeys = 0;
-	
+
 	Com_Printf("key             bind\n");
-	
+
 	Com_Printf("-----------------------------------\n");
 
 	for (i = 0 ; i < MAX_KEYS ; i++)
@@ -1146,7 +1113,7 @@ void Key_Bindlist_f(void)
 			}
 		}
 	}
-	
+
 	Com_Printf("-----------------------------------\n");
 	Com_Printf("%i free keys available.\n", freeKeys);
 	Com_Printf("Enter /bindlist -f to see free keys.\n"); // or any other param ... :)
@@ -1270,7 +1237,7 @@ void CL_KeyEvent(int key, qboolean down, unsigned time)
 	}
 
 	// special handling for numbers of numeric keypad & NUM pressed
-	if (IN_IsNumLockDown() && (cls.keyCatchers & (KEYCATCH_CONSOLE | KEYCATCH_UI)) && down)
+	if (IN_IsNumLockDown() && down)
 	{
 		onlybinds = CL_NumPadEvent(key);
 	}

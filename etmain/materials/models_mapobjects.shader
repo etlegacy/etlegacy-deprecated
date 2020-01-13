@@ -336,8 +336,8 @@ models/mapobjects/cmarker/c_sandbag_allied
 {
 	qer_editorimage models/mapobjects/cmarker/allied_sack.tga
 	diffuseMap models/mapobjects/cmarker/allied_sack.tga
-	diffuseMap models/mapobjects/cmarker/allied_sack_n.tga
-	diffuseMap models/mapobjects/cmarker/allied_sack_r.tga    
+	bumpMap models/mapobjects/cmarker/allied_sack_n.tga
+	   
 }
 
 models/mapobjects/cmarker/c_sandbag_axis
@@ -345,7 +345,7 @@ models/mapobjects/cmarker/c_sandbag_axis
 	qer_editorimage models/mapobjects/cmarker/axis_sack.tga
 	diffuseMap models/mapobjects/cmarker/axis_sack.tga
 	bumpMap models/mapobjects/cmarker/axis_sack_n.tga
-	specularMap models/mapobjects/cmarker/axis_sack_r.tga
+
 }
 
 models/mapobjects/cmarker/c_shovel
@@ -470,7 +470,7 @@ models/mapobjects/flag/flag_dam
 models/mapobjects/furniture/sherman_s
 {
 	{
-		map models/mapobjects/furniture/sherman_r.tga
+		map models/mapobjects/furniture/sherman_s.tga
 		blendfunc blend
 		rgbGen identity
 	}
@@ -592,7 +592,7 @@ models/mapobjects/xlab_props/light_1_oasis
 models/mapobjects/lamps/bel_lamp2k
 {
 	qer_editorimage models/mapobjects/light/bel_lamp.tga
-	q3map_lightimage models/colors/amber
+	q3map_lightimage models/colors/amber.tga
 	q3map_surfaceLight 1000
 	surfaceparm nomarks
 	{
@@ -609,7 +609,7 @@ models/mapobjects/lamps/bel_lamp2k
 models/mapobjects/lamps/bel_lamp2k_gm		// for misc_gamemodel
 {
 	qer_editorimage models/mapobjects/light/bel_lamp.tga
-	q3map_lightimage models/colors/amber
+	q3map_lightimage models/colors/amber.tga
 	q3map_surfaceLight 1000
 	surfaceparm nomarks
 	{
@@ -625,7 +625,7 @@ models/mapobjects/lamps/bel_lamp2k_gm		// for misc_gamemodel
 
 models/mapobjects/light/bel_lamp
 {
-	q3map_lightimage models/colors/amber
+	q3map_lightimage models/colors/amber.tga
 	q3map_surfaceLight 5000
 	surfaceparm nomarks
 	{
@@ -639,11 +639,10 @@ models/mapobjects/light/bel_lamp
 	}
 }
 
-// for misc_gamemodels
-models/mapobjects/light/bel_lamp_gm
+models/mapobjects/light/bel_lamp_gm		// for misc_gamemodels
 {
 	qer_editorimage models/mapobjects/light/bel_lamp.tga
-	q3map_lightimage models/colors/amber
+	q3map_lightimage models/colors/amber.tga
 	q3map_surfaceLight 5000
 	surfaceparm nomarks
 	{
@@ -660,7 +659,7 @@ models/mapobjects/light/bel_lamp_gm
 models/mapobjects/light/bel_lampb
 {
 	qer_editorimage models/mapobjects/light/bel_lamp.tga
-	q3map_lightimage models/colors/amber
+	q3map_lightimage models/colors/amber.tga
 	q3map_surfaceLight 10000
 	surfaceparm nomarks
 	{
@@ -677,7 +676,7 @@ models/mapobjects/light/bel_lampb
 models/mapobjects/light/bel_lampm
 {
 	qer_editorimage models/mapobjects/light/bel_lamp.tga
-	q3map_lightimage models/colors/amber
+	q3map_lightimage models/colors/amber.tga
 	q3map_surfaceLight 7000
 	surfaceparm nomarks
 	{
@@ -691,11 +690,10 @@ models/mapobjects/light/bel_lampm
 	}
 }
 
-// for misc_gamemodels
-models/mapobjects/light/bel_lampm_gm
+models/mapobjects/light/bel_lampm_gm		// for misc_gamemodels
 {
 	qer_editorimage models/mapobjects/light/bel_lamp.tga
-	q3map_lightimage models/colors/amber
+	q3map_lightimage models/colors/amber.tga
 	q3map_surfaceLight 7000
 	surfaceparm nomarks
 	{
@@ -719,7 +717,7 @@ models/mapobjects/light/cage_lightn
 		rgbGen vertex
 	}
 	{
-		map models/mapobjects/light/cage_light.blend.tga
+		map models/mapobjects/light/cage_light.blendn.tga
 		blendfunc GL_ONE GL_ONE
 		rgbGen identity
 	}
@@ -963,6 +961,7 @@ models/mapobjects/light/sd_sconce
 	implicitMask -
 }
 
+
 //**************************************************************
 
 //logs_sd
@@ -1072,6 +1071,7 @@ models/mapobjects/pak75_sd/pak75-a
 	diffuseMap models/mapobjects/pak75_sd/pak75-a.tga
 	bumpMap models/mapobjects/pak75_sd/pak75-a_n.tga
 	specularMap models/mapobjects/pak75_sd/pak75-a_r.tga
+	implicitMask -
 }
 
 models/mapobjects/pak75_sd/pak75-a_s
@@ -1079,6 +1079,7 @@ models/mapobjects/pak75_sd/pak75-a_s
 	diffuseMap models/mapobjects/pak75_sd/pak75-a_s.tga
 	bumpMap models/mapobjects/pak75_sd/pak75-a_n.tga
 	specularMap models/mapobjects/pak75_sd/pak75-a_r.tga
+	implicitMask -
 }
 
 //**********************************************************************
@@ -1532,7 +1533,7 @@ models/mapobjects/props_sd/sandlevel
 	qer_editorimage textures/desert_sd/sand_disturb_desert.tga
 	diffuseMap textures/desert_sd/sand_disturb_desert.tga
 	bumpMap textures/desert_sd/sand_disturb_desert_n.tga
-	specularMap textures/desert_sd/sand_disturb_desert_r.tga
+	
     implicitMap textures/desert_sd/sand_disturb_desert.tga
 }
 
@@ -1551,7 +1552,6 @@ models/mapobjects/props_sd/bunk_sd1
 	surfaceparm nomarks
 	diffuseMap textures/chat/bedlinen_c02.tga
 	bumpMap textures/chat/bedlinen_c02_n.tga
-	specularMap textures/chat/bedlinen_c02_r.tga
 	implicitMap textures/chat/bedlinen_c02.tga
 }
 
@@ -1561,7 +1561,6 @@ models/mapobjects/props_sd/bunk_sd2
 	surfaceparm nomarks
 	diffuseMap models/mapobjects/furniture/wood1.tga
 	bumpMap models/mapobjects/furniture/wood1_n.tga
-	specularMap models/mapobjects/furniture/wood1_r.tga
 	implicitMap models/mapobjects/furniture/wood1.tga
 }
 
@@ -1571,7 +1570,6 @@ models/mapobjects/props_sd/bunk_sd3
 	surfaceparm nomarks
 	diffuseMap textures/chat/bedlinenpillow_c02.tga
 	bumpMap textures/chat/bedlinenpillow_c02_n.tga
-	specularMap textures/chat/bedlinenpillow_c02_r.tga
 	implicitMap textures/chat/bedlinenpillow_c02.tga
 }
 
@@ -2080,7 +2078,6 @@ models/mapobjects/rocks_sd/rock_desert
 	qer_editorimage models/mapobjects/rocks_sd/rock_desert.tga
 	diffuseMap models/mapobjects/rocks_sd/rock_desert.tga
 	bumpMap models/mapobjects/rocks_sd/rock_desert_n.tga
-	specularMap models/mapobjects/rocks_sd/rock_desert_r.tga
 }
 
 models/mapobjects/rocks_sd/rock_desert_small
@@ -2088,7 +2085,6 @@ models/mapobjects/rocks_sd/rock_desert_small
 	qer_editorimage models/mapobjects/rocks_sd/rock_desert_small.tga
 	diffuseMap models/mapobjects/rocks_sd/rock_desert_small.tga
 	bumpMap  models/mapobjects/rocks_sd/rock_desert_small_n.tga
-	specularMap models/mapobjects/rocks_sd/rock_desert_small_r.tga
 }
 
 models/mapobjects/rocks_sd/rock_desert_big
@@ -2096,7 +2092,6 @@ models/mapobjects/rocks_sd/rock_desert_big
 	qer_editorimage models/mapobjects/rocks_sd/rock_desert_big.tga
 	diffuseMap models/mapobjects/rocks_sd/rock_desert_big.tga
 	bumpMap models/mapobjects/rocks_sd/rock_desert_big_n.tga
-	specularMap models/mapobjects/rocks_sd/rock_desert_big_r.tga
 }
 
 models/mapobjects/rocks_sd/rock_snow
@@ -2131,7 +2126,6 @@ models/mapobjects/rocks_sd/rock_temperate
 	qer_editorimage models/mapobjects/rocks_sd/rock_temperate.tga
 	diffuseMap models/mapobjects/rocks_sd/rock_temperate.tga
 	bumpMap models/mapobjects/rocks_sd/rock_temperate_n.tga
-	specularMap models/mapobjects/rocks_sd/rock_temperate_r.tga
 }
 
 models/mapobjects/rocks_sd/rock_temperate_small
@@ -2140,7 +2134,6 @@ models/mapobjects/rocks_sd/rock_temperate_small
 	qer_editorimage models/mapobjects/rocks_sd/rock_temperate_small.tga
 	diffuseMap models/mapobjects/rocks_sd/rock_temperate_small.tga
 	bumpMap models/mapobjects/rocks_sd/rock_temperate_small_n.tga
-	specularMap models/mapobjects/rocks_sd/rock_temperate_small_r.tga
 }
 
 models/mapobjects/rocks_sd/rock_temperate_big
@@ -2149,7 +2142,6 @@ models/mapobjects/rocks_sd/rock_temperate_big
 	qer_editorimage models/mapobjects/rocks_sd/rock_temperate_big.tga
 	diffuseMap models/mapobjects/rocks_sd/rock_temperate_big.tga
 	bumpMap models/mapobjects/rocks_sd/rock_temperate_big_n.tga
-	specularMap models/mapobjects/rocks_sd/rock_temperate_big_r.tga
 }
 
 models/mapobjects/rocks_sd/rock_temperate2
@@ -2158,7 +2150,6 @@ models/mapobjects/rocks_sd/rock_temperate2
 	qer_editorimage models/mapobjects/rocks_sd/rock_temperate2.tga
 	diffuseMap models/mapobjects/rocks_sd/rock_temperate2.tga
 	bumpMap models/mapobjects/rocks_sd/rock_temperate2_n.tga
-	specularMap models/mapobjects/rocks_sd/rock_temperate2_r.tga
 }
 
 models/mapobjects/rocks_sd/rock_temperate2_small
@@ -2167,7 +2158,6 @@ models/mapobjects/rocks_sd/rock_temperate2_small
 	qer_editorimage models/mapobjects/rocks_sd/rock_temperate2_small.tga
 	diffuseMap models/mapobjects/rocks_sd/rock_temperate2_small.tga
 	bumpMap models/mapobjects/rocks_sd/rock_temperate2_small_n.tga
-	specularMap models/mapobjects/rocks_sd/rock_temperate2_small_r.tga
 }
 
 models/mapobjects/rocks_sd/rock_temperate2_big
@@ -2176,7 +2166,6 @@ models/mapobjects/rocks_sd/rock_temperate2_big
 	qer_editorimage models/mapobjects/rocks_sd/rock_temperate2_big.tga
 	diffuseMap models/mapobjects/rocks_sd/rock_temperate2_big.tga
 	bumpMap models/mapobjects/rocks_sd/rock_temperate2_big_n.tga
-	specularMap models/mapobjects/rocks_sd/rock_temperate2_big_r.tga
 }
 
 //***********************************************************************
@@ -3218,7 +3207,6 @@ models/mapobjects/seawall_rocks/rocks
 	qer_editorimage textures/temperate_sd/rock_grayvar.tga
 	diffuseMap  textures/temperate_sd/rock_grayvar.tga
 	bumpMap  textures/temperate_sd/rock_grayvar_n.tga
-	specularMap textures/temperate_sd/rock_grayvar_r.tga
 	q3map_forcemeta
 	q3map_lightmapSampleOffset 8.0
 	q3map_nonplanar
@@ -3241,7 +3229,6 @@ models/mapobjects/siwa_tunnels_sd/siwa_tunnel
 	surfaceparm pointlight
 	diffuseMap textures/desert_sd/rock_edged_smooth.tga
 	bumpMap textures/desert_sd/rock_edged_smooth_n.tga
-	specularMap textures/desert_sd/rock_edged_smooth_r.tga
 }
 // just a clip texture, not visible
 models/mapobjects/siwa_tunnels_sd/siwa_tunneliaclip

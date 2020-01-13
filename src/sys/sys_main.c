@@ -61,11 +61,6 @@
 static char binaryPath[MAX_OSPATH]  = { 0 };
 static char installPath[MAX_OSPATH] = { 0 };
 
-#ifdef FEATURE_CURSES
-static qboolean nocurses = qfalse;
-void CON_Init_tty(void);
-#endif
-
 /**
  * @brief Sys_SetBinaryPath
  * @param[in] path
@@ -516,7 +511,7 @@ void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 	// Don't load any DLLs that end with the pk3 extension or try to traverse directories
 	if (!Sys_DllExtension(name))
 	{
-		Com_Printf("Refusing to attempt to load library \"%s\": Extension not allowed.\n", name);
+		Com_Printf("Refusing to attempt to load library \"%s\": Extension not allowed\n", name);
 		return NULL;
 	}
 
@@ -611,7 +606,7 @@ static void *Sys_TryLibraryLoad(const char *base, const char *gamedir, const cha
 			libHandle = Sys_LoadLibrary(fn);
 			if (!libHandle)
 			{
-				Com_Printf("failed: \"%s\"\n", Sys_LibraryError());
+				Com_Printf("failed: %s", Sys_LibraryError());
 			}
 			else
 			{
@@ -620,7 +615,7 @@ static void *Sys_TryLibraryLoad(const char *base, const char *gamedir, const cha
 		}
 		else
 		{
-			Com_Printf("failed. (Not a valid zip).\n");
+			Com_Printf("failed (not a valid zip)\n");
 		}
 	}
 
@@ -633,7 +628,7 @@ static void *Sys_TryLibraryLoad(const char *base, const char *gamedir, const cha
 		libHandle = Sys_LoadLibrary(fn);
 		if (!libHandle)
 		{
-			Com_Printf("failed: \"%s\"\n", Sys_LibraryError());
+			Com_Printf("failed: %s", Sys_LibraryError());
 		}
 		else
 		{
@@ -652,7 +647,7 @@ static void *Sys_TryLibraryLoad(const char *base, const char *gamedir, const cha
 		libHandle = Sys_LoadLibrary(fn);
 		if (!libHandle)
 		{
-			Com_Printf("failed: \"%s\"\n", Sys_LibraryError());
+			Com_Printf("failed: %s", Sys_LibraryError());
 		}
 		else
 		{
@@ -669,7 +664,7 @@ static void *Sys_TryLibraryLoad(const char *base, const char *gamedir, const cha
 
 	if (!libHandle)
 	{
-		Com_Printf("failed: \"%s\"\n", Sys_LibraryError());
+		Com_Printf("failed: %s", Sys_LibraryError());
 		return NULL;
 	}
 
@@ -808,7 +803,7 @@ void *Sys_LoadGameDll(const char *name, qboolean extract,
 
 	if (!*entryPoint || !dllEntry)
 	{
-		Com_Printf("Sys_LoadDll(%s/%s) failed to find vmMain function:\n\"%s\" !\n", gamedir, name, Sys_LibraryError());
+		Com_Printf("Sys_LoadDll(%s/%s) failed to find vmMain function:\n%s\n", gamedir, name, Sys_LibraryError());
 		Sys_UnloadLibrary(libHandle);
 
 		return NULL;
@@ -827,10 +822,6 @@ void *Sys_LoadGameDll(const char *name, qboolean extract,
  */
 void Sys_ParseArgs(int argc, char **argv)
 {
-#ifdef FEATURE_CURSES
-	int i;
-#endif
-
 	if (argc == 2)
 	{
 		if (!strcmp(argv[1], "--version") ||
@@ -846,17 +837,6 @@ void Sys_ParseArgs(int argc, char **argv)
 			Sys_Exit(0);
 		}
 	}
-#ifdef FEATURE_CURSES
-	for (i = 1; i < argc; i++)
-	{
-		if (!strcmp(argv[i], "+nocurses") ||
-		    !strcmp(argv[i], "--nocurses"))
-		{
-			nocurses = qtrue;
-			break;
-		}
-	}
-#endif
 }
 
 /**
@@ -938,18 +918,7 @@ void Sys_SigHandler(int signal)
 void Sys_SetUpConsoleAndSignals(void)
 {
 #ifndef USE_WINDOWS_CONSOLE
-#ifdef FEATURE_CURSES
-	if (nocurses)
-	{
-		CON_Init_tty();
-	}
-	else
-	{
-		CON_Init();
-	}
-#else
 	CON_Init();
-#endif
 #endif
 
 	signal(SIGILL, Sys_SigHandler);
@@ -1046,7 +1015,6 @@ int main(int argc, char **argv)
 		else if (quarantine_status == 4)
 		{
 			//user canceled the dialog box
-			Sys_Dialog(DT_ERROR, "Running ET Legacy with enabled App Translocation isn't possible. Please remove the quarantine flag by using the following command in the terminal and restart the game:\r\n\r\nxattr -cr /Applications/ET\\ Legacy/", "App Translocation detected");
 			Sys_Exit(EXIT_FAILURE);
 		}
 		else if (quarantine_status >= 2)

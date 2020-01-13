@@ -558,16 +558,10 @@ void CopyToBodyQue(gentity_t *ent)
 	VectorCopy(ent->client->ps.viewangles, body->s.angles);
 	VectorCopy(ent->client->ps.viewangles, body->r.currentAngles);
 
-	if (body->s.groundEntityNum == ENTITYNUM_NONE)
-	{
-		body->s.pos.trType = TR_GRAVITY;
-		body->s.pos.trTime = level.time;
-		VectorCopy(ent->client->ps.velocity, body->s.pos.trDelta);
-	}
-	else
-	{
-		body->s.pos.trType = TR_STATIONARY;
-	}
+	body->s.pos.trType = TR_GRAVITY;
+	body->s.pos.trTime = level.time;
+	VectorCopy(ent->client->ps.velocity, body->s.pos.trDelta);
+
 	body->s.event = 0;
 
 	// Clear out event system
@@ -1089,6 +1083,18 @@ static void AddExtraSpawnAmmo(gclient_t *client, weapon_t weaponNum)
  */
 void AddWeaponToPlayer(gclient_t *client, weapon_t weapon, int ammo, int ammoclip, qboolean setcurrent, winv_t attachment)
 {
+	if (team_riflegrenades.integer == 0)
+	{
+		switch (weapon)
+		{
+		case WP_GPG40:
+		case WP_M7:
+			return;
+		default:
+			break;
+		}
+	}
+
 	COM_BitSet(client->ps.weapons, weapon);
 	client->ps.ammoclip[GetWeaponTableData(weapon)->clipIndex] = ammoclip;
 	client->ps.ammo[GetWeaponTableData(weapon)->ammoIndex]    += ammo;
@@ -1157,9 +1163,7 @@ void SetWolfSpawnWeapons(gclient_t *client)
 
 	// Communicate it to cgame
 	client->ps.stats[STAT_PLAYER_CLASS] = pc;
-
-	// Abuse teamNum to store player class as well (can't see stats for all clients in cgame)
-	client->ps.teamNum = pc;
+	client->ps.teamNum                  = team;
 
 	// zero out all ammo counts
 	Com_Memset(client->ps.ammo, 0, MAX_WEAPONS * sizeof(int));
@@ -1322,6 +1326,11 @@ void AddMedicTeamBonus(gclient_t *client)
 	if (client->sess.skill[SK_BATTLE_SENSE] >= 3)
 	{
 		client->pers.maxHealth += 15;
+	}
+
+	if (client->sess.playerType == PC_MEDIC)
+	{
+		client->pers.maxHealth *= 1.12;
 	}
 
 	client->ps.stats[STAT_MAX_HEALTH] = client->pers.maxHealth;
@@ -1774,9 +1783,7 @@ void ClientUserinfoChanged(int clientNum)
 			Q_strncpyz(cs_name, cs_value, MAX_NETNAME);
 			break;
 		case TOK_cl_guid:
-			if (!(ent->r.svFlags & SVF_BOT) &&
-			    strcmp(client->pers.cl_guid, "unknown") &&
-			    strcmp(client->pers.cl_guid, cs_value))
+			if (!(ent->r.svFlags & SVF_BOT) && strcmp(client->pers.cl_guid, cs_value))
 			{
 				// They're trying to hack their guid...
 				G_Printf("ClientUserinfoChanged: client %d hacking cl_guid, old=%s, new=%s\n", clientNum, client->pers.cl_guid, cs_value);
@@ -1800,7 +1807,7 @@ void ClientUserinfoChanged(int clientNum)
 		Q_strncpyz(cs_name, va("Target #%i", clientNum), 15);
 		Info_SetValueForKey(userinfo, "name", cs_name);
 		trap_SetUserinfo(clientNum, userinfo);
-		CP("cp \"You cannot assign an empty playername! (Your name is reset)\"");
+		CP("cp \"You cannot assign an empty playername! Your name has been reset.\"");
 		G_LogPrintf("ClientUserinfoChanged: %i User with empty name. (Changed to: \"Target #%i\")\n", clientNum, clientNum);
 		G_DPrintf("ClientUserinfoChanged: %i User with empty name. (Changed to: \"Target #%i\")\n", clientNum, clientNum);
 	}
@@ -1883,7 +1890,7 @@ void ClientUserinfoChanged(int clientNum)
 			}
 			if (!client->pers.clientMaxPackets)
 			{
-				client->pers.clientMaxPackets = 30;
+				client->pers.clientMaxPackets = 125;
 			}
 		}
 
@@ -1932,7 +1939,7 @@ void ClientUserinfoChanged(int clientNum)
 
 	// send over a subset of the userinfo keys so other clients can
 	// print scoreboards, display models, and play custom sounds
-	s = va("n\\%s\\t\\%i\\c\\%i\\lc\\%i\\r\\%i\\m\\%s\\s\\%s\\dn\\%i\\w\\%i\\lw\\%i\\sw\\%i\\mu\\%i\\ref\\%i\\u\\%u",
+	s = va("n\\%s\\t\\%i\\c\\%i\\lc\\%i\\r\\%i\\m\\%s\\s\\%s\\dn\\%i\\w\\%i\\lw\\%i\\sw\\%i\\lsw\\%i\\mu\\%i\\ref\\%i\\sc\\%i\\u\\%u",
 	       client->pers.netname,
 	       client->sess.sessionTeam,
 	       client->sess.playerType,
@@ -1943,9 +1950,11 @@ void ClientUserinfoChanged(int clientNum)
 	       client->disguiseClientNum,
 	       client->sess.playerWeapon,
 	       client->sess.latchPlayerWeapon,
+	       client->sess.playerWeapon2,
 	       client->sess.latchPlayerWeapon2,
 	       client->sess.muted ? 1 : 0,
 	       client->sess.referee,
+	       client->sess.shoutcaster,
 	       client->sess.uci
 	       );
 
@@ -2048,6 +2057,12 @@ char *ClientConnect(int clientNum, qboolean firstTime, qboolean isBot)
 		default:
 			continue;
 		}
+	}
+
+	// don't allow empty, unknown or 'NO_GUID' guid
+	if (strlen(cs_guid) < MAX_GUID_LENGTH)
+	{
+		return "Bad GUID: Invalid etkey. Please use the ET:Legacy client or add an etkey.";
 	}
 
 	// IP filtering
@@ -2166,31 +2181,13 @@ char *ClientConnect(int clientNum, qboolean firstTime, qboolean isBot)
 		//value = Info_ValueForKey (userinfo, "ip");
 		if (!strcmp(cs_ip, "localhost"))
 		{
-			// give bots country flag of the server location g_countryflags 2
-			if (isBot && (g_countryflags.integer & CF_BOTS))
+			if (isBot)
 			{
-				char          server_ip[MAX_IP4_LENGTH];
-				unsigned int  ret;
-				unsigned long ip;
-
-				// get the server flag
-				trap_Cvar_VariableStringBuffer("net_ip", server_ip, sizeof(server_ip));
-				ip  = GeoIP_addr_to_num(server_ip);
-				ret = GeoIP_seek_record(gidb, ip);
-
-				if (ret > 0)
-				{
-					client->sess.uci = ret;
-				}
-				else
-				{
-					// default
-					client->sess.uci = 0;
-				}
+				client->sess.uci = 0; // bots
 			}
 			else
 			{
-				client->sess.uci = 0; // localhost players
+				client->sess.uci = 246; // localhost players
 			}
 		}
 		else
@@ -2198,7 +2195,7 @@ char *ClientConnect(int clientNum, qboolean firstTime, qboolean isBot)
 			unsigned long ip = GeoIP_addr_to_num(cs_ip);
 
 			// 10.0.0.0/8			[RFC1918]
-			// 172.16.0.0/12			[RFC1918]
+			// 172.16.0.0/12		[RFC1918]
 			// 192.168.0.0/16		[RFC1918]
 			// 169.254.0.0/16		[RFC3330] we need this ?
 			if (((ip & 0xFF000000) == 0x0A000000) ||
@@ -2206,7 +2203,7 @@ char *ClientConnect(int clientNum, qboolean firstTime, qboolean isBot)
 			    ((ip & 0xFFFF0000) == 0xC0A80000) ||
 			    (ip  == 0x7F000001))                    // recognise also 127.0.0.1
 			{
-				client->sess.uci = 0;
+				client->sess.uci = 246;
 			}
 			else if (allowGeoIP)
 			{
@@ -2286,7 +2283,7 @@ char *ClientConnect(int clientNum, qboolean firstTime, qboolean isBot)
 #ifdef FEATURE_RATING
 	if (g_skillRating.integer)
 	{
-		G_SkillRatingGetUserRating(client, firstTime);
+		G_SkillRatingGetClientRating(client);
 		G_CalcRank(client);
 	}
 #endif
@@ -2357,7 +2354,6 @@ void ClientBegin(int clientNum)
 	int       flags;
 	int       spawn_count, lives_left;
 	int       stat_xp, score; // restore xp & score
-	qboolean  inIntermission = (g_gamestate.integer == GS_INTERMISSION && client->ps.pm_type == PM_INTERMISSION) ? qtrue : qfalse;
 
 #ifdef FEATURE_LUA
 	// call LUA clientBegin only once when player connects
@@ -2412,7 +2408,7 @@ void ClientBegin(int clientNum)
 		ent->client->ps.stats[STAT_XP] = stat_xp;
 	}
 
-	if (inIntermission == qtrue)
+	if (g_gamestate.integer == GS_INTERMISSION)
 	{
 		client->ps.pm_type = PM_INTERMISSION;
 	}
@@ -2668,14 +2664,14 @@ gentity_t *SelectSpawnPointFromList(char *list, vec3_t spawn_origin, vec3_t spaw
  */
 static char *G_CheckVersion(gentity_t *ent)
 {
-	// Prevent nasty version mismatches (or people sticking in Q3Aimbot cgames)
+	// Check cgame version against qagame's one
 
 	char userinfo[MAX_INFO_STRING];
 	char *s;
 
 	trap_GetUserinfo(ent->s.number, userinfo, sizeof(userinfo));
-	s = Info_ValueForKey(userinfo, "cg_etVersion");
-	if (!s || strcmp(s, GAME_VERSION_DATED))
+	s = Info_ValueForKey(userinfo, "cg_legacyVersion");
+	if (!s || strcmp(s, LEGACY_VERSION))
 	{
 		return(s);
 	}
@@ -2716,9 +2712,6 @@ void ClientSpawn(gentity_t *ent, qboolean revived, qboolean teamChange, qboolean
 	int                savedPing;
 	int                savedTeam;
 	int                savedDeathTime;
-	qboolean           inIntermission = (g_gamestate.integer == GS_INTERMISSION && client->ps.pm_type == PM_INTERMISSION) ? qtrue : qfalse;
-
-	G_UpdateSpawnCounts();
 
 	client->pers.lastSpawnTime            = level.time;
 	client->pers.lastBattleSenseBonusTime = level.timeCurrent;
@@ -2730,7 +2723,7 @@ void ClientSpawn(gentity_t *ent, qboolean revived, qboolean teamChange, qboolean
         char *clientMismatchedVersion = G_CheckVersion( ent );	// returns NULL if version is identical
 
         if( clientMismatchedVersion ) {
-            trap_DropClient( ent - g_entities, va( "Client/Server game mismatch: '%s/%s'", clientMismatchedVersion, GAME_VERSION_DATED ) );
+            trap_DropClient( ent - g_entities, va( "Client/Server game mismatch: '%s/%s'", clientMismatchedVersion, LEGACY_VERSION ) );
         } else {
             client->sess.versionOK = qtrue;
         }
@@ -2750,6 +2743,7 @@ void ClientSpawn(gentity_t *ent, qboolean revived, qboolean teamChange, qboolean
 	}
 	else
 	{
+		G_UpdateSpawnPointStatePlayerCounts();
 		// let's just be sure it does the right thing at all times. (well maybe not the right thing, but at least not the bad thing!)
 		//if( client->sess.sessionTeam == TEAM_SPECTATOR || client->sess.sessionTeam == TEAM_FREE ) {
 		if (client->sess.sessionTeam != TEAM_AXIS && client->sess.sessionTeam != TEAM_ALLIES)
@@ -2758,7 +2752,7 @@ void ClientSpawn(gentity_t *ent, qboolean revived, qboolean teamChange, qboolean
 		}
 		else
 		{
-			spawnPoint = SelectCTFSpawnPoint(client->sess.sessionTeam, client->pers.teamState.state, spawn_origin, spawn_angles, client->sess.spawnObjectiveIndex);
+			spawnPoint = SelectCTFSpawnPoint(client->sess.sessionTeam, client->pers.teamState.state, spawn_origin, spawn_angles, client->sess.userSpawnPointValue);
 		}
 	}
 
@@ -2802,7 +2796,7 @@ void ClientSpawn(gentity_t *ent, qboolean revived, qboolean teamChange, qboolean
 	client->ps.teamNum        = savedTeam;
 	client->disguiseClientNum = -1;
 
-	if (inIntermission)
+	if (g_gamestate.integer == GS_INTERMISSION)
 	{
 		client->ps.pm_type = PM_INTERMISSION;
 	}
@@ -2962,7 +2956,11 @@ void ClientSpawn(gentity_t *ent, qboolean revived, qboolean teamChange, qboolean
 			update                    = qtrue;
 		}
 
-		client->sess.playerWeapon2 = client->sess.latchPlayerWeapon2;
+		if (client->sess.playerWeapon2 != client->sess.latchPlayerWeapon2)
+		{
+			client->sess.playerWeapon2 = client->sess.latchPlayerWeapon2;
+			update                     = qtrue;
+		}
 
 		if (update)
 		{
@@ -3135,10 +3133,10 @@ void ClientDisconnect(int clientNum)
 	}
 
 #ifdef FEATURE_RATING
+	// rating already recorded before intermission
 	if (g_skillRating.integer && !level.intermissiontime)
 	{
-		// rating already recorded before intermission
-		G_SkillRatingSetUserRating(ent->client);
+		G_SkillRatingSetClientRating(ent->client);
 	}
 #endif
 
@@ -3293,8 +3291,6 @@ void ClientDisconnect(int clientNum)
 	ent->r.svFlags &= ~SVF_BOT;
 
 	trap_SetConfigstring(CS_PLAYERS + clientNum, "");
-
-	G_deleteStats(clientNum); // session related
 
 	CalculateRanks();
 

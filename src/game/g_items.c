@@ -269,7 +269,7 @@ weapon_t G_GetSecondaryWeaponForClient(gclient_t *client, weapon_t primary)
  * @param[in] client
  * @return the primary weapon of the soldier client
  */
-weapon_t G_GetPrimaryWeaponForClientSoldier(weapon_t weapon, gclient_t *client)
+weapon_t G_GetPrimaryWeaponForClientSoldier(gclient_t *client)
 {
 	int i, team;
 
@@ -278,38 +278,28 @@ weapon_t G_GetPrimaryWeaponForClientSoldier(weapon_t weapon, gclient_t *client)
 		return WP_NONE;
 	}
 
-	if (COM_BitCheck(client->ps.weapons, WP_PANZERFAUST) ||
-	    COM_BitCheck(client->ps.weapons, WP_BAZOOKA) ||
-	    COM_BitCheck(client->ps.weapons, WP_FLAMETHROWER) ||
-	    COM_BitCheck(client->ps.weapons, WP_MOBILE_MG42) ||
-	    COM_BitCheck(client->ps.weapons, WP_MOBILE_BROWNING) ||
-	    COM_BitCheck(client->ps.weapons, WP_MORTAR) ||
-	    COM_BitCheck(client->ps.weapons, WP_MORTAR2))
+	for (team = TEAM_AXIS; team <= TEAM_ALLIES; team++)
 	{
-		for (team = TEAM_AXIS; team <= TEAM_ALLIES; team++)
-		{
-			// if weapons are SMS & HW, return HW if picking up HW
-			bg_playerclass_t *classInfo = GetPlayerClassesData(team, client->sess.playerType);
+		// if weapons are SMG & HW, return HW if picking up HW
+		bg_playerclass_t *classInfo = GetPlayerClassesData(team, client->sess.playerType);
 
-			for (i = 0; i < MAX_WEAPS_PER_CLASS; i++)
+		for (i = 1; i < MAX_WEAPS_PER_CLASS; i++)
+		{
+			if (COM_BitCheck(client->ps.weapons, classInfo->classPrimaryWeapons[i].weapon))
 			{
-				if (COM_BitCheck(client->ps.weapons, classInfo->classPrimaryWeapons[i].weapon))
-				{
-					return classInfo->classPrimaryWeapons[i].weapon;
-				}
+				return classInfo->classPrimaryWeapons[i].weapon;
 			}
 		}
 	}
-	else
+
+	for (team = TEAM_AXIS; team <= TEAM_ALLIES; team++)
 	{
-		// if weapons are SMS and pistols, return SMS if picking up SMS or HW
-		if (COM_BitCheck(client->ps.weapons, WP_THOMPSON))
+		// if weapons are SMG & HW, return HW if picking up HW
+		bg_playerclass_t *classInfo = GetPlayerClassesData(team, client->sess.playerType);
+
+		if (COM_BitCheck(client->ps.weapons, classInfo->classPrimaryWeapons[0].weapon))
 		{
-			return WP_THOMPSON;
-		}
-		if (COM_BitCheck(client->ps.weapons, WP_MP40))
-		{
-			return WP_MP40;
+			return classInfo->classPrimaryWeapons[0].weapon;
 		}
 	}
 
@@ -474,7 +464,7 @@ int Pickup_Weapon(gentity_t *ent, gentity_t *other)
 				//omni-bot event
 				if (ent->parent)
 				{
-					Bot_Event_RecievedAmmo(other - g_entities, ent->parent);
+					Bot_Event_ReceivedAmmo(other - g_entities, ent->parent);
 				}
 #endif
 				// extracted code originally here into AddMagicAmmo
@@ -494,7 +484,7 @@ int Pickup_Weapon(gentity_t *ent, gentity_t *other)
 	{
 		Add_Ammo(other, ent->item->giWeapon, quantity, qfalse);
 
-		// secondary weapon ammo
+		// secondary weapon ammo (riflenade)
 		if (ent->delay != 0.f)
 		{
 			Add_Ammo(other, GetWeaponTableData(ent->item->giWeapon)->weapAlts, ent->delay, qfalse);
@@ -502,77 +492,75 @@ int Pickup_Weapon(gentity_t *ent, gentity_t *other)
 	}
 	else
 	{
+		weapon_t primaryWeapon;
+		qboolean canPickup;
+
 		if (level.time - other->client->dropWeaponTime < 1000)
 		{
 			return 0;
 		}
 
 		// see if we can pick it up
-		if (G_CanPickupWeapon(ent->item->giWeapon, other))
-		{
-			weapon_t primaryWeapon;
+		canPickup = G_CanPickupWeapon(ent->item->giWeapon, other);
 
-			if (other->client->sess.playerType == PC_SOLDIER && other->client->sess.skill[SK_HEAVY_WEAPONS] >= 4)
-			{
-				primaryWeapon = G_GetPrimaryWeaponForClientSoldier(ent->item->giWeapon, other->client);
-			}
-			else
-			{
-				primaryWeapon = G_GetPrimaryWeaponForClient(other->client);
-			}
-
-			// added parens around ambiguous &&
-			if (primaryWeapon)
-			{
-				// drop our primary weapon
-				G_DropWeapon(other, primaryWeapon);
-
-				// now pickup the other one
-				other->client->dropWeaponTime = level.time;
-
-				// add the weapon
-				COM_BitSet(other->client->ps.weapons, ent->item->giWeapon);
-
-				// fixup mauser/sniper issues
-				if (GetWeaponTableData(ent->item->giWeapon)->weapAlts)
-				{
-					weapon_t weapAlts = GetWeaponTableData(ent->item->giWeapon)->weapAlts;
-
-					if (GetWeaponTableData(weapAlts)->type & WEAPON_TYPE_RIFLENADE)
-					{
-						COM_BitSet(other->client->ps.weapons, weapAlts);
-					}
-				}
-
-				other->client->ps.ammoclip[GetWeaponTableData(ent->item->giWeapon)->clipIndex] = 0;
-				other->client->ps.ammo[GetWeaponTableData(ent->item->giWeapon)->ammoIndex]     = 0;
-
-				if (GetWeaponTableData(ent->item->giWeapon)->type & WEAPON_TYPE_MORTAR)
-				{
-					other->client->ps.ammo[GetWeaponTableData(ent->item->giWeapon)->clipIndex] = quantity;
-
-					// secondary weapon ammo
-					if (ent->delay != 0.f)
-					{
-						Add_Ammo(other, GetWeaponTableData(ent->item->giWeapon)->weapAlts, ent->delay, qfalse);
-					}
-				}
-				else
-				{
-					other->client->ps.ammoclip[GetWeaponTableData(ent->item->giWeapon)->clipIndex] = quantity;
-
-					// secondary weapon ammo
-					if (ent->delay != 0.f)
-					{
-						other->client->ps.ammo[GetWeaponTableData(ent->item->giWeapon)->weapAlts] = ent->delay;
-					}
-				}
-			}
-		}
-		else
+		if (!canPickup)
 		{
 			return 0;
 		}
+
+		if (other->client->sess.playerType == PC_SOLDIER && other->client->sess.skill[SK_HEAVY_WEAPONS] >= 4)
+		{
+			primaryWeapon = G_GetPrimaryWeaponForClientSoldier(other->client);
+		}
+		else
+		{
+			primaryWeapon = G_GetPrimaryWeaponForClient(other->client);
+		}
+
+		// drop our primary weapon if one exist
+		if (primaryWeapon)
+		{
+			G_DropWeapon(other, primaryWeapon);
+		}
+
+		// now pickup the other one
+		other->client->dropWeaponTime = level.time;
+
+		// add the weapon
+		COM_BitSet(other->client->ps.weapons, ent->item->giWeapon);
+
+		// fixup mauser/sniper issues
+		if (GetWeaponTableData(ent->item->giWeapon)->weapAlts)
+		{
+			weapon_t weapAlts = GetWeaponTableData(ent->item->giWeapon)->weapAlts;
+
+			if (GetWeaponTableData(weapAlts)->type & (WEAPON_TYPE_RIFLENADE | WEAPON_TYPE_SCOPED | WEAPON_TYPE_SET))
+			{
+				COM_BitSet(other->client->ps.weapons, weapAlts);
+			}
+		}
+
+		other->client->ps.ammoclip[GetWeaponTableData(ent->item->giWeapon)->clipIndex] = 0;
+		other->client->ps.ammo[GetWeaponTableData(ent->item->giWeapon)->ammoIndex]     = 0;
+
+		if (GetWeaponTableData(ent->item->giWeapon)->useClip)
+		{
+			other->client->ps.ammoclip[GetWeaponTableData(ent->item->giWeapon)->clipIndex] = quantity;
+		}
+		else
+		{
+			other->client->ps.ammo[GetWeaponTableData(ent->item->giWeapon)->clipIndex] = quantity;
+		}
+
+		// secondary weapon ammo (riflenade)
+		if (ent->delay != 0.f)
+		{
+			other->client->ps.ammo[GetWeaponTableData(ent->item->giWeapon)->weapAlts] = ent->delay;
+		}
+
+		// update userinfo
+		other->client->sess.playerWeapon = ent->item->giWeapon;
+		ClientUserinfoChanged(other->client->ps.clientNum);
 	}
 
 #ifdef FEATURE_OMNIBOT
@@ -590,8 +578,6 @@ int Pickup_Weapon(gentity_t *ent, gentity_t *other)
  */
 int Pickup_Health(gentity_t *ent, gentity_t *other)
 {
-	int max;
-
 	if (ent->parent && ent->parent->client)
 	{
 		other->client->pers.lasthealth_client = ent->parent->s.clientNum;
@@ -604,16 +590,10 @@ int Pickup_Health(gentity_t *ent, gentity_t *other)
 		G_DebugAddSkillPoints(ent->parent, SK_FIRST_AID, 1.f, "health pack picked up");
 	}
 
-	max = other->client->ps.stats[STAT_MAX_HEALTH];
-	if (other->client->sess.playerType == PC_MEDIC)
-	{
-		max *= 1.12f;
-	}
-
 	other->health += ent->item->quantity;
-	if (other->health > max)
+	if (other->health > other->client->ps.stats[STAT_MAX_HEALTH])
 	{
-		other->health = max;
+		other->health = other->client->ps.stats[STAT_MAX_HEALTH];
 	}
 	other->client->ps.stats[STAT_HEALTH] = other->health;
 
@@ -898,7 +878,8 @@ gentity_t *LaunchItem(gitem_t *item, vec3_t origin, vec3_t velocity, int ownerNu
 	temp[ROLL]  = 0;
 	G_SetAngle(dropped, temp);
 
-	dropped->s.eFlags |= EF_BOUNCE_HALF;
+	dropped->s.eFlags     |= EF_BOUNCE_HALF;
+	dropped->physicsBounce = 0.25;
 
 	if (item->giType == IT_TEAM)     // Special case for CTF flags
 	{
@@ -918,7 +899,7 @@ gentity_t *LaunchItem(gitem_t *item, vec3_t origin, vec3_t velocity, int ownerNu
 	}
 	else     // auto-remove after 30 seconds
 	{
-		dropped->think     = G_FreeEntity;
+		dropped->think     = G_MagicSink;
 		dropped->nextthink = level.time + 30000;
 	}
 
@@ -1071,8 +1052,7 @@ void FinishSpawningItem(gentity_t *ent)
 
 		// having alternate models defined in bg_misc.c for a health or ammo item specify it as "multi-stage"
 		// - left-hand operand of comma expression has no effect
-		// initial line: for(i=0;i<4,ent->item->world_model[i];i++) {}
-		for (i = 0; i < 4 && ent->item->world_model[i] ; i++)
+		for (i = 0; i < MAX_ITEM_MODELS && ent->item->world_model[i] ; i++)
 		{
 		}
 
@@ -1144,10 +1124,16 @@ void G_BounceItem(gentity_t *ent, trace_t *trace)
 	VectorScale(ent->s.pos.trDelta, ent->physicsBounce, ent->s.pos.trDelta);
 
 	// check for stop
-	if (trace->plane.normal[2] > 0 && ent->s.pos.trDelta[2] < 40)
+	if (trace->startsolid || (trace->plane.normal[2] > 0 && ent->s.pos.trDelta[2] < 40))
 	{
 		vectoangles(trace->plane.normal, ent->s.angles);
-		ent->s.angles[0] += 90;
+
+		// don't rotate corpse, looking too ugly
+		if (ent->s.eType != ET_CORPSE)
+		{
+			ent->s.angles[0] += 90;
+		}
+
 		if (ent->s.angles[0] > 0.0f && ent->s.angles[0] < 50.0f)
 		{
 			// align items on inclined ground
@@ -1161,6 +1147,7 @@ void G_BounceItem(gentity_t *ent, trace_t *trace)
 		SnapVector(trace->endpos);
 		G_SetOrigin(ent, trace->endpos);
 		ent->s.groundEntityNum = trace->entityNum;
+		ent->s.pos.trType      = TR_GRAVITY_PAUSED;        // overwrite
 		return;
 	}
 
@@ -1225,7 +1212,7 @@ void G_RunItem(gentity_t *ent)
 	vec3_t  origin;
 	trace_t tr;
 	int     contents;
-	int     mask;
+	int     mask = ent->clipmask ? ent->clipmask : MASK_SOLID;
 
 	// if groundentity has been set to -1, it may have been pushed off an edge
 	if (ent->s.groundEntityNum == -1)
@@ -1237,13 +1224,30 @@ void G_RunItem(gentity_t *ent)
 		}
 	}
 
-	if (ent->s.pos.trType == TR_STATIONARY || ent->s.pos.trType == TR_GRAVITY_PAUSED) // check think function
+	if (ent->s.pos.trType == TR_STATIONARY) // check think function
 	{
 		G_RunThink(ent);
 		return;
 	}
+	else if (ent->s.pos.trType == TR_GRAVITY_PAUSED)    // check if ent can start falling again
+	{
+		vec3_t newOrigin;
 
-	if (ent->s.pos.trType == TR_LINEAR && (!ent->clipmask && !ent->r.contents))
+		VectorCopy(ent->r.currentOrigin, newOrigin);
+		newOrigin[2] -= 4;
+		trap_Trace(&tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, newOrigin, ent->s.number, mask);
+
+		if (tr.fraction > 0.5f && !tr.startsolid)
+		{
+			VectorClear(ent->s.pos.trDelta);
+			ent->s.pos.trType = TR_GRAVITY;
+			ent->s.pos.trTime = level.time;
+		}
+
+		G_RunThink(ent);
+		return;
+	}
+	else if (ent->s.pos.trType == TR_LINEAR && (!ent->clipmask && !ent->r.contents))
 	{
 		// check think function
 		G_RunThink(ent);
@@ -1254,14 +1258,6 @@ void G_RunItem(gentity_t *ent)
 	BG_EvaluateTrajectory(&ent->s.pos, level.time, origin, qfalse, ent->s.effect2Time);
 
 	// trace a line from the previous position to the current position
-	if (ent->clipmask)
-	{
-		mask = ent->clipmask;
-	}
-	else
-	{
-		mask = MASK_SOLID;
-	}
 	trap_Trace(&tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, origin,
 	           ent->r.ownerNum, mask);
 

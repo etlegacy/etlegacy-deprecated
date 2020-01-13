@@ -38,8 +38,6 @@
 #include "g_etbot_interface.h"
 #endif
 
-#define MISSILE_PRESTEP_TIME    50
-
 /**
  * @brief G_BounceMissile
  * @param[in,out] ent
@@ -157,6 +155,7 @@ void G_BounceMissile(gentity_t *ent, trace_t *trace)
  * @param[in] ent
  * @param[in] trace
  * @param[in] impactDamage is how much damage the impact will do to func_explosives
+ * @return true if missile exploded otherwise false
  */
 void G_MissileImpact(gentity_t *ent, trace_t *trace, int impactDamage)
 {
@@ -220,9 +219,8 @@ void G_MissileImpact(gentity_t *ent, trace_t *trace, int impactDamage)
 		}
 	}
 
-	// is it cheaper in bandwidth to just remove this ent and create a new
+	// TODO: is it cheaper in bandwidth to just remove this ent and create a new
 	// one, rather than changing the missile into the explosion?
-
 	if (other->takedamage && other->client)
 	{
 		event       = EV_MISSILE_HIT;
@@ -241,27 +239,51 @@ void G_MissileImpact(gentity_t *ent, trace_t *trace, int impactDamage)
 		param = DirToByte(dir);
 	}
 
-	temp                   = G_TempEntity(trace->endpos, event);
-	temp->s.otherEntityNum = otherentnum;
-	//temp->r.svFlags |= SVF_BROADCAST;
-	temp->s.eventParm = param;
-	temp->s.weapon    = ent->s.weapon;
-	temp->s.clientNum = ent->r.ownerNum;
-
-	if (GetWeaponTableData(ent->s.weapon)->type & WEAPON_TYPE_MORTAR)
-	{
-		temp->r.svFlags |= SVF_BROADCAST;
-	}
-
 	// splash damage (doesn't apply to person directly hit)
 	if (ent->splashDamage)
 	{
 		G_RadiusDamage(trace->endpos, ent, ent->parent, ent->splashDamage, ent->splashRadius, other, ent->splashMethodOfDeath);
 	}
 
-	//trap_LinkEntity( ent );
+	// the missile exploded right after being fired
+	// client doesn't even received the new ent in a frame time delay
+	if (ent->spawnTime + FRAMETIME >= level.time)
+	{
 
-	G_FreeEntity(ent);
+		// temp impact mark event
+		temp                   = G_TempEntity(trace->endpos, event);
+		temp->s.otherEntityNum = otherentnum;
+		temp->r.svFlags       |= SVF_BROADCAST;
+		temp->s.eventParm      = param;
+		temp->s.weapon         = ent->s.weapon;
+		temp->s.clientNum      = ent->r.ownerNum;
+
+		// give big weapons the shakey shakey
+		if (GetWeaponTableData(ent->s.weapon)->attributes & WEAPON_ATTRIBUT_SHAKE)
+		{
+			temp                = G_TempEntity(ent->r.currentOrigin, EV_SHAKE);
+			temp->s.onFireStart = ent->splashDamage * 4;
+			temp->r.svFlags    |= SVF_BROADCAST;
+		}
+
+		G_FreeEntity(ent);
+	}
+	else
+	{
+		G_AddEvent(ent, event, param);
+		G_SetOrigin(ent, trace->endpos);
+		ent->s.otherEntityNum = otherentnum;
+
+		// give big weapons the shakey shakey
+		if (GetWeaponTableData(ent->s.weapon)->attributes & WEAPON_ATTRIBUT_SHAKE)
+		{
+			G_AddEvent(ent, EV_SHAKE, param);
+			ent->s.onFireStart = ent->splashDamage * 4;
+		}
+
+		ent->s.eType        = ET_GENERAL;
+		ent->freeAfterEvent = qtrue;
+	}
 }
 
 /**
@@ -336,7 +358,6 @@ void G_ExplodeMissile(gentity_t *ent)
 
 	if (etype == ET_MISSILE)
 	{
-
 		if (ent->s.weapon == WP_LANDMINE)
 		{
 			mapEntityData_t *mEnt;
@@ -480,7 +501,7 @@ void G_RunMissile(gentity_t *ent)
 	BG_EvaluateTrajectory(&ent->s.apos, level.time, angle, qtrue, ent->s.effect2Time);
 
 	// ignore body
-	if ((ent->clipmask & CONTENTS_BODY) && ((GetWeaponTableData(ent->s.weapon)->firingMode & WEAPON_FIRING_MODE_THROWABLE) || ent->s.weapon == WP_ARTY || ent->s.weapon == WP_AIRSTRIKE))
+	if ((ent->clipmask & CONTENTS_BODY) && (GetWeaponTableData(ent->s.weapon)->firingMode & WEAPON_FIRING_MODE_THROWABLE))
 	{
 		if (ent->s.pos.trDelta[0] == 0.f && ent->s.pos.trDelta[1] == 0.f && ent->s.pos.trDelta[2] == 0.f)
 		{
@@ -505,17 +526,19 @@ void G_RunMissile(gentity_t *ent)
 				tent->r.svFlags  |= SVF_BROADCAST;
 				tent->s.density   = 1;  // angular
 
-				G_FreeEntity(ent);
-				return;     // delete it and play explode sound
+				//G_ExplodeMissile(ent);  // play explode sound
+				G_FreeEntity(ent);      // and delete it
+				return;
 			}
 			else
 			{
-				float skyHeight;
+				float skyHeight, groundFloor;
 
-				skyHeight = BG_GetSkyHeightAtPoint(origin);
+				skyHeight   = BG_GetSkyHeightAtPoint(origin);
+				groundFloor = BG_GetTracemapGroundFloor();
 
-				// is ent under the ground limit
-				if (origin[2] < BG_GetTracemapGroundFloor())
+				// is ent under the ground limit, and ground valid
+				if (origin[2] < groundFloor && groundFloor != MAX_MAP_SIZE)
 				{
 					gentity_t *tent;
 
@@ -524,12 +547,13 @@ void G_RunMissile(gentity_t *ent)
 					tent->r.svFlags  |= SVF_BROADCAST;
 					tent->s.density   = 0;  // direct
 
-					G_FreeEntity(ent);
-					return; // delete it and play explode sound
+					//G_ExplodeMissile(ent);  // play explode sound
+					G_FreeEntity(ent);      // and delete it
+					return;
 				}
 
 				// are we in worldspace again - or did we hit a ceiling from the outside of the world
-				if (skyHeight == MAX_MAP_SIZE)
+				if (skyHeight == MAX_MAP_SIZE && ent->r.currentOrigin[2] <= origin[2])
 				{
 					G_RunThink(ent);
 					VectorCopy(origin, ent->r.currentOrigin);   // keep the previous origin to don't go too far
@@ -562,52 +586,31 @@ void G_RunMissile(gentity_t *ent)
 				ent->count2 = 1;
 			}
 		}
-	}
-
-	// trace a line from the previous position to the current position,
-	// ignoring interactions with the missile owner
-	trap_Trace(&tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, origin, ent->r.ownerNum, ent->clipmask);
-
-        if (((GetWeaponTableData(ent->s.weapon)->type & WEAPON_TYPE_MORTAR) ||
-	     ent->s.weapon == WP_AIRSTRIKE || ent->s.weapon == WP_ARTY) && ent->count2 == 1)
-	{
-		if (ent->r.currentOrigin[2] > origin[2] && origin[2] - BG_GetGroundHeightAtPoint(origin) < 512)
+		else if (ent->count2 == 1 && !(ent->s.eFlags & (EF_BOUNCE | EF_BOUNCE_HALF))
+		         && ent->r.currentOrigin[2] > origin[2]
+		         && origin[2] - BG_GetGroundHeightAtPoint(origin) < 1024)
 		{
 			vec3_t  impactpos;
 			trace_t mortar_tr;
 
 			VectorSubtract(origin, ent->r.currentOrigin, impactpos);
-			VectorMA(origin, 8, impactpos, impactpos);
+			VectorMA(origin, MAX_TRACE, impactpos, impactpos);
 
 			trap_Trace(&mortar_tr, origin, ent->r.mins, ent->r.maxs, impactpos, ent->r.ownerNum, ent->clipmask);
 
-			if (mortar_tr.fraction != 1.f)
+			if (mortar_tr.fraction != 1.f && !(mortar_tr.surfaceFlags & SURF_NOIMPACT))
 			{
-				gentity_t *tent;
+				G_AddEvent(ent, EV_MORTAR_IMPACT, 0);
+				VectorCopy(mortar_tr.endpos, ent->s.origin2);       // impact point
 
-				impactpos[2] = BG_GetGroundHeightAtPoint(impactpos);
-
-				tent              = G_TempEntity(impactpos, EV_MORTAR_IMPACT);
-				tent->s.clientNum = ent->r.ownerNum;
-				tent->r.svFlags  |= SVF_BROADCAST;
-				tent->s.weapon    = ent->s.weapon;
-
-				ent->count2 = 2;                        // missile is about to impact, no more check in worldspace are required
-
-				/*{
-				    gentity_t *tent;
-
-				    tent = G_TempEntity( origin, EV_RAILTRAIL );
-				    VectorCopy( impactpos, tent->s.origin2 );
-				    tent->s.dmgFlags = 0;
-
-				    tent = G_TempEntity( origin, EV_RAILTRAIL );
-				    VectorCopy( ent->r.currentOrigin, tent->s.origin2 );
-				    tent->s.dmgFlags = 0;
-				}*/
+				ent->count2 = 2;                                    // missile is about to impact, no more check in worldspace are required
 			}
 		}
 	}
+
+	// trace a line from the previous position to the current position,
+	// ignoring interactions with the missile owner
+	trap_Trace(&tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, origin, ent->r.ownerNum, ent->clipmask);
 
 	VectorCopy(tr.endpos, ent->r.currentOrigin);
 	VectorCopy(angle, ent->r.currentAngles);
@@ -621,8 +624,10 @@ void G_RunMissile(gentity_t *ent)
 
 	if (tr.fraction != 1.f)
 	{
+		/*qboolean exploded = qfalse;*/
+
 		if (level.tracemapLoaded && ent->s.pos.trType == TR_GRAVITY && ent->r.contents != CONTENTS_CORPSE
-                && ((!tr.surfaceFlags && tr.startsolid)|| (tr.surfaceFlags & SURF_SKY)))
+		    && (tr.surfaceFlags & SURF_SKY))
 		{
 			// goes through sky
 			ent->count = 1;
@@ -637,29 +642,21 @@ void G_RunMissile(gentity_t *ent)
 			return;
 		}
 
-		//      G_SetOrigin( ent, tr.endpos );
-
 		if (ent->r.contents == CONTENTS_CORPSE)
 		{
 			if (ent->s.pos.trType != TR_STATIONARY)
 			{
-				G_MissileImpact(ent, &tr, GetWeaponFireTableData(ent->s.weapon)->impactDamage);
+				/*exploded = */ G_MissileImpact(ent, &tr, GetWeaponFireTableData(ent->s.weapon)->impactDamage);
 			}
 		}
 		else
 		{
-			G_MissileImpact(ent, &tr, GetWeaponFireTableData(ent->s.weapon)->impactDamage);
+			/*exploded =*/ G_MissileImpact(ent, &tr, GetWeaponFireTableData(ent->s.weapon)->impactDamage);
 		}
 
 		if (ent->s.eType != ET_MISSILE)
 		{
-			gentity_t *tent;
-
-			tent = G_TempEntity(ent->r.currentOrigin, EV_SHAKE);
-
-			tent->s.onFireStart = ent->splashDamage * 4;
-			tent->r.svFlags    |= SVF_BROADCAST;
-			return;     // exploded
+			return;             // exploded
 		}
 	}
 	else if (VectorLengthSquared(ent->s.pos.trDelta) != 0.f)           // free fall/no intersection
@@ -1222,7 +1219,15 @@ void G_FadeItems(gentity_t *ent, int modType)
 		e->parent     = NULL;
 		e->r.ownerNum = ENTITYNUM_NONE;
 
-		G_FreeEntity(e);
+		// don't sink flying item
+		if (e->s.pos.trType != TR_STATIONARY)
+		{
+			G_FreeEntity(e);
+		}
+		else
+		{
+			G_MagicSink(e);
+		}
 	}
 }
 
@@ -1637,6 +1642,7 @@ qboolean G_LandmineSnapshotCallback(int entityNum, int clientNum)
 {
 	gentity_t *ent   = &g_entities[entityNum];
 	gentity_t *clEnt = &g_entities[clientNum];
+	int       i;
 
 	// don't send if landmine is not in pvs
 	if (!trap_InPVS(clEnt->client->ps.origin, ent->r.currentOrigin))
@@ -1670,12 +1676,25 @@ qboolean G_LandmineSnapshotCallback(int entityNum, int clientNum)
 		return qtrue;
 	}
 
-	// FIXME: do this for ettv
-	// allow ettv to see landmines
-	//if (clEnt->client->sess.sessionTeam == TEAM_SPECTATOR)
-	//{
-	//  return qtrue;
-	//}
+	// shoutcasters can see landmines
+	if (clEnt->client->sess.sessionTeam == TEAM_SPECTATOR && clEnt->client->sess.shoutcaster)
+	{
+		return qtrue;
+	}
+
+	// check also following shoutcasters
+	for (i = 0; i < level.numConnectedClients; i++)
+	{
+		gclient_t *cl = &level.clients[level.sortedClients[i]];
+
+		if (cl->sess.sessionTeam == TEAM_SPECTATOR &&
+		    cl->sess.spectatorState == SPECTATOR_FOLLOW &&
+		    cl->sess.spectatorClient == (clEnt - g_entities) &&
+		    cl->sess.shoutcaster)
+		{
+			return qtrue;
+		}
+	}
 
 	return qfalse;
 }
@@ -1703,7 +1722,7 @@ gentity_t *fire_missile(gentity_t *self, vec3_t start, vec3_t dir, int weapon)
 
 	// no self->client for shooter_grenade's
 	// if grenade time left, add it to next think and reset it, else add default value
-	if (self->client && self->client->ps.grenadeTimeLeft)
+	if (GetWeaponTableData(weapon)->grenadeTime && self->client && self->client->ps.grenadeTimeLeft)
 	{
 		bolt->nextthink                  = level.time + self->client->ps.grenadeTimeLeft;
 		self->client->ps.grenadeTimeLeft = 0;   // reset grenade timer

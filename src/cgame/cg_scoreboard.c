@@ -38,10 +38,10 @@
 char *Binding_FromName(const char *cvar);
 
 // colors and fonts for overlays
-vec4_t SB_bg = { 0.16f, 0.2f, 0.17f, 0.8f };
-vec4_t SB_bg2 = { 0.0f, 0.0f, 0.0f, 0.6f };
+vec4_t SB_bg     = { 0.16f, 0.2f, 0.17f, 0.8f };
+vec4_t SB_bg2    = { 0.0f, 0.0f, 0.0f, 0.6f };
 vec4_t SB_border = { 1.0f, 1.0f, 1.0f, 0.3f };
-vec4_t SB_text = { 0.6f, 0.6f, 0.6f, 1.0f };
+vec4_t SB_text   = { 0.6f, 0.6f, 0.6f, 1.0f };
 
 #define FONT_HEADER         &cgs.media.limboFont1
 #define FONT_TEXT           &cgs.media.limboFont2
@@ -120,7 +120,14 @@ int WM_DrawObjectives(int x, int y, int width, float fade)
 
 	if (cg.snap->ps.pm_type == PM_INTERMISSION)
 	{
-		const char *buf, *flagshader = NULL, *nameshader = NULL;
+		static qhandle_t alliesFlag = 0;
+		static qhandle_t textAllies = 0;
+		static qhandle_t axisFlag   = 0;
+		static qhandle_t textAxis   = 0;
+		static qhandle_t textWin    = 0;
+
+		const char *buf;
+		qhandle_t  *flagshader = NULL, *nameshader = NULL;
 		int        rows = 8;
 
 		y += 16 * (rows - 1);
@@ -145,28 +152,55 @@ int WM_DrawObjectives(int x, int y, int width, float fade)
 		else if (atoi(buf))
 		{
 			// "ALLIES";
-			flagshader = "ui/assets/portraits/allies_win_flag.tga";
-			nameshader = "ui/assets/portraits/text_allies.tga";
+
+			if (!alliesFlag)
+			{
+				alliesFlag = trap_R_RegisterShaderNoMip("ui/assets/portraits/allies_win_flag.tga");
+			}
+
+			if (!textAllies)
+			{
+				textAllies = trap_R_RegisterShaderNoMip("ui/assets/portraits/text_allies.tga");
+			}
+
+			flagshader = &alliesFlag;
+			nameshader = &textAllies;
 		}
 		else
 		{
 			// "AXIS";
-			flagshader = "ui/assets/portraits/axis_win_flag.tga";
-			nameshader = "ui/assets/portraits/text_axis.tga";
+
+			if (!axisFlag)
+			{
+				axisFlag = trap_R_RegisterShaderNoMip("ui/assets/portraits/axis_win_flag.tga");
+			}
+
+			if (!textAxis)
+			{
+				textAxis = trap_R_RegisterShaderNoMip("ui/assets/portraits/text_axis.tga");
+			}
+
+			flagshader = &axisFlag;
+			nameshader = &textAxis;
 		}
 
 		y += 16 * ((rows - 2) / 2);
 
 		if (flagshader)
 		{
-			CG_DrawPic(100 + cgs.wideXoffset, 10, 210, 136, trap_R_RegisterShaderNoMip(flagshader));
-			CG_DrawPic(325 + cgs.wideXoffset, 10, 210, 136, trap_R_RegisterShaderNoMip(flagshader));
+			CG_DrawPic(100 + cgs.wideXoffset, 10, 210, 136, *flagshader);
+			CG_DrawPic(325 + cgs.wideXoffset, 10, 210, 136, *flagshader);
 		}
 
 		if (nameshader)
 		{
-			CG_DrawPic(140 + cgs.wideXoffset, 50, 127, 64, trap_R_RegisterShaderNoMip(nameshader));
-			CG_DrawPic(365 + cgs.wideXoffset, 50, 127, 64, trap_R_RegisterShaderNoMip("ui/assets/portraits/text_win.tga"));
+			if (!textWin)
+			{
+				textWin = trap_R_RegisterShaderNoMip("ui/assets/portraits/text_win.tga");
+			}
+
+			CG_DrawPic(140 + cgs.wideXoffset, 50, 127, 64, *nameshader);
+			CG_DrawPic(365 + cgs.wideXoffset, 50, 127, 64, textWin);
 		}
 		return y;
 	}
@@ -221,7 +255,7 @@ int WM_DrawObjectives(int x, int y, int width, float fade)
 		}
 		else
 		{
-			s = va("%s   ^7%2.0f:%i%i", CG_TranslateString("MISSION TIME:"), (double)mins, tens, seconds);     // double cast to line up with reinforce time
+			s = va("%s   ^7%2.f:%i%i", CG_TranslateString("MISSION TIME:"), (float)mins, tens, seconds);
 		}
 
 		CG_Text_Paint_Ext(x, y, 0.25f, 0.25f, SB_text, s, 0, 0, 0, FONT_HEADER);
@@ -271,7 +305,7 @@ int WM_DrawObjectives(int x, int y, int width, float fade)
 				else
 				{
 					s = va("%s   %s%i", CG_TranslateString("REINFORCE TIME:"), (seconds <= 2 &&
-						cgs.clientinfo[cg.clientNum].health == 0 && !(cg.snap->ps.pm_flags & PMF_FOLLOW)) ? "^3" : "^F", seconds);
+					                                                            cgs.clientinfo[cg.clientNum].health == 0 && !(cg.snap->ps.pm_flags & PMF_FOLLOW)) ? "^3" : "^F", seconds);
 				}
 				CG_Text_Paint_Ext(SCREEN_WIDTH - 20 - CG_Text_Width_Ext(s, 0.25f, 0, FONT_HEADER) + cgs.wideXoffset, y, 0.25f, 0.25f, SB_text, s, 0, 0, 0, FONT_HEADER);
 			}
@@ -404,8 +438,8 @@ static void WM_DrawClientScore(int x, int y, score_t *score, float *color, float
 
 	tempx = x;
 
-	// VectorSet(hcolor, 1, 1, 1);
-	// hcolor[3] = fade;
+	//VectorSet(hcolor, 1, 1, 1);
+	//hcolor[3] = fade;
 
 	y += 12;
 
@@ -428,7 +462,7 @@ static void WM_DrawClientScore(int x, int y, score_t *score, float *color, float
 
 	if (ci->team != TEAM_SPECTATOR)
 	{
-		// draw ready icon if client is ready..
+		// draw ready icon if client is ready
 		if ((score->scoreflags & 1) && cgs.gamestate != GS_PLAYING)
 		{
 			CG_DrawPic(tempx - 1, y - 9, 10, 10, cgs.media.readyShader);
@@ -445,7 +479,7 @@ static void WM_DrawClientScore(int x, int y, score_t *score, float *color, float
 			maxchars -= 2;
 		}
 		else if (cgs.clientinfo[cg.clientNum].team != TEAM_SPECTATOR && ci->team == cgs.clientinfo[cg.clientNum].team
-			&& (ci->powerups & (1 << PW_OPS_DISGUISED)) && cgs.gamestate != GS_INTERMISSION)
+		         && (ci->powerups & (1 << PW_OPS_DISGUISED)) && cgs.gamestate != GS_INTERMISSION)
 		{
 			CG_DrawPic(tempx - 1, y - 9, 10, 10, ci->team == TEAM_AXIS ? cgs.media.alliedUniformShader : cgs.media.axisUniformShader);
 			offset   += 12;
@@ -453,7 +487,7 @@ static void WM_DrawClientScore(int x, int y, score_t *score, float *color, float
 			maxchars -= 2;
 		}
 		else if (cgs.clientinfo[cg.clientNum].team != TEAM_SPECTATOR && ci->team == cgs.clientinfo[cg.clientNum].team
-			&& cgs.clientinfo[score->client].health > 0 && (ci->powerups & (1 << PW_INVULNERABLE)) && cgs.gamestate != GS_INTERMISSION)
+		         && cgs.clientinfo[score->client].health > 0 && (ci->powerups & (1 << PW_INVULNERABLE)) && cgs.gamestate != GS_INTERMISSION)
 		{
 			CG_DrawPic(tempx - 1, y - 9, 10, 10, cgs.media.spawnInvincibleShader);
 			offset   += 12;
@@ -469,7 +503,8 @@ static void WM_DrawClientScore(int x, int y, score_t *score, float *color, float
 			tempx    += 12;
 			maxchars -= 2;
 		}
-		else if (cgs.clientinfo[cg.clientNum].team != TEAM_SPECTATOR && ci->team == cgs.clientinfo[cg.clientNum].team && cgs.clientinfo[score->client].health == 0 && cgs.gamestate != GS_INTERMISSION)
+		else if (cgs.clientinfo[cg.clientNum].team != TEAM_SPECTATOR && ci->team == cgs.clientinfo[cg.clientNum].team
+		         && cgs.clientinfo[score->client].health == 0 && cgs.gamestate != GS_INTERMISSION)
 		{
 			CG_DrawPic(tempx - 1, y - 9, 10, 10, cgs.media.medicIcon);
 			offset   += 12;
@@ -515,12 +550,12 @@ static void WM_DrawClientScore(int x, int y, score_t *score, float *color, float
 		// Show connecting people as CONNECTING
 		if (score->ping == -1)
 		{
-			s = CG_TranslateString("^3CONNECTING");
+			s = CG_TranslateString("CONNECTING");
 			p = "";
 		}
 		else
 		{
-			s = CG_TranslateString("^3SPECTATOR");
+			s = CG_TranslateString(va("%s", ci->shoutcaster ? "SHOUTCASTER" : "SPECTATOR"));
 			p = va("%4i", score->ping);
 		}
 
@@ -649,8 +684,8 @@ static void WM_DrawClientScore_Small(int x, int y, score_t *score, float *color,
 
 	tempx = x;
 
-	// VectorSet(hcolor, 1, 1, 1);
-	// hcolor[3] = fade;
+	//VectorSet(hcolor, 1, 1, 1);
+	//hcolor[3] = fade;
 
 	y += 10;
 
@@ -684,7 +719,7 @@ static void WM_DrawClientScore_Small(int x, int y, score_t *score, float *color,
 			maxchars -= 2;
 		}
 		else if (cgs.clientinfo[cg.clientNum].team != TEAM_SPECTATOR && ci->team == cgs.clientinfo[cg.clientNum].team
-			&& (ci->powerups & (1 << PW_OPS_DISGUISED)) && cgs.gamestate != GS_INTERMISSION)
+		         && (ci->powerups & (1 << PW_OPS_DISGUISED)) && cgs.gamestate != GS_INTERMISSION)
 		{
 			CG_DrawPic(tempx + 1, y - 9, 10, 10, ci->team == TEAM_AXIS ? cgs.media.alliedUniformShader : cgs.media.axisUniformShader);
 			offset   += 14;
@@ -692,7 +727,7 @@ static void WM_DrawClientScore_Small(int x, int y, score_t *score, float *color,
 			maxchars -= 2;
 		}
 		else if (cgs.clientinfo[cg.clientNum].team != TEAM_SPECTATOR && ci->team == cgs.clientinfo[cg.clientNum].team
-			&& cgs.clientinfo[score->client].health > 0 && (ci->powerups & (1 << PW_INVULNERABLE)) && cgs.gamestate != GS_INTERMISSION)
+		         && cgs.clientinfo[score->client].health > 0 && (ci->powerups & (1 << PW_INVULNERABLE)) && cgs.gamestate != GS_INTERMISSION)
 		{
 			CG_DrawPic(tempx + 1, y - 9, 10, 10, cgs.media.spawnInvincibleShader);
 			offset   += 14;
@@ -708,7 +743,8 @@ static void WM_DrawClientScore_Small(int x, int y, score_t *score, float *color,
 			tempx    += 14;
 			maxchars -= 2;
 		}
-		else if (cgs.clientinfo[cg.clientNum].team != TEAM_SPECTATOR && ci->team == cgs.clientinfo[cg.clientNum].team && cgs.clientinfo[score->client].health == 0 && cgs.gamestate != GS_INTERMISSION)
+		else if (cgs.clientinfo[cg.clientNum].team != TEAM_SPECTATOR && ci->team == cgs.clientinfo[cg.clientNum].team
+		         && cgs.clientinfo[score->client].health == 0 && cgs.gamestate != GS_INTERMISSION)
 		{
 			CG_DrawPic(tempx + 1, y - 9, 10, 10, cgs.media.medicIcon);
 			offset   += 14;
@@ -727,7 +763,7 @@ static void WM_DrawClientScore_Small(int x, int y, score_t *score, float *color,
 	{
 		for (j = 0; j < ci->medals[i]; j++)
 		{
-			Q_strcat(buf, sizeof(buf), va("^%c%c", COLOR_RED + i,GetSkillTableData(i)->skillNames[0]));
+			Q_strcat(buf, sizeof(buf), va("^%c%c", COLOR_RED + i, GetSkillTableData(i)->skillNames[0]));
 		}
 		maxchars--;
 	}
@@ -753,12 +789,12 @@ static void WM_DrawClientScore_Small(int x, int y, score_t *score, float *color,
 		// Show connecting people as CONNECTING
 		if (score->ping == -1)
 		{
-			s = CG_TranslateString("^3CONNECTING");
+			s = CG_TranslateString("CONNECTING");
 			p = "";
 		}
 		else
 		{
-			s = CG_TranslateString("^3SPECTATOR");
+			s = CG_TranslateString(va("%s", ci->shoutcaster ? "SHOUTCASTER" : "SPECTATOR"));
 			p = va("%4i", score->ping);
 		}
 		w = CG_Text_Width_Ext(s, 0.20f, 0, FONT_TEXT);
@@ -913,11 +949,11 @@ static int WM_TeamScoreboard(int x, int y, team_t team, float fade, int maxrows,
 	vec4_t     hcolor;
 	float      tempx, tempy;
 	int        i;
-	int        count          = 0;
-	int        width          = INFO_TOTAL_WIDTH;
+	int        count = 0;
+	int        width = INFO_TOTAL_WIDTH;
 	qboolean   use_mini_chars = qfalse, livesleft = qfalse;
-	const char *buffer        = CG_ConfigString(CS_SERVERINFO);
-	const char *str           = Info_ValueForKey(buffer, "g_maxlives");
+	const char *buffer = CG_ConfigString(CS_SERVERINFO);
+	const char *str    = Info_ValueForKey(buffer, "g_maxlives");
 
 	if (str && *str && atoi(str))
 	{
@@ -970,8 +1006,9 @@ static int WM_TeamScoreboard(int x, int y, team_t team, float fade, int maxrows,
 	else
 	{
 #ifdef FEATURE_RATING
-		char *s, *s2;
+		char *s;
 #endif
+		char *s2;
 
 		if (team == TEAM_AXIS)
 		{
@@ -1001,11 +1038,17 @@ static int WM_TeamScoreboard(int x, int y, team_t team, float fade, int maxrows,
 			else
 			{
 				s = va("%s [%d] (%d %s)", CG_TranslateString("AXIS"), cg.teamScores[0], cg.teamPlayers[team], cg.teamPlayers[team] < 2 ? CG_TranslateString("PLAYER") : CG_TranslateString("PLAYERS"));
+
+				s2 = va("%s: %.0f±%.0fms", CG_TranslateString("AVG PING"), (double)cg.teamPingMean[team], (double)cg.teamPingSd[team]);
+				CG_Text_Paint_Ext(x + width - 5 - CG_Text_Width_Ext(s2, 0.19f, 0, FONT_HEADER), y + 13, 0.19f, 0.19f, SB_text, s2, 0, 0, 0, FONT_HEADER);
 			}
 
 			CG_Text_Paint_Ext(x, y + 13, 0.25f, 0.25f, SB_text, s, 0, 0, 0, FONT_HEADER);
 #else
 			CG_Text_Paint_Ext(x, y + 13, 0.25f, 0.25f, SB_text, va("%s [%d] (%d %s)", CG_TranslateString("AXIS"), cg.teamScores[0], cg.teamPlayers[team], cg.teamPlayers[team] < 2 ? CG_TranslateString("PLAYER") : CG_TranslateString("PLAYERS")), 0, 0, 0, FONT_HEADER);
+
+			s2 = va("%s: %.0f±%.0fms", CG_TranslateString("AVG PING"), (double)cg.teamPingMean[team], (double)cg.teamPingSd[team]);
+			CG_Text_Paint_Ext(x + width - 5 - CG_Text_Width_Ext(s2, 0.19f, 0, FONT_HEADER), y + 13, 0.19f, 0.19f, SB_text, s2, 0, 0, 0, FONT_HEADER);
 #endif
 		}
 		else if (team == TEAM_ALLIES)
@@ -1036,11 +1079,17 @@ static int WM_TeamScoreboard(int x, int y, team_t team, float fade, int maxrows,
 			else
 			{
 				s = va("%s [%d] (%d %s)", CG_TranslateString("ALLIES"), cg.teamScores[1], cg.teamPlayers[team], cg.teamPlayers[team] < 2 ? CG_TranslateString("PLAYER") : CG_TranslateString("PLAYERS"));
+
+				s2 = va("%s: %.0f±%.0fms", CG_TranslateString("AVG PING"), (double)cg.teamPingMean[team], (double)cg.teamPingSd[team]);
+				CG_Text_Paint_Ext(x + width - 5 - CG_Text_Width_Ext(s2, 0.19f, 0, FONT_HEADER), y + 13, 0.19f, 0.19f, SB_text, s2, 0, 0, 0, FONT_HEADER);
 			}
 
 			CG_Text_Paint_Ext(x, y + 13, 0.25f, 0.25f, SB_text, s, 0, 0, 0, FONT_HEADER);
 #else
 			CG_Text_Paint_Ext(x, y + 13, 0.25f, 0.25f, SB_text, va("%s [%d] (%d %s)", CG_TranslateString("ALLIES"), cg.teamScores[1], cg.teamPlayers[team], cg.teamPlayers[team] < 2 ? CG_TranslateString("PLAYER") : CG_TranslateString("PLAYERS")), 0, 0, 0, FONT_HEADER);
+
+			s2 = va("%s: %.0f±%.0fms", CG_TranslateString("AVG PING"), (double)cg.teamPingMean[team], (double)cg.teamPingSd[team]);
+			CG_Text_Paint_Ext(x + width - 5 - CG_Text_Width_Ext(s2, 0.19f, 0, FONT_HEADER), y + 13, 0.19f, 0.19f, SB_text, s2, 0, 0, 0, FONT_HEADER);
 #endif
 		}
 	}
@@ -1100,7 +1149,10 @@ static int WM_TeamScoreboard(int x, int y, team_t team, float fade, int maxrows,
 
 	y += 18;
 
-	cg.teamPlayers[team] = 0;
+	cg.teamPlayers[team]  = 0;
+	cg.teamPingMean[team] = 0.f;
+	cg.teamPingSd[team]   = 0.f;
+
 	for (i = 0; i < cg.numScores; i++)
 	{
 		if (team != cgs.clientinfo[cg.scores[i].client].team)
@@ -1109,13 +1161,30 @@ static int WM_TeamScoreboard(int x, int y, team_t team, float fade, int maxrows,
 		}
 
 		cg.teamPlayers[team]++;
+		cg.teamPingMean[team] += cg.scores[i].ping;
+	}
+
+	if (cg.teamPlayers[team] != 0)
+	{
+		cg.teamPingMean[team] = cg.teamPingMean[team] / cg.teamPlayers[team];
+
+		for (i = 0; i < cg.numScores; i++)
+		{
+			if (team != cgs.clientinfo[cg.scores[i].client].team)
+			{
+				continue;
+			}
+
+			cg.teamPingSd[team] += pow(cg.scores[i].ping - cg.teamPingMean[team], 2);
+		}
+
+		cg.teamPingSd[team] = sqrtf(cg.teamPingSd[team] / cg.teamPlayers[team]);
 	}
 
 	if (cg.teamPlayers[team] > maxrows)
 	{
 		maxrows        = absmaxrows;
 		use_mini_chars = qtrue;
-
 	}
 	// save off y val
 	tempy = y;
@@ -1140,7 +1209,6 @@ static int WM_TeamScoreboard(int x, int y, team_t team, float fade, int maxrows,
 			CG_DrawBottom_NoScale(x - 5, y, width + 5, 12, 1);
 			trap_R_SetColor(NULL);
 			y += 12;
-
 		}
 		else
 		{
@@ -1227,10 +1295,11 @@ static int WM_TeamScoreboard(int x, int y, team_t team, float fade, int maxrows,
  */
 qboolean CG_DrawScoreboard(void)
 {
-	int   x = 20, y = 6, x_right = SCREEN_WIDTH - x - (INFO_TOTAL_WIDTH - 5), w;
+	int   x = 20, y = 6, x_right = SCREEN_WIDTH - x - (INFO_TOTAL_WIDTH - 5);
 	float fade;
-	int width = SCREEN_WIDTH - 2 * x + 5;
+	int   width = SCREEN_WIDTH - 2 * x + 5;
 #ifdef FEATURE_RATING
+	int        w;
 	const char *s, *s2, *s3;
 #endif
 	float fontScale = cg_fontScaleSP.value;
@@ -1303,9 +1372,8 @@ qboolean CG_DrawScoreboard(void)
 
 		//Skill Rating
 		// XP view
-
 		s3 = (cgs.skillRating && cg_scoreboard.integer == SCOREBOARD_SR) ? CG_TranslateString("Skill Rating view") : CG_TranslateString("XP view");
-		s = va(CG_TranslateString("%s - Press double-%s quickly to switch scoreboard"), s3, s2);
+		s  = va(CG_TranslateString("%s - Press double-%s quickly to switch scoreboard"), s3, s2);
 
 		w = CG_Text_Width_Ext(s, fontScale, 0, &cgs.media.limboFont2);
 		x = Ccg_WideX(SCREEN_WIDTH / 2) - w / 2;

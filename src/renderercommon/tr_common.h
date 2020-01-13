@@ -132,9 +132,9 @@ extern cvar_t *r_lodScale;
 
 extern cvar_t *r_fastSky;                       ///< controls whether sky should be cleared or drawn
 extern cvar_t *r_drawSun;                       ///< controls drawing of sun quad
-                                                ///< "0" no sun
-                                                ///< "1" draw sun
-                                                ///< "2" also draw lens flare effect centered on sun
+												///< "0" no sun
+												///< "1" draw sun
+												///< "2" also draw lens flare effect centered on sun
 extern cvar_t *r_dynamicLight;                  ///< dynamic lights enabled/disabled
 
 extern cvar_t *r_noreFresh;                     ///< bypasses the ref rendering
@@ -206,6 +206,7 @@ extern cvar_t *r_debugSort;
 extern cvar_t *r_printShaders;
 //extern cvar_t *r_saveFontData;
 
+//extern cvar_t *r_screenshotFormat;            ///< FIXME: both!
 //extern cvar_t *r_screenshotJpegQuality;       ///< FIXME: both!
 
 extern cvar_t *r_maxPolys;
@@ -234,5 +235,30 @@ typedef enum
 	RSPEEDS_NEAR_FAR
 
 } renderSpeeds_t;
+
+/**
+ * @struct imageExtToLoaderMap_s
+ * @brief
+ */
+typedef struct
+{
+	char *ext;
+	void(*ImageLoader)(const char *, unsigned char **, int *, int *, byte);
+} imageExtToLoaderMap_t;
+
+extern imageExtToLoaderMap_t imageLoaders[];
+extern int numImageLoaders;
+/*
+=============================================================
+IMAGE LOADERS
+=============================================================
+*/
+
+void R_LoadBMP(const char *name, byte **pic, int *width, int *height, byte alphaByte);
+void R_LoadJPG(const char *name, byte **pic, int *width, int *height, byte alphaByte);
+void R_LoadPCX(const char *name, byte **pic, int *width, int *height, byte alphaByte);
+void R_LoadPNG(const char *name, byte **pic, int *width, int *height, byte alphaByte);
+void R_LoadTGA(const char *name, byte **pic, int *width, int *height, byte alphaByte);
+void R_LoadSVG(const char *name, byte **pic, int *width, int *height, byte alphaByte);
 
 #endif  // INCLUDE_TR_COMMON_H

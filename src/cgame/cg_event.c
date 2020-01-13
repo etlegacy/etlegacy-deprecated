@@ -34,6 +34,9 @@
  */
 
 #include "cg_local.h"
+#include "../game/bg_local.h"
+
+#define POSSIBLE_PIECES 6
 
 extern void CG_StartShakeCamera(float param);
 extern void CG_Tracer(vec3_t source, vec3_t dest, int sparks);
@@ -684,12 +687,12 @@ void CG_RubbleFx(vec3_t origin, vec3_t dir, int mass, int type, sfxHandle_t soun
 		modelshader = shader;
 	}
 
-	for (i = FXTYPE_WOOD; i < FXTYPE_MAX; i++)
+	for (i = 0; i < POSSIBLE_PIECES; i++)
 	{
 		snd    = LEBS_NONE;
 		hmodel = 0;
 
-		for (howmany = 0; howmany < i; howmany++)
+		for (howmany = 0; howmany < pieces[i]; howmany++)
 		{
 			scale   = 1.0f;
 			endtime = 0;     // set endtime offset for faster/slower fadeouts
@@ -986,6 +989,8 @@ pass:
 	}
 }
 
+#define POSSIBLE_PIECES 6
+
 /**
  * @brief Made this more generic for spawning hits and breaks without needing a *cent
  * @param[in] origin
@@ -1060,12 +1065,12 @@ void CG_Explodef(vec3_t origin, vec3_t dir, int mass, int type, qhandle_t sound,
 		modelshader = shader;
 	}
 
-	for (i = FXTYPE_WOOD; i < FXTYPE_MAX; i++)
+	for (i = 0; i < POSSIBLE_PIECES; i++)
 	{
 		snd    = LEBS_NONE;
 		hmodel = 0;
 
-		for (howmany = 0; howmany < i; howmany++)
+		for (howmany = 0; howmany < pieces[i]; howmany++)
 		{
 			scale   = 1.0f;
 			endtime = 0;     // set endtime offset for faster/slower fadeouts
@@ -2114,7 +2119,7 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 		// start weapon idle animation
 		if (es->number == cg.snap->ps.clientNum)
 		{
-			cg.predictedPlayerState.weapAnim = ((cg.predictedPlayerState.weapAnim & ANIM_TOGGLEBIT) ^ ANIM_TOGGLEBIT) | WEAP_IDLE1;
+			cg.predictedPlayerState.weapAnim = ((cg.predictedPlayerState.weapAnim & ANIM_TOGGLEBIT) ^ ANIM_TOGGLEBIT) | PM_IdleAnimForWeapon(es->weapon);
 			cent->overheatTime               = cg.time;     // used to make the barrels smoke when overheated
 		}
 
@@ -2276,7 +2281,7 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 		vec3_t dir;
 
 		ByteToDir(es->eventParm, dir);
-		CG_MissileHitPlayer(cent, es->weapon, position, dir, es->otherEntityNum);
+		CG_MissileHitPlayer(es->number, es->weapon, position, dir, es->otherEntityNum);
 	}
 	break;
 	case EV_MISSILE_MISS_SMALL:
@@ -2296,7 +2301,7 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 		effect = (CG_PointContents(position, 0) & CONTENTS_WATER) ? PS_FX_WATER : PS_FX_NONE;
 
 		ByteToDir(es->eventParm, dir);
-		CG_MissileHitWall(es->weapon, effect, position, dir, 0, -1);
+		CG_MissileHitWall(es->weapon, effect, position, dir, 0, es->number);
 	}
 	break;
 	case EV_MISSILE_MISS_LARGE:
@@ -2305,15 +2310,14 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 		int    effect;
 
 		effect = (CG_PointContents(position, 0) & CONTENTS_WATER) ? PS_FX_WATER : PS_FX_NONE;
-
 		ByteToDir(es->eventParm, dir);
 		if (es->weapon == WP_ARTY || es->weapon == WP_AIRSTRIKE || es->weapon == WP_SMOKE_MARKER)
 		{
-			CG_MissileHitWall(es->weapon, effect, position, dir, 0, -1);
+			CG_MissileHitWall(es->weapon, effect, position, dir, 0, es->number);
 		}
 		else
 		{
-			CG_MissileHitWall(VERYBIGEXPLOSION, effect, position, dir, 0, -1);
+			CG_MissileHitWall(VERYBIGEXPLOSION, effect, position, dir, 0, es->number);
 		}
 	}
 	break;
@@ -2326,9 +2330,10 @@ void CG_EntityEvent(centity_t *cent, vec3_t position)
 
 			i = rand() % i;
 
-			trap_S_StartSoundVControl(NULL, es->number, CHAN_AUTO, cg_weapons[es->weapon].missileFallSound.sounds[i], 255);
+			trap_S_StartSoundExVControl(NULL, es->number, CHAN_AUTO, cg_weapons[es->weapon].missileFallSound.sounds[i], SND_OKTOCUT, 255);
 		}
-		CG_MortarImpact(cent, position);
+
+		CG_MortarImpact(cent, es->origin2);
 		break;
 	}
 	case EV_MORTAR_MISS:

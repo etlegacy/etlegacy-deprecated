@@ -567,11 +567,6 @@ textures/fueldump/cave_dark
 	q3map_nonplanar
 	q3map_shadeangle 60
 	qer_editorimage textures/stone/mxrock3_a.tga
-	
-	{
-		map $lightmap
-		rgbGen identity
-	}
 	{
 		stage diffusemap
 		map textures/stone/mxrock3_a.tga
@@ -587,6 +582,11 @@ textures/fueldump/cave_dark
 	    map textures/stone/mxrock3_a_r.tga
 		rgbGen identity
 	}
+	{
+		lightmap $lightmap
+		blendFunc GL_DST_COLOR GL_ZERO
+		rgbgen identity
+	}
 }
 
 textures/fueldump/cave_floor
@@ -595,10 +595,7 @@ textures/fueldump/cave_floor
 	q3map_nonplanar
 	q3map_shadeangle 60
 	qer_editorimage textures/stone/mxrock1aa.tga
-	{
-		map $lightmap
-		rgbGen identity
-	}
+	
 	{
 		stage diffusemap
 		map textures/stone/mxrock1aa.tga
@@ -609,10 +606,11 @@ textures/fueldump/cave_floor
 		map textures/stone/mxrock1aa_n.tga
 		rgbGen identity
 	}
+	
 	{
-		stage specularmap
-		map textures/stone/mxrock1aa_r.tga
-		rgbGen identity
+		lightmap $lightmap
+		blendFunc GL_DST_COLOR GL_ZERO
+		rgbgen identity
 	}
 }
 
@@ -892,9 +890,6 @@ textures/fueldump/icelake_top
 {
 	qer_trans 0.80
 	qer_editorimage textures/snow_sd/icelake3.tga
-	diffusemap textures/snow_sd/icelake3.tga
-	bumpmap textures/snow_sd/icelake3_n.tga
-	specularmap textures/snow_sd/icelake3_r.tga
 	sort seethrough
 	surfaceparm slick
 	surfaceparm trans
@@ -903,12 +898,13 @@ textures/fueldump/icelake_top
 	tesssize 256
 
 	{
-		map textures/effects/envmap_ice2
+		map textures/effects/envmap_ice2.tga
 		tcgen environment
 		blendfunc blend
 	}
-	{  
+	{
 		map textures/snow_sd/icelake3.tga
+		bumpmap textures/snow_sd/icelake3_n.tga
 		blendfunc blend
 	}
 	{
@@ -917,22 +913,20 @@ textures/fueldump/icelake_top
 		rgbGen identity
 		depthWrite
 	}
-	
+
 }
 
 textures/fueldump/icelake_bottom
 {
 	qer_trans 0.80
 	qer_editorimage textures/snow_sd/icelake3.tga
-	diffusemap textures/snow_sd/icelake3.tga
-	bumpmap textures/snow_sd/icelake3_n.tga
-	specularmap textures/snow_sd/icelake3_r.tga
 	sort seethrough
 	surfaceparm trans
 	cull disable
 	
 	{
 		map textures/snow_sd/icelake3.tga
+		bumpmap textures/snow_sd/icelake3_n.tga
 		blendfunc filter
 	}
 }

@@ -892,9 +892,26 @@ void Svcmd_SwapTeams_f(void)
  */
 void Svcmd_ShuffleTeamsXP_f(qboolean restart)
 {
+	int       i;
+	gentity_t *ent;
+
 	if (restart)
 	{
 		G_resetRoundState();
+	}
+
+	// ensure objectives are dropped with no restart
+	if (!restart)
+	{
+		for (i = 0; i < level.numConnectedClients; i++)
+		{
+			ent = g_entities + level.sortedClients[i];
+
+			if (ent->client->ps.powerups[PW_BLUEFLAG] || ent->client->ps.powerups[PW_REDFLAG])
+			{
+				G_DropItems(ent);
+			}
+		}
 	}
 
 	G_shuffleTeamsXP();
@@ -905,6 +922,7 @@ void Svcmd_ShuffleTeamsXP_f(qboolean restart)
 	{
 		return;
 	}
+
 	if (restart)
 	{
 		G_resetModeState();
@@ -935,9 +953,26 @@ void Svcmd_ShuffleTeamsXPNoRestart(void)
  */
 void Svcmd_ShuffleTeamsSR_f(qboolean restart)
 {
+	int       i;
+	gentity_t *ent;
+
 	if (restart)
 	{
 		G_resetRoundState();
+	}
+
+	// ensure objectives are dropped with no restart
+	if (!restart)
+	{
+		for (i = 0; i < level.numConnectedClients; i++)
+		{
+			ent = g_entities + level.sortedClients[i];
+
+			if (ent->client->ps.powerups[PW_BLUEFLAG] || ent->client->ps.powerups[PW_REDFLAG])
+			{
+				G_DropItems(ent);
+			}
+		}
 	}
 
 	G_shuffleTeamsSR();
@@ -948,6 +983,7 @@ void Svcmd_ShuffleTeamsSR_f(qboolean restart)
 	{
 		return;
 	}
+
 	if (restart)
 	{
 		G_resetModeState();
@@ -2483,27 +2519,29 @@ void Svcmd_Ref_f(void)
 
 /**
  * @brief Svcmd_Say_f
- *
- * @todo FIXME this 'say' condition is never reached?!
  */
-void Svcmd_Say_f(void)
+qboolean Svcmd_Say_f(void)
 {
 	if (g_dedicated.integer)
 	{
 		trap_SendServerCommand(-1, va("cpm \"server: %s\n\"", Q_AddCR(ConcatArgs(1))));
+		return qtrue;
 	}
+	return qfalse;
 }
 
 /**
  * @brief Svcmd_Chat_f
  */
-void Svcmd_Chat_f(void)
+qboolean Svcmd_Chat_f(void)
 {
 	if (g_dedicated.integer)
 	{
 		// added for rcon/Lua chat
 		trap_SendServerCommand(-1, va("chat \"console: %s\"", Q_AddCR(ConcatArgs(1))));
+		return qtrue;
 	}
+	return qfalse;
 }
 /**
  * @var consoleCommandTable
@@ -2530,6 +2568,8 @@ static consoleCommandTable_t consoleCommandTable[] =
 #endif
 	{ "makeReferee",                G_MakeReferee                 },
 	{ "removeReferee",              G_RemoveReferee               },
+	{ "makeShoutcaster",            G_makesc_cmd                  },
+	{ "removeShoutcaster",          G_removesc_cmd                },
 	{ "mute",                       G_MuteClient                  },
 	{ "unmute",                     G_UnMuteClient                },
 	{ "ban",                        G_PlayerBan                   },
@@ -2559,8 +2599,6 @@ static consoleCommandTable_t consoleCommandTable[] =
 	{ "ae",                         Svcmd_PlayerAnimEvent         },    //ae <playername> <animEvent>
 #endif
 	{ "ref",                        Svcmd_Ref_f                   },    // console also gets ref commands
-	{ "say",                        Svcmd_Say_f                   },
-	{ "chat",                       Svcmd_Chat_f                  },
 };
 
 /**
@@ -2595,7 +2633,17 @@ qboolean ConsoleCommand(void)
 	{
 		return qtrue;
 	}
+	else
 #endif
+	// special cases for chat
+	if (Q_stricmp(cmd, "say") == 0)
+	{
+		return Svcmd_Say_f();
+	}
+	else if (Q_stricmp(cmd, "chat") == 0)
+	{
+		return Svcmd_Chat_f();
+	}
 
 	for (i = 0; i < sizeof(consoleCommandTable) / sizeof(consoleCommandTable_t); i++)
 	{

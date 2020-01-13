@@ -162,7 +162,14 @@ void TossWeapons(gentity_t *self)
 		return;
 	}
 
-	primaryWeapon = G_GetPrimaryWeaponForClient(self->client);
+	if (self->client->sess.playerType == PC_SOLDIER && self->client->sess.skill[SK_HEAVY_WEAPONS] >= 4)
+	{
+		primaryWeapon = G_GetPrimaryWeaponForClientSoldier(self->client);
+	}
+	else
+	{
+		primaryWeapon = G_GetPrimaryWeaponForClient(self->client);
+	}
 
 	if (primaryWeapon)
 	{
@@ -636,6 +643,9 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
 		// set enemy location
 		BG_UpdateConditionValue(self->s.number, ANIM_COND_ENEMY_POSITION, 0, qfalse);
 
+		// play specific anim on suicide
+		BG_UpdateConditionValue(self->s.number, ANIM_COND_SUICIDE, meansOfDeath == MOD_SUICIDE, qtrue);
+
 		// FIXME: add POSITION_RIGHT, POSITION_LEFT
 		if (infront(self, inflictor))
 		{
@@ -657,7 +667,11 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
 		self->die = body_die;
 	}
 
-	G_FadeItems(self, MOD_SATCHEL);
+	// don't fade our own satchel if suicide with it, explosion effect will not be done
+	if (meansOfDeath != MOD_SATCHEL || attacker != self)
+	{
+		G_FadeItems(self, MOD_SATCHEL);
+	}
 
 	CalculateRanks();
 
@@ -669,7 +683,7 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
 #endif
 		limbo(self, qfalse);   // but no corpse
 	}
-	else if ((meansOfDeath == MOD_SUICIDE && g_gamestate.integer == GS_PLAYING))
+	else if (meansOfDeath == MOD_SUICIDE)
 	{
 #ifdef FEATURE_SERVERMDX
 		self->client->deathAnim = qtrue;    // add animation time
@@ -685,6 +699,12 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
 		{
 			limbo(self, qtrue);
 		}
+	}
+	else
+	{
+#ifdef FEATURE_SERVERMDX
+		self->client->deathAnim = qtrue;    // add animation time
+#endif
 	}
 }
 
@@ -1413,6 +1433,8 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t
 		{
 			attacker->client->ps.persistant[PERS_HITS] += damage;
 		}
+
+		BG_UpdateConditionValue(targ->client->ps.clientNum, ANIM_COND_ENEMY_WEAPON, attacker->client->ps.weapon, qtrue);
 	}
 
 	if (damage < 0)
@@ -1507,6 +1529,9 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t
 		}
 		G_LogRegionHit(attacker, HR_HEAD);
 		hr = HR_HEAD;
+
+		//BG_UpdateConditionValue(targ->client->ps.clientNum, ANIM_COND_IMPACT_POINT, IMPACTPOINT_HEAD, qtrue);
+		//BG_AnimScriptEvent(&targ->client->ps, targ->client->pers.character->animModelInfo, ANIM_ET_PAIN, qfalse, qtrue);
 	}
 	else if (IsLegShot(targ, dir, point, mod, &refent, qfalse))
 	{
@@ -1516,6 +1541,9 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t
 		{
 			trap_SendServerCommand(attacker - g_entities, "print \"Leg Shot\n\"");
 		}
+
+		//BG_UpdateConditionValue(targ->client->ps.clientNum, ANIM_COND_IMPACT_POINT, (rand() + 1) ? IMPACTPOINT_KNEE_RIGHT : IMPACTPOINT_KNEE_LEFT, qtrue);
+		//BG_AnimScriptEvent(&targ->client->ps, targ->client->pers.character->animModelInfo, ANIM_ET_PAIN, qfalse, qtrue);
 	}
 	else if (IsArmShot(targ, attacker, point, mod))
 	{
@@ -1525,15 +1553,27 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t
 		{
 			trap_SendServerCommand(attacker - g_entities, "print \"Arm Shot\n\"");
 		}
+
+		//BG_UpdateConditionValue(targ->client->ps.clientNum, ANIM_COND_IMPACT_POINT, (rand() + 1) ? IMPACTPOINT_SHOULDER_RIGHT : IMPACTPOINT_SHOULDER_LEFT, qtrue);
+		//BG_AnimScriptEvent(&targ->client->ps, targ->client->pers.character->animModelInfo, ANIM_ET_PAIN, qfalse, qtrue);
 	}
-	else if (targ->client && targ->health > 0 && GetMODTableData(mod)->isHeadshot)
+	else if (targ->client && targ->health > 0)
 	{
-		G_LogRegionHit(attacker, HR_BODY);
-		hr = HR_BODY;
-		if (g_debugBullets.integer)
+		if (GetMODTableData(mod)->isHeadshot)
 		{
-			trap_SendServerCommand(attacker - g_entities, "print \"Body Shot\n\"");
+			G_LogRegionHit(attacker, HR_BODY);
+			hr = HR_BODY;
+			if (g_debugBullets.integer)
+			{
+				trap_SendServerCommand(attacker - g_entities, "print \"Body Shot\n\"");
+			}
 		}
+		else if (GetMODTableData(mod)->isExplosive)
+		{
+			//BG_UpdateConditionValue(targ->client->ps.clientNum, ANIM_COND_STUNNED, 1, qtrue);
+		}
+
+		//BG_AnimScriptEvent(&targ->client->ps, targ->client->pers.character->animModelInfo, ANIM_ET_PAIN, qfalse, qtrue);
 	}
 
 #ifndef DEBUG_STATS
@@ -1635,6 +1675,10 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t
 				if ((targ->health < FORCE_LIMBO_HEALTH) && (targ->health > GIB_HEALTH))
 				{
 					limbo(targ, qtrue);
+				}
+				if (targ->health <= GIB_HEALTH)
+				{
+					GibEntity(targ, 0);
 				}
 			}
 			else

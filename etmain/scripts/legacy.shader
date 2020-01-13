@@ -429,7 +429,7 @@ gfx/limbo/cm_tug
 	}
 }
 
-gfx/limbo/mort_hit
+gfx/limbo/cm_mort_hit
 {
 	nopicmip
 	nocompress
@@ -443,69 +443,13 @@ gfx/limbo/mort_hit
 	}
 }
 
-gfx/limbo/mort_target
+gfx/limbo/cm_mort_target
 {
 	nopicmip
 	nocompress
 	nomipmaps
 	{
 		map gfx/limbo/mort_target.tga
-		depthFunc equal
-		blendfunc blend
-		rgbGen vertex
-		alphaGen vertex
-	}
-}
-
-gfx/loading/pin_allied
-{
-	nopicmip
-	nocompress
-	nomipmaps
-	{
-		map gfx/loading/pin_allied.tga
-		depthFunc equal
-		blendfunc blend
-		rgbGen vertex
-		alphaGen vertex
-	}
-}
-
-gfx/loading/pin_axis
-{
-	nopicmip
-	nocompress
-	nomipmaps
-	{
-		map gfx/loading/pin_axis.tga
-		depthFunc equal
-		blendfunc blend
-		rgbGen vertex
-		alphaGen vertex
-	}
-}
-
-gfx/loading/pin_neutral
-{
-	nopicmip
-	nocompress
-	nomipmaps
-	{
-		map gfx/loading/pin_neutral.tga
-		depthFunc equal
-		blendfunc blend
-		rgbGen vertex
-		alphaGen vertex
-	}
-}
-
-gfx/loading/pin_shot
-{
-	nopicmip
-	nocompress
-	nomipmaps
-	{
-		map gfx/loading/pin_shot.tga
 		depthFunc equal
 		blendfunc blend
 		rgbGen vertex
@@ -922,6 +866,21 @@ models/players/temperate/common/xrank11
 		map models/players/temperate/common/xrank11.tga
 		alphaFunc GE128
 		rgbGen lightingDiffuse
+	}
+}
+
+textures/sfx/shoutcast_landmine
+{
+	cull none
+	deformVertexes wave 1 sin -0.5 0 0 1
+	noPicmip
+	surfaceparm trans
+	{
+		map textures/sfx/construction.tga
+		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+		rgbGen entity
+		tcGen environment
+		tcMod scroll 0.025 -0.07625
 	}
 }
 

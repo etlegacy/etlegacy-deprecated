@@ -258,9 +258,11 @@ typedef struct
 
 	//float aviVideoFrameRemainder;
 	//float aviSoundFrameRemainder;
+	userAgent_t agent;                          ///< holds server engine information
 
 	/// big stuff at end of structure so most offsets are 15 bits or less
 	netchan_t netchan;
+
 } clientConnection_t;
 
 extern clientConnection_t clc;
@@ -320,12 +322,14 @@ typedef struct
  */
 typedef struct
 {
-	connstate_t state;              ///< connection status
-	int keyCatchers;                ///< bit flags
+	connstate_t state;               ///< connection status
+	challengeState_t challengeState; ///< challenge status
 
-	qboolean doCachePurge;          ///< empty the renderer cache as soon as possible
+	int keyCatchers;                 ///< bit flags
 
-	char servername[MAX_OSPATH];    ///< name of server from original connect (used by reconnect)
+	qboolean doCachePurge;           ///< empty the renderer cache as soon as possible
+
+	char servername[MAX_OSPATH];     ///< name of server from original connect (used by reconnect)
 
 	// when the server clears the hunk, all of these must be restarted
 	qboolean rendererStarted;
@@ -578,6 +582,7 @@ void CL_ParseServerMessage(msg_t *msg);
 //====================================================================
 
 void CL_ServerInfoPacket(netadr_t from, msg_t *msg);
+void CL_ServerInfoPacketCheck(netadr_t from, msg_t *msg);
 void CL_LocalServers_f(void);
 void CL_GlobalServers_f(void);
 void CL_Ping_f(void);
@@ -607,8 +612,6 @@ typedef struct
 	int totalLines;                     ///< total text filled lines in console scrollback
 	int maxTotalLines;                  ///< total lines in console scrollback
 
-	float xadjust;                      ///< for wide aspect screens
-
 	float displayFrac;                  ///< aproaches finalFrac at con_openspeed
 	float finalFrac;                    ///< 0.0 to 1.0 lines of console to display
 	float desiredFrac;                  ///< for variable console heights
@@ -624,8 +627,6 @@ typedef struct
 } console_t;
 
 extern console_t con;
-
-void Con_DrawCharacter(int cx, int line, int num);
 
 void Con_ToggleConsole_f(void);
 void Con_DrawNotify(void);
@@ -671,8 +672,7 @@ void SCR_DrawStringExt(int x, int y, float w, float h, const char *string, float
 
 #define SCR_DrawSmallChar(x, y, ch) SCR_DrawChar(x, y, SMALLCHAR_WIDTH, SMALLCHAR_HEIGHT, ch, qtrue)
 // ignores embedded color control characters
-#define SCR_DrawBigString(x, y, s, color, noColorEscape) SCR_DrawStringExt(x, y, BIGCHAR_WIDTH, BIGCHAR_HEIGHT, s, color, qtrue, noColorEscape, qtrue, qfalse)
-#define SCR_DrawSmallString(x, y, string, setColor, forceColor, noColorEscape) SCR_DrawStringExt(x, y, SMALLCHAR_WIDTH, BIGCHAR_HEIGHT, string, setColor, forceColor, noColorEscape, qfalse, qtrue)
+#define SCR_DrawSmallString(x, y, string, setColor, forceColor, noColorEscape) SCR_DrawStringExt(x, y, SMALLCHAR_WIDTH, SMALLCHAR_HEIGHT, string, setColor, forceColor, noColorEscape, qfalse, qtrue)
 
 // cl_cin.c
 

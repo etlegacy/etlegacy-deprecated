@@ -27,6 +27,8 @@ weaponDef
 		weaponIcon			"icons/iconw_panzerfaust"
 		weaponIconScale		2
 		weaponSelectedIcon	"icons/iconw_panzerfaust_1_select"
+		weaponSimpleIcon	"simpleicons/panzerfaust"
+		weaponSimpleIconScale 2 1
 		
 		weaponCardIcon      "gfx/limbo/weaponcard01"
 		weaponCardScale     1 1

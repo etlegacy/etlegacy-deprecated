@@ -42,6 +42,10 @@
 #include "../sys/sys_loadlib.h"
 #include "../renderercommon/tr_public.h"
 
+#ifdef FEATURE_PNG
+#include "zlib.h"
+#endif
+
 #ifdef USE_RENDERER_DLOPEN
 cvar_t *cl_renderer;
 #endif
@@ -343,12 +347,12 @@ void CL_WriteWaveOpen(void)
 		}
 	}
 
-	Com_Printf("Recording to %s.\n", name);
+	Com_Printf("Recording to %s\n", name);
 	clc.wavefile = FS_FOpenFileWrite(name);
 
 	if (!clc.wavefile)
 	{
-		Com_Printf("ERROR: couldn't open %s for writing.\n", name);
+		Com_Printf(S_COLOR_RED "ERROR: couldn't open %s for writing\n", name);
 		return;
 	}
 
@@ -496,8 +500,9 @@ void CL_MapLoading(void)
 		Cvar_Set("nextmap", "");
 		CL_Disconnect(qtrue);
 		Q_strncpyz(cls.servername, "localhost", sizeof(cls.servername));
-		cls.state       = CA_CHALLENGING; // so the connect screen is drawn
-		cls.keyCatchers = 0;
+		cls.state          = CA_CHALLENGING; // so the connect screen is drawn
+		cls.challengeState = CA_CHALLENGING_INFO;
+		cls.keyCatchers    = 0;
 		SCR_UpdateScreen();
 		clc.connectTime = -RETRANSMIT_TIMEOUT;
 		NET_StringToAdr(cls.servername, &clc.serverAddress, NA_UNSPEC);
@@ -520,8 +525,8 @@ static void CL_UpdateGUID(void)
 
 	if (len < ETKEY_SIZE)
 	{
-		Com_Printf(S_COLOR_RED "ERROR: Could not set etkey (size mismatch).\n");
-		Cvar_Set("cl_guid", "");
+		Com_Printf(S_COLOR_RED "ERROR: Could not set etkey (size mismatch)\n");
+		Cvar_Set("cl_guid", "unknown");
 	}
 	else
 	{
@@ -550,7 +555,7 @@ static void CL_GenerateETKey(void)
 	FS_FCloseFile(f);
 	if (len > 0)
 	{
-		Com_Printf("ETKEY found.\n");
+		Com_Printf("ETKEY found\n");
 		return;
 	}
 	else
@@ -569,16 +574,16 @@ static void CL_GenerateETKey(void)
 		f = FS_SV_FOpenFileWrite(BASEGAME "/" ETKEY_FILE);
 		if (!f)
 		{
-			Com_Printf(S_COLOR_RED "ERROR: Could not open %s for write.\n", ETKEY_FILE);
+			Com_Printf(S_COLOR_RED "ERROR: Could not open %s for write\n", ETKEY_FILE);
 			return;
 		}
 		if (FS_Write(buff, sizeof(buff), f) > 0)
 		{
-			Com_Printf(S_COLOR_CYAN "ETKEY file generated.\n");
+			Com_Printf(S_COLOR_CYAN "ETKEY file generated\n");
 		}
 		else
 		{
-			Com_Printf(S_COLOR_RED "ERROR: Could not write file %s.\n", ETKEY_FILE);
+			Com_Printf(S_COLOR_RED "ERROR: Could not write file %s\n", ETKEY_FILE);
 		}
 		FS_FCloseFile(f);
 	}
@@ -671,21 +676,17 @@ void CL_Disconnect(qboolean showMainMenu)
 	// not connected to a pure server anymore
 	cl_connectedToPureServer = qfalse;
 
+	// reset connection state
+	cls.state = CA_DISCONNECTED;
+
 	// don't try a restart if uivm is NULL, as we might be in the middle of a restart already
 	if (uivm && cls.state > CA_DISCONNECTED)
 	{
-		// restart the UI
-		cls.state = CA_DISCONNECTED;
-
 		// shutdown the UI
 		CL_ShutdownUI();
 
 		// init the UI
 		CL_InitUI();
-	}
-	else
-	{
-		cls.state = CA_DISCONNECTED;
 	}
 }
 
@@ -740,7 +741,7 @@ static void CL_RequestMotd(void)
 
 	if (!NET_StringToAdr(va("%s:%i", MOTD_SERVER_NAME, PORT_MOTD), &autoupdate.motdServer, NA_UNSPEC))
 	{
-		Com_Printf("couldn't resolve address\n");
+		Com_Printf(S_COLOR_YELLOW "couldn't resolve address\n");
 		return;
 	}
 	else
@@ -804,7 +805,7 @@ static void CL_ForwardToServer_f(void)
 {
 	if (cls.state != CA_ACTIVE || clc.demoplaying)
 	{
-		Com_Printf("Not connected to a server.\n");
+		Com_Printf("Not connected to a server\n");
 		return;
 	}
 
@@ -835,7 +836,7 @@ static void CL_Reconnect_f(void)
 {
 	if (!strlen(cls.servername) || !strcmp(cls.servername, "localhost"))
 	{
-		Com_Printf("Can't reconnect to localhost.\n");
+		Com_Printf("Can't reconnect to localhost\n");
 		return;
 	}
 	Cbuf_AddText(va("connect %s\n", cls.servername));
@@ -873,7 +874,7 @@ static void CL_Connect_f(void)
 		}
 		else
 		{
-			Com_Printf("warning: only -4 or -6 as address type understood.\n");
+			Com_Printf(S_COLOR_YELLOW "WARNING: only -4 or -6 as address type understood\n");
 		}
 
 		server = Cmd_Argv(2);
@@ -956,7 +957,8 @@ static void CL_Connect_f(void)
 	// if we aren't playing on a lan, we need to request a challenge
 	if (NET_IsLocalAddress(clc.serverAddress))
 	{
-		cls.state = CA_CHALLENGING;
+		cls.state          = CA_CHALLENGING;
+		cls.challengeState = CA_CHALLENGING_INFO;
 	}
 	else
 	{
@@ -1017,8 +1019,7 @@ static void CL_Rcon_f(void)
 
 	if (!rcon_client_password->string[0])
 	{
-		Com_Printf("You must set 'rconpassword' before\n"
-		           "issuing an rcon command.\n");
+		Com_Printf("You must set 'rconpassword' before issuing a rcon command\n");
 		return;
 	}
 
@@ -1043,9 +1044,7 @@ static void CL_Rcon_f(void)
 	{
 		if (!strlen(rconAddress->string))
 		{
-			Com_Printf("You must either be connected,\n"
-			           "or set the 'rconAddress' cvar\n"
-			           "to issue rcon commands\n");
+			Com_Printf("You must either be connected, or set the 'rconAddress' cvar to issue rcon commands\n");
 			return;
 		}
 		NET_StringToAdr(rconAddress->string, &rcon_address, NA_UNSPEC);
@@ -1231,7 +1230,7 @@ static void CL_Configstrings_f(void)
 
 	if (cls.state != CA_ACTIVE)
 	{
-		Com_Printf("Not connected to a server.\n");
+		Com_Printf("Not connected to a server\n");
 		return;
 	}
 
@@ -1313,18 +1312,18 @@ void CL_SaveFavServersToFile_f(void)
  * DO NOT ACTIVATE UNTIL WE HAVE CLARIFIED SECURITY! (command execution vie ascripts)
 void CL_AddFavServer_f(void)
 {
-	if (cls.state != CA_ACTIVE)
-	{
-		Com_Printf("Not connected to a server.\n");
-		return;
-	}
+    if (cls.state != CA_ACTIVE)
+    {
+        Com_Printf("Not connected to a server\n");
+        return;
+    }
 
-	if (clc.demoplaying)
-	{
-		return;
-	}
+    if (clc.demoplaying)
+    {
+        return;
+    }
 
-	(void) LAN_AddServer(AS_FAVORITES, "", NET_AdrToString(clc.netchan.remoteAddress));
+    (void) LAN_AddServer(AS_FAVORITES, "", NET_AdrToString(clc.netchan.remoteAddress));
 }
 */
 
@@ -1374,6 +1373,8 @@ void CL_DownloadsComplete(void)
  */
 void CL_CheckForResend(void)
 {
+	int  i;
+	char buffer[64];
 	// don't send anything if playing back a demo
 	if (clc.demoplaying)
 	{
@@ -1398,33 +1399,58 @@ void CL_CheckForResend(void)
 	{
 	case CA_CONNECTING:
 	{
-		char pkt[1024 + 1];
-
-		strcpy(pkt, "getchallenge");
-		NET_OutOfBandPrint(NS_CLIENT, clc.serverAddress, pkt);
+		strcpy(buffer, "getchallenge");
+		NET_OutOfBandPrint(NS_CLIENT, clc.serverAddress, buffer);
 	}
 	break;
 	case CA_CHALLENGING:
 	{
-		int  port;
-		char info[MAX_INFO_STRING];
-		char data[MAX_INFO_STRING + 10];
+		// first get the server information
+		if (cls.challengeState == CA_CHALLENGING_INFO)
+		{
+			Com_sprintf(buffer, sizeof(buffer), "getinfo %i", clc.challenge);
+			NET_OutOfBandPrint(NS_CLIENT, clc.serverAddress, buffer);
+		}
+		// then attempt to connect
+		else
+		{
+			int  port;
+			char info[MAX_INFO_STRING];
+			char data[MAX_INFO_STRING + 10];
 
-		// received and confirmed the challenge, now responding with a connect packet
-		port = (int)(Cvar_VariableValue("net_qport"));
+			// received and confirmed the challenge, now responding with a connect packet
+			port = (int)(Cvar_VariableValue("net_qport"));
 
-		Q_strncpyz(info, Cvar_InfoString(CVAR_USERINFO), sizeof(info));
-		Info_SetValueForKey(info, "protocol", va("%i", PROTOCOL_VERSION));
-		Info_SetValueForKey(info, "qport", va("%i", port));
-		Info_SetValueForKey(info, "challenge", va("%i", clc.challenge));
+			Q_strncpyz(info, Cvar_InfoString(CVAR_USERINFO), sizeof(info));
 
-		Com_sprintf(data, sizeof(data), "connect \"%s\"", info);
-		NET_OutOfBandData(NS_CLIENT, clc.serverAddress, (const char *) data, strlen(data));
+			// make sure nothing restricted can slip through
+			if (!Com_IsCompatible(&clc.agent, 0x1))
+			{
+				for (i = 0; i < MAX_INFO_STRING; ++i)
+				{
+					if (!info[i])
+					{
+						break;
+					}
+					if ((byte)info[i] > 127 || info[i] == '%')
+					{
+						info[i] = '.';
+					}
+				}
+			}
 
-		// the most current userinfo has been sent, so watch for any
-		// newer changes to userinfo variables
-		cvar_modifiedFlags &= ~CVAR_USERINFO;
+			Info_SetValueForKey(info, "protocol", va("%i", PROTOCOL_VERSION));
+			Info_SetValueForKey(info, "qport", va("%i", port));
+			Info_SetValueForKey(info, "challenge", va("%i", clc.challenge));
+			Info_SetValueForKey(info, "etVersion", Q3_VERSION); // send product info
 
+			Com_sprintf(data, sizeof(data), "connect \"%s\"", info);
+			NET_OutOfBandData(NS_CLIENT, clc.serverAddress, (const char *) data, strlen(data));
+
+			// the most current userinfo has been sent, so watch for any
+			// newer changes to userinfo variables
+			cvar_modifiedFlags &= ~CVAR_USERINFO;
+		}
 	}
 	break;
 	default:
@@ -1602,7 +1628,7 @@ void CL_ServersResponsePacket(const netadr_t *from, msg_t *msg, qboolean extende
 	unsigned int i, numservers = 0;
 	int          j, count, total;
 	netadr_t     addresses[MAX_SERVERSPERPACKET];
-	byte         *buffptr = msg->data; 	// parse through server response string
+	byte         *buffptr = msg->data;  // parse through server response string
 	byte         *buffend = buffptr + msg->cursize;
 
 	//Com_Printf("CL_ServersResponsePacket\n");
@@ -1766,7 +1792,7 @@ void CL_ConnectionlessPacket(netadr_t from, msg_t *msg)
 	{
 		if (cls.state != CA_CONNECTING)
 		{
-			Com_Printf("Unwanted challenge response received. '%s' ignored.\n", c);
+			Com_Printf("Unwanted challenge response received, '%s' ignored\n", c);
 		}
 		else
 		{
@@ -1781,6 +1807,7 @@ void CL_ConnectionlessPacket(netadr_t from, msg_t *msg)
 				clc.onlyVisibleClients = 0;
 			}
 			cls.state              = CA_CHALLENGING;
+			cls.challengeState     = CA_CHALLENGING_INFO;
 			clc.connectPacketCount = 0;
 			clc.connectTime        = -99999;
 
@@ -1824,6 +1851,12 @@ void CL_ConnectionlessPacket(netadr_t from, msg_t *msg)
 	// server responding to an info broadcast
 	if (!Q_stricmp(c, "infoResponse"))
 	{
+		if (cls.state == CA_CHALLENGING && cls.challengeState == CA_CHALLENGING_INFO)
+		{
+			CL_ServerInfoPacketCheck(from, msg);
+			cls.challengeState = CA_CHALLENGING_REQUEST;
+			return;
+		}
 		CL_ServerInfoPacket(from, msg);
 		return;
 	}
@@ -2140,7 +2173,7 @@ void CL_CaptureFrameVideo(void)
 		{
 			CL_StartVideoRecording(NULL);
 			CL_TakeVideoFrame();
-			//Com_Printf("Error while recording avi, the file is not open.\n");
+			//Com_Printf("Error while recording avi, the file is not open\n");
 		}
 		break;
 	default:
@@ -2592,8 +2625,6 @@ void CL_InitRef(void)
 	char        dllName[MAX_OSPATH];
 #endif
 
-	Com_Printf("----- Initializing Renderer ----\n");
-
 #ifdef USE_RENDERER_DLOPEN
 	cl_renderer = Cvar_Get("cl_renderer", "opengl1", CVAR_ARCHIVE | CVAR_LATCH);
 
@@ -2686,6 +2717,11 @@ void CL_InitRef(void)
 	ri.CL_VideoRecording     = CL_VideoRecording;
 	ri.CL_WriteAVIVideoFrame = CL_WriteAVIVideoFrame;
 
+#ifdef FEATURE_PNG
+	ri.zlib_crc32    = crc32;
+	ri.zlib_compress = compress;
+#endif
+
 	ri.Sys_GLimpSafeInit = Sys_GLimpSafeInit;
 	ri.Sys_GLimpInit     = Sys_GLimpInit;
 	ri.Sys_SetEnv        = Sys_SetEnv;
@@ -2708,8 +2744,6 @@ void CL_InitRef(void)
 
 	ret = GetRefAPI(REF_API_VERSION, &ri);
 
-	Com_Printf("-------------------------------\n");
-
 	if (!ret)
 	{
 		Com_Error(ERR_FATAL, "Couldn't initialize renderer library");
@@ -2728,7 +2762,7 @@ void CL_InitRef(void)
  */
 void CL_Init(void)
 {
-	Com_Printf("----- Client Initialization -----\n");
+	Com_Printf("----- Client Initialization ----\n");
 
 	Con_Init();
 
@@ -2939,7 +2973,7 @@ void CL_Init(void)
 	// Initialize random number to be used in pairing of messages with replies
 	srand(Com_Milliseconds());
 
-	Com_Printf("----- Client Initialization Complete -----\n");
+	Com_Printf("--------------------------------\n");
 }
 
 /**
@@ -2949,11 +2983,11 @@ void CL_Shutdown(void)
 {
 	static qboolean recursive = qfalse;
 
-	Com_Printf("----- CL_Shutdown -----\n");
+	Com_Printf("----- Client Shutdown ----------\n");
 
 	if (recursive)
 	{
-		Com_Printf("WARNING: Recursive shutdown\n");
+		Com_Printf(S_COLOR_YELLOW "WARNING: Recursive shutdown\n");
 		return;
 	}
 	recursive = qtrue;
@@ -3044,7 +3078,7 @@ void CL_Shutdown(void)
 	Com_Memset(&cls, 0, sizeof(cls));
 	//Key_SetCatcher( 0 );
 
-	Com_Printf("-----------------------\n");
+	Com_Printf("--------------------------------\n");
 }
 
 /**
@@ -3228,6 +3262,46 @@ void CL_ServerInfoPacket(netadr_t from, msg_t *msg)
 		}
 		Com_Printf("%s: %s", NET_AdrToString(from), info);
 	}
+}
+
+/**
+ * @brief CL_ServerInfoPacketCheck
+ * @param[in] from
+ * @param[in] msg
+ */
+void CL_ServerInfoPacketCheck(netadr_t from, msg_t *msg)
+{
+	int  prot;
+	char *infoString;
+	char *gameName;
+
+	infoString = MSG_ReadString(msg);
+
+	// if this isn't the correct protocol version, ignore it
+	prot = atoi(Info_ValueForKey(infoString, "protocol"));
+	if (prot != PROTOCOL_VERSION)
+	{
+		Com_DPrintf("Different protocol info packet: %s\n", infoString);
+		Com_Error(ERR_FATAL, "Game server uses unsupported protocol: %i, expected %i (%s)", prot, PROTOCOL_VERSION, GAMENAME_STRING);
+		return;
+	}
+
+	// if this isn't the correct game, ignore it
+	gameName = Info_ValueForKey(infoString, "gamename");
+	if (!gameName[0] || Q_stricmp(gameName, GAMENAME_STRING))
+	{
+		Com_DPrintf("Different game info packet: %s\n", infoString);
+		Com_Error(ERR_FATAL, "Unsupported game server: %s", gameName);
+		return;
+	}
+
+	// upon challenging we request server info to obtain user agent information
+	// btw, old clients dont store version in getinfoResponse body, however, all etl clients do
+	if (cls.state == CA_CHALLENGING && cls.challengeState == CA_CHALLENGING_INFO)
+	{
+		Com_ParseUA(&clc.agent, Info_ValueForKey(infoString, "version"));
+	}
+
 }
 
 /**
@@ -3531,7 +3605,7 @@ void CL_GlobalServers_f(void)
 	}
 
 	// request from all master servers
-	if ( masterNum == 0 )
+	if (masterNum == 0)
 	{
 		int numAddress = 0;
 
@@ -3592,7 +3666,7 @@ void CL_GlobalServers_f(void)
 	{
 		int v4enabled = Cvar_VariableIntegerValue("net_enabled") & NET_ENABLEV4;
 
-		if(v4enabled)
+		if (v4enabled)
 		{
 			Com_sprintf(command, sizeof(command), "getserversExt %s %s", GAMENAME_STRING, Cmd_Argv(2));
 		}

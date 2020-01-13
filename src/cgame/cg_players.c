@@ -278,8 +278,14 @@ void CG_NewClientInfo(int clientNum)
 	v                       = Info_ValueForKey(configstring, "sw");
 	newInfo.secondaryweapon = atoi(v);
 
+	v                              = Info_ValueForKey(configstring, "lsw");
+	newInfo.latchedsecondaryweapon = atoi(v);
+
 	v                 = Info_ValueForKey(configstring, "ref");
 	newInfo.refStatus = atoi(v);
+
+	v                   = Info_ValueForKey(configstring, "sc");
+	newInfo.shoutcaster = atoi(v);
 
 	// Detect rank/skill changes client side.
 	// Make sure we have some valid clientinfo, otherwise people are thrown
@@ -308,7 +314,7 @@ void CG_NewClientInfo(int clientNum)
 		{
 			CG_SoundPlaySoundScript(GetRankTableData(cgs.clientinfo[cg.clientNum].team, newInfo.rank)->soundNames, NULL, -1, qtrue);
 
-			if (cg_popupBigFilter.integer & POPUP_BIG_FILTER_RANK)
+			if (!(cg_popupBigFilter.integer & POPUP_BIG_FILTER_RANK))
 			{
 				CG_AddPMItemBig(PM_RANK, va(CG_TranslateString("Promoted to rank %s!"), GetRankTableData(cgs.clientinfo[cg.clientNum].team, newInfo.rank)->names), rankicons[newInfo.rank][cgs.clientinfo[cg.clientNum].team == TEAM_AXIS ? 1 : 0][0].shader);
 			}
@@ -342,7 +348,7 @@ void CG_NewClientInfo(int clientNum)
 				if (!cgs.demoCamera.renderingFreeCam && !cgs.demoCamera.renderingWeaponCam)
 				{
 #endif
-				if (cg_popupBigFilter.integer & POPUP_BIG_FILTER_SKILL)
+				if (!(cg_popupBigFilter.integer & POPUP_BIG_FILTER_SKILL))
 				{
 					CG_AddPMItemBig(PM_SKILL, va(CG_TranslateString("Increased %s skill to level %i!"), CG_TranslateString(GetSkillTableData(i)->skillNames), newInfo.skill[i]), cgs.media.skillPics[i]);
 				}
@@ -371,13 +377,24 @@ void CG_NewClientInfo(int clientNum)
 
 				trap_Cvar_Set("cg_ui_voteFlags", Info_ValueForKey(info, "voteFlags"));
 				CG_Printf("[cgnotify]^3*** You have been stripped of your referee status! ***\n");
-
 			}
 			else
 			{
 				trap_Cvar_Set("cg_ui_voteFlags", "0");
 				CG_Printf("[cgnotify]^2*** You have been authorized \"%s\" status ***\n", ((newInfo.refStatus == RL_RCON) ? "rcon" : "referee"));
 				CG_Printf("Type: ^3ref^7 (by itself) for a list of referee commands.\n");
+			}
+		}
+
+		if (newInfo.shoutcaster != ci->shoutcaster)
+		{
+			if (newInfo.shoutcaster <= 0)
+			{
+				CG_Printf("[cgnotify]^3*** You have been stripped of your shoutcaster status! ***\n");
+			}
+			else
+			{
+				CG_Printf("[cgnotify]^2*** You have been authorized \"shoutcaster\" status ***\n");
 			}
 		}
 	}
@@ -1904,100 +1921,6 @@ static void CG_PlayerFloatSprite(centity_t *cent, qhandle_t shader, int height, 
 }
 
 /**
- * @brief Float a sprite over the player's head
- * added height parameter
- * @param point
- * @param[out] x
- * @param[out] y
- * @return
- */
-qboolean CG_WorldCoordToScreenCoordFloat(vec3_t point, float *x, float *y)
-{
-	vec3_t trans;
-	float xc, yc;
-	float px, py;
-	float z;
-
-	px = (float)tan(DEG2RAD((double)cg.refdef.fov_x) / 2);
-	py = (float)tan(DEG2RAD((double)cg.refdef.fov_y) / 2);
-
-	VectorSubtract(point, cg.refdef.vieworg, trans);
-
-	xc = 640.0f / 2.0f;
-	yc = 480.0f / 2.0f;
-
-	z = DotProduct(trans, cg.refdef.viewaxis[0]);
-	if (z < 0.1f)
-	{
-		return qfalse;
-	}
-	px *= z;
-	py *= z;
-	if (px == 0.f || py == 0.f)
-	{
-		return qfalse;
-	}
-
-	*x = xc - (DotProduct(trans, cg.refdef.viewaxis[1]) * xc) / px;
-	*y = yc - (DotProduct(trans, cg.refdef.viewaxis[2]) * yc) / py;
-	*x = Ccg_WideX(*x);
-
-	return qtrue;
-}
-
-/**
- * @brief CG_AddOnScreenText
- * @param[in] text
- * @param[in] origin
- * @param[in] clientNum
- */
-void CG_AddOnScreenText(const char *text, vec3_t origin, int clientNum)
-{
-	float x, y;
-
-	if (!ISVALIDCLIENTNUM(clientNum))
-	{
-		return;
-	}
-
-	if (CG_WorldCoordToScreenCoordFloat(origin, &x, &y))
-	{
-		float scale, w, h;
-		float dist  = VectorDistance(origin, cg.refdef_current->vieworg);
-		float dist2 = (dist * dist) / (3600.0f);
-
-		if (dist2 > 2.0f)
-		{
-			dist2 = 2.0f;
-		}
-
-		scale = 2.4f - dist2 - dist / 6000.0f;
-		if (scale < 0.05f)
-		{
-			scale = 0.05f;
-		}
-
-		w = CG_Text_Width_Ext(text, scale, 0, &cgs.media.limboFont1);
-		h = CG_Text_Height_Ext(text, scale, 0, &cgs.media.limboFont1);
-
-		x -= w / 2;
-		y -= h / 2;
-
-		// save it
-		cg.specOnScreenNames[clientNum].x     = x;
-		cg.specOnScreenNames[clientNum].y     = y;
-		cg.specOnScreenNames[clientNum].scale = scale;
-		cg.specOnScreenNames[clientNum].text  = text;
-		VectorCopy(origin, cg.specOnScreenNames[clientNum].origin);
-		cg.specOnScreenNames[clientNum].visible = qtrue;
-	}
-	else
-	{
-		Com_Memset(&cg.specOnScreenNames[clientNum], 0, sizeof(cg.specOnScreenNames[clientNum]));
-	}
-}
-
-/**
  * @brief CG_PlayerFloatText
  * @param[in] cent
  * @param[in] text
@@ -2008,24 +1931,17 @@ static void CG_PlayerFloatText(centity_t *cent, const char *text, int height)
 	vec3_t origin;
 
 	VectorCopy(cent->lerpOrigin, origin);
+
 	origin[2] += height;
 
-	// Account for ducking
-	if (cent->currentState.clientNum == cg.snap->ps.clientNum)
+	// adjust label height
+	if (cent->currentState.eFlags & EF_CROUCHING ||
+	    cent->currentState.eFlags & EF_PRONE || cent->currentState.eFlags & EF_PRONE_MOVING)
 	{
-		if (cg.snap->ps.pm_flags & PMF_DUCKED)
-		{
-			origin[2] -= 18;
-		}
+		origin[2] -= 18;
 	}
-	else
-	{
-		if ((qboolean)cent->currentState.animMovetype)
-		{
-			origin[2] -= 18;
-		}
-	}
-	CG_AddOnScreenText(text, origin, cent->currentState.clientNum);
+
+	CG_AddOnScreenText(text, origin);
 }
 
 /**
@@ -2036,14 +1952,14 @@ static void CG_PlayerSprites(centity_t *cent)
 {
 	int team;
 	int numIcons     = 0;
+	int height       = 56;
 	clientInfo_t *ci = &cgs.clientinfo[cent->currentState.clientNum];
+	fireteamData_t *ft;
 	qboolean sameTeam;
-	int height = 48;
 
-	if ((cent->currentState.powerups & (1 << PW_REDFLAG)) ||
-	    (cent->currentState.powerups & (1 << PW_BLUEFLAG)))
+	if ((cent->currentState.powerups & (1 << PW_REDFLAG)) || (cent->currentState.powerups & (1 << PW_BLUEFLAG)))
 	{
-		CG_PlayerFloatSprite(cent, cgs.media.objectiveShader, 56, numIcons++);
+		CG_PlayerFloatSprite(cent, cgs.media.objectiveShader, height, numIcons++);
 	}
 
 	if (cent->currentState.eFlags & EF_DEAD)
@@ -2053,39 +1969,36 @@ static void CG_PlayerSprites(centity_t *cent)
 
 	if (cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR)
 	{
-		if (cg_drawCrosshairNames.integer > 0)
+		if (cg_drawCrosshairNames.integer > 0 || cgs.clientinfo[cg.clientNum].shoutcaster)
 		{
-			CG_PlayerFloatText(cent, ci->name, height + 16);
+			CG_PlayerFloatText(cent, ci->name, height + 8);
 		}
 
-		// show some useful icons to spectators ...
+		// show some useful icons to spectators
+		if (cent->currentState.eFlags & EF_CONNECTION)
+		{
+			CG_PlayerFloatSprite(cent, cgs.media.disconnectIcon, height, numIcons++);
+			return;
+		}
+		if (cent->currentState.eFlags & EF_DEAD && cgs.clientinfo[cg.clientNum].shoutcaster)
+		{
+			CG_PlayerFloatSprite(cent, cgs.media.medicReviveShader, height, numIcons++);
+			return;
+		}
 		if (cent->currentState.powerups & (1 << PW_INVULNERABLE))
 		{
 			CG_PlayerFloatSprite(cent, cgs.media.spawnInvincibleShader, height, numIcons++);
 		}
-		if (cent->currentState.eFlags & EF_CONNECTION)
+		if (cent->currentState.powerups & (1 << PW_OPS_DISGUISED) && cgs.clientinfo[cg.clientNum].shoutcaster)
 		{
-			CG_PlayerFloatSprite(cent, cgs.media.disconnectIcon, height, numIcons++);
+			CG_PlayerFloatSprite(cent, cgs.media.friendShader, height, numIcons++);
 		}
-		if (cent->currentState.eFlags & EF_TALK)
-		{
-			CG_PlayerFloatSprite(cent, cgs.media.balloonShader, height, numIcons++);
-		}
-
-		//{ FIXME: do this for ettv
-		//	fireteamData_t *ft;
-		//
-		//	if ((ft = CG_IsOnFireteam(ci->clientNum)))
-		//	{
-		//		CG_PlayerFloatSprite(cent, cgs.media.fireteamicons[ft->ident], height + 8, numIcons++);
-		//	}
-		//}
 		return;
 	}
 
 	if (cent->currentState.powerups & (1 << PW_INVULNERABLE))
 	{
-		CG_PlayerFloatSprite(cent, cgs.media.spawnInvincibleShader, 8 + height, numIcons++);
+		CG_PlayerFloatSprite(cent, cgs.media.spawnInvincibleShader, height, numIcons++);
 	}
 
 	team     = ci->team;
@@ -2102,7 +2015,7 @@ static void CG_PlayerSprites(centity_t *cent)
 		CG_PlayerFloatSprite(cent, cgs.media.medicReviveShader, height, numIcons++);
 	}
 
-	if (cent->currentState.eFlags & EF_CONNECTION)    // shown for both teams now ...
+	if (cent->currentState.eFlags & EF_CONNECTION)
 	{
 		CG_PlayerFloatSprite(cent, cgs.media.disconnectIcon, height, numIcons++);
 	}
@@ -2112,7 +2025,7 @@ static void CG_PlayerSprites(centity_t *cent)
 	{
 		if (sameTeam)
 		{
-			CG_PlayerFloatSprite(cent, cent->voiceChatSprite, height + 8, numIcons++);
+			CG_PlayerFloatSprite(cent, cent->voiceChatSprite, height, numIcons++);
 		}
 	}
 
@@ -2122,33 +2035,29 @@ static void CG_PlayerSprites(centity_t *cent)
 		CG_PlayerFloatSprite(cent, cgs.media.balloonShader, height, numIcons++);
 	}
 
+	// draw disguised icon over disguised teammates and the fireteam icon of uniform source for enemies
+	if (cent->currentState.powerups & (1 << PW_OPS_DISGUISED))
 	{
-		fireteamData_t *ft;
-
-		// draw disguised icon over disguised teammates and the fireteam icon of uniform source for enemies
-		if (cent->currentState.powerups & (1 << PW_OPS_DISGUISED))
+		if (sameTeam)
 		{
-			if (sameTeam)
+			CG_PlayerFloatSprite(cent, cgs.media.friendShader, height, numIcons++);
+		}
+		else // !sameTeam
+		{
+			if (cgs.clientinfo[cent->currentState.number].disguiseClientNum > -1
+			    && (ft = CG_IsOnFireteam(cgs.clientinfo[cent->currentState.number].disguiseClientNum))
+			    && cgs.clientinfo[cgs.clientinfo[cent->currentState.number].disguiseClientNum].selected)
 			{
-				CG_PlayerFloatSprite(cent, cgs.media.friendShader, height + 8, numIcons++);
-			}
-			else // !sameTeam
-			{
-				if (cgs.clientinfo[cent->currentState.number].disguiseClientNum > -1
-				    && (ft = CG_IsOnFireteam(cgs.clientinfo[cent->currentState.number].disguiseClientNum))
-				    && cgs.clientinfo[cgs.clientinfo[cent->currentState.number].disguiseClientNum].selected)
-				{
-					CG_PlayerFloatSprite(cent, cgs.media.fireteamicons[ft->ident], height + 8, numIcons++);
-				}
+				CG_PlayerFloatSprite(cent, cgs.media.fireteamicons[ft->ident], height, numIcons++);
 			}
 		}
+	}
 
-		if ((ft = CG_IsOnFireteam(cent->currentState.number)))
+	if ((ft = CG_IsOnFireteam(cent->currentState.number)))
+	{
+		if ((ft == CG_IsOnFireteam(cg.clientNum)) && cgs.clientinfo[cent->currentState.number].selected)
 		{
-			if ((ft == CG_IsOnFireteam(cg.clientNum)) && cgs.clientinfo[cent->currentState.number].selected)
-			{
-				CG_PlayerFloatSprite(cent, cgs.media.fireteamicons[ft->ident], height + 8, numIcons++);
-			}
+			CG_PlayerFloatSprite(cent, cgs.media.fireteamicons[ft->ident], height, numIcons++);
 		}
 	}
 }
@@ -2565,6 +2474,10 @@ void CG_AnimPlayerConditions(bg_character_t *character, centity_t *cent)
 	{
 		BG_UpdateConditionValue(es->clientNum, ANIM_COND_MOVETYPE, character->animModelInfo->animations[legsAnim]->movetype, qfalse);
 	}
+
+	BG_UpdateConditionValue(es->clientNum, ANIM_COND_IMPACT_POINT, IMPACTPOINT_UNUSED, qtrue);
+	BG_UpdateConditionValue(es->clientNum, ANIM_COND_STUNNED, 0, qtrue);
+	BG_UpdateConditionValue(es->clientNum, ANIM_COND_SUICIDE, 0, qtrue);
 }
 
 /**

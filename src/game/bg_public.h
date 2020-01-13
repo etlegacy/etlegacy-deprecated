@@ -114,7 +114,7 @@ extern vec3_t playerlegsProneMaxs;
 #define SAY_TEAMNL  3
 
 #define MAX_FIRETEAMS           12
-#define MAX_FIRETEAM_MEMBERS    8
+#define MAX_FIRETEAM_MEMBERS    6
 
 #define MAX_SVCVARS 128
 
@@ -1023,7 +1023,8 @@ typedef enum weaponType_s
 	WEAPON_TYPE_SYRINGUE    = BIT(9),
 	WEAPON_TYPE_SCOPABLE    = BIT(10),
 	WEAPON_TYPE_SETTABLE    = BIT(11),
-	WEAPON_TYPE_SILENCEABLE = BIT(12)
+	WEAPON_TYPE_SILENCEABLE = BIT(12),
+	WEAPON_TYPE_BEAM        = BIT(13)         ///< flamethrower
 
 } weaponType_t;
 
@@ -1101,52 +1102,52 @@ typedef struct
  */
 typedef struct weapontable_s
 {
-	int weapon;                     ///< bg - the weapon id reference
-	int item;                       ///< bg - the item id linked to the weapon entity
-	int team;                       ///< bg -
-	skillType_t skillBased;         ///< bg -
-	weapon_t weapAlts;              ///< bg - the id of the alternative weapon
-	weapon_t weapEquiv;             ///< bg - the id of the opposite team's weapon (but not for WP_GPG40 <-> WP_M7 - see CG_OutOfAmmoChange).
-	weapon_t akimboSideArm;         ///< bg -
+	int weapon;                     ///< bg      - the weapon id reference
+	int item;                       ///< bg g    - the item id linked to the weapon entity
+	int team;                       ///< bg g    -
+	skillType_t skillBased;         ///< bg g cg -
+	weapon_t weapAlts;              ///< bg g cg - the id of the alternative weapon
+	weapon_t weapEquiv;             ///< g cg    - the id of the opposite team's weapon (but not for WP_GPG40 <-> WP_M7 - see CG_OutOfAmmoChange).
+	weapon_t akimboSideArm;         ///< bg g cg -
 
-	weapon_t ammoIndex;             ///< bg - type of weapon ammo this uses.
-	weapon_t clipIndex;             ///< bg - which clip this weapon uses. This allows the sniper rifle to use the same clip as the garand, etc.
+	weapon_t ammoIndex;             ///< bg g cg - type of weapon ammo this uses.
+	weapon_t clipIndex;             ///< bg g cg - which clip this weapon uses. This allows the sniper rifle to use the same clip as the garand, etc.
 
-	int damage;                     ///< g -
-	int damageScope;                    ///< g -
-	float spread;                   ///< bg -
-	float spreadScale;              ///< bg -
-	int splashDamage;               ///< g -
-	int splashRadius;               ///< g -
+	int damage;                     ///< g     -
+	int damageScope;                ///< g     -
+	float spread;                   ///< g cg  -
+	float spreadScale;              ///< bg    -
+	int splashDamage;               ///< g     -
+	int splashRadius;               ///< g     -
 
-	int type;                       ///< bg -
-	int firingMode;                 ///< bg -
-	int attributes;                 ///< bg -
+	int type;                       ///< bg g cg -
+	int firingMode;                 ///< bg g cg -
+	int attributes;                 ///< bg g cg -
 
 	int zoomOut;                    ///< cg -
 	int zoomIn;                     ///< cg -
 
 	// client
 	// icons
-	const char *desc;               ///< bg - description for spawn weapons
+	const char *desc;               ///< g cg  - description for spawn weapons
 
-	unsigned int indexWeaponStat;   ///< bg - index for weapon stat info
+	unsigned int indexWeaponStat;   ///< g cg  - index for weapon stat info
 
-	qboolean useAmmo;               ///< bg -
-	qboolean useClip;               ///< bg -
+	qboolean useAmmo;               ///< bg g cg -
+	qboolean useClip;               ///< bg g cg -
 
-	int maxAmmo;                    ///< bg - max player ammo carrying capacity.
-	int uses;                       ///< bg - how many 'rounds' it takes/costs to fire one cycle.
-	int maxClip;                    ///< bg - max 'rounds' in a clip.
-	int reloadTime;                 ///< bg - time from start of reload until ready to fire.
-	int fireDelayTime;              ///< bg - time from pressing 'fire' until first shot is fired. (used for delaying fire while weapon is 'readied' in animation)
-	int nextShotTime;               ///< bg - when firing continuously, this is the time between shots
-	int grenadeTime;                ///< bg -
-	int aimSpreadScaleAdd;          ///< bg -
+	int maxAmmo;                    ///< bg      - max player ammo carrying capacity.
+	int uses;                       ///< bg      - how many 'rounds' it takes/costs to fire one cycle.
+	int maxClip;                    ///< bg g    - max 'rounds' in a clip.
+	int reloadTime;                 ///< bg      - time from start of reload until ready to fire.
+	int fireDelayTime;              ///< bg      - time from pressing 'fire' until first shot is fired. (used for delaying fire while weapon is 'readied' in animation)
+	int nextShotTime;               ///< bg      - when firing continuously, this is the time between shots
+	int grenadeTime;                ///< bg g cg -
+	int aimSpreadScaleAdd;          ///< bg      -
 
-	int maxHeat;                    ///< bg - max active firing time before weapon 'overheats' (at which point the weapon will fail)
-	int coolRate;                   ///< bg - how fast the weapon cools down. (per second)
-	int heatRecoveryTime;           ///< bg - time from overheats until weapon can fire again
+	int maxHeat;                    ///< bg g cg - max active firing time before weapon 'overheats' (at which point the weapon will fail)
+	int coolRate;                   ///< bg      - how fast the weapon cools down. (per second)
+	int heatRecoveryTime;           ///< bg      - time from overheats until weapon can fire again
 
 	int switchTimeBegin;            ///< bg -
 	int switchTimeFinish;           ///< bg -
@@ -1154,7 +1155,7 @@ typedef struct weapontable_s
 	int altSwitchFromTime;          ///< bg -
 
 	float knockback;                ///< bg -
-	int muzzlePointOffset[3];       ///< g - forward, left, up
+	int muzzlePointOffset[3];       ///< g  - forward, left, up
 
 	int weapRecoilDuration;         ///< bg -
 	float weapRecoilPitch[2];       ///< bg -
@@ -1163,7 +1164,7 @@ typedef struct weapontable_s
 	const char *className;          ///< g -
 	const char *weapFile;           ///< cg -
 
-	float chargeTimeCoeff[NUM_SKILL_LEVELS];      ///< bg -
+	float chargeTimeCoeff[NUM_SKILL_LEVELS];      ///< bg cg -
 
 	meansOfDeath_t mod;                           ///< g - means of death
 	meansOfDeath_t splashMod;                     ///< g - splash means of death
@@ -1183,7 +1184,7 @@ typedef struct weapontable_s
 typedef struct modtable_s
 {
 	meansOfDeath_t mod;                             ///< reference
-	weapon_t weaponIcon;                            ///< g
+	weapon_t weaponIcon;                            ///< cg g
 
 	qboolean isHeadshot;                            ///< g
 	qboolean isExplosive;                           ///< g
@@ -1545,15 +1546,15 @@ typedef enum
 	WEAP_IDLE2,
 	WEAP_ATTACK1,
 	WEAP_ATTACK2,
-	WEAP_ATTACK_LASTSHOT,  ///< used when firing the last round before having an empty clip.
+	WEAP_ATTACK_LASTSHOT,   ///< used when firing the last round before having an empty clip.
 	WEAP_DROP,
 	WEAP_RAISE,
 	WEAP_RELOAD1,
 	WEAP_RELOAD2,
-	WEAP_RELOAD3,
-	WEAP_ALTSWITCHFROM,///< switch from alt fire mode weap (scoped/silencer/etc)
-	WEAP_ALTSWITCHTO,  ///< switch to alt fire mode weap
-	WEAP_DROP2,
+	WEAP_RELOAD3,           ///< unused (was used as RAISE2)
+	WEAP_ALTSWITCHFROM,     ///< switch from alt fire mode weap (scoped/silencer/etc)
+	WEAP_ALTSWITCHTO,       ///< switch to alt fire mode weap
+	WEAP_DROP2,             ///< unused
 	MAX_WP_ANIMATIONS
 } weapAnimNumber_t;
 
@@ -1857,23 +1858,23 @@ typedef enum item_s
  */
 typedef struct gitem_s
 {
-	item_t id;                  ///< identifier
-	const char *classname;      ///< spawning name
-	const char *pickup_sound;
-	const char *world_model[MAX_ITEM_MODELS];
+	item_t id;                  ///< g - identifier
+	const char *classname;      ///< g cg bg - spawning name
+	const char *pickup_sound;   ///< cg -
+	const char *world_model[MAX_ITEM_MODELS];   ///< g cg -
 
-	const char *icon;
-	const char *ammoicon;
-	const char *pickup_name;    ///< for printing on pickup
+	const char *icon;           ///< cg
+	const char *ammoicon;       ///< unused
+	const char *pickup_name;    ///< bg cg - for printing on pickup
 
-	int quantity;               ///< for ammo how much, or duration of powerup (value not necessary for ammo/health.  that value set in gameskillnumber[] below)
-	itemType_t giType;          ///< IT_* flags
+	int quantity;               ///< g - for ammo how much, or duration of powerup (value not necessary for ammo/health.  that value set in gameskillnumber[] below)
+	itemType_t giType;          ///< g cg bg - IT_* flags
 
-	weapon_t giWeapon;
-	powerup_t giPowerUp;
+	weapon_t giWeapon;          ///< g cg bg -
+	powerup_t giPowerUp;        ///< g cg bg -
 
 #ifdef CGAMEDLL
-	itemInfo_t itemInfo;
+	itemInfo_t itemInfo;        ///< cg -
 #endif
 
 } gitem_t;
@@ -1973,6 +1974,8 @@ void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *s, int time, 
 qboolean BG_PlayerTouchesItem(playerState_t *ps, entityState_t *item, int atTime);
 qboolean BG_PlayerSeesItem(playerState_t *ps, entityState_t *item, int atTime);
 qboolean BG_AddMagicAmmo(playerState_t *ps, int *skill, team_t teamNum, int numOfClips);
+
+int PM_IdleAnimForWeapon(int weapon);
 
 #define OVERCLIP        1.001f
 
@@ -2157,6 +2160,7 @@ typedef enum
 	ANIM_COND_AISTATE,         ///< our current ai state (sometimes more convenient than creating a separate section)
 	ANIM_COND_BIPOD,
 	ANIM_COND_SCOPED,
+	ANIM_COND_SUICIDE,
 
 	NUM_ANIM_CONDITIONS
 } scriptAnimConditions_t;
@@ -2488,7 +2492,7 @@ const char *BG_ClassLetterForNumber(int classNum);
 const char *BG_TeamnameForNumber(team_t teamNum);
 
 extern bg_playerclass_t bg_playerClasses[2][NUM_PLAYER_CLASSES];
-#define GetPlayerClassesData(team, classe) ((bg_playerclass_t *)(&bg_playerClasses[(team) - 1][classe]))
+#define GetPlayerClassesData(team, classe) ((bg_playerclass_t *)(&bg_playerClasses[(team) == TEAM_AXIS ? 0 : 1][classe]))
 
 #define MAX_PATH_CORNERS        512
 
@@ -2661,6 +2665,9 @@ typedef enum
 	UIMENU_WM_FTQUICKMESSAGE,
 	UIMENU_WM_FTQUICKMESSAGEALT,
 
+	UIMENU_WM_QUICKSPAWNPOINT,
+	UIMENU_WM_QUICKSPAWNPOINTALT,
+
 	UIMENU_WM_TAPOUT,
 	UIMENU_WM_TAPOUT_LMS,
 
@@ -2828,7 +2835,7 @@ extern skilltable_t skillTable[SK_NUM_SKILLS];
 
 // Lookup table to find rank table entry
 extern ranktable_t rankTable[2][NUM_EXPERIENCE_LEVELS];
-#define GetRankTableData(team, rankIndex) ((ranktable_t *)(&rankTable[team - 1][rankIndex]))
+#define GetRankTableData(team, rankIndex) ((ranktable_t *)(&rankTable[team == TEAM_AXIS ? 0 : 1][rankIndex]))
 
 #define MAX_MAP_SIZE 65536
 
@@ -2924,7 +2931,7 @@ typedef enum
 	//GAMESOUND_WPN_ARTILLERY_FLY_2, ///< "sound/weapons/artillery/artillery_fly_2.wav"                                    // moved in weap file
 	//GAMESOUND_WPN_ARTILLERY_FLY_3, ///< "sound/weapons/artillery/artillery_fly_3.wav"                                    // moved in weap file
 
-	GAMESOUND_MISC_REVIVE,         ///< "sound/misc/vo_revive.wav"                       Used by revival Needle
+	GAMESOUND_MISC_REVIVE = 8,     ///< "sound/misc/vo_revive.wav"                       Used by revival Needle
 	GAMESOUND_MISC_REFEREE,        ///< "sound/misc/referee.wav"                         Game Referee performs action
 	GAMESOUND_MISC_VOTE,           ///< "sound/misc/vote.wav"                            Vote is issued
 

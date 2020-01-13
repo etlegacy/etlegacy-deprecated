@@ -516,7 +516,8 @@ static void Render_lightVolume(interaction_t *ia)
 	lightShader       = light->shader;
 	attenuationZStage = lightShader->stages[0];
 
-	for (j = 1; j < MAX_SHADER_STAGES; j++)
+	// !! We know exactly howmany stages there are.. so don't loop through max_stages
+	for (j = 1; j < lightShader->numStages; j++)
 	{
 		attenuationXYStage = lightShader->stages[j];
 
@@ -530,7 +531,7 @@ static void Render_lightVolume(interaction_t *ia)
 			continue;
 		}
 
-		if (!RB_EvalExpression(&attenuationXYStage->ifExp, 1.0f))
+		if (RB_EvalExpression(&attenuationXYStage->ifExp, 1.0f) == 0.f)
 		{
 			continue;
 		}
@@ -884,7 +885,7 @@ static void RB_RenderInteractions()
 		Tess_End();
 
 		// begin a new batch
-		Tess_Begin(Tess_StageIteratorLighting, NULL, shader, light->shader, qfalse, qfalse, -1, 0);
+		Tess_Begin(Tess_StageIteratorLighting, NULL, shader, light->shader, qfalse, qfalse, LIGHTMAP_NONE, FOG_NONE);
 
 		// change the modelview matrix if needed
 		if (entity != oldEntity)
@@ -1463,7 +1464,7 @@ static void RB_RenderInteractionsShadowMapped()
 							for (j = 0; j < 8; j++)
 							{
 								VectorCopy(splitFrustumCorners[j], point);
-								point[3] = 1;
+								//point[3] = 1.0f; // initialized once, ..no need to keep setting it.
 #if 1
 								mat4_transform_vec4(light->viewMatrix, point, transf);
 								transf[0] /= transf[3];
@@ -2288,6 +2289,9 @@ void RB_RenderDepthOfField()
 
 /**
  * @brief RB_RenderGlobalFog
+ *
+ * This is the fogGlobal glsl shader
+ *
  */
 void RB_RenderGlobalFog()
 {
@@ -2296,7 +2300,7 @@ void RB_RenderGlobalFog()
 
 	Ren_LogComment("--- RB_RenderGlobalFog ---\n");
 
-	if (r_noFog->integer)
+	if (!tr.world || tr.world->globalFog < 0||!r_wolfFog->integer)
 	{
 		return;
 	}
@@ -2312,10 +2316,8 @@ void RB_RenderGlobalFog()
 		return;
 	}
 
-	if (!tr.world || tr.world->globalFog < 0)
-	{
-		return;
-	}
+	
+	
 
 	GL_Cull(CT_TWO_SIDED);
 
@@ -2347,16 +2349,27 @@ void RB_RenderGlobalFog()
 
 		SetUniformVec4(UNIFORM_FOGDISTANCEVECTOR, fogDistanceVector);
 		SetUniformVec4(UNIFORM_COLOR, fog->color);
-		SetUniformFloat(UNIFORM_FOGDENSITY, 0.6f); // FIXME: fog->fogParms.density?!
+
+		//if there is a density set
+		if (fog->fogParms.density > 0)
+		{
+			SetUniformFloat(UNIFORM_FOGDENSITY, fog->fogParms.density);
+		}
+		else// use the depthforOpaque wich is set in shader fogparms for end of fog aka where fog is 1.0
+		{
+			SetUniformFloat(UNIFORM_FOGDENSITY, fog->fogParms.depthForOpaque);
+		}
+		// FIXME: fog->fogParms.density?!.. density dont seem to get any value?!
 	}
 
 	SetUniformMatrix16(UNIFORM_VIEWMATRIX, backEnd.viewParms.world.viewMatrix);
 	SetUniformMatrix16(UNIFORM_UNPROJECTMATRIX, backEnd.viewParms.unprojectionMatrix);
-
+	
 	// bind u_ColorMap
 	SelectTexture(TEX_COLOR);
 	GL_Bind(tr.fogImage);
-
+	
+	
 	// bind u_DepthMap
 	SelectTexture(TEX_DEPTH);
 	if (HDR_ENABLED())
@@ -3228,7 +3241,7 @@ void RB_RenderLightOcclusionQueries()
 		tr.numUsedOcclusionQueryObjects = 0;
 		QueueInit(&occlusionQueryQueue);
 		QueueInit(&invisibleQueue);
-		Com_InitGrowList(&invisibleList, 1000);
+		Com_InitGrowList(&invisibleList, 100);
 
 		// loop trough all light interactions and render the light OBB for each last interaction
 		for (iaCount = 0, ia = &backEnd.viewParms.interactions[0]; iaCount < backEnd.viewParms.numInteractions; )
@@ -3735,7 +3748,10 @@ static int EntityOcclusionResultAvailable(trRefEntity_t *entity)
 		//if(glIsQuery(light->occlusionQueryObjects[backEnd.viewParms.viewCount]))
 		{
 			glGetQueryObjectiv(entity->occlusionQueryObject, GL_QUERY_RESULT_AVAILABLE, &available);
+			if (available)
+			{
 			GL_CheckErrors();
+			}
 		}
 
 		return available;
@@ -3876,7 +3892,7 @@ void RB_RenderEntityOcclusionQueries()
 		tr.numUsedOcclusionQueryObjects = 0;
 		QueueInit(&occlusionQueryQueue);
 		QueueInit(&invisibleQueue);
-		Com_InitGrowList(&invisibleList, 1000);
+		Com_InitGrowList(&invisibleList, 100);
 
 		// loop trough all entities and render the entity OBB
 		for (i = 0, entity = backEnd.refdef.entities; i < backEnd.refdef.numEntities; i++, entity++)
@@ -5242,7 +5258,7 @@ static void RB_RenderDebugUtils()
 
 			R_FindTwoNearestCubeMaps(backEnd.viewParms.orientation.origin, &cubeProbe1, &cubeProbe2, &distance1, &distance2);
 
-			Tess_Begin(Tess_StageIteratorDebug, NULL, NULL, NULL, qtrue, qfalse, -1, 0);
+			Tess_Begin(Tess_StageIteratorDebug, NULL, NULL, NULL, qtrue, qfalse, LIGHTMAP_NONE, FOG_NONE);
 
 			if (cubeProbe1 == NULL && cubeProbe2 == NULL)
 			{
@@ -5313,7 +5329,7 @@ static void RB_RenderDebugUtils()
 
 		GL_CheckErrors();
 
-		Tess_Begin(Tess_StageIteratorDebug, NULL, NULL, NULL, qtrue, qfalse, -1, 0);
+		Tess_Begin(Tess_StageIteratorDebug, NULL, NULL, NULL, qtrue, qfalse, LIGHTMAP_NONE, FOG_NONE);
 
 		for (j = 0; j < tr.world->numLightGridPoints; j++)
 		{
@@ -5735,7 +5751,7 @@ static void RB_RenderDebugUtils()
 
 		GL_CheckErrors();
 
-		Tess_Begin(Tess_StageIteratorDebug, NULL, NULL, NULL, qtrue, qfalse, -1, 0);
+		Tess_Begin(Tess_StageIteratorDebug, NULL, NULL, NULL, qtrue, qfalse, LIGHTMAP_NONE, FOG_NONE);
 
 		for (i = 0, dp = backEnd.refdef.decalProjectors; i < backEnd.refdef.numDecalProjectors; i++, dp++)
 		{
@@ -5778,13 +5794,13 @@ static void RB_RenderViewFront(void)
 	int startTime = 0;
 
 	// sync with gl if needed
-	if (r_finish->integer == 1 && !glState.finishCalled)
-	{
-		GL_JOIN();
-		glState.finishCalled = qtrue;
-	}
 	if (r_finish->integer == 0)
 	{
+		glState.finishCalled = qtrue;
+	}
+	else if (r_finish->integer == 1 && !glState.finishCalled)
+	{
+		GL_JOIN();
 		glState.finishCalled = qtrue;
 	}
 
@@ -5918,7 +5934,7 @@ static void RB_RenderViewFront(void)
 		{
 			clearBits &= ~GL_COLOR_BUFFER_BIT;
 		}
-		else if (r_fastSky->integer || (backEnd.refdef.rdflags & RDF_NOWORLDMODEL))
+		else if (r_fastSky->integer /*|| (backEnd.refdef.rdflags & RDF_NOWORLDMODEL)*/)
 		{
 			clearBits |= GL_COLOR_BUFFER_BIT;
 
@@ -6037,7 +6053,9 @@ static void RB_RenderViewFront(void)
 		R_BindFBO(tr.deferredRenderFBO);
 	}
 
-	// render global fog post process effect
+	// render global fog effect
+	// This is the fog that fills the world.
+	// It is not the fog that is rendered on brushes.
 	RB_RenderGlobalFog();
 
 	// draw everything that is translucent
@@ -6094,7 +6112,7 @@ static void RB_RenderViewFront(void)
 	RB_DrawSun();
 
 	// add light flares on lights that aren't obscured
-	RB_RenderFlares();
+	RB_RenderFlares(); // this initiates calls to the very slow glReadPixels()..
 
 	// wait until all bsp node occlusion queries are back
 	RB_CollectBspOcclusionQueries();
@@ -6153,27 +6171,20 @@ static void RB_RenderView(void)
 	RB_RenderViewFront();
 
 	// render chromatric aberration
-	RB_CameraPostFX();
-
-	// copy to given byte buffer that is NOT a FBO
-	if (tr.refdef.pixelTarget != NULL)
+	if (tr.refdef.pixelTarget == NULL) // see comment on next code block.. we don't want postFX on cubemaps
 	{
-		int i;
-
-		// need to convert Y axis
-#if 0
-		glReadPixels(0, 0, tr.refdef.pixelTargetWidth, tr.refdef.pixelTargetHeight, GL_RGBA, GL_UNSIGNED_BYTE, tr.refdef.pixelTarget);
-#else
+	RB_CameraPostFX();
+	}
+	// copy to given byte buffer that is NOT a FBO.
+	// This will copy the current screen content to a texture.
+	// The given texture, pixelTarget, is (a pointer to) a cubeProbe's cubemap.
+	// R_BuildCubeMaps() is the function that triggers this mechanism.
+	else //if (tr.refdef.pixelTarget != NULL)
+	{
 		// Bugfix: drivers absolutely hate running in high res and using glReadPixels near the top or bottom edge.
 		// Soo.. lets do it in the middle.
-		glReadPixels(glConfig.vidWidth / 2, glConfig.vidHeight / 2, tr.refdef.pixelTargetWidth, tr.refdef.pixelTargetHeight, GL_RGBA,
-		             GL_UNSIGNED_BYTE, tr.refdef.pixelTarget);
-#endif
-
-		for (i = 0; i < tr.refdef.pixelTargetWidth * tr.refdef.pixelTargetHeight; i++)
-		{
-			tr.refdef.pixelTarget[(i * 4) + 3] = 255;   //set the alpha pure white
-		}
+		// Note: i don't know how old that^^ comment above is. The issue could long be history.. todo: check it
+		glReadPixels(glConfig.vidWidth / 2, glConfig.vidHeight / 2, REF_CUBEMAP_SIZE, REF_CUBEMAP_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, tr.refdef.pixelTarget);
 	}
 
 	GL_CheckErrors();
@@ -6420,7 +6431,7 @@ const void *RB_StretchPic(const void *data)
 			Tess_End();
 		}
 		backEnd.currentEntity = &backEnd.entity2D;
-		Tess_Begin(Tess_StageIteratorGeneric, NULL, shader, NULL, qfalse, qfalse, -1, 0);
+		Tess_Begin(Tess_StageIteratorGeneric, NULL, shader, NULL, qfalse, qfalse, LIGHTMAP_NONE, FOG_NONE);
 	}
 
 	Tess_CheckOverflow(4, 6);
@@ -6514,7 +6525,7 @@ const void *RB_Draw2dPolys(const void *data)
 			Tess_End();
 		}
 		backEnd.currentEntity = &backEnd.entity2D;
-		Tess_Begin(Tess_StageIteratorGeneric, NULL, shader, NULL, qfalse, qfalse, -1, 0);
+		Tess_Begin(Tess_StageIteratorGeneric, NULL, shader, NULL, qfalse, qfalse, LIGHTMAP_NONE, FOG_NONE);
 	}
 
 	Tess_CheckOverflow(cmd->numverts, (cmd->numverts - 2) * 3);
@@ -6574,7 +6585,7 @@ const void *RB_RotatedPic(const void *data)
 			Tess_End();
 		}
 		backEnd.currentEntity = &backEnd.entity2D;
-		Tess_Begin(Tess_StageIteratorGeneric, NULL, shader, NULL, qfalse, qfalse, -1, 0);
+		Tess_Begin(Tess_StageIteratorGeneric, NULL, shader, NULL, qfalse, qfalse, LIGHTMAP_NONE, FOG_NONE);
 	}
 
 	Tess_CheckOverflow(4, 6);
@@ -6671,7 +6682,7 @@ const void *RB_StretchPicGradient(const void *data)
 			Tess_End();
 		}
 		backEnd.currentEntity = &backEnd.entity2D;
-		Tess_Begin(Tess_StageIteratorGeneric, NULL, shader, NULL, qfalse, qfalse, -1, 0);
+		Tess_Begin(Tess_StageIteratorGeneric, NULL, shader, NULL, qfalse, qfalse, LIGHTMAP_NONE, FOG_NONE);
 	}
 
 	Tess_CheckOverflow(4, 6);

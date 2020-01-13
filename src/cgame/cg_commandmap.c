@@ -156,14 +156,22 @@ void CG_TransformAutomapEntity(void)
 {
 	mapEntityData_t *mEnt;
 	int             i;
+	float           w = 100.f, h = 100.f;
+	hudStucture_t   *hud = CG_GetActiveHUD();
+	if (hud)
+	{
+		// subtract surrounding decoration of the compass
+		w = hud->compas.location.w - (hud->compas.location.w * 0.25f);
+		h = hud->compas.location.h - (hud->compas.location.h * 0.25f);
+	}
 
 	for (i = 0; i < mapEntityCount; i++)
 	{
 		mEnt = &mapEntities[i];
 
 		// calculate the screen coordinate of this entity for the automap, consider the zoom value
-		mEnt->automapTransformed[0] = (mEnt->x - cg.mapcoordsMins[0]) * cg.mapcoordsScale[0] * 100 * cg_automapZoom.value; // FIXME: check value out of range before?
-		mEnt->automapTransformed[1] = (mEnt->y - cg.mapcoordsMins[1]) * cg.mapcoordsScale[1] * 100 * cg_automapZoom.value;
+		mEnt->automapTransformed[0] = (mEnt->x - cg.mapcoordsMins[0]) * cg.mapcoordsScale[0] * w * cg_automapZoom.value; // FIXME: check value out of range before?
+		mEnt->automapTransformed[1] = (mEnt->y - cg.mapcoordsMins[1]) * cg.mapcoordsScale[1] * h * cg_automapZoom.value;
 	}
 }
 
@@ -594,7 +602,7 @@ void CG_DrawMapEntity(mapEntityData_t *mEnt, float x, float y, float w, float h,
 
 			mEnt->yaw = (int)cg.predictedPlayerState.viewangles[YAW];
 		}
-		else if (ci->team == snap->ps.persistant[PERS_TEAM] && cent->currentValid)
+		else if ((ci->team == snap->ps.persistant[PERS_TEAM] || cgs.clientinfo[cg.clientNum].shoutcaster) && cent->currentValid)
 		{
 			if (!scissor)
 			{
@@ -658,11 +666,11 @@ void CG_DrawMapEntity(mapEntityData_t *mEnt, float x, float y, float w, float h,
 			float  msec;
 			vec4_t reviveClr = { 1.f, 1.f, 1.f, 1.f };
 
-			if (cgs.clientinfo[cg.snap->ps.clientNum].team == TEAM_AXIS)
+			if (cgs.clientinfo[cg.snap->ps.clientNum].team == TEAM_AXIS || (cgs.clientinfo[cg.clientNum].shoutcaster && mEnt->team == TEAM_AXIS))
 			{
 				msec = (cg_redlimbotime.integer - (cg.time % cg_redlimbotime.integer)) / (float)cg_redlimbotime.integer;
 			}
-			else if (cgs.clientinfo[cg.snap->ps.clientNum].team == TEAM_ALLIES)
+			else if (cgs.clientinfo[cg.snap->ps.clientNum].team == TEAM_ALLIES || (cgs.clientinfo[cg.clientNum].shoutcaster && mEnt->team == TEAM_ALLIES))
 			{
 				msec = (cg_bluelimbotime.integer - (cg.time % cg_bluelimbotime.integer)) / (float)cg_bluelimbotime.integer;
 			}
@@ -740,7 +748,7 @@ void CG_DrawMapEntity(mapEntityData_t *mEnt, float x, float y, float w, float h,
 			if (cent->currentState.powerups & (1 << PW_OPS_DISGUISED))
 			{
 				CG_DrawPic(icon_pos[0], icon_pos[1], icon_extends[0], icon_extends[1], classInfo->icon);
-				if (ci->team == snap->ps.persistant[PERS_TEAM])
+				if (ci->team == snap->ps.persistant[PERS_TEAM] || cgs.clientinfo[cg.clientNum].shoutcaster)
 				{
 					CG_DrawPic(icon_pos[0], icon_pos[1], icon_extends[0], icon_extends[1], cgs.media.friendShader);
 				}
@@ -1259,11 +1267,6 @@ void CG_DrawMap(float x, float y, float w, float h, int mEntFilter, mapScissor_t
 		CG_DrawMapEntity(mEnt, x, y, w, h, mEntFilter, scissor, interactive, snap, icon_size);
 	}
 
-	// entnfo2 data, draw non-players & non-tanks
-	//for(i = 0, mEnt = &mapEntities2[0]; i < mapEntityCount2; ++i, ++mEnt ) {
-	//  CG_DrawMapEntity( mEnt, x, y, w, h, mEntFilter, scissor, interactive, snap, icon_size );
-	//}
-
 	// spawn point info
 	CG_DrawSpawnPointInfo(x, y, w, h, qtrue, scissor, exspawn);
 
@@ -1273,7 +1276,7 @@ void CG_DrawMap(float x, float y, float w, float h, int mEntFilter, mapScissor_t
 	// entnfo players data
 	for (i = 0, mEnt = &mapEntities[0]; i < mapEntityCount; ++i, ++mEnt)
 	{
-		if (mEnt->team != RealTeam && !CG_DisguiseMapCheck(mEnt))
+		if (mEnt->team != RealTeam && !CG_DisguiseMapCheck(mEnt) && !cgs.clientinfo[cg.clientNum].shoutcaster)
 		{
 			continue;
 		}
@@ -1511,27 +1514,31 @@ void CG_DrawAutoMap(float x, float y, float w, float h)
 	{
 		if (cg.time - cgs.autoMapExpandTime < 100.f)
 		{
-			//y -= ((cg.time - cgs.autoMapExpandTime) / 100.f) * 128.f;
 			CG_DrawExpandedAutoMap();
 		}
 		else
 		{
-			//y -= 128.f;
 			CG_DrawExpandedAutoMap();
-			return;
+
+			if (!cg_altHud.integer)
+			{
+				return;
+			}
 		}
 	}
 	else
 	{
 		if (cg.time - cgs.autoMapExpandTime <= 150.f)
 		{
-			//y -= 128.f;
 			CG_DrawExpandedAutoMap();
-			return;
+
+			if (!cg_altHud.integer)
+			{
+				return;
+			}
 		}
 		else if ((cg.time - cgs.autoMapExpandTime > 150.f) && (cg.time - cgs.autoMapExpandTime < 250.f))
 		{
-			//y = (y - 128.f) + ((cg.time - cgs.autoMapExpandTime - 150.f) / 100.f) * 128.f;
 			CG_DrawExpandedAutoMap();
 		}
 	}
@@ -1629,8 +1636,8 @@ int CG_DrawSpawnPointInfo(float px, float py, float pw, float ph, qboolean draw,
 			}
 		}
 
-		if (((cgs.clientinfo[cg.clientNum].team != TEAM_SPECTATOR) &&
-		     (cg.spawnTeams[i] != team)) ||
+		if (!(cg.spawnTeams[i] & 0xF) ||
+		    (cgs.clientinfo[cg.clientNum].team != TEAM_SPECTATOR && cg.spawnTeams[i] != team) ||
 		    ((cg.spawnTeams[i] & 256) && changetime == 0.f))
 		{
 			continue;
@@ -1732,7 +1739,7 @@ int CG_DrawSpawnPointInfo(float px, float py, float pw, float ph, qboolean draw,
 				{
 					float w;
 
-					Com_sprintf(buffer, sizeof(buffer), "%s (Troops: %i)", cg.spawnPoints[i], cg.spawnPlayerCounts[i]);
+					Com_sprintf(buffer, sizeof(buffer), "%s (%i)", cg.spawnPoints[i], cg.spawnPlayerCounts[i]);
 					w = CG_Text_Width_Ext(buffer, 0.2f, 0, &cgs.media.limboFont2);
 					CG_CommandMap_SetHighlightText(buffer, point[0] - (w * 0.5f), point[1] - 8);
 				}
@@ -1759,7 +1766,7 @@ int CG_DrawSpawnPointInfo(float px, float py, float pw, float ph, qboolean draw,
 
 				if (!scissor)
 				{
-					Com_sprintf(buffer, sizeof(buffer), "(Troops: %i)", cg.spawnPlayerCounts[i]);
+					Com_sprintf(buffer, sizeof(buffer), "(%i)", cg.spawnPlayerCounts[i]);
 					CG_Text_Paint_Ext(point[0] + FLAGSIZE_NORMAL * 0.25f, point[1], 0.2f, 0.2f, colorWhite, buffer, 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont2);
 				}
 			}

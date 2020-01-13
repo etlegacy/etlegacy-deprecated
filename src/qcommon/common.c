@@ -40,6 +40,7 @@
 #ifndef DEDICATED
 #include "../sys/sys_local.h"
 #endif
+#include "../server/server.h"
 
 #if defined (_WIN32)
 #   include <winsock2.h>
@@ -66,7 +67,11 @@ int demo_protocols[] =
 #define MIN_DEDICATED_COMHUNKMEGS   1
 #define MIN_COMHUNKMEGS             64
 
-#define DEF_COMHUNKMEGS             128 // renderer2 requires 512
+#ifdef FEATURE_RENDERER2
+#define DEF_COMHUNKMEGS             512
+#else
+#define DEF_COMHUNKMEGS             128
+#endif
 
 #ifdef DEDICATED
 #define DEF_COMZONEMEGS             24
@@ -86,7 +91,7 @@ static fileHandle_t logfile;
 fileHandle_t        com_journalFile;        // events are written here
 fileHandle_t        com_journalDataFile;    // config files are written here
 
-cvar_t *com_ansiColor;				// set console color
+cvar_t *com_ansiColor;              // set console color
 
 cvar_t *com_crashed = NULL;         // set in case of a crash, prevents CVAR_UNSAFE variables from being set from a cfg
                                     // explicit NULL to make win32 teh happy
@@ -108,7 +113,6 @@ cvar_t *com_timedemo;
 cvar_t *com_sv_running;
 cvar_t *com_cl_running;
 cvar_t *com_logfile;        // 1 = buffer log, 2 = flush after each print
-cvar_t *com_cleanwhitelist;
 cvar_t *com_showtrace;
 cvar_t *com_version;
 cvar_t *com_buildScript;    // for automated data building scripts
@@ -224,6 +228,7 @@ void QDECL Com_Printf(const char *fmt, ...)
 	va_list         argptr;
 	char            msg[MAXPRINTMSG];
 	static qboolean opening_qconsole = qfalse;
+	int             l;
 
 	va_start(argptr, fmt);
 	Q_vsnprintf(msg, sizeof(msg), fmt, argptr);
@@ -248,6 +253,15 @@ void QDECL Com_Printf(const char *fmt, ...)
 	CL_ConsolePrint(msg);
 #endif
 
+	// add server timestamp in dedicated console and log
+	Com_sprintf(msg, sizeof(msg), "%8i ", svs.time);
+
+	l = strlen(msg);
+
+	va_start(argptr, fmt);
+	Q_vsnprintf(msg + l, sizeof(msg) - l, fmt, argptr);
+	va_end(argptr);
+
 	// echo to dedicated console and early console
 	Sys_Print(msg);
 
@@ -268,7 +282,7 @@ void QDECL Com_Printf(const char *fmt, ...)
 			if (logfile)
 			{
 				time(&aclock);
-				strftime(timeFt, sizeof(timeFt), "%a %b %d %X %Y",  localtime(&aclock));
+				strftime(timeFt, sizeof(timeFt), "%a %b %d %X %Y", localtime(&aclock));
 				Com_Printf("logfile opened on %s\n", timeFt);
 
 				if (com_logfile->integer > 1)
@@ -286,6 +300,7 @@ void QDECL Com_Printf(const char *fmt, ...)
 
 			opening_qconsole = qfalse;
 		}
+
 		if (logfile && FS_Initialized())
 		{
 			FS_Write(msg, strlen(msg), logfile);
@@ -978,7 +993,7 @@ static void Z_ClearZone(memzone_t *zone, int size)
 	// set the entire zone to one free block
 
 	zone->blocklist.next = zone->blocklist.prev = block =
-													  ( memblock_t * )((byte *)zone + sizeof(memzone_t));
+		( memblock_t * )((byte *)zone + sizeof(memzone_t));
 	zone->blocklist.tag  = 1;   // in use block
 	zone->blocklist.id   = 0;
 	zone->blocklist.size = 0;
@@ -2768,7 +2783,7 @@ void Com_Init(char *commandLine)
 	int               qport;
 	qboolean          test;
 
-	Com_Printf(ET_VERSION "\n");
+	Com_Printf(S_COLOR_GREEN ET_VERSION "\n");
 
 	if (setjmp(abortframe))
 	{
@@ -2815,8 +2830,6 @@ void Com_Init(char *commandLine)
 	FS_InitFilesystem();
 
 	Com_InitJournaling();
-
-	com_cleanwhitelist = Cvar_Get("com_cleanwhitelist", "z_hdet", CVAR_PROTECTED);
 
 	Cbuf_AddText(va("exec %s\n", CONFIG_NAME_DEFAULT));
 
@@ -2922,7 +2935,7 @@ void Com_Init(char *commandLine)
 	// init commands and vars
 	//
 	// no need to latch this in ET, our recoil is framerate independant
-	com_maxfps = Cvar_Get("com_maxfps", "85", CVAR_ARCHIVE /*|CVAR_LATCH*/);
+	com_maxfps = Cvar_Get("com_maxfps", "125", CVAR_ARCHIVE /*|CVAR_LATCH*/);
 
 	com_developer = Cvar_Get("developer", "0", CVAR_TEMP);
 	com_logfile   = Cvar_Get("logfile", "0", CVAR_TEMP);
@@ -2946,8 +2959,8 @@ void Com_Init(char *commandLine)
 	com_cl_running  = Cvar_Get("cl_running", "0", CVAR_ROM);
 	com_buildScript = Cvar_Get("com_buildScript", "0", 0);
 
-	con_drawnotify = Cvar_Get("con_drawnotify", "0", CVAR_CHEAT);
-    con_numNotifies = Cvar_Get("con_numNotifies", "4", CVAR_CHEAT);
+	con_drawnotify  = Cvar_Get("con_drawnotify", "0", CVAR_CHEAT);
+	con_numNotifies = Cvar_Get("con_numNotifies", "4", CVAR_CHEAT);
 
 	com_introPlayed = Cvar_Get("com_introplayed", "0", CVAR_ARCHIVE);
 
@@ -3068,7 +3081,7 @@ void Com_Init(char *commandLine)
 	}
 
 	com_fullyInitialized = qtrue;
-	Com_Printf("--- Common Initialization Complete ---\n");
+	Com_Printf("----- Common Initialized -------\n");
 }
 
 //==================================================================
@@ -3322,12 +3335,12 @@ void Com_Frame(void)
 		else
 		{
 			if (com_minimized->integer && !Cvar_VariableString("cl_downloadName")[0] // don't set different minMsec while downloading
-				&& Cvar_VariableIntegerValue("cl_demorecording") == 0) // don't set different minMsec while recording
+			    && Cvar_VariableIntegerValue("cl_demorecording") == 0) // don't set different minMsec while recording
 			{
 				minMsec = 100; // = 1000/10;
 			}
 			else if (com_unfocused->integer && com_maxfps->integer > 1 && !Cvar_VariableString("cl_downloadName")[0]  // don't set different minMsec while downloading
-				&& Cvar_VariableIntegerValue("cl_demorecording") == 0) // don't set different minMsec while recording
+			         && Cvar_VariableIntegerValue("cl_demorecording") == 0) // don't set different minMsec while recording
 			{
 				minMsec = 1000 / (com_maxfps->integer / 2);
 			}
@@ -3542,7 +3555,7 @@ void Com_Shutdown(qboolean badProfile)
 	}
 
 #ifdef FEATURE_DBMS
-	(void) DB_Close();
+	(void) DB_DeInit();
 #endif
 
 	if (logfile)
@@ -4088,5 +4101,22 @@ void Com_RandomBytes(byte *string, int len)
 	for (i = 0; i < len; i++)
 	{
 		string[i] = (unsigned char)(rand() % 256);
+	}
+}
+
+void Com_ParseUA(userAgent_t *ua, const char *string)
+{
+	if (!string)
+	{
+		return;
+	}
+	// store any full et version string
+	strncpy(ua->string, string, sizeof(ua->string));
+	// check for compatibility (only accept of own kind)
+	if (!Q_strncmp(string, PRODUCT_LABEL, strlen(PRODUCT_LABEL)))
+	{
+		ua->compatible = 0x1; // basic level compatibility
+		// match version string, or leave it as zero
+		sscanf(string, PRODUCT_LABEL " v%17[0-9.]-*", ua->version);
 	}
 }

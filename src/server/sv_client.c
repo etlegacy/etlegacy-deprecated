@@ -151,7 +151,7 @@ static qboolean SV_isClientIPValidToConnect(netadr_t from)
 		return qtrue;
 	}
 
-	clientIP =  NET_AdrToString(from);
+	clientIP = NET_AdrToString(from);
 
 	// let localhost connect
 	// FIXME: see above note: We might use a free flag of sv_protect cvar to include local addresses
@@ -316,10 +316,10 @@ void SV_DirectConnect(netadr_t from)
 	// Prevent using connect as an amplifier
 	if (sv_protect->integer & SVP_IOQ3)
 	{
-		if(SVC_RateLimitAddress(from, 10, 1000))
+		if (SVC_RateLimitAddress(from, 10, 1000))
 		{
 			SV_WriteAttackLog(va("Bad direct connect - rate limit from %s exceeded, dropping request\n",
-		                     NET_AdrToString(from)));
+			                     NET_AdrToString(from)));
 			return;
 		}
 	}
@@ -543,7 +543,7 @@ gotnewcl:
 		denied = VM_ExplicitArgPtr(gvm, (intptr_t)denied);
 
 		NET_OutOfBandPrint(NS_SERVER, from, "print\n[err_dialog]%s\n", denied);
-		Com_DPrintf("Game rejected a connection: %s.\n", denied);
+		Com_DPrintf("Game rejected a connection: %s\n", denied);
 		return;
 	}
 
@@ -584,6 +584,9 @@ gotnewcl:
 
 	// newcl->protocol = PROTOCOL_VERSION;
 	newcl->protocol = atoi(Info_ValueForKey(userinfo, "protocol"));
+
+	// check client's engine version
+	Com_ParseUA(&newcl->agent, Info_ValueForKey(userinfo, "etVersion"));
 }
 
 /**
@@ -1658,11 +1661,11 @@ void SV_UserinfoChanged(client_t *cl)
 	val = Info_ValueForKey(cl->userinfo, "handicap");
 	if (strlen(val))
 	{
-		i = atoi(val);
-		if (i <= -100 || i > 100 || strlen(val) > 4)
-		{
-			Info_SetValueForKey(cl->userinfo, "handicap", "0");
-		}
+	    i = atoi(val);
+	    if (i <= -100 || i > 100 || strlen(val) > 4)
+	    {
+	        Info_SetValueForKey(cl->userinfo, "handicap", "0");
+	    }
 	}
 	*/
 
@@ -1720,6 +1723,12 @@ void SV_UserinfoChanged(client_t *cl)
 		{
 			cl->bDlOK = qtrue;
 		}
+	}
+
+	// no version was set on connect, check cgame version as a fallback
+	if (cl->agent.string[0] == 0 && (val = Info_ValueForKey(cl->userinfo, "cg_etVersion"))[0])
+	{
+		Com_ParseUA(&cl->agent, val);
 	}
 }
 
@@ -1988,7 +1997,7 @@ static void SV_UserMove(client_t *cl, msg_t *msg, qboolean delta)
 	// also use the message acknowledge
 	key ^= cl->messageAcknowledge;
 	// also use the last acknowledged server command in the key
-	key ^= MSG_HashKey(cl->reliableCommands[cl->reliableAcknowledge & (MAX_RELIABLE_COMMANDS - 1)], 32);
+	key ^= MSG_HashKey(cl->reliableCommands[cl->reliableAcknowledge & (MAX_RELIABLE_COMMANDS - 1)], 32, !Com_IsCompatible(&cl->agent, 0x1));
 
 	Com_Memset(&nullcmd, 0, sizeof(nullcmd));
 	oldcmd = &nullcmd;

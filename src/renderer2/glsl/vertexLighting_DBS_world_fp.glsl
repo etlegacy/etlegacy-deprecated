@@ -145,7 +145,6 @@ void main()
 #endif // r_diffuseLighting
 
 
-
 	// compute final color
 	vec4 color = diffuse;
 #if defined(USE_REFLECTIONS) || defined(USE_SPECULAR)

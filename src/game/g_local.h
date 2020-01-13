@@ -54,6 +54,8 @@
 
 #define MG42_MULTIPLAYER_HEALTH 350
 
+#define MISSILE_PRESTEP_TIME    50
+
 /**
  * @def BODY_TIME
  * @brief How long do bodies last? (in ms)
@@ -70,6 +72,7 @@
 #define FL_DROPPED_ITEM         0x00001000
 #define FL_NO_BOTS              0x00002000  ///< spawn point not for bot use
 #define FL_NO_HUMANS            0x00004000  ///< spawn point just for bots
+#define FL_NOSTAMINA            0x00008000  ///< cheat flag no stamina
 #define FL_NOFATIGUE            0x00010000  ///< cheat flag no fatigue
 
 #define FL_TOGGLE               0x00020000  ///< ent is toggling (doors use this for ex.)
@@ -629,13 +632,14 @@ typedef struct
 	int spectatorTime;                                  ///< for determining next-in-line to play
 	spectatorState_t spectatorState;
 	int spectatorClient;                                ///< for chasecam and follow mode
-	int playerType;                                     ///< for GT_WOLF
-	weapon_t playerWeapon;                              ///< for GT_WOLF
+	int playerType;                                     ///< class
+	weapon_t playerWeapon;                              ///< primary weapon
 	weapon_t playerWeapon2;                             ///< secondary weapon
-	int spawnObjectiveIndex;                            ///< index of objective to spawn nearest to (returned from UI)
-	int latchPlayerType;                                ///< for GT_WOLF not archived
-	weapon_t latchPlayerWeapon;                         ///< for GT_WOLF not archived
-	weapon_t latchPlayerWeapon2;                        ///< secondary weapon
+	int userSpawnPointValue;                            ///< index of objective to spawn nearest to (returned from UI)
+	int resolvedSpawnPointIndex;                        ///< most possible objective to spawn nearest to
+	int latchPlayerType;                                ///< latched class
+	weapon_t latchPlayerWeapon;                         ///< latched primary weapon
+	weapon_t latchPlayerWeapon2;                        ///< latched secondary weapon
 	int ignoreClients[MAX_CLIENTS / (sizeof(int) * 8)];
 	qboolean muted;
 	float skillpoints[SK_NUM_SKILLS];                   ///< skillpoints
@@ -646,6 +650,7 @@ typedef struct
 	int medals[SK_NUM_SKILLS];                          ///< medals
 
 	int referee;
+	int shoutcaster;
 	int rounds;
 	int spec_invite;
 	int spec_team;
@@ -953,6 +958,8 @@ struct gclient_s
 
 	float currentAimSpreadScale;
 
+	int pickObjectiveTime;                  ///< last time an objective was taken
+	int dropObjectiveTime;                  ///< last time an objective was dropped
 	int dropWeaponTime;                     ///< last time a weapon was dropped
 	int limboDropWeapon;                    ///< weapon to drop in limbo
 	int lastBurnTime;                       ///< last time index for flamethrower burn
@@ -1065,7 +1072,7 @@ typedef struct voteInfo_s
 	int voteNo;
 	int numVotingClients;               ///< set by CalculateRanks
 	int numVotingTeamClients[2];
-	int (*vote_fn)(gentity_t * ent, unsigned int dwVoteIndex, char *arg, char *arg2, qboolean fRefereeCmd);
+	int (*vote_fn)(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, qboolean fRefereeCmd);
 	char vote_value[VOTE_MAXSTRING];    ///< Desired vote item setting.
 	int voteCaller;                     ///< id of the vote caller
 	int voteTeam;                       ///< id of the vote caller's team
@@ -1099,7 +1106,7 @@ typedef struct config_s
 	qboolean publicConfig;
 } config_t;
 
-#ifdef FEATURE_RATING
+#ifdef FEATURE_DBMS
 #include "sqlite3.h"
 
 typedef struct database_s
@@ -1109,6 +1116,15 @@ typedef struct database_s
 	int initialized;
 } database_t;
 #endif
+
+typedef struct spawnPointState_s
+{
+	vec3_t origin;
+	team_t team;
+	int playerCount;
+	int isActive;
+	char description[128];
+} spawnPointState_t;
 
 /**
  * @struct level_locals_s
@@ -1179,8 +1195,8 @@ typedef struct level_locals_s
 	int bodyQueIndex;                           ///< dead bodies
 	gentity_t *bodyQue[BODY_QUEUE_SIZE];
 
-	vec3_t spawntargets[MAX_MULTI_SPAWNTARGETS];    ///< coordinates of spawn targets
-	int numspawntargets;                        ////< # spawntargets in this map
+	int numSpawnPoints;                        ////< number of spawn points in this map
+	spawnPointState_t spawnPointStates[MAX_MULTI_SPAWNTARGETS];
 
 	/// entity scripting
 	char *scriptEntity;
@@ -1390,7 +1406,7 @@ int Add_Ammo(gentity_t *ent, weapon_t weapon, int count, qboolean fillClip);
 void Touch_Item(gentity_t *ent, gentity_t *other, trace_t *trace);
 qboolean AddMagicAmmo(gentity_t *receiver, int numOfClips);
 weapon_t G_GetPrimaryWeaponForClient(gclient_t *client);
-weapon_t G_GetPrimaryWeaponForClientSoldier(weapon_t weapon, gclient_t *client);
+weapon_t G_GetPrimaryWeaponForClientSoldier(gclient_t *client);
 void G_DropWeapon(gentity_t *ent, weapon_t weapon);
 
 // Touch_Item_Auto is bound by the rules of autoactivation (if cg_autoactivate is 0, only touch on "activate")
@@ -1558,6 +1574,8 @@ void G_PreFilledMissileEntity(gentity_t *ent, int weaponNum, int realWeapon, int
 
 int G_GetEnemyPosition(gentity_t *ent, gentity_t *targ);
 
+void G_MagicSink(gentity_t *self);
+
 // g_weapon.c
 qboolean AccuracyHit(gentity_t *target, gentity_t *attacker);
 void CalcMuzzlePoint(gentity_t *ent, int weapon, vec3_t forward, vec3_t right, vec3_t up, vec3_t muzzlePoint);
@@ -1588,6 +1606,7 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
 void AddKillScore(gentity_t *ent, int score);
 void CalculateRanks(void);
 qboolean SpotWouldTelefrag(gentity_t *spot);
+void AddMedicTeamBonus(gclient_t *client);
 
 void SetWolfSpawnWeapons(gclient_t *client);
 void limbo(gentity_t *ent, qboolean makeCorpse);
@@ -1597,8 +1616,7 @@ void reinforce(gentity_t *ent);
 char *G_SHA1(const char *string);
 
 #define CF_ENABLE    1 ///< enables common countryflags functionallity
-#define CF_BOTS      2 ///< uses server country for bots
-#define CF_CONNECT   4 ///< draws country name in connect announcer
+#define CF_CONNECT   2 ///< draws country name in connect announcer
 
 // g_character.c
 qboolean G_RegisterCharacter(const char *characterFile, bg_character_t *character);
@@ -1661,7 +1679,7 @@ float ClientHitboxMaxZ(gentity_t *hitEnt);
 void ClientThink(int clientNum);
 void ClientEndFrame(gentity_t *ent);
 void G_RunClient(gentity_t *ent);
-void ClientThink_cmd(gentity_t *ent, usercmd_t *cmd, qboolean skipServerTime);
+void ClientThink_cmd(gentity_t *ent, usercmd_t *cmd);
 
 // et-antiwarp.c
 void etpro_AddUsercmd(int clientNum, usercmd_t *cmd);
@@ -1678,7 +1696,6 @@ qboolean ReadyToConstruct(gentity_t *ent, gentity_t *constructible, qboolean upd
 // g_team.c
 qboolean OnSameTeam(gentity_t *ent1, gentity_t *ent2);
 //int Team_ClassForString(const char *string); // Unused
-void reset_numobjectives(void);
 
 // g_mem.c
 void *G_Alloc(unsigned int size);
@@ -1927,6 +1944,7 @@ extern vmCvar_t g_swapteams;
 extern vmCvar_t g_antilag;
 
 extern vmCvar_t refereePassword;
+extern vmCvar_t shoutcastPassword;
 extern vmCvar_t g_spectatorInactivity;
 extern vmCvar_t match_latejoin;
 extern vmCvar_t match_minplayers;
@@ -1954,12 +1972,8 @@ extern vmCvar_t vote_allow_matchreset;
 extern vmCvar_t vote_allow_mutespecs;
 extern vmCvar_t vote_allow_nextmap;
 extern vmCvar_t vote_allow_referee;
-extern vmCvar_t vote_allow_shuffleteamsxp;
-extern vmCvar_t vote_allow_shuffleteamsxp_norestart;
-#ifdef FEATURE_RATING
-extern vmCvar_t vote_allow_shuffleteamssr;
-extern vmCvar_t vote_allow_shuffleteamssr_norestart;
-#endif
+extern vmCvar_t vote_allow_shuffleteams;
+extern vmCvar_t vote_allow_shuffleteams_norestart;
 extern vmCvar_t vote_allow_swapteams;
 extern vmCvar_t vote_allow_friendlyfire;
 extern vmCvar_t vote_allow_timelimit;
@@ -2028,6 +2042,8 @@ extern vmCvar_t team_maxMachineguns;
 extern vmCvar_t team_maxRockets;
 extern vmCvar_t team_maxRiflegrenades;
 extern vmCvar_t team_maxLandmines;
+// misc
+extern vmCvar_t team_riflegrenades;
 // skills
 extern vmCvar_t skill_soldier;
 extern vmCvar_t skill_medic;
@@ -2332,8 +2348,13 @@ void G_pause_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fPause);
 void G_players_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fDump);
 void G_ready_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fDump);
 void G_say_teamnl_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue);
+void G_sclogin_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue);
+void G_sclogout_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue);
+void G_makesc_cmd(void);
+void G_removesc_cmd(void);
 void G_scores_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue);
 void G_specinvite_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fLock);
+void G_specuninvite_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fLock);
 void G_speclock_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fLock);
 void G_statsall_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fDump);
 void G_teamready_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fDump);
@@ -2393,13 +2414,13 @@ typedef struct srData_s
 
 int G_SkillRatingDB_Init(void);
 int G_SkillRatingDB_DeInit(void);
-int G_SkillRatingDB_Check(char *dbpath, int db_mode);
+int G_SkillRatingDB_Check(char *db_path, int db_mode);
 int G_SkillRatingPrepareMatchRating(void);
 int G_SkillRatingGetMatchRating(srData_t *sr_data);
 int G_SkillRatingSetMatchRating(srData_t *sr_data);
-void G_SkillRatingGetUserRating(gclient_t *cl, qboolean firstTime);
-void G_SkillRatingSetUserRating(gclient_t *cl);
-int G_SkillRatingSetUserRatingData(srData_t *sr_data);
+int G_SkillRatingSetUserRating(srData_t *sr_data);
+void G_SkillRatingGetClientRating(gclient_t *cl);
+void G_SkillRatingSetClientRating(gclient_t *cl);
 float G_SkillRatingGetMapRating(char *mapname);
 void G_SkillRatingSetMapRating(char *mapname, int winner);
 #endif
@@ -2439,6 +2460,8 @@ void G_refSpeclockTeams_cmd(gentity_t *ent, qboolean fLock);
 void G_refWarmup_cmd(gentity_t *ent);
 void G_refWarning_cmd(gentity_t *ent);
 void G_refMute_cmd(gentity_t *ent, qboolean mute);
+void G_refMakeShoutcaster_cmd(gentity_t *ent);
+void G_refRemoveShoutcaster_cmd(gentity_t *ent);
 void G_refLogout_cmd(gentity_t *ent);
 int G_refClientnumForName(gentity_t *ent, const char *name);
 void G_refPrintf(gentity_t *ent, const char *fmt, ...) _attribute((format(printf, 2, 3)));
@@ -2447,6 +2470,11 @@ void G_MakeReferee(void);
 void G_RemoveReferee(void);
 void G_MuteClient(void);
 void G_UnMuteClient(void);
+qboolean G_IsShoutcastPasswordSet(void);
+qboolean G_IsShoutcastStatusAvailable(gentity_t *ent);
+void G_MakeShoutcaster(gentity_t *ent);
+void G_RemoveShoutcaster(gentity_t *ent);
+void G_RemoveAllShoutcasters(void);
 
 // g_team.c
 extern const char *aTeams[TEAM_NUM_TEAMS];
@@ -2495,12 +2523,8 @@ int G_MatchReset_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *ar
 int G_Mutespecs_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, qboolean fRefereeCmd);
 int G_Nextmap_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, qboolean fRefereeCmd);
 int G_Referee_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, qboolean fRefereeCmd);
-int G_ShuffleTeamsXP_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, qboolean fRefereeCmd);
-int G_ShuffleTeamsXP_NoRestart_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, qboolean fRefereeCmd);
-#ifdef FEATURE_RATING
-int G_ShuffleTeamsSR_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, qboolean fRefereeCmd);
-int G_ShuffleTeamsSR_NoRestart_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, qboolean fRefereeCmd);
-#endif
+int G_ShuffleTeams_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, qboolean fRefereeCmd);
+int G_ShuffleTeams_NoRestart_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, qboolean fRefereeCmd);
 int G_StartMatch_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, qboolean fRefereeCmd);
 int G_SwapTeams_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, qboolean fRefereeCmd);
 int G_FriendlyFire_v(gentity_t *ent, unsigned int dwVoteIndex, char *arg, char *arg2, qboolean fRefereeCmd);
@@ -2568,7 +2592,8 @@ void G_MakeReady(gentity_t *ent);
 void G_MakeUnready(gentity_t *ent);
 
 void SetPlayerSpawn(gentity_t *ent, int spawn, qboolean update);
-void G_UpdateSpawnCounts(void);
+void G_UpdateSpawnPointState(gentity_t *ent);
+void G_UpdateSpawnPointStatePlayerCounts();
 
 void G_SetConfigStringValue(int num, const char *key, const char *value);
 void G_GlobalClientEvent(entity_event_t event, int param, int client);
@@ -2772,16 +2797,6 @@ typedef struct consoleCommandTable_s
 
 } consoleCommandTable_t;
 
-static const char *gameNames[] =
-{
-	"Single Player",        // Obsolete
-	"Cooperative",          // Obsolete
-	"Objective",
-	"Stopwatch",
-	"Campaign",
-	"Last Man Standing",
-	"Map Voting"            // GT_WOLF_MAPVOTE
-	// GT_MAX_GAME_TYPE
-};
+extern const char *gameNames[];
 
 #endif // #ifndef INCLUDE_G_LOCAL_H

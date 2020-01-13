@@ -122,15 +122,31 @@ void PM_AddEventExt(int newEvent, int eventParm)
 }
 
 /**
+ * @brief PM_IdleAnimForWeapon
+ * @param[in] weapon
+ * @return
+ */
+int PM_IdleAnimForWeapon(int weapon)
+{
+	if ((GetWeaponTableData(weapon)->type & (WEAPON_TYPE_RIFLENADE)) || pm->pmext->silencedSideArm & WALTTYPE_BIPOD)
+	{
+		return WEAP_IDLE2;
+	}
+	
+	return WEAP_IDLE1;
+}
+
+/**
  * @brief PM_ReloadAnimForWeapon
  * @param[in] weapon
  * @return
  */
 int PM_ReloadAnimForWeapon(int weapon)
 {
-	if (pm->skill[SK_LIGHT_WEAPONS] >= 2 && GetWeaponTableData(weapon)->attributes & WEAPON_ATTRIBUT_FAST_RELOAD)
+	if ((pm->skill[SK_LIGHT_WEAPONS] >= 2 && GetWeaponTableData(weapon)->attributes & WEAPON_ATTRIBUT_FAST_RELOAD)      // faster reload
+	    || GetWeaponTableData(weapon)->type & (WEAPON_TYPE_SET | WEAPON_TYPE_RIFLENADE))
 	{
-		return WEAP_RELOAD2;        // faster reload
+		return WEAP_RELOAD2;
 	}
 
 	return WEAP_RELOAD1;
@@ -1522,7 +1538,13 @@ static void PM_CrashLand(void)
 		}
 		else if (delta > 67)
 		{
-			PM_AddEventExt(EV_FALL_DMG_50, PM_FootstepForSurface());
+			// this is a pain grunt, so don't play it if dead
+			if (pm->ps->stats[STAT_HEALTH] > 0)
+			{
+				PM_AddEventExt(EV_FALL_DMG_50, PM_FootstepForSurface());
+				//BG_UpdateConditionValue(pm->ps->clientNum, ANIM_COND_IMPACT_POINT, (rand() + 1) ? IMPACTPOINT_KNEE_RIGHT : IMPACTPOINT_KNEE_LEFT, qtrue);
+				//BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_PAIN, qfalse, qtrue);
+			}
 		}
 		else if (delta > 58)
 		{
@@ -1530,6 +1552,8 @@ static void PM_CrashLand(void)
 			if (pm->ps->stats[STAT_HEALTH] > 0)
 			{
 				PM_AddEventExt(EV_FALL_DMG_25, PM_FootstepForSurface());
+				//BG_UpdateConditionValue(pm->ps->clientNum, ANIM_COND_IMPACT_POINT, (rand() + 1) ? IMPACTPOINT_KNEE_RIGHT : IMPACTPOINT_KNEE_LEFT, qtrue);
+				//BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_PAIN, qfalse, qtrue);
 			}
 		}
 		else if (delta > 48)
@@ -1538,6 +1562,8 @@ static void PM_CrashLand(void)
 			if (pm->ps->stats[STAT_HEALTH] > 0)
 			{
 				PM_AddEventExt(EV_FALL_DMG_15, PM_FootstepForSurface());
+				//BG_UpdateConditionValue(pm->ps->clientNum, ANIM_COND_IMPACT_POINT, (rand() + 1) ? IMPACTPOINT_KNEE_RIGHT : IMPACTPOINT_KNEE_LEFT, qtrue);
+				//BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_PAIN, qfalse, qtrue);
 			}
 		}
 		else if (delta > 38.75f)
@@ -1546,6 +1572,8 @@ static void PM_CrashLand(void)
 			if (pm->ps->stats[STAT_HEALTH] > 0)
 			{
 				PM_AddEventExt(EV_FALL_DMG_10, PM_FootstepForSurface());
+				//BG_UpdateConditionValue(pm->ps->clientNum, ANIM_COND_IMPACT_POINT, (rand() + 1) ? IMPACTPOINT_KNEE_RIGHT : IMPACTPOINT_KNEE_LEFT, qtrue);
+				//BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_PAIN, qfalse, qtrue);
 			}
 		}
 		else if (delta > 7)
@@ -2362,8 +2390,8 @@ static void PM_BeginWeaponChange(weapon_t oldWeapon, weapon_t newWeapon, qboolea
 	// don't allow another weapon switch when we're still swapping alt weap, to prevent animation breaking
 	// there we check the value of the animation to prevent any switch during raising and dropping alt weapon
 	// until the animation is ended
-	if ((pm->ps->weapAnim & ~ANIM_TOGGLEBIT) == WEAP_ALTSWITCHFROM ||
-	    (pm->ps->weapAnim & ~ANIM_TOGGLEBIT) == WEAP_ALTSWITCHTO)
+	if (GetWeaponTableData(oldWeapon)->weapAlts && pm->ps->weaponstate == WEAPON_RAISING &&
+	    ((pm->ps->weapAnim & ~ANIM_TOGGLEBIT) == WEAP_ALTSWITCHFROM || (pm->ps->weapAnim & ~ANIM_TOGGLEBIT) == WEAP_ALTSWITCHTO))
 	{
 		return;
 	}
@@ -2405,15 +2433,8 @@ static void PM_BeginWeaponChange(weapon_t oldWeapon, weapon_t newWeapon, qboolea
 
 		// play an animation
 		BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DROPWEAPON, qfalse, qfalse);
-	}
 
-	if (reload)
-	{
-		pm->ps->weaponstate = WEAPON_DROPPING_TORELOAD;
-	}
-	else
-	{
-		pm->ps->weaponstate = WEAPON_DROPPING;
+		pm->ps->weaponTime += GetWeaponTableData(oldWeapon)->switchTimeBegin;            // dropping/raising usually takes 1/4 sec.
 	}
 
 	if (newWeapon == GetWeaponTableData(oldWeapon)->weapAlts)
@@ -2474,7 +2495,8 @@ static void PM_FinishWeaponChange(void)
 	// play an animation
 	if (GetWeaponTableData(oldWeapon)->weapAlts == newWeapon)
 	{
-		if ((GetWeaponTableData(newWeapon)->type & WEAPON_TYPE_RIFLE) && !pm->ps->ammoclip[GetWeaponTableData(oldWeapon)->ammoIndex])
+		if (((GetWeaponTableData(newWeapon)->type & WEAPON_TYPE_RIFLE) && !pm->ps->ammoclip[GetWeaponTableData(oldWeapon)->ammoIndex])
+		    || ((GetWeaponTableData(oldWeapon)->type & WEAPON_TYPE_PISTOL) && (GetWeaponTableData(oldWeapon)->attributes & WEAPON_ATTRIBUT_SILENCED)))
 		{
 			return;
 		}
@@ -2482,21 +2504,39 @@ static void PM_FinishWeaponChange(void)
 		pm->ps->weaponTime += GetWeaponTableData(newWeapon)->altSwitchFromTime;
 		BG_UpdateConditionValue(pm->ps->clientNum, ANIM_COND_WEAPON, newWeapon, qtrue);
 
-		if (pm->ps->eFlags & EF_PRONE)
+		if (GetWeaponTableData(oldWeapon)->type & (WEAPON_TYPE_SET | WEAPON_TYPE_SCOPED | WEAPON_TYPE_RIFLENADE))
 		{
-			BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DO_ALT_WEAPON_MODE_PRONE, qfalse, qfalse);
+			PM_StartWeaponAnim(WEAP_ALTSWITCHTO);
+
+			if (pm->ps->eFlags & EF_PRONE)
+			{
+				BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_UNDO_ALT_WEAPON_MODE_PRONE, qfalse, qfalse);
+			}
+			else
+			{
+				BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_UNDO_ALT_WEAPON_MODE, qfalse, qfalse);
+			}
+
+			pm->ps->weaponTime += GetWeaponTableData(newWeapon)->altSwitchTimeTo;
 		}
 		else
 		{
-			BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DO_ALT_WEAPON_MODE, qfalse, qfalse);
-		}
+			PM_StartWeaponAnim(WEAP_ALTSWITCHFROM);
+
+			if (pm->ps->eFlags & EF_PRONE)
+			{
+				BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DO_ALT_WEAPON_MODE_PRONE, qfalse, qfalse);
+			}
+			else
+			{
+				BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DO_ALT_WEAPON_MODE, qfalse, qfalse);
+			}
 
 		// alt weapon switch was played when switching away, just go into idle
 		PM_StartWeaponAnim(WEAP_ALTSWITCHTO);
 	}
 	else
 	{
-		pm->ps->weaponTime += GetWeaponTableData(newWeapon)->switchTimeFinish;              // dropping/raising usually takes 1/4 sec.
 		BG_UpdateConditionValue(pm->ps->clientNum, ANIM_COND_WEAPON, newWeapon, qtrue);
 
 		if (pm->ps->eFlags & EF_PRONE)
@@ -3598,15 +3638,7 @@ static void PM_Weapon(void)
 
 		if (weaponstateFiring)     // you were just firing, time to relax
 		{
-			if (pm->pmext->silencedSideArm & WALTTYPE_BIPOD)
-			{
-				PM_ContinueWeaponAnim(WEAP_IDLE2);
-			}
-			else
-			{
-				PM_ContinueWeaponAnim(WEAP_IDLE1);
-			}
-
+			PM_ContinueWeaponAnim(PM_IdleAnimForWeapon(pm->ps->weapon));
 		}
 
 		pm->ps->weaponstate = WEAPON_READY;
@@ -3684,7 +3716,7 @@ static void PM_Weapon(void)
 	if (pm->waterlevel == 3 && !(GetWeaponTableData(pm->ps->weapon)->attributes & WEAPON_ATTRIBUT_FIRE_UNDERWATER))
 	{
 		PM_AddEvent(EV_NOFIRE_UNDERWATER);      // event for underwater 'click' for nofire
-		PM_ContinueWeaponAnim(WEAP_IDLE1);
+		PM_ContinueWeaponAnim(PM_IdleAnimForWeapon(pm->ps->weapon));
 		pm->ps->weaponTime  = 500;
 		pm->ps->weaponDelay = 0;                // avoid insta-fire after water exit on delayed weapon attacks
 		return;
@@ -3743,8 +3775,12 @@ static void PM_Weapon(void)
 			}
 			else if (GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR)
 			{
-				PM_AddEvent(EV_SPINUP);
-				PM_StartWeaponAnim(WEAP_ATTACK1);
+				// don't play sound/animation if out of ammo
+				if (GetWeaponTableData(pm->ps->weapon)->uses <= PM_WeaponAmmoAvailable(pm->ps->weapon))
+				{
+					PM_AddEvent(EV_SPINUP);
+					PM_StartWeaponAnim(WEAP_ATTACK2);
+				}
 			}
 			else if (pm->ps->weapon == WP_SATCHEL_DET)
 			{
@@ -3772,8 +3808,9 @@ static void PM_Weapon(void)
 	if (GetWeaponTableData(pm->ps->weapon)->uses > PM_WeaponAmmoAvailable(pm->ps->weapon))
 	{
 		PM_AddEvent(EV_NOAMMO);
-		PM_ContinueWeaponAnim(WEAP_IDLE1);
+		PM_ContinueWeaponAnim(PM_IdleAnimForWeapon(pm->ps->weapon));
 		pm->ps->weaponTime += 500;
+		pm->ps->weaponDelay = 0;            // avoid unwanted 2nd click firing on delayed weapon attacks
 
 		return;
 	}
@@ -3825,28 +3862,30 @@ static void PM_Weapon(void)
 		if (akimboFire)
 		{
 			weapattackanim = WEAP_ATTACK1;
+			PM_AddEvent(EV_FIRE_WEAPON);
 		}
 		else
 		{
 			weapattackanim = WEAP_ATTACK2;
+			PM_AddEvent(EV_FIRE_WEAPONB);
 		}
 	}
 	else
 	{
-		if (pm->pmext->silencedSideArm & WALTTYPE_BIPOD)
+		if ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_RIFLENADE) || (pm->pmext->silencedSideArm & WALTTYPE_BIPOD))
 		{
 			weapattackanim = WEAP_ATTACK2;
+			PM_AddEvent(EV_FIRE_WEAPON);
+		}
+		else if (PM_WeaponClipEmpty(pm->ps->weapon))
+		{
+			weapattackanim = WEAP_ATTACK_LASTSHOT;
+			PM_AddEvent(EV_FIRE_WEAPON_LASTSHOT);
 		}
 		else
 		{
-			if (PM_WeaponClipEmpty(pm->ps->weapon))
-			{
-				weapattackanim = WEAP_ATTACK_LASTSHOT;
-			}
-			else
-			{
-				weapattackanim = WEAP_ATTACK1;
-			}
+			weapattackanim = WEAP_ATTACK1;
+			PM_AddEvent(EV_FIRE_WEAPON);
 		}
 	}
 
@@ -3859,29 +3898,6 @@ static void PM_Weapon(void)
 	else if (!(GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_MORTAR))      // no animation for mortar
 	{
 		PM_StartWeaponAnim(weapattackanim);
-	}
-
-	if (GetWeaponTableData(pm->ps->weapon)->attributes & WEAPON_ATTRIBUT_AKIMBO)
-	{
-		if (akimboFire)
-		{
-			PM_AddEvent(EV_FIRE_WEAPON);
-		}
-		else
-		{
-			PM_AddEvent(EV_FIRE_WEAPONB);
-		}
-	}
-	else
-	{
-		if (PM_WeaponClipEmpty(pm->ps->weapon))
-		{
-			PM_AddEvent(EV_FIRE_WEAPON_LASTSHOT);
-		}
-		else
-		{
-			PM_AddEvent(EV_FIRE_WEAPON);
-		}
 	}
 
 	// moved releasedFire into pmext instead of ps
@@ -3962,7 +3978,9 @@ static void PM_Weapon(void)
 		pm->ps->aimSpreadScaleFloat = AIMSPREAD_MAXSPREAD;
 	}
 
-	if (pm->skill[SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS] >= 3 && pm->ps->stats[STAT_PLAYER_CLASS] == PC_COVERTOPS)
+	// covert ops received a reduction of 50% reduction in both recoil jump and weapon sway with Scoped Weapons ONLY
+	if ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_SCOPED) && pm->skill[SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS] >= 3
+	    && pm->ps->stats[STAT_PLAYER_CLASS] == PC_COVERTOPS)
 	{
 		pm->ps->aimSpreadScaleFloat *= .5f;
 	}
@@ -4009,7 +4027,7 @@ static void PM_Weapon(void)
 		{
 			pm->ps->weapHeat[pm->ps->weapon] = GetWeaponTableData(pm->ps->weapon)->maxHeat;         // cap heat to max
 			PM_AddEvent(EV_WEAP_OVERHEAT);
-			//PM_StartWeaponAnim(WEAP_IDLE1); // removed.  client handles anim in overheat event
+			//PM_StartWeaponAnim(PM_IdleAnimForWeapon(pm->ps->weapon)); // removed.  client handles anim in overheat event
 			addTime = GetWeaponTableData(pm->ps->weapon)->heatRecoveryTime;     // force "heat recovery minimum" right now
 		}
 
@@ -4204,7 +4222,7 @@ void PM_UpdateLean(playerState_t *ps, usercmd_t *cmd, pmove_t *tpm)
  *
  * @note Tnused trace parameter
  */
-void PM_UpdateViewAngles(playerState_t *ps, pmoveExt_t *pmext, usercmd_t *cmd, void (trace) (trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask), int tracemask)                 //   modified
+void PM_UpdateViewAngles(playerState_t *ps, pmoveExt_t *pmext, usercmd_t *cmd, void (trace) (trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask), int tracemask)                  //   modified
 {
 	short  temp;
 	int    i;

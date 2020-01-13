@@ -95,11 +95,11 @@ extern vmCvar_t ui_currentCampaign;
 extern vmCvar_t ui_campaignIndex;
 extern vmCvar_t ui_currentCampaignCompleted;
 extern vmCvar_t ui_blackout;
-extern vmCvar_t cg_crosshairAlpha;
-extern vmCvar_t cg_crosshairAlphaAlt;
-extern vmCvar_t cg_crosshairColor;
-extern vmCvar_t cg_crosshairColorAlt;
-extern vmCvar_t cg_crosshairSize;
+extern vmCvar_t ui_cg_crosshairAlpha;
+extern vmCvar_t ui_cg_crosshairAlphaAlt;
+extern vmCvar_t ui_cg_crosshairColor;
+extern vmCvar_t ui_cg_crosshairColorAlt;
+extern vmCvar_t ui_cg_crosshairSize;
 
 extern vmCvar_t cl_bypassMouseInput;
 
@@ -109,10 +109,6 @@ extern vmCvar_t ui_serverBrowserSettings;
 #define UI_BROWSER_ALLOW_REDIRECT     BIT(0)
 #define UI_BROWSER_ALLOW_HUMANS_COUNT BIT(1)
 #define UI_BROWSER_ALLOW_MAX_CLIENTS  BIT(2)
-
-// ui_qmenu.c
-#define RCOLUMN_OFFSET          (BIGCHAR_WIDTH)
-#define LCOLUMN_OFFSET          (-BIGCHAR_WIDTH)
 
 #define SLIDER_RANGE            10
 #define MAX_EDIT_LINE           256
@@ -564,6 +560,7 @@ typedef struct
 	char playerNames[MAX_CLIENTS][MAX_NAME_LENGTH * 2];
 	qboolean playerMuted[MAX_CLIENTS];
 	int playerRefereeStatus[MAX_CLIENTS];
+	int playerShoutcasterStatus[MAX_CLIENTS];
 	char teamNames[MAX_CLIENTS][MAX_NAME_LENGTH];
 	int teamClientNums[MAX_CLIENTS];
 

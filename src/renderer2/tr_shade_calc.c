@@ -1076,7 +1076,7 @@ TEX COORDS
 void RB_CalcTexMatrix(const textureBundle_t *bundle, mat4_t matrix)
 {
 	int   j;
-	float x, y;
+	double x, y;
 
 	mat4_ident(matrix);
 
@@ -1085,8 +1085,9 @@ void RB_CalcTexMatrix(const textureBundle_t *bundle, mat4_t matrix)
 		switch (bundle->texMods[j].type)
 		{
 		case TMOD_NONE:
-			j = TR_MAX_TEXMODS; // break out of for loop
-			break;
+			//j = TR_MAX_TEXMODS; // break out of for loop
+			//break;
+			return; //exit this function
 		case TMOD_TURBULENT:
 		{
 			waveForm_t *wf = &bundle->texMods[j].wave;
@@ -1113,9 +1114,19 @@ void RB_CalcTexMatrix(const textureBundle_t *bundle, mat4_t matrix)
 		}
 		case TMOD_SCROLL:
 		{
-			x = bundle->texMods[j].scroll[0] * tess.shaderTime;
-			y = bundle->texMods[j].scroll[1] * tess.shaderTime;
+			//check if shader is sky and lower the speed so its closer to vanilla render
+			//see warbell and battery sky..
+			if (tess.surfaceShader->isSky)
+			{
+				x = bundle->texMods[j].scroll[0] * tess.shaderTime *0.5;
+				y = bundle->texMods[j].scroll[1] * tess.shaderTime *0.5;
+			}
+			else
+			{
+				x = bundle->texMods[j].scroll[0] * tess.shaderTime;
+				y = bundle->texMods[j].scroll[1] * tess.shaderTime;
 
+			}
 			// clamp so coordinates don't continuously get larger, causing problems
 			// with hardware limits
 			x = x - floor(bundle->texMods[j].scroll[0]);

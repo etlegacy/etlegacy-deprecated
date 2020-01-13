@@ -117,8 +117,8 @@ static void CG_TransitionEntity(centity_t *cent)
 	// so previousEvent will never return to 0 (condition cg_entities[id].currentValid == qfalse).
 	// this ensures cent->previousEvent is 0 when a new event occurs
 	if (cent->nextState.eType < ET_EVENTS ||
-		cent->currentState.otherEntityNum != cent->nextState.otherEntityNum ||
-		cent->currentState.otherEntityNum2 != cent->nextState.otherEntityNum2)
+	    cent->currentState.otherEntityNum != cent->nextState.otherEntityNum ||
+	    cent->currentState.otherEntityNum2 != cent->nextState.otherEntityNum2)
 	{
 		cent->previousEvent = 0;
 	}

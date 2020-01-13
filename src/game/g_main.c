@@ -66,6 +66,18 @@ g_campaignInfo_t g_campaigns[MAX_CAMPAIGNS];
 
 mapEntityData_Team_t mapEntityData[2];
 
+const char *gameNames[] =
+{
+	"Single Player",        // Obsolete
+	"Cooperative",          // Obsolete
+	"Objective",
+	"Stopwatch",
+	"Campaign",
+	"Last Man Standing",
+	"Map Voting"            // GT_WOLF_MAPVOTE
+	// GT_MAX_GAME_TYPE
+};
+
 #ifdef FEATURE_OMNIBOT
 vmCvar_t g_OmniBotPath;
 vmCvar_t g_OmniBotEnable;
@@ -182,12 +194,8 @@ vmCvar_t vote_allow_matchreset;
 vmCvar_t vote_allow_mutespecs;
 vmCvar_t vote_allow_nextmap;
 vmCvar_t vote_allow_referee;
-vmCvar_t vote_allow_shuffleteamsxp;
-vmCvar_t vote_allow_shuffleteamsxp_norestart;
-#ifdef FEATURE_RATING
-vmCvar_t vote_allow_shuffleteamssr;
-vmCvar_t vote_allow_shuffleteamssr_norestart;
-#endif
+vmCvar_t vote_allow_shuffleteams;
+vmCvar_t vote_allow_shuffleteams_norestart;
 vmCvar_t vote_allow_swapteams;
 vmCvar_t vote_allow_friendlyfire;
 vmCvar_t vote_allow_timelimit;
@@ -204,6 +212,7 @@ vmCvar_t vote_allow_poll;
 vmCvar_t vote_allow_maprestart;
 
 vmCvar_t refereePassword;
+vmCvar_t shoutcastPassword;
 vmCvar_t g_debugConstruct;
 vmCvar_t g_landminetimeout;
 
@@ -290,6 +299,8 @@ vmCvar_t team_maxMachineguns;
 vmCvar_t team_maxRockets;
 vmCvar_t team_maxRiflegrenades;
 vmCvar_t team_maxLandmines;
+// misc
+vmCvar_t team_riflegrenades;
 // skills
 vmCvar_t skill_soldier;
 vmCvar_t skill_medic;
@@ -326,12 +337,9 @@ vmCvar_t g_corpses; // dynamic body que FIXME: limit max bodies by var value
 vmCvar_t g_oss; //   0 - vanilla/unknown/ET:L auto setup
                 //   1 - Windows
                 //   2 - Linux
-                //   4 - Linux64
-                //   8 - Apple
-                //  16 - AROS
-                //  32 - Pandora
-                //  64 - MorphOS
-                // 128 - Android
+                //   4 - Linux 64
+                //   8 - Mac OS X
+                //  16 - Android
 
 vmCvar_t g_realHead; // b_realHead functionality from ETPro
 
@@ -374,7 +382,7 @@ cvarTable_t gameCvarTable[] =
 	{ &g_covertopsChargeTime,               "g_covertopsChargeTime",               "30000",                      CVAR_SERVERINFO | CVAR_LATCH,                    0, qfalse, qtrue  },
 	{ &g_landminetimeout,                   "g_landminetimeout",                   "1",                          CVAR_ARCHIVE,                                    0, qfalse, qtrue  },
 
-	{ &g_oss,                               "g_oss",                               "11",                         CVAR_SERVERINFO | CVAR_LATCH,                    0, qfalse, qfalse },
+	{ &g_oss,                               "g_oss",                               "15",                         CVAR_SERVERINFO | CVAR_LATCH,                    0, qfalse, qfalse },
 
 	{ &g_maxclients,                        "sv_maxclients",                       "20",                         CVAR_SERVERINFO | CVAR_LATCH | CVAR_ARCHIVE,     0, qfalse, qfalse },
 	{ &g_maxGameClients,                    "g_maxGameClients",                    "0",                          CVAR_SERVERINFO | CVAR_LATCH | CVAR_ARCHIVE,     0, qfalse, qfalse },
@@ -459,6 +467,7 @@ cvarTable_t gameCvarTable[] =
 	{ NULL,                                 "P",                                   "",                           CVAR_SERVERINFO_NOUPDATE,                        0, qfalse, qfalse },
 
 	{ &refereePassword,                     "refereePassword",                     "none",                       0,                                               0, qfalse, qfalse },
+	{ &shoutcastPassword,                   "shoutcastPassword",                   "none",                       0,                                               0, qfalse, qfalse },
 	{ &g_spectatorInactivity,               "g_spectatorInactivity",               "0",                          0,                                               0, qfalse, qfalse },
 	{ &match_latejoin,                      "match_latejoin",                      "1",                          0,                                               0, qfalse, qfalse },
 	{ &match_minplayers,                    "match_minplayers",                    MATCH_MINPLAYERS,             0,                                               0, qfalse, qfalse },
@@ -483,12 +492,8 @@ cvarTable_t gameCvarTable[] =
 	{ &vote_allow_mutespecs,                "vote_allow_mutespecs",                "1",                          0,                                               0, qfalse, qfalse },
 	{ &vote_allow_nextmap,                  "vote_allow_nextmap",                  "1",                          0,                                               0, qfalse, qfalse },
 	{ &vote_allow_referee,                  "vote_allow_referee",                  "0",                          0,                                               0, qfalse, qfalse },
-	{ &vote_allow_shuffleteamsxp,           "vote_allow_shuffleteamsxp",           "1",                          0,                                               0, qfalse, qfalse },
-	{ &vote_allow_shuffleteamsxp_norestart, "vote_allow_shuffleteamsxp_norestart", "1",                          0,                                               0, qfalse, qfalse },
-#ifdef FEATURE_RATING
-	{ &vote_allow_shuffleteamssr,           "vote_allow_shuffleteamssr",           "1",                          0,                                               0, qfalse, qfalse },
-	{ &vote_allow_shuffleteamssr_norestart, "vote_allow_shuffleteamssr_norestart", "1",                          0,                                               0, qfalse, qfalse },
-#endif
+	{ &vote_allow_shuffleteams,             "vote_allow_shuffleteams",             "1",                          0,                                               0, qfalse, qfalse },
+	{ &vote_allow_shuffleteams_norestart,   "vote_allow_shuffleteams_norestart",   "1",                          0,                                               0, qfalse, qfalse },
 	{ &vote_allow_swapteams,                "vote_allow_swapteams",                "1",                          0,                                               0, qfalse, qfalse },
 	{ &vote_allow_friendlyfire,             "vote_allow_friendlyfire",             "1",                          0,                                               0, qfalse, qfalse },
 	{ &vote_allow_timelimit,                "vote_allow_timelimit",                "0",                          0,                                               0, qfalse, qfalse },
@@ -512,7 +517,7 @@ cvarTable_t gameCvarTable[] =
 	{ &g_scriptDebug,                       "g_scriptDebug",                       "0",                          CVAR_CHEAT,                                      0, qfalse, qfalse },
 	// What level of detail do we want script printing to go to.
 	{ &g_scriptDebugLevel,                  "g_scriptDebugLevel",                  "0",                          CVAR_CHEAT,                                      0, qfalse, qfalse },
-    { &g_scriptDebugTarget,                 "g_scriptDebugTarget",                 "",                           CVAR_CHEAT,                                      0, qfalse, qfalse },
+	{ &g_scriptDebugTarget,                 "g_scriptDebugTarget",                 "",                           CVAR_CHEAT,                                      0, qfalse, qfalse },
 
 	// How fast do we want Allied single player movement?
 	{ &g_movespeed,                         "g_movespeed",                         "76",                         CVAR_CHEAT,                                      0, qfalse, qfalse },
@@ -583,8 +588,8 @@ cvarTable_t gameCvarTable[] =
 
 	{ &g_countryflags,                      "g_countryflags",                      "1",                          CVAR_LATCH | CVAR_ARCHIVE,                       0, qfalse, qfalse },
 
-	{ &team_maxAirstrikes,                  "team_maxAirstrikes",                  "0",                          0,                                               0, qfalse, qfalse },
-	{ &team_maxArtillery,                   "team_maxArtillery",                   "0",                          0,                                               0, qfalse, qfalse },
+	{ &team_maxAirstrikes,                  "team_maxAirstrikes",                  "0.0",                        0,                                               0, qfalse, qfalse },
+	{ &team_maxArtillery,                   "team_maxArtillery",                   "0.0",                        0,                                               0, qfalse, qfalse },
 	// team class/weapon limiting
 	//classes
 	{ &team_maxSoldiers,                    "team_maxSoldiers",                    "-1",                         0,                                               0, qfalse, qfalse },
@@ -601,7 +606,9 @@ cvarTable_t gameCvarTable[] =
 	{ &team_maxRockets,                     "team_maxPanzers",                     "-1",                         0,                                               0, qfalse, qfalse }, // keep ETPro compatibility
 	{ &team_maxRiflegrenades,               "team_maxRiflegrenades",               "-1",                         0,                                               0, qfalse, qfalse },
 	{ &team_maxLandmines,                   "team_maxLandmines",                   "10",                         0,                                               0, qfalse, qfalse },
-	//Skills
+	//misc
+	{ &team_riflegrenades,                  "team_riflegrenades",                  "1",                          0,                                               0, qfalse, qfalse },
+	//skills
 	{ &skill_soldier,                       "skill_soldier",                       "20 50 90 140",               CVAR_ARCHIVE,                                    0, qfalse, qfalse },
 	{ &skill_medic,                         "skill_medic",                         "20 50 90 140",               CVAR_ARCHIVE,                                    0, qfalse, qfalse },
 	{ &skill_fieldops,                      "skill_fieldops",                      "20 50 90 140",               CVAR_ARCHIVE,                                    0, qfalse, qfalse },
@@ -1488,7 +1495,14 @@ void G_CheckForCursorHints(gentity_t *ent)
 				{
 					hintType = traceEnt->s.dmgFlags;
 				}
-
+				break;
+			case ET_CABINET_A:
+				hintDist = CH_ACTIVATE_DIST;
+				hintType = HINT_HEALTH;
+				break;
+			case ET_CABINET_H:
+				hintDist = CH_ACTIVATE_DIST;
+				hintType = HINT_AMMO;
 				break;
 			default:
 				break;
@@ -1738,7 +1752,7 @@ void G_RegisterCvars(void)
 
 	level.server_settings = 0;
 
-	G_Printf("%d cvars in use.\n", gameCvarTableSize);
+	G_Printf("%d cvars in use\n", gameCvarTableSize);
 
 	for (i = 0, cv = gameCvarTable; i < gameCvarTableSize; i++, cv++)
 	{
@@ -1938,6 +1952,15 @@ void G_UpdateCvars(void)
 					G_SetSkillLevelsByCvar(cv->vmCvar);
 					skillLevelPoints = qtrue;
 				}
+				else if (cv->vmCvar == &shoutcastPassword)
+				{
+					// logout all currently logged in shoutcasters
+					// when changing shoutcastPassword to '' or 'none'
+					if (!Q_stricmp(shoutcastPassword.string, "none") || !shoutcastPassword.string[0])
+					{
+						G_RemoveAllShoutcasters();
+					}
+				}
 #ifdef FEATURE_LUA
 				else if (cv->vmCvar == &lua_modules || cv->vmCvar == &lua_allowedModules)
 				{
@@ -1979,14 +2002,11 @@ void G_UpdateCvars(void)
 				if (cv->vmCvar == &vote_allow_kick          || cv->vmCvar == &vote_allow_map            ||
 				    cv->vmCvar == &vote_allow_matchreset    || cv->vmCvar == &vote_allow_gametype       ||
 				    cv->vmCvar == &vote_allow_mutespecs     || cv->vmCvar == &vote_allow_nextmap        ||
-				    cv->vmCvar == &vote_allow_config           || cv->vmCvar == &vote_allow_referee     ||
-				    cv->vmCvar == &vote_allow_shuffleteamsxp  ||  cv->vmCvar == &vote_allow_shuffleteamsxp_norestart ||
-#ifdef FEATURE_RATING
-				    cv->vmCvar == &vote_allow_shuffleteamssr  ||  cv->vmCvar == &vote_allow_shuffleteamssr_norestart ||
-#endif
-				    cv->vmCvar == &vote_allow_swapteams  || cv->vmCvar == &vote_allow_friendlyfire  ||
-				    cv->vmCvar == &vote_allow_timelimit      || cv->vmCvar == &vote_allow_warmupdamage  ||
-				    cv->vmCvar == &vote_allow_antilag        || cv->vmCvar == &vote_allow_balancedteams ||
+				    cv->vmCvar == &vote_allow_config        || cv->vmCvar == &vote_allow_referee        ||
+				    cv->vmCvar == &vote_allow_shuffleteams  ||  cv->vmCvar == &vote_allow_shuffleteams_norestart ||
+				    cv->vmCvar == &vote_allow_swapteams     || cv->vmCvar == &vote_allow_friendlyfire   ||
+				    cv->vmCvar == &vote_allow_timelimit     || cv->vmCvar == &vote_allow_warmupdamage   ||
+				    cv->vmCvar == &vote_allow_antilag       || cv->vmCvar == &vote_allow_balancedteams  ||
 				    cv->vmCvar == &vote_allow_muting || cv->vmCvar == &vote_allow_surrender ||
 				    cv->vmCvar == &vote_allow_restartcampaign || cv->vmCvar == &vote_allow_nextcampaign ||
 				    cv->vmCvar == &vote_allow_poll || cv->vmCvar == &vote_allow_maprestart
@@ -2243,7 +2263,9 @@ void G_InitGame(int levelTime, int randomSeed, int restart, int legacyServer, in
 	char   timeFt[32];
 	char   *logDate;
 
-	G_Printf("------- Game Initialization -------\ngamename: %s\ngamedate: %s\n", GAMEVERSION, __DATE__);
+	G_Printf("------- Game Initialization -------\n");
+	G_Printf("gamename: %s\n", GAMEVERSION);
+	G_Printf("gamedate: %s\n", __DATE__);
 
 	srand(randomSeed);
 
@@ -2303,7 +2325,8 @@ void G_InitGame(int levelTime, int randomSeed, int restart, int legacyServer, in
 
 	for (i = 0; i < level.numConnectedClients; i++)
 	{
-		level.clients[level.sortedClients[i]].sess.spawnObjectiveIndex = 0;
+		level.clients[level.sortedClients[i]].sess.userSpawnPointValue     = 0;
+		level.clients[level.sortedClients[i]].sess.resolvedSpawnPointIndex = 0;
 	}
 
 	// init the anim scripting
@@ -2518,7 +2541,6 @@ void G_InitGame(int levelTime, int randomSeed, int restart, int legacyServer, in
 	// Clear out spawn target config strings
 	trap_GetConfigstring(CS_MULTI_INFO, cs, sizeof(cs));
 	Info_SetValueForKey(cs, "s", "0"); // numspawntargets
-	reset_numobjectives();
 	trap_SetConfigstring(CS_MULTI_INFO, cs);
 
 	for (i = CS_MULTI_SPAWNTARGETS; i < CS_MULTI_SPAWNTARGETS + MAX_MULTI_SPAWNTARGETS; i++)
@@ -2664,6 +2686,15 @@ void G_ShutdownGame(int restart)
 {
 	time_t aclock;
 	char   timeFt[32];
+
+#ifdef FEATURE_RATING
+	if (g_skillRating.integer && level.database.initialized)
+	{
+		// deinitialize db at the last moment to ensure bots/players connecting
+		// after intermission but before next map is loaded still have db access
+		G_SkillRatingDB_DeInit();
+	}
+#endif
 
 #ifdef FEATURE_LUA
 	G_LuaHook_ShutdownGame(restart);
@@ -3098,12 +3129,6 @@ void SendScoreboardMessageToAllClients(void)
  */
 void MoveClientToIntermission(gentity_t *ent)
 {
-	// if we are in intermission ensure we don't move the client twice
-	if (ent->client->ps.pm_type == PM_INTERMISSION)
-	{
-		return;
-	}
-
 	// take out of follow mode if needed
 	if (ent->client->sess.spectatorState == SPECTATOR_FOLLOW)
 	{
@@ -3609,16 +3634,9 @@ void QDECL G_LogPrintf(const char *fmt, ...)
 {
 	va_list argptr;
 	char    string[1024];
-	int     min, tens, sec, l;
+	int     l;
 
-	sec = level.time / 1000;
-
-	min  = sec / 60;
-	sec -= min * 60;
-	tens = sec / 10;
-	sec -= tens * 10;
-
-	Com_sprintf(string, sizeof(string), "%i:%i%i ", min, tens, sec);
+	Com_sprintf(string, sizeof(string), "%8i ", level.time);
 
 	l = strlen(string);
 
@@ -3661,7 +3679,7 @@ void G_LogExit(const char *string)
 
 #ifdef FEATURE_RATING
 	// record match ratings
-	if (g_skillRating.integer && (g_gametype.integer != GT_WOLF_STOPWATCH && g_gametype.integer != GT_WOLF_LMS))
+	if (g_skillRating.integer)
 	{
 		for (i = 0; i < level.numConnectedClients; i++)
 		{
@@ -3673,7 +3691,7 @@ void G_LogExit(const char *string)
 			}
 
 			// record match rating before intermission
-			G_SkillRatingSetUserRating(ent->client);
+			G_SkillRatingSetClientRating(ent->client);
 		}
 	}
 #endif
@@ -3712,7 +3730,7 @@ void G_LogExit(const char *string)
 
 #ifdef FEATURE_RATING
 	// calculate skill ratings once intermission is queued
-	if (g_skillRating.integer && (g_gametype.integer != GT_WOLF_STOPWATCH && g_gametype.integer != GT_WOLF_LMS))
+	if (g_skillRating.integer)
 	{
 		G_CalculateSkillRatings();
 	}
@@ -4009,15 +4027,6 @@ void CheckIntermissionExit(void)
 		}
 	}
 
-#ifdef FEATURE_RATING
-	if (g_skillRating.integer && level.database.initialized)
-	{
-		// deinitialize db at the last moment to ensure bots/players
-		// connecting in intermission still have db access
-		G_SkillRatingDB_DeInit();
-	}
-#endif
-
 	ExitLevel();
 }
 
@@ -4054,7 +4063,8 @@ void CheckExitRules(void)
 	if (g_gamestate.integer == GS_INTERMISSION)
 	{
 		// if ExitLevel has run, but still no new map was loaded, try restarting the map
-		if (level.intermissiontime == 0) {
+		if (level.intermissiontime == 0)
+		{
 			G_Printf("^3%s\n", "WARNING: failed to load the next map or campaign!");
 			G_Printf("^3%s\n", "Restarting level...");
 			trap_SendConsoleCommand(EXEC_APPEND, "map_restart 0\n");
@@ -4870,7 +4880,7 @@ void G_RunEntity(gentity_t *ent, int msec)
 		return;
 	}
 
-	if (g_debugHitboxes.integer || g_debugHitboxes.string[0])
+	if (g_debugHitboxes.integer > 0)
 	{
 		G_DrawEntBBox(ent);
 	}

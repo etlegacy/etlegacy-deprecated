@@ -93,6 +93,11 @@ STATE COMBAT
 {
 	dead	
 	{
+		suicide
+		{
+			both dead_rifle_head_2
+		}
+	
 		default
 		{
 			both dead_machinegun_1
@@ -2989,33 +2994,49 @@ climbdismount
 
 DEATH
 {
+	suicide
+	{
+		both death_rifle_head_2
+	}
+
 	enemy_weapon knives, enemy_position behind
 	{
 		both death_machinegun_1
+		both death_machinegun_2
+		both death_gut
 	}
 
 	enemy_weapon machineguns
 	{
 		both death_machinegun_1
+		both death_machinegun_2
+		both death_gut
 	}
 
 	enemy_weapon rifles, impact_point head
 	{
 		both death_machinegun_1
+		both death_machinegun_2
+		both death_gut
 	}
 
 	enemy_weapon rifles, impact_point chest
 	{
 		both death_machinegun_1
+		both death_machinegun_2
+		both death_gut
 	}
 	enemy_weapon flamethrower
 	{
 		both death_machinegun_1
+		both death_machinegun_2
+		both death_gut
 	}
 
 	default
 	{
 		both death_machinegun_1
+		both death_machinegun_2
 		both death_gut
 	}
 }
@@ -3122,11 +3143,11 @@ do_alt_weapon_mode
 {
 	weapons K43 Rifle
 	{
-		torso detach_grenlauncher
+		torso reload_grenlauncher
 	}
 	weapons m1 garand
 	{
-		torso detach_grenlauncher
+		torso reload_grenlauncher
 	}
 	weapons gpg40
 	{
@@ -3148,7 +3169,27 @@ do_alt_weapon_mode
 
 undo_alt_weapon_mode
 {
+	weapons K43 Rifle
+	{
+		torso detach_grenlauncher
+	}
+	weapons m1 garand
+	{
+		torso detach_grenlauncher
+	}
+	weapons gpg40
+	{
+		torso detach_grenlauncher
+	}
+	weapons M7
+	{
+		torso detach_grenlauncher
+	}
 	weapons Luger
+	{
+		torso detach_silencer
+	}
+	weapons Colt
 	{
 		torso detach_silencer
 	}

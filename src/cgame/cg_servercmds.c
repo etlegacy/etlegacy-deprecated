@@ -39,20 +39,21 @@
 #include "cg_local.h"
 
 #ifdef FEATURE_RATING
-static void CG_ParseSkillRating(void)
+static void CG_ParseSkillRating(int version)
 {
-	int        i = 0;
-	const char *s;
-
+	int i, r;
+	int argc = trap_Argc();
 	cg.axisProb   = (float)atof(CG_Argv(1));
 	cg.alliesProb = (float)atof(CG_Argv(2));
 
-	s = CG_Argv(i);
-	while (*s)
+	for (i = 0, r = 3; i < MAX_CLIENTS && r < argc; i++, r++)
 	{
-		cg.rating[i] = (float)atof(CG_Argv(i + 3));
-		i++;
-		s = CG_Argv(i);
+		cg.rating[i] = (float)atof(CG_Argv(r));
+		// sr
+		if (version == 1)
+		{
+			r++; // skip delta ratings
+		}
 	}
 }
 #endif
@@ -847,8 +848,8 @@ void CG_TeamRestrictionsChanged(void)
 
 	Q_strncpyz(cg.maxMortars, Info_ValueForKey(info, "w0"), sizeof(cg.maxMortars));
 	Q_strncpyz(cg.maxFlamers, Info_ValueForKey(info, "w1"), sizeof(cg.maxFlamers));
-	Q_strncpyz(cg.maxMg42s, Info_ValueForKey(info, "w2"), sizeof(cg.maxMg42s));
-	Q_strncpyz(cg.maxPanzers, Info_ValueForKey(info, "w3"), sizeof(cg.maxPanzers));
+	Q_strncpyz(cg.maxMachineguns, Info_ValueForKey(info, "w2"), sizeof(cg.maxMachineguns));
+	Q_strncpyz(cg.maxRockets, Info_ValueForKey(info, "w3"), sizeof(cg.maxRockets));
 	Q_strncpyz(cg.maxRiflegrenades, Info_ValueForKey(info, "w4"), sizeof(cg.maxRiflegrenades));
 	cg.maxPlayers = atoi(Info_ValueForKey(info, "m"));
 }
@@ -1076,6 +1077,7 @@ static void CG_AddToTeamChat(const char *str, int clientnum) // FIXME: add disgu
 	char *p, *ls;
 	char lastcolor;
 	int  chatHeight;
+	int  chatWidth;
 
 	// -1 is sent when console is chatting
 	if (clientnum < -1 || clientnum >= MAX_CLIENTS) // FIXME: never return for console chat?
@@ -1099,7 +1101,8 @@ static void CG_AddToTeamChat(const char *str, int clientnum) // FIXME: add disgu
 		return;
 	}
 
-	len = 0;
+	len       = 0;
+	chatWidth = (cgs.gamestate == GS_INTERMISSION) ? TEAMCHAT_WIDTH + 30 : TEAMCHAT_WIDTH;
 
 	p  = cgs.teamChatMsgs[cgs.teamChatPos % chatHeight];
 	*p = 0;
@@ -1109,7 +1112,7 @@ static void CG_AddToTeamChat(const char *str, int clientnum) // FIXME: add disgu
 	ls = NULL;
 	while (*str)
 	{
-		if (len > TEAMCHAT_WIDTH - 1)
+		if (len > chatWidth - 1)
 		{
 			if (ls)
 			{
@@ -1759,7 +1762,7 @@ void CG_VoiceChatLocal(int mode, qboolean voiceOnly, int clientNum, int color, c
 
 	if (CG_GetVoiceChat(voiceChatList, cmd, &snd, &sprite, &chat))
 	{
-		if (mode == SAY_TEAM || mode == SAY_BUDDY || !cg_teamChatsOnly.integer)
+		if (mode == SAY_TEAM || mode == SAY_BUDDY || !cg_teamChatsOnly.integer || cgs.clientinfo[cg.clientNum].team == TEAM_SPECTATOR)
 		{
 			bufferedVoiceChat_t vchat;
 			const char          *loc = " ";
@@ -1862,6 +1865,66 @@ static void CG_RemoveChatEscapeChar(char *text)
 		text[l++] = text[i];
 	}
 	text[l] = '\0';
+}
+
+static char *CG_FindNeedle(const char *haystack, const char *needle, size_t needle_len)
+{
+	if (needle_len == 0)
+	{
+		return (char *)haystack;
+	}
+	while (haystack[0])
+	{
+		if ((tolower(haystack[0]) == tolower(needle[0])) && (Q_stricmpn(haystack, needle, needle_len) == 0))
+		{
+			return (char *)haystack;
+		}
+		haystack++;
+	}
+	return NULL;
+}
+
+static const char *CG_AddChatMention(char *text, int clientNum)
+{
+	static char message[MAX_SAY_TEXT + 8];
+	message[0] = 0;
+	if (cg_teamChatMention.integer && cg.clientNum != clientNum)
+	{
+		char *mntStart, *mntEnd, *msgPart = text;
+		if (clientNum < 0)
+		{
+			msgPart += strlen("console");
+		}
+		else
+		{
+			msgPart += strlen(cgs.clientinfo[clientNum].name);
+		}
+		if ((mntStart = strchr(msgPart, '@')))
+		{
+			// check that the previous character was whitespace
+			if (*(mntStart - 1) != ' ')
+			{
+				return text;
+			}
+			mntStart++; // skip @ char
+			mntEnd = mntStart;
+			while (*mntEnd && *mntEnd != ' ')
+			{
+				mntEnd++;
+			}
+			if (mntEnd - mntStart < 3)
+			{
+				return text;
+			}
+			if (CG_FindNeedle(cgs.clientinfo[cg.clientNum].name, mntStart, mntEnd - mntStart))
+			{
+				Q_strcat(message, sizeof(message), "^3> ^7");
+				Q_strcat(message, sizeof(message), text);
+				return message;
+			}
+		}
+	}
+	return text;
 }
 
 /**
@@ -1991,10 +2054,7 @@ void CG_topshotsParse_cmd(qboolean doBest)
 		headshots = atoi(CG_Argv(iArg++));
 		acc       = (atts > 0) ? (float)(hits * 100) / (float)atts : 0.0f;
 
-		// cap stats at 100%
-		acc = (acc > 100.0f) ? 100.0f : acc;
-
-		if (ts->cWeapons < WS_MAX * 2)
+		if (ts->cWeapons < WS_MAX * 2 && aWeaponInfo[iWeap - 1].fHasHeadShots)
 		{
 			CG_cleanName(cgs.clientinfo[cnum].name, name, 17, qfalse);
 			Q_strncpyz(ts->strWS[ts->cWeapons++],
@@ -2090,19 +2150,20 @@ void CG_parseWeaponStatsGS_cmd(void)
 				nHeadshots = atoi(CG_Argv(iArg++));
 				acc        = (nShots > 0) ? (float)(nHits * 100) / (float)nShots : 0.0f;
 
-				// cap stats at 100%
-				acc = (acc > 100.0f) ? 100.0f : acc;
+				totKills  += nKills;
+				totDeaths += nDeaths;
 
-				totHits      += nHits;
-				totShots     += nShots;
-				totKills     += nKills;
-				totDeaths    += nDeaths;
-				totHeadshots += nHeadshots;
+				if (aWeaponInfo[i].fHasHeadShots)
+				{
+					totHits      += nHits;
+					totShots     += nShots;
+					totHeadshots += nHeadshots;
+				}
 
 				Q_strncpyz(strName, va("%-12s  ", aWeaponInfo[i].pszName), sizeof(strName));
 				if (nShots > 0 || nHits > 0)
 				{
-					Q_strcat(strName, sizeof(strName), va("%5.1f %4d/%-4d ", (double)acc, nHits, nShots));
+					Q_strcat(strName, sizeof(strName), va("%s %4d/%-4d ", aWeaponInfo[i].fHasHeadShots ? va("%5.1f", (double)acc) : "     ", nHits, nShots));
 				}
 				else
 				{
@@ -2110,7 +2171,7 @@ void CG_parseWeaponStatsGS_cmd(void)
 				}
 
 				Q_strncpyz(gs->strWS[gs->cWeapons++],
-				           va("%s%5d %6d%s", strName, nKills, nDeaths, ((aWeaponInfo[i].fHasHeadShots) ? va(" %8d", nHeadshots) : "")),
+				           va("%s%5d %6d%s", strName, nKills, nDeaths, aWeaponInfo[i].fHasHeadShots ? va(" %8d", nHeadshots) : ""),
 				           sizeof(gs->strWS[0]));
 
 				if (nShots > 0 || nHits > 0 || nKills > 0 || nDeaths)
@@ -2147,9 +2208,6 @@ void CG_parseWeaponStatsGS_cmd(void)
 			htRatio = (totShots == 0) ? 0.0f : (float)(totHits * 100.0f / (float)totShots);
 			hsRatio = (totHits == 0) ? 0.0f : (float)(totHeadshots * 100.0f / (float)totHits);
 
-			// cap stats at 100% (for flamethrower)
-			htRatio = (htRatio > 100.0f) ? 100.0f : htRatio;
-
 			Q_strncpyz(gs->strExtra[0], va(CG_TranslateString("Damage Given: %6d      Team Damage Given: %6d"), dmg_given, team_dmg_given), sizeof(gs->strExtra[0]));
 			Q_strncpyz(gs->strExtra[1], va(CG_TranslateString("Damage Recvd: %6d      Team Damage Recvd: %6d"), dmg_rcvd, team_dmg_rcvd), sizeof(gs->strExtra[0]));
 			Q_strncpyz(gs->strExtra[2], "", sizeof(gs->strExtra[0]));
@@ -2174,6 +2232,7 @@ void CG_parseWeaponStatsGS_cmd(void)
 	if (cgs.skillRating)
 	{
 		ci->rating = (float)atof(CG_Argv(iArg++));
+		//ci->deltaRating = (float)atof(CG_Argv(iArg++));
 		Q_strncpyz(gs->strRank, va("%-20s %-16d %4.2f", GetRankTableData(ci->team, ci->rank)->names, xp, (double)ci->rating), sizeof(gs->strRank));
 	}
 	else
@@ -2293,11 +2352,15 @@ void CG_parseWeaponStats_cmd(void(txt_dump) (const char *))
 				deaths    = atoi(CG_Argv(iArg++));
 				headshots = atoi(CG_Argv(iArg++));
 
-				totHits      += hits;
-				totShots     += atts;
-				totKills     += kills;
-				totDeaths    += deaths;
-				totHeadshots += headshots;
+				totKills  += kills;
+				totDeaths += deaths;
+
+				if (aWeaponInfo[i].fHasHeadShots)
+				{
+					totHits      += hits;
+					totShots     += atts;
+					totHeadshots += headshots;
+				}
 
 				Q_strncpyz(strName, va("^3%-10s: ", aWeaponInfo[i].pszName), sizeof(strName));
 				if (atts > 0 || hits > 0)
@@ -2305,10 +2368,7 @@ void CG_parseWeaponStats_cmd(void(txt_dump) (const char *))
 					float acc = (atts == 0) ? 0.0f : (float)(hits * 100.0f / (float)atts);
 					fHasStats = qtrue;
 
-					// cap stats at 100%
-					acc = (acc > 100.0f) ? 100.0f : acc;
-
-					Q_strcat(strName, sizeof(strName), va("^7%5.1f ^5%4d/%-4d ", acc, hits, atts));
+					Q_strcat(strName, sizeof(strName), va("^7%s ^5%4d/%-4d ", aWeaponInfo[i].fHasHeadShots ? va("%5.1f", (double)acc) : "     ", hits, atts));
 				}
 				else
 				{
@@ -2321,11 +2381,11 @@ void CG_parseWeaponStats_cmd(void(txt_dump) (const char *))
 
 				if (fFull)
 				{
-					txt_dump(va("%s^2%5d ^1%6d%s\n", strName, kills, deaths, ((aWeaponInfo[i].fHasHeadShots) ? va(" ^3%9d", headshots) : "")));
+					txt_dump(va("%s^2%5d ^1%6d%s\n", strName, kills, deaths, aWeaponInfo[i].fHasHeadShots ? va(" ^3%9d", headshots) : ""));
 				}
 				else
 				{
-					txt_dump(va("%s^2%3d ^1%3d%s\n", strName, kills, deaths, ((aWeaponInfo[i].fHasHeadShots) ? va(" ^3%2d", headshots) : "")));
+					txt_dump(va("%s^2%3d ^1%3d%s\n", strName, kills, deaths, aWeaponInfo[i].fHasHeadShots ? va(" ^3%2d", headshots) : ""));
 				}
 			}
 		}
@@ -2344,9 +2404,6 @@ void CG_parseWeaponStats_cmd(void(txt_dump) (const char *))
 
 			htRatio = (totShots == 0) ? 0.0 : (float)(totHits * 100.0 / (float)totShots);
 			hsRatio = (totHits == 0) ? 0.0 : (float)(totHeadshots * 100.0 / (float)totHits);
-
-			// cap stats at 100%
-			htRatio = (htRatio > 100.0f) ? 100.0f : htRatio;
 
 			if (!fFull)
 			{
@@ -2511,20 +2568,25 @@ static void CG_parseBestShotsStats_cmd(qboolean doTop, void(txt_dump) (const cha
 			headshots = atoi(CG_Argv(iArg++));
 			acc       = (atts > 0) ? (float)(hits * 100) / (float)atts : 0.0f;
 
-			// cap stats at 100%
-			acc = (acc > 100.0f) ? 100.0f : acc;
-
 			if (fFull)
 			{
 				CG_cleanName(cgs.clientinfo[cnum].name, name, 30, qfalse);
-				txt_dump(va("^3%s ^7%5.1f ^5%4d/%-4d ^2%5d ^1%6d ^3%6d ^7%s\n",
-				            aWeaponInfo[iWeap - 1].pszCode, (double)acc, hits, atts, kills, deaths, headshots, name));
+				txt_dump(va("^3%s ^7%s ^5%4d/%-4d ^2%5d ^1%6d ^3%s ^7%s\n",
+				            aWeaponInfo[iWeap - 1].pszCode,
+				            aWeaponInfo[iWeap - 1].fHasHeadShots ? va("%5.1f", (double)acc) : "     ",
+				            hits, atts, kills, deaths,
+				            aWeaponInfo[iWeap - 1].fHasHeadShots ? va("%6d", headshots) : "      ",
+				            name));
 			}
 			else
 			{
 				CG_cleanName(cgs.clientinfo[cnum].name, name, 12, qfalse);
-				txt_dump(va("^3%s ^7%5.1f ^5%4d/%-4d ^2%3d ^1%3d ^3%2d ^7%s\n",
-				            aWeaponInfo[iWeap - 1].pszCode, (double)acc, hits, atts, kills, deaths, headshots, name));
+				txt_dump(va("^3%s ^7%s ^5%4d/%-4d ^2%3d ^1%3d ^3%s ^7%s\n",
+				            aWeaponInfo[iWeap - 1].pszCode,
+				            aWeaponInfo[iWeap - 1].fHasHeadShots ? va("%5.1f", (double)acc) : "     ",
+				            hits, atts, kills, deaths,
+				            aWeaponInfo[iWeap - 1].fHasHeadShots ? va("%2d", headshots) : "  ",
+				            name));
 			}
 
 			iWeap = atoi(CG_Argv(iArg++));
@@ -2581,11 +2643,10 @@ static void CG_parseTopShotsStats_cmd(qboolean doTop, void(txt_dump) (const char
 			acc       = (atts > 0) ? (float)(hits * 100) / (float)atts : 0.0f;
 			color     = (((doTop) ? (double)acc : ((double)wBestAcc) + 0.999) >= ((doTop) ? wBestAcc : (double)acc)) ? "^3" : "^7";
 
-			// cap stats at 100%
-			acc = (acc > 100.0f) ? 100.0f : acc;
-
 			CG_cleanName(cgs.clientinfo[cnum].name, name, 30, qfalse);
-			txt_dump(va("%s%5.1f ^5%4d/%-4d ^2%5d ^1%6d ^3%9d %s%s\n", color, (double)acc, hits, atts, kills, deaths, headshots, color, name));
+			txt_dump(va("%s%s ^5%4d/%-4d ^2%5d ^1%6d ^3%s %s%s\n", color,
+			            aWeaponInfo[i].fHasHeadShots ? va("%5.1f", (double)acc) : "     ", hits, atts, kills, deaths,
+			            aWeaponInfo[i].fHasHeadShots ? va("^3%9d", headshots) : "", color, name));
 		}
 	}
 }
@@ -2742,6 +2803,7 @@ void CG_dumpStats(void)
 #define IMPT_HASH           53279
 #define IMSR_HASH           53398
 #define SR_HASH             27365
+#define SRA_HASH            39102
 #define MU_START_HASH       107698
 #define MU_PLAY_HASH        92607
 #define MU_STOP_HASH        94568
@@ -2905,7 +2967,7 @@ static void CG_ServerCommand(void)
 		const char *s;
 		int        clientNum = -1;     // console
 
-		if (cg_teamChatsOnly.integer)     // FIXME: skip for console?
+		if (cg_teamChatsOnly.integer && cgs.clientinfo[cg.clientNum].team != TEAM_SPECTATOR) // FIXME: skip for console?
 		{
 			return;
 		}
@@ -2926,9 +2988,10 @@ static void CG_ServerCommand(void)
 
 		Q_strncpyz(text, s, MAX_SAY_TEXT);
 		CG_RemoveChatEscapeChar(text);
-		CG_AddToTeamChat(text, clientNum);
-		CG_Printf("%s\n", text);
-		CG_WriteToLog("%s\n", text);
+		s = CG_AddChatMention(text, clientNum);
+		CG_AddToTeamChat(s, clientNum);
+		CG_Printf("%s\n", s);
+		CG_WriteToLog("%s\n", s);
 		return;
 	}
 	case VCHAT_HASH:                              // "vchat"
@@ -2974,9 +3037,10 @@ static void CG_ServerCommand(void)
 		}
 #endif
 		CG_RemoveChatEscapeChar(text);
-		CG_AddToTeamChat(text, clientNum); // disguise ?
-		CG_Printf("%s\n", text);
-		CG_WriteToLog("%s\n", text);
+		s = CG_AddChatMention(text, clientNum);
+		CG_AddToTeamChat(s, clientNum); // disguise ?
+		CG_Printf("%s\n", s);
+		CG_WriteToLog("%s\n", s);
 		return;
 	}
 	case VTCHAT_HASH:                                // "vtchat"
@@ -3221,10 +3285,16 @@ static void CG_ServerCommand(void)
 			CG_Debriefing_ParseSkillRating();
 		}
 		return;
-	case SR_HASH:                                          // "sr"
+	case SR_HASH:                                          // "sr" - backward compatibility with 2.76 demos
 		if (cgs.skillRating)
 		{
-			CG_ParseSkillRating();
+			CG_ParseSkillRating(1);
+		}
+		return;
+	case SRA_HASH:                                         // "sra"
+		if (cgs.skillRating)
+		{
+			CG_ParseSkillRating(2);
 		}
 		return;
 #endif

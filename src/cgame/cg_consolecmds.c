@@ -575,9 +575,17 @@ static void CG_MessageMode_f(void)
 		trap_Cvar_Set("cg_messageType", "2");
 	}
 	// fireteam say
-	else if (!Q_stricmp(cmd, "messagemode3") && CG_IsOnFireteam(cg.clientNum))
+	else if (!Q_stricmp(cmd, "messagemode3") && cgs.clientinfo[cg.clientNum].team != TEAM_SPECTATOR)
 	{
-		trap_Cvar_Set("cg_messageType", "3");
+		if (CG_IsOnFireteam(cg.clientNum))
+		{
+			trap_Cvar_Set("cg_messageType", "3");
+		}
+		else
+		{
+			// fallback to team say
+			trap_Cvar_Set("cg_messageType", "2");
+		}
 	}
 	// (normal) say
 	else
@@ -712,6 +720,29 @@ static void CG_SelectBuddy_f(void)
 		}
 		break;
 	}
+}
+
+/**
+ * @brief CG_QuickSpawnpoints_f
+ */
+static void CG_QuickSpawnpoint_f(void)
+{
+	if (cg.demoPlayback)
+	{
+		return;
+	}
+
+	if (cgs.clientinfo[cg.clientNum].team == TEAM_SPECTATOR || cgs.clientinfo[cg.clientNum].team == TEAM_FREE)
+	{
+		return;
+	}
+
+	if (cg.showSpawnpointsMenu)
+	{
+		CG_EventHandling(CGAME_EVENT_NONE, qfalse);
+	}
+
+	CG_EventHandling(CGAME_EVENT_SPAWNPOINTMSG, qfalse);
 }
 
 extern void CG_AdjustAutomapZoom(int zoomIn);
@@ -1330,7 +1361,7 @@ qboolean CG_IsWeaponDisabled(weapon_t weapon)
 
 	if (GetWeaponTableData(weapon)->type & WEAPON_TYPE_PANZER)
 	{
-		maxCount = cg.maxPanzers;
+		maxCount = cg.maxRockets;
 	}
 	else if (GetWeaponTableData(weapon)->type & WEAPON_TYPE_MORTAR)
 	{
@@ -1338,7 +1369,7 @@ qboolean CG_IsWeaponDisabled(weapon_t weapon)
 	}
 	else if (GetWeaponTableData(weapon)->type & WEAPON_TYPE_MG)
 	{
-		maxCount = cg.maxMg42s;
+		maxCount = cg.maxMachineguns;
 	}
 	else if (GetWeaponTableData(GetWeaponTableData(weapon)->weapAlts)->type & WEAPON_TYPE_RIFLENADE)
 	{
@@ -1373,6 +1404,11 @@ qboolean CG_IsWeaponDisabled(weapon_t weapon)
  */
 static void CG_ClassMenu_f(void)
 {
+	if (cg.demoPlayback)
+	{
+		return;
+	}
+
 	if (cgs.clientinfo[cg.clientNum].team == TEAM_SPECTATOR)
 	{
 		return;
@@ -1408,7 +1444,7 @@ static void CG_Class_f(void)
 
 	if (trap_Argc() < 2)
 	{
-		CG_Printf("Invalid command format.\n");
+		CG_Printf("Usage: class [class] <weapon1> <weapon2>\n");
 		return;
 	}
 
@@ -1426,7 +1462,7 @@ static void CG_Class_f(void)
 		teamstring = CG_TranslateString("Allies");
 		break;
 	default:
-		CG_Printf("class: Invalid team.\n");
+		CG_Printf("class: must be in a team.\n");
 		return;
 	}
 
@@ -1527,7 +1563,7 @@ static void CG_Class_f(void)
 		CG_PriorityCenterPrint(va(CG_TranslateString("You will spawn as an %s %s with a %s and a %s."), teamstring, BG_ClassnameForNumber(playerclass), GetWeaponTableData(weapon1)->desc, GetWeaponTableData(weapon2)->desc), 400, cg_fontScaleCP.value, -1);
 	}
 	// Send the switch command to the server
-	trap_SendClientCommand(va("team %s %i %i %i\n", classtype, playerclass, weapon1, weapon2));
+	trap_SendClientCommand(va("team %s %i %i %i", classtype, playerclass, weapon1, weapon2));
 }
 
 /**
@@ -1535,6 +1571,11 @@ static void CG_Class_f(void)
  */
 static void CG_TeamMenu_f(void)
 {
+	if (cg.demoPlayback)
+	{
+		return;
+	}
+
 	CG_EventHandling(CGAME_EVENT_NONE, qfalse);
 
 	if (cg_quickMessageAlt.integer)
@@ -1788,11 +1829,11 @@ static void CG_NoClip_f(void)
 	{
 		if (trap_Argc() > 1)
 		{
-			trap_SendClientCommand(va("noclip %s\n", state));
+			trap_SendClientCommand(va("noclip %s", state));
 		}
 		else
 		{
-			trap_SendClientCommand("noclip\n");
+			trap_SendClientCommand("noclip");
 		}
 	}
 	else
@@ -1839,6 +1880,32 @@ static void CG_PrintObjectiveInfo_f(void)
 	CG_Printf("^2%i from %i objectives defined\n", i, MAX_OID_TRIGGERS);
 }
 
+static void CG_ListSpawnPoints_f()
+{
+	int i;
+	CG_Printf("^2Spawn Points\n");
+	for (i = 0; i < cg.spawnCount; i++)
+	{
+		// autospawn
+		if (i == 0)
+		{
+			CG_Printf("^7[^2%2i^7]   ^o%-26s\n", i, cg.spawnPoints[i]);
+		}
+		else if ((cg.spawnTeams[i] & 0xF) == 0)
+		{
+			continue;
+		}
+		else if (cg.spawnTeams[i] & 256) // inactive
+		{
+			CG_Printf("^9[%2i] %s %-26s\n", i, ((cg.spawnTeams[i] & 0xF) == TEAM_AXIS) ? "X" : "A", cg.spawnPoints[i]);
+		}
+		else
+		{
+			CG_Printf("^7[^2%2i^7] %s ^o%-26s\n", i, (cg.spawnTeams[i] == TEAM_AXIS) ? "^1X" : "^$A", cg.spawnPoints[i]);
+		}
+	}
+}
+
 static consoleCommand_t commands[] =
 {
 	{ "testgun",             CG_TestGun_f              },
@@ -1868,6 +1935,7 @@ static consoleCommand_t commands[] =
 	{ "wm_sayPlayerClass",   CG_SayPlayerClass_f       },
 	{ "wm_ftsayPlayerClass", CG_FTSayPlayerClass_f     },
 
+	{ "spawnmenu",           CG_QuickSpawnpoint_f      },
 
 	{ "VoiceChat",           CG_VoiceChat_f            },
 	{ "VoiceTeamChat",       CG_TeamVoiceChat_f        },
@@ -1957,7 +2025,8 @@ static consoleCommand_t commands[] =
 #endif
 	// objective info list for mappers/scripters (and players? - we might extend it)
 	{ "oinfo",               CG_PrintObjectiveInfo_f   },
-	{ "resetmaxspeed",       CG_ResetMaxSpeed_f        }
+	{ "resetmaxspeed",       CG_ResetMaxSpeed_f        },
+	{ "listspawnpt",         CG_ListSpawnPoints_f      }
 };
 
 /**
@@ -2018,6 +2087,7 @@ void CG_InitConsoleCommands(void)
 	trap_AddCommand("vote");
 
 	trap_AddCommand("nofatigue");
+	trap_AddCommand("nostamina");
 
 	trap_AddCommand("follownext");
 	trap_AddCommand("followprev");
@@ -2047,6 +2117,7 @@ void CG_InitConsoleCommands(void)
 	trap_AddCommand("say_team");
 	trap_AddCommand("scores");
 	trap_AddCommand("specinvite");
+	trap_AddCommand("specuninvite");
 	trap_AddCommand("speclock");
 	trap_AddCommand("specunlock");
 	trap_AddCommand("statsall");
@@ -2075,6 +2146,7 @@ void CG_InitConsoleCommands(void)
 	trap_AddCommand("vsay_buddy");
 	trap_AddCommand("vsay_team");
 	trap_AddCommand("where");
+	trap_AddCommand("dropobj");
 #ifdef FEATURE_LUA
 	trap_AddCommand("lua_status");
 #endif

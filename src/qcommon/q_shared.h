@@ -402,8 +402,8 @@ typedef int clipHandle_t;
 
 /**
  * @def Check whether input value is present or not in given bitwise.
- */ 
-#define CHECKBITWISE(x, y) (((x) & (y)) == (y)) 
+ */
+#define CHECKBITWISE(x, y) (((x) & (y)) == (y))
 
 //#define   SND_NORMAL          0x000   ///< (default) Allow sound to be cut off only by the same sound on this channel
 #define     SND_OKTOCUT         0x001   ///< Allow sound to be cut off by any following sounds on this channel
@@ -605,6 +605,8 @@ qboolean Com_PowerOf2(int x);
 
 #define Com_ByteClamp(x) ((x < 0) ? 0 : (x > 255) ? 255 : x)
 #define Com_Clamp(min, max, value) ((value < min) ? min : (value > max) ? max : value)
+#define Com_Nelem(a) (int)(sizeof(a) / sizeof(a)[0])
+void *Com_AnyOf(void **ptr, int n);
 
 char *COM_SkipPath(char *pathname);
 void COM_FixPath(char *pathname);
@@ -630,9 +632,9 @@ int COM_Compress(char *data_p);
 void COM_ParseError(const char *format, ...) __attribute__ ((format(printf, 1, 2)));
 //void COM_ParseWarning(const char *format, ...) __attribute__ ((format(printf, 1, 2))); // Unused
 
-qboolean COM_BitCheck(const int array[], int bitNum);
-void COM_BitSet(int array[], int bitNum);
-void COM_BitClear(int array[], int bitNum);
+qboolean COM_BitCheck(const int array[], unsigned int bitNum);
+void COM_BitSet(int array[], unsigned int bitNum);
+void COM_BitClear(int array[], unsigned int bitNum);
 
 #define MAX_TOKENLENGTH     1024
 
@@ -1177,10 +1179,7 @@ typedef struct playerState_s
 	int nextWeapon;
 
 	// player class
-	int teamNum;                        ///< doesn't seem to be communicated over the net ..
-	                                    ///< -> it's in playerStateFields of msg.c
-	                                    ///< IMPORTANT NOTE: This is actually the player class !!!
-	                                    ///< (and we can't change playerState_s w/o breaking 2.60)
+	int teamNum;
 
 	// RF, burning effect is required for view blending effect
 	int onFireStart;
@@ -1431,10 +1430,10 @@ typedef enum
 	ET_WOLF_OBJECTIVE,
 
 	ET_AIRSTRIKE_PLANE,
-    
+
 	ET_EVENTS                   ///< any of the EV_* events can be added freestanding
-                                ///< by setting eType to ET_EVENTS + eventNum
-                                ///< this avoids having to set eFlags and eventNum
+	                            ///< by setting eType to ET_EVENTS + eventNum
+	                            ///< this avoids having to set eFlags and eventNum
 } entityType_t;
 
 /**
@@ -1525,6 +1524,16 @@ typedef enum
 	CA_ACTIVE,          ///< game views should be displayed
 	CA_CINEMATIC        ///< playing a cinematic or a static pic, not connected to a server
 } connstate_t;
+
+/**
+ * @enum challengeState_t
+ * @brief CA_CHALLENGING substates
+ */
+typedef enum
+{
+	CA_CHALLENGING_INFO,  ///< acquiring server info
+	CA_CHALLENGING_REQUEST ///< requesting connection
+} challengeState_t;
 
 // font support
 
@@ -1714,6 +1723,21 @@ typedef struct demoPlayInfo_s
 	int firstTime;
 	int lastTime;
 } demoPlayInfo_t;
+
+/**
+ * @struct userAgent_s
+ * @typedef userAgent_t
+ * @brief Holds information about server/client engine on the other end
+ */
+typedef struct userAgent_s
+{
+	int compatible;      ///< is it compatible with the engine? note: this can be flag based in future.
+	char string[64];     ///< holds engine name and version string
+	char version[18];    ///< holds engine version
+} userAgent_t;
+
+void Com_ParseUA(userAgent_t *ua, const char *string);
+#define Com_IsCompatible(ua, flag) ((ua)->compatible & flag)
 
 //c99 issue pre 2013 VS do not have support for this
 #if defined(_MSC_VER) && (_MSC_VER < 1800)

@@ -148,7 +148,7 @@ void CG_MachineGunEjectBrass(centity_t *cent)
 
 				Com_Memset(&brass, 0, sizeof(brass));
 
-				CG_PositionRotatedEntityOnTag(&brass, &cg.predictedPlayerEntity.pe.bodyRefEnt, "tag_brass");
+				CG_PositionRotatedEntityOnTag(&brass, &cg.predictedPlayerEntity.pe.handRefEnt, "tag_brass");
 
 				VectorMA(brass.origin, 6, brass.axis[0], re->origin);
 			}
@@ -195,11 +195,11 @@ void CG_MachineGunEjectBrass(centity_t *cent)
 
 			if ((GetWeaponTableData(cent->currentState.weapon)->attributes & WEAPON_ATTRIBUT_AKIMBO) && !cent->akimboFire)
 			{
-				CG_PositionRotatedEntityOnTag(&brass, &cg.predictedPlayerEntity.pe.bodyRefEnt, "tag_brass2");
+				CG_PositionRotatedEntityOnTag(&brass, &cg.predictedPlayerEntity.pe.handRefEnt, "tag_brass2");
 			}
 			else
 			{
-				CG_PositionRotatedEntityOnTag(&brass, &cg.predictedPlayerEntity.pe.bodyRefEnt, "tag_brass");
+				CG_PositionRotatedEntityOnTag(&brass, &cg.predictedPlayerEntity.pe.handRefEnt, "tag_brass");
 			}
 
 			VectorCopy(brass.origin, re->origin);
@@ -650,7 +650,7 @@ void CG_RailTrail2(vec3_t color, vec3_t start, vec3_t end, int index, int sideNu
 
 	le->leType    = LE_CONST_RGB;
 	le->startTime = cg.time;
-	le->endTime   = cg.time + 50; // FIXME: make it sv_fps dependent?
+	le->endTime   = cg.time + cg_railTrailTime.integer;
 	le->lifeRate  = 1.0f / (le->endTime - le->startTime);
 
 	re->shaderTime   = cg.time / 1000.0f;
@@ -1318,7 +1318,7 @@ static qboolean CG_RW_ParseSoundSurface(int handle, weaponSounds_t *weaponSound)
 
 		if (!CG_RW_ParseWeaponSound(handle, &weaponSound[soundSurface]))
 		{
-			return CG_RW_ParseError(handle, "expected sound filenames or sounds number", token.string);
+			return qfalse;
 		}
 	}
 
@@ -1614,6 +1614,22 @@ static qboolean CG_RW_ParseClient(int handle, weaponInfo_t *weaponInfo)
 			}
 
 			weaponInfo->weaponIcon[1] = trap_R_RegisterShaderNoMip(filename);
+		}
+		else if (!Q_stricmp(token.string, "weaponSimpleIcon"))
+		{
+			if (!PC_String_ParseNoAlloc(handle, filename, sizeof(filename)))
+			{
+				return CG_RW_ParseError(handle, "expected weaponSimpleIcon shadername");
+			}
+
+			weaponInfo->weaponSimpleIcon = trap_R_RegisterShaderNoMip(filename);
+		}
+		else if (!Q_stricmp(token.string, "weaponSimpleIconScale"))
+		{
+			if (!PC_Point_Parse(handle, &weaponInfo->weaponSimpleIconScale))
+			{
+				return CG_RW_ParseError(handle, "expected weaponSimpleIconScale X Y");
+			}
 		}
 		else if (!Q_stricmp(token.string, "weaponCardIcon"))
 		{
@@ -2464,6 +2480,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 	int             clientNum     = ps ? ps->clientNum : cent->currentState.clientNum;
 	team_t          team;
 	modelViewType_t modelViewType = ps ? W_FP_MODEL : W_TP_MODEL;
+	float           x, y;
 
 	// don't draw any weapons when the binocs are up
 	if (cent->currentState.eFlags & EF_ZOOMING)
@@ -2583,6 +2600,27 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 		CG_Printf("returning due to: !ps && cg.snap->ps.pm_flags & PMF_LADDER\n");
 #endif
 		return;
+	}
+
+	if (ps && cg.clientNum != cg.snap->ps.clientNum)
+	{
+		// calculate mounted weapon angles if spectating client
+		if (CHECKBITWISE(GetWeaponTableData(cg.snap->ps.weapon)->type, WEAPON_TYPE_MG | WEAPON_TYPE_SET) ||
+		    CHECKBITWISE(GetWeaponTableData(cg.snap->ps.weapon)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET))
+		{
+			// update it only once
+			if (cg.weaponSetTime == 0)
+			{
+				x = angle_mod(360.f + cg.snap->ps.viewangles[0]);
+				y = angle_mod(360.f + cg.snap->ps.viewangles[1]);
+				VectorSet(cg.pmext.mountedWeaponAngles, x, y, 0);
+				cg.weaponSetTime = cg.time;
+			}
+		}
+		else
+		{
+			cg.weaponSetTime = 0;
+		}
 	}
 
 	if (!ps)
@@ -2874,7 +2912,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 			{
 				int anim = cg.snap->ps.weapAnim & ~ANIM_TOGGLEBIT;
 
-				if (anim == WEAP_ALTSWITCHFROM || anim == WEAP_ALTSWITCHTO || anim == WEAP_IDLE1)
+				if (anim == WEAP_ALTSWITCHFROM || anim == WEAP_ALTSWITCHTO || anim == WEAP_IDLE1 || anim == WEAP_IDLE2)
 				{
 					// prevent the flying nade effect (much visible with M7 when swapping while raising)
 					if (weaponNum == cent->currentState.nextWeapon)
@@ -3140,7 +3178,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
  */
 void CG_AddViewWeapon(playerState_t *ps)
 {
-	refEntity_t  *hand = &cg.predictedPlayerEntity.pe.bodyRefEnt;   // use body to store hand
+	refEntity_t  *hand = &cg.predictedPlayerEntity.pe.handRefEnt;
 	float        fovOffset;
 	vec3_t       angles;
 	vec3_t       gunoff;
@@ -3167,8 +3205,14 @@ void CG_AddViewWeapon(playerState_t *ps)
 		return;
 	}
 
-	// allow the gun to be completely removed
-	if (!cg_drawGun.integer)
+	// hide all gun models (0)
+	// draw all gun models (1)
+	// draw only melee weapon, syringe and pliers, and throwables (incl. grenades) (2)
+	if (!cg_drawGun.integer || (cg_drawGun.integer == 2
+	                            && GetWeaponTableData(ps->weapon)->type
+	                            && !(GetWeaponTableData(ps->weapon)->type & WEAPON_TYPE_GRENADE)
+	                            && !(GetWeaponTableData(ps->weapon)->type & WEAPON_TYPE_MELEE)
+	                            && !(GetWeaponTableData(ps->weapon)->type & WEAPON_TYPE_SYRINGUE)))
 	{
 		if ((cg.predictedPlayerState.eFlags & EF_FIRING) && !BG_PlayerMounted(cg.predictedPlayerState.eFlags))
 		{
@@ -5072,16 +5116,6 @@ void CG_AddDebris(vec3_t origin, vec3_t dir, int speed, int duration, int count,
 	float         timeAdd;
 	int           i;
 
-	if (!cg_wolfparticles.integer)
-	{
-		return;
-	}
-
-	if (!cg_visualEffects.integer)
-	{
-		return;
-	}
-
 	for (i = 0; i < count; i++)
 	{
 		le = CG_AllocLocalEntity();
@@ -5120,7 +5154,7 @@ void CG_AddDebris(vec3_t origin, vec3_t dir, int speed, int duration, int count,
 		// TODO: find better models and/or extend ...
 		// TODO: make dependant from surface (snow etc and use related models/sounds) and or weapon
 		// TODO: find a client cvar so purists can disable (see CG_AddLocalEntities)
-		if (trace) // && user enabled
+		if (cg_visualEffects.integer && trace) // && user enabled
 		{
 			// airborn or solid with no surface set - just throw projectile fragments
 			if (trace->fraction == 1.0f || ((trace->contents & CONTENTS_SOLID) && !trace->surfaceFlags))
@@ -5318,14 +5352,14 @@ sfxHandle_t CG_GetRandomSoundSurface(weaponSounds_t *weaponSounds, soundSurface_
  */
 void CG_MeleeImpact(int weapon, int missileEffect, vec3_t origin, vec3_t dir, int surfFlags, float *radius, int *markDuration)
 {
-	if (missileEffect != PS_FX_FLESH)
+	if (missileEffect == PS_FX_COMMON)
 	{
 		*radius = 1 + rand() % 2;
 
 		CG_AddBulletParticles(origin, dir, 20, 800, 3 + rand() % 6, 1.0f);
-	}
 
-	*markDuration = cg_markTime.integer;
+		*markDuration = cg_markTime.integer;
+	}
 }
 
 /**
@@ -5340,8 +5374,6 @@ void CG_MeleeImpact(int weapon, int missileEffect, vec3_t origin, vec3_t dir, in
  */
 void CG_BulletImpact(int weapon, int missileEffect, vec3_t origin, vec3_t dir, int surfFlags, float *radius, int *markDuration)
 {
-	*markDuration = -1;
-
 	if (missileEffect == PS_FX_NONE)
 	{
 		CG_AddSparks(origin, dir, 350, 200, 15 + rand() % 7, 0.2f);
@@ -5692,15 +5724,16 @@ void CG_DynamiteExplosionImpact(int weapon, int missileEffect, vec3_t origin, ve
  * @param[in] origin
  * @param[in] dir
  * @param[in] surfFlags
+ * @param[in] sourceEnt
  *
  * @note modified to send missilehitwall surface parameters
  */
-void CG_MissileHitWall(int weapon, int missileEffect, vec3_t origin, vec3_t dir, int surfFlags, int entityNum)
+void CG_MissileHitWall(int weapon, int missileEffect, vec3_t origin, vec3_t dir, int surfFlags, int sourceEnt)
 {
 	soundSurface_t soundSurfaceIndex = W_SND_SURF_DEFAULT;
 	qhandle_t      mark;
 	sfxHandle_t    sfx, sfx2;
-	int            markDuration;
+	int            markDuration = 0;
 	float          radius;
 
 	// no impact
@@ -5742,7 +5775,7 @@ void CG_MissileHitWall(int weapon, int missileEffect, vec3_t origin, vec3_t dir,
 
 	if (sfx)
 	{
-		trap_S_StartSoundVControl((entityNum == cg.snap->ps.clientNum) ? NULL : origin, entityNum, PS_FX_FLESH ? CHAN_BODY : CHAN_AUTO, sfx, cg_weapons[weapon].impactSoundVolume);
+		trap_S_StartSoundVControl(origin, sourceEnt, CHAN_AUTO, sfx, cg_weapons[weapon].impactSoundVolume);
 	}
 
 	// distant sounds for weapons with a broadcast fire sound (so you /always/ hear dynamite explosions)
@@ -5760,7 +5793,7 @@ void CG_MissileHitWall(int weapon, int missileEffect, vec3_t origin, vec3_t dir,
 		{
 			VectorMA(cg.refdef_current->vieworg, cg_weapons[weapon].impactSoundRange, norm, gorg);           // non-distance falloff makes more sense; sfx2range was gdist*0.2
 			// sfx2range is variable to give us minimum volume control different explosion sizes (see mortar, panzerfaust, and grenade)
-			trap_S_StartSoundEx(gorg, -1, CHAN_WEAPON, sfx2, SND_NOCUT);
+			trap_S_StartSoundEx(gorg, sourceEnt, CHAN_WEAPON, sfx2, SND_NOCUT);
 		}
 	}
 
@@ -5826,15 +5859,15 @@ void CG_MissileHitWallSmall(vec3_t origin, vec3_t dir)
 
 /**
  * @brief CG_MissileHitPlayer
- * @param cent - unused
+ * @param[in] entityNum
  * @param[in] weapon
  * @param[in] origin
  * @param[in] dir
- * @param[in] entityNum
+ * @param[in] fleshEntityNum
  */
-void CG_MissileHitPlayer(centity_t *cent, int weapon, vec3_t origin, vec3_t dir, int entityNum)
+void CG_MissileHitPlayer(int entityNum, int weapon, vec3_t origin, vec3_t dir, int fleshEntityNum)
 {
-	CG_Bleed(origin, entityNum);
+	CG_Bleed(origin, fleshEntityNum);
 
 	// some weapons will make an explosion with the blood, while
 	// others will just make the blood
@@ -5845,7 +5878,7 @@ void CG_MissileHitPlayer(centity_t *cent, int weapon, vec3_t origin, vec3_t dir,
 
 		effect = (CG_PointContents(origin, 0) & CONTENTS_WATER) ? PS_FX_WATER : PS_FX_NONE;
 
-		CG_MissileHitWall(weapon, effect, origin, dir, 0, entityNum);       // like the old one
+		CG_MissileHitWall(weapon, effect, origin, dir, 0, entityNum);               // like the old one
 	}
 	else if (GetWeaponTableData(weapon)->type & WEAPON_TYPE_MELEE)
 	{
@@ -6062,7 +6095,7 @@ qboolean CG_CalcMuzzlePoint(int entityNum, vec3_t muzzle)
 			else
 			{
 				// fix firstperson tank muzzle origin if drawgun is off
-				if (!cg_drawGun.integer)
+				if (cg_drawGun.integer != 1)
 				{
 					VectorCopy(cg.snap->ps.origin, muzzle);
 					AngleVectors(cg.snap->ps.viewangles, forward, right, up);
@@ -6097,6 +6130,13 @@ qboolean CG_CalcMuzzlePoint(int entityNum, vec3_t muzzle)
 	}
 
 	cent = &cg_entities[entityNum];
+
+	// entity is invalid this frame, don't use the old position value to calc muzzle position
+	// otherwise the start position will be wrong
+	if (!cent->currentValid)
+	{
+		return qfalse;
+	}
 
 	if (cent->currentState.eFlags & EF_MG42_ACTIVE)
 	{
@@ -6329,6 +6369,11 @@ void CG_Bullet(int weapon, vec3_t end, int sourceEntityNum, qboolean flesh, int 
 
 			if (cg_tracers.integer)
 			{
+#if 0
+				vec3_t color = { 0, 0, 1 };
+
+				CG_RailTrail(color, start, end, 0, 0);
+#endif
 				// if not flesh, then do a moving tracer
 				if (flesh)
 				{

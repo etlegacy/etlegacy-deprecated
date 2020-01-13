@@ -54,22 +54,22 @@ void G_WriteClientSessionData(gclient_t *client, qboolean restart)
 	const char *s;
 
 	// stats reset check
-	//if (level.fResetStats)
-	//{
-	G_deleteStats(client - level.clients);
-	//}
+	if (level.fResetStats)
+	{
+		G_deleteStats(client - level.clients);
+	}
 
 #ifdef FEATURE_MULTIVIEW
 #ifdef FEATURE_RATING
-	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i %i %i",
+	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i %i %i",
 #else
-	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
 #endif
 #else
 #ifdef FEATURE_RATING
-	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i",
+	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i",
 #else
-	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
 #endif
 #endif
 	       client->sess.sessionTeam,
@@ -84,6 +84,7 @@ void G_WriteClientSessionData(gclient_t *client, qboolean restart)
 	       client->sess.latchPlayerWeapon2,
 
 	       client->sess.referee,
+	       client->sess.shoutcaster,
 	       client->sess.spec_invite,
 	       client->sess.spec_team,
 	       client->sess.kills,
@@ -107,12 +108,12 @@ void G_WriteClientSessionData(gclient_t *client, qboolean restart)
 	       ((mvc >> 16) & 0xFFFF),
 #endif
 	       // Damage and rounds played rolled in with weapon stats (below)
-
 	       client->sess.muted,
+
 	       client->sess.ignoreClients[0],
 	       client->sess.ignoreClients[1],
 	       client->pers.enterTime,
-	       restart ? client->sess.spawnObjectiveIndex : 0,
+	       restart ? client->sess.userSpawnPointValue : 0,
 	       client->sess.uci
 	       );
 
@@ -160,10 +161,34 @@ void G_ClientSwap(gclient_t *client)
 	if (client->sess.sessionTeam == TEAM_AXIS)
 	{
 		client->sess.sessionTeam = TEAM_ALLIES;
+
+		// swap primary weapon
+		if (GetWeaponTableData(client->sess.playerWeapon)->weapEquiv)
+		{
+			client->sess.playerWeapon = client->sess.latchPlayerWeapon = GetWeaponTableData(client->sess.playerWeapon)->weapEquiv;
+		}
+
+		// swap secondary weapon
+		if (GetWeaponTableData(client->sess.playerWeapon2)->weapEquiv)
+		{
+			client->sess.playerWeapon2 = client->sess.latchPlayerWeapon2 = GetWeaponTableData(client->sess.playerWeapon2)->weapEquiv;
+		}
 	}
 	else if (client->sess.sessionTeam == TEAM_ALLIES)
 	{
 		client->sess.sessionTeam = TEAM_AXIS;
+
+		// swap primary weapon
+		if (GetWeaponTableData(client->sess.playerWeapon)->weapEquiv)
+		{
+			client->sess.playerWeapon = client->sess.latchPlayerWeapon = GetWeaponTableData(client->sess.playerWeapon)->weapEquiv;
+		}
+
+		// swap secondary weapon
+		if (GetWeaponTableData(client->sess.playerWeapon2)->weapEquiv)
+		{
+			client->sess.playerWeapon2 = client->sess.latchPlayerWeapon2 = GetWeaponTableData(client->sess.playerWeapon2)->weapEquiv;
+		}
 	}
 
 	// Swap spec invites as well
@@ -269,15 +294,15 @@ void G_ReadSessionData(gclient_t *client)
 
 #ifdef FEATURE_MULTIVIEW
 #ifdef FEATURE_RATING
-	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i %i %i",
+	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i %i %i",
 #else
-	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
 #endif
 #else
 #ifdef FEATURE_RATING
-	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i",
+	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %f %f %f %f %i %i %i %i %i %i",
 #else
-	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+	sscanf(s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
 #endif
 #endif
 	       (int *)&client->sess.sessionTeam,
@@ -285,13 +310,14 @@ void G_ReadSessionData(gclient_t *client)
 	       (int *)&client->sess.spectatorState,
 	       &client->sess.spectatorClient,
 	       &client->sess.playerType,
-		   (int *)&client->sess.playerWeapon,
-		   (int *)&client->sess.playerWeapon2,
+	       (int *)&client->sess.playerWeapon,
+	       (int *)&client->sess.playerWeapon2,
 	       &client->sess.latchPlayerType,
-		   (int *)&client->sess.latchPlayerWeapon,
-		   (int *)&client->sess.latchPlayerWeapon2,
+	       (int *)&client->sess.latchPlayerWeapon,
+	       (int *)&client->sess.latchPlayerWeapon2,
 
 	       &client->sess.referee,
+	       &client->sess.shoutcaster,
 	       &client->sess.spec_invite,
 	       &client->sess.spec_team,
 	       &client->sess.kills,
@@ -300,6 +326,7 @@ void G_ReadSessionData(gclient_t *client)
 	       &client->sess.self_kills,
 	       &client->sess.team_kills,
 	       &client->sess.team_gibs,
+
 	       &client->sess.time_axis,
 	       &client->sess.time_allies,
 	       &client->sess.time_played,
@@ -315,10 +342,11 @@ void G_ReadSessionData(gclient_t *client)
 #endif
 	       // Damage and round count rolled in with weapon stats (below)
 	       (int *)&client->sess.muted,
+
 	       &client->sess.ignoreClients[0],
 	       &client->sess.ignoreClients[1],
 	       &client->pers.enterTime,
-	       &client->sess.spawnObjectiveIndex,
+	       &client->sess.userSpawnPointValue,
 	       &client->sess.uci
 	       );
 
@@ -373,19 +401,19 @@ void G_ReadSessionData(gclient_t *client)
 
 	test = (g_altStopwatchMode.integer != 0 || g_currentRound.integer == 1);
 
-	        if (g_gametype.integer == GT_WOLF_STOPWATCH && g_gamestate.integer != GS_PLAYING && test)
+	if (g_gametype.integer == GT_WOLF_STOPWATCH && g_gamestate.integer != GS_PLAYING && test)
 	{
 		G_ClientSwap(client);
 	}
 
-	        if (g_swapteams.integer)
+	if (g_swapteams.integer)
 	{
 		trap_Cvar_Set("g_swapteams", "0");
 		G_ClientSwap(client);
 	}
 
-	        client->sess.startxptotal = 0;
-	        for (j = 0; j < SK_NUM_SKILLS; j++)
+	client->sess.startxptotal = 0;
+	for (j = 0; j < SK_NUM_SKILLS; j++)
 	{
 		client->sess.startskillpoints[j] = client->sess.skillpoints[j];
 		client->sess.startxptotal += client->sess.skillpoints[j];
@@ -399,40 +427,40 @@ void G_ReadSessionData(gclient_t *client)
  */
 void G_InitSessionData(gclient_t *client, const char *userinfo)
 {
-    clientSession_t *sess = &client->sess;
+	clientSession_t *sess = &client->sess;
 
-    // initial team determination
-    sess->sessionTeam = TEAM_SPECTATOR;
+	// initial team determination
+	sess->sessionTeam = TEAM_SPECTATOR;
 
-    sess->spectatorState = SPECTATOR_FREE;
-    sess->spectatorTime = level.time;
+	sess->spectatorState = SPECTATOR_FREE;
+	sess->spectatorTime = level.time;
 
-    sess->latchPlayerType = sess->playerType = 0;
-    sess->latchPlayerWeapon = sess->playerWeapon = WP_NONE;
-    sess->latchPlayerWeapon2 = sess->playerWeapon2 = WP_NONE;
+	sess->latchPlayerType = sess->playerType = 0;
+	sess->latchPlayerWeapon = sess->playerWeapon = WP_NONE;
+	sess->latchPlayerWeapon2 = sess->playerWeapon2 = WP_NONE;
 
-    sess->spawnObjectiveIndex = 0;
+	sess->userSpawnPointValue = 0;
 
-    Com_Memset(sess->ignoreClients, 0, sizeof(sess->ignoreClients));
+	Com_Memset(sess->ignoreClients, 0, sizeof(sess->ignoreClients));
 
-    sess->muted = qfalse;
-    Com_Memset(sess->skill, 0, sizeof(sess->skill));
-    Com_Memset(sess->skillpoints, 0, sizeof(sess->skillpoints));
-    Com_Memset(sess->startskillpoints, 0, sizeof(sess->startskillpoints));
-    Com_Memset(sess->medals, 0, sizeof(sess->medals));
-    sess->rank = 0;
-    sess->startxptotal = 0;
+	sess->muted = qfalse;
+	Com_Memset(sess->skill, 0, sizeof(sess->skill));
+	Com_Memset(sess->skillpoints, 0, sizeof(sess->skillpoints));
+	Com_Memset(sess->startskillpoints, 0, sizeof(sess->startskillpoints));
+	Com_Memset(sess->medals, 0, sizeof(sess->medals));
+	sess->rank = 0;
+	sess->startxptotal = 0;
 
-    // we set ref in ClientUserinfoChanged
-    sess->referee = RL_NONE; // (client->pers.localClient) ? RL_REFEREE : RL_NONE;
-    sess->spec_invite = 0;
-    sess->spec_team = 0;
-    // G_WriteClientSessionData calls this
-    //G_deleteStats(client - level.clients);
+	// we set ref in ClientUserinfoChanged
+	sess->referee = RL_NONE; // (client->pers.localClient) ? RL_REFEREE : RL_NONE;
+	sess->spec_invite = 0;
+	sess->spec_team = 0;
 
-    sess->uci = 0; // GeoIP
+	sess->uci = 0; // GeoIP
 
-    G_WriteClientSessionData(client, qfalse);
+	G_deleteStats(client - level.clients);
+
+	G_WriteClientSessionData(client, qfalse);
 }
 
 /**
@@ -440,121 +468,108 @@ void G_InitSessionData(gclient_t *client, const char *userinfo)
  */
 void G_InitWorldSession(void)
 {
-    char s[MAX_STRING_CHARS];
-    int  gt;
-    int  i, j;
+	char s[MAX_STRING_CHARS];
+	int  gt;
+	int  i, j;
 
-    trap_Cvar_VariableStringBuffer("session", s, sizeof(s));
-    gt = atoi(s);
+	trap_Cvar_VariableStringBuffer("session", s, sizeof(s));
+	gt = atoi(s);
 
-    // if the gametype changed since the last session, don't use any
-    // client sessions
-    if (g_gametype.integer != gt)
-    {
-        level.fResetStats = qtrue;
-        G_Printf("Gametype changed, clearing session data.\n");
-
+	// if the gametype changed since the last session, don't use any
+	// client sessions
+	if (g_gametype.integer != gt)
+	{
+		level.fResetStats = qtrue;
+		G_Printf("Gametype changed, clearing session data.\n");
 	}
-    else
-    {
-        char     *tmp = s;
-        qboolean test = (g_altStopwatchMode.integer != 0 || g_currentRound.integer == 1);
+	else
+	{
+		char     *tmp = s;
+		qboolean test = (g_altStopwatchMode.integer != 0 || g_currentRound.integer == 1);
 
+#define GETVAL(x) if ((tmp = strchr(tmp, ' ')) == NULL) { return; } x = atoi(++tmp);
 
-#define GETVAL(x) if ((tmp = strchr(tmp, ' ')) == NULL) { return; \
-} x = atoi(++tmp);
+		// Get team lock stuff
+		GETVAL(gt);
+		teamInfo[TEAM_AXIS].spec_lock = (gt & TEAM_AXIS) ? qtrue : qfalse;
+		teamInfo[TEAM_ALLIES].spec_lock = (gt & TEAM_ALLIES) ? qtrue : qfalse;
 
-        // Get team lock stuff
-        GETVAL(gt);
-        teamInfo[TEAM_AXIS].spec_lock = (gt & TEAM_AXIS) ? qtrue : qfalse;
-        teamInfo[TEAM_ALLIES].spec_lock = (gt & TEAM_ALLIES) ? qtrue : qfalse;
-
-        // See if we need to clear player stats
-        // FIXME: deal with the multi-map missions
-        if (g_gametype.integer != GT_WOLF_CAMPAIGN)
-        {
-            if ((tmp = strchr(va("%s", tmp), ' ')) != NULL)
-            {
-                tmp++;
-                trap_GetServerinfo(s, sizeof(s));
-                if (Q_stricmp(tmp, Info_ValueForKey(s, "mapname")))
-                {
-                    level.fResetStats = qtrue;
-                    G_Printf("Map changed, clearing player stats.\n");
+		// See if we need to clear player stats
+		// FIXME: deal with the multi-map missions
+		if (g_gametype.integer != GT_WOLF_CAMPAIGN)
+		{
+			if ((tmp = strchr(va("%s", tmp), ' ')) != NULL)
+			{
+				tmp++;
+				trap_GetServerinfo(s, sizeof(s));
+				if (Q_stricmp(tmp, Info_ValueForKey(s, "mapname")))
+				{
+					level.fResetStats = qtrue;
+					G_Printf("Map changed, clearing player stats.\n");
 				}
 			}
 		}
 
-        // have to make sure spec locks follow the right teams
-        if (g_gametype.integer == GT_WOLF_STOPWATCH && g_gamestate.integer != GS_PLAYING && test)
-        {
-            G_swapTeamLocks();
+		// have to make sure spec locks follow the right teams
+		if (g_gametype.integer == GT_WOLF_STOPWATCH && g_gamestate.integer != GS_PLAYING && test)
+		{
+			G_swapTeamLocks();
 		}
 
-        if (g_swapteams.integer)
-        {
-            G_swapTeamLocks();
+		if (g_swapteams.integer)
+		{
+			G_swapTeamLocks();
 		}
 	}
 
-    for (i = 0; i < MAX_FIRETEAMS; i++)
-    {
-        char *p, *c;
+	for (i = 0; i < MAX_FIRETEAMS; i++)
+	{
+		char *p, *c;
 
-        trap_Cvar_VariableStringBuffer(va("fireteam%i", i), s, sizeof(s));
+		trap_Cvar_VariableStringBuffer(va("fireteam%i", i), s, sizeof(s));
 
-/*		p = Info_ValueForKey( s, "n" );
-
-        if(p && *p) {
-            Q_strncpyz( level.fireTeams[i].name, p, 32 );
-            level.fireTeams[i].inuse = qtrue;
-        } else {
-            *level.fireTeams[i].name = '\0';
-            level.fireTeams[i].inuse = qfalse;
-        }*/
-
-        p = Info_ValueForKey(s, "id");
-        j = atoi(p);
-        if (!*p || j == -1)
-        {
-            level.fireTeams[i].inuse = qfalse;
+		p = Info_ValueForKey(s, "id");
+		j = atoi(p);
+		if (!*p || j == -1)
+		{
+			level.fireTeams[i].inuse = qfalse;
 		}
-        else
-        {
-            level.fireTeams[i].inuse = qtrue;
+		else
+		{
+			level.fireTeams[i].inuse = qtrue;
 		}
-        level.fireTeams[i].ident = j + 1;
+		level.fireTeams[i].ident = j + 1;
 
-        p = Info_ValueForKey(s, "p");
-        level.fireTeams[i].priv = !atoi(p) ? qfalse : qtrue;
+		p = Info_ValueForKey(s, "p");
+		level.fireTeams[i].priv = !atoi(p) ? qfalse : qtrue;
 
-        p = Info_ValueForKey(s, "i");
+		p = Info_ValueForKey(s, "i");
 
-        j = 0;
-        if (p && *p)
-        {
-            c = p;
-            for (c = strchr(c, ' ') + 1; c && *c; )
-            {
-                char str[8];
-                char *l = strchr(c, ' ');
+		j = 0;
+		if (p && *p)
+		{
+			c = p;
+			for (c = strchr(c, ' ') + 1; c && *c; )
+			{
+				char str[8];
+				char *l = strchr(c, ' ');
 
-                if (!l)
-                {
-                    break;
+				if (!l)
+				{
+					break;
 				}
-                Q_strncpyz(str, c, l - c + 1);
-                str[l - c] = '\0';
-                level.fireTeams[i].joinOrder[j++] = atoi(str);
-                c = l + 1;
+				Q_strncpyz(str, c, l - c + 1);
+				str[l - c] = '\0';
+				level.fireTeams[i].joinOrder[j++] = atoi(str);
+				c = l + 1;
 			}
 		}
 
-        for ( ; j < MAX_CLIENTS; j++)
-        {
-            level.fireTeams[i].joinOrder[j] = -1;
+		for ( ; j < MAX_CLIENTS; j++)
+		{
+			level.fireTeams[i].joinOrder[j] = -1;
 		}
-        G_UpdateFireteamConfigString(&level.fireTeams[i]);
+		G_UpdateFireteamConfigString(&level.fireTeams[i]);
 	}
 }
 
@@ -564,61 +579,57 @@ void G_InitWorldSession(void)
  */
 void G_WriteSessionData(qboolean restart)
 {
-    int  i;
-    char strServerInfo[MAX_INFO_STRING];
-    int  j;
+	int  i;
+	char strServerInfo[MAX_INFO_STRING];
+	int  j;
 
-    trap_GetServerinfo(strServerInfo, sizeof(strServerInfo));
-    trap_Cvar_Set("session", va("%i %i %s", g_gametype.integer,
-                                (teamInfo[TEAM_AXIS].spec_lock * TEAM_AXIS | teamInfo[TEAM_ALLIES].spec_lock * TEAM_ALLIES),
-                                Info_ValueForKey(strServerInfo, "mapname")));
+	trap_GetServerinfo(strServerInfo, sizeof(strServerInfo));
+	trap_Cvar_Set("session", va("%i %i %s", g_gametype.integer,
+	                            (teamInfo[TEAM_AXIS].spec_lock * TEAM_AXIS | teamInfo[TEAM_ALLIES].spec_lock * TEAM_ALLIES),
+	                            Info_ValueForKey(strServerInfo, "mapname")));
 
-    // Keep stats for all players in sync
-    for (i = 0; !level.fResetStats && i < level.numConnectedClients; i++)
-    {
-        if ((g_gamestate.integer == GS_WARMUP_COUNTDOWN &&
-             ((g_gametype.integer == GT_WOLF_STOPWATCH && level.clients[level.sortedClients[i]].sess.rounds >= 2) ||
-              (g_gametype.integer != GT_WOLF_STOPWATCH && level.clients[level.sortedClients[i]].sess.rounds >= 1))))
-        {
-            level.fResetStats = qtrue;
+	// Keep stats for all players in sync
+	for (i = 0; !level.fResetStats && i < level.numConnectedClients; i++)
+	{
+		if ((g_gamestate.integer == GS_WARMUP_COUNTDOWN &&
+		     ((g_gametype.integer == GT_WOLF_STOPWATCH && level.clients[level.sortedClients[i]].sess.rounds >= 2) ||
+		      (g_gametype.integer != GT_WOLF_STOPWATCH && level.clients[level.sortedClients[i]].sess.rounds >= 1))))
+		{
+			level.fResetStats = qtrue;
 		}
 	}
 
-    for (i = 0; i < level.numConnectedClients; i++)
-    {
-        if (level.clients[level.sortedClients[i]].pers.connected == CON_CONNECTED)
-        {
-            G_WriteClientSessionData(&level.clients[level.sortedClients[i]], restart);
-            // For slow connecters and a short warmup
-		}
-        else if (level.fResetStats)
-        {
-            G_deleteStats(level.sortedClients[i]);
+	for (i = 0; i < level.numConnectedClients; i++)
+	{
+		// Also take care of slow connecters and a short warmup
+		if (level.clients[level.sortedClients[i]].pers.connected == CON_CONNECTED || level.fResetStats)
+		{
+			G_WriteClientSessionData(&level.clients[level.sortedClients[i]], restart);
 		}
 	}
 
-    for (i = 0; i < MAX_FIRETEAMS; i++)
-    {
-        char buffer[MAX_STRING_CHARS];
+	for (i = 0; i < MAX_FIRETEAMS; i++)
+	{
+		char buffer[MAX_STRING_CHARS];
 
-        if (!level.fireTeams[i].inuse)
-        {
-            Com_sprintf(buffer, MAX_STRING_CHARS, "\\id\\-1");
+		if (!level.fireTeams[i].inuse)
+		{
+			Com_sprintf(buffer, MAX_STRING_CHARS, "\\id\\-1");
 		}
-        else
-        {
-            char buffer2[MAX_STRING_CHARS];
-            char p[8];
+		else
+		{
+			char buffer2[MAX_STRING_CHARS];
+			char p[8];
 
-            *buffer2 = '\0';
-            for (j = 0; j < MAX_CLIENTS; j++)
-            {
-                Com_sprintf(p, 8, " %i", level.fireTeams[i].joinOrder[j]);
-                Q_strcat(buffer2, MAX_STRING_CHARS, p);
+			*buffer2 = '\0';
+			for (j = 0; j < MAX_CLIENTS; j++)
+			{
+				Com_sprintf(p, 8, " %i", level.fireTeams[i].joinOrder[j]);
+				Q_strcat(buffer2, MAX_STRING_CHARS, p);
 			}
-            Com_sprintf(buffer, MAX_STRING_CHARS, "\\id\\%i\\i\\%s\\p\\%i", level.fireTeams[i].ident - 1, buffer2, level.fireTeams[i].priv ? 1 : 0);
+			Com_sprintf(buffer, MAX_STRING_CHARS, "\\id\\%i\\i\\%s\\p\\%i", level.fireTeams[i].ident - 1, buffer2, level.fireTeams[i].priv ? 1 : 0);
 		}
 
-        trap_Cvar_Set(va("fireteam%i", i), buffer);
+		trap_Cvar_Set(va("fireteam%i", i), buffer);
 	}
 }

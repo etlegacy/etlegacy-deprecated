@@ -150,11 +150,11 @@
 #define ISVALIDCLIENTNUM(clientNum) ((clientNum) >= 0 && (clientNum) < MAX_CLIENTS)
 
 /**
- * @struct specName_s
- * @typedef specName_t
+ * @struct specLabel_s
+ * @typedef specLabel_t
  * @brief
  */
-typedef struct specName_s
+typedef struct specLabel_s
 {
 	float x;
 	float y;
@@ -165,7 +165,7 @@ typedef struct specName_s
 	int lastInvisibleTime;
 	qboolean visible;
 	float alpha;
-} specName_t;
+} specLabel_t;
 
 /**
  * @struct cg_window_s
@@ -307,7 +307,7 @@ typedef struct
 	int lightningFiring;
 
 	// so we can do fast tag grabbing
-	refEntity_t bodyRefEnt, headRefEnt, gunRefEnt;
+	refEntity_t bodyRefEnt, headRefEnt, gunRefEnt, handRefEnt;
 	int gunRefEntFrame;
 
 	float animSpeed;            ///< for manual adjustment
@@ -618,8 +618,10 @@ typedef struct clientInfo_s
 	int weapon;
 	int secondaryweapon;
 	int latchedweapon;
+	int latchedsecondaryweapon;
 
 	int refStatus;
+	int shoutcaster;
 
 	bg_character_t *character;
 
@@ -796,6 +798,8 @@ typedef struct weaponInfo_s
 
 	qhandle_t weaponIcon[2];            ///< [0] is weap icon, [1] is highlight icon
 	int weaponIconScale;
+	qhandle_t weaponSimpleIcon;
+	vec2_t weaponSimpleIconScale;
 
 	qhandle_t weaponCardIcon;
 	vec2_t weaponCardScale;
@@ -867,6 +871,8 @@ typedef struct
 
 #define MAX_BUFFERED_SOUNDSCRIPTS 16
 #define MAX_SOUNDSCRIPT_SOUNDS 16
+
+#define MAX_FLOATING_STRINGS 128
 
 /**
  * @struct soundScriptHandle_s
@@ -1012,6 +1018,8 @@ typedef struct
 	float duckChange;                       ///< for duck viewheight smoothing
 	int duckTime;
 
+	int weaponSetTime;                      ///< mg/mortar set time
+
 	float landChange;                       ///< for landing hard
 	int landTime;
 
@@ -1047,6 +1055,8 @@ typedef struct
 	int selectedScore;
 	int teamScores[2];
 	int teamPlayers[TEAM_NUM_TEAMS];         ///< for scoreboard
+	float teamPingMean[TEAM_NUM_TEAMS];
+	float teamPingSd[TEAM_NUM_TEAMS];
 	score_t scores[MAX_CLIENTS];
 	qboolean showScores;
 	qboolean scoreBoardShowing;
@@ -1227,6 +1237,7 @@ typedef struct
 	qboolean showCampaignBriefing;
 	qboolean showGameView;
 	qboolean showFireteamMenu;
+	qboolean showSpawnpointsMenu;
 
 	char spawnPoints[MAX_SPAWNPOINTS][MAX_SPAWNDESC];
 	vec3_t spawnCoordsUntransformed[MAX_SPAWNPOINTS];
@@ -1289,8 +1300,8 @@ typedef struct
 
 	char maxMortars[MAX_QPATH];
 	char maxFlamers[MAX_QPATH];
-	char maxMg42s[MAX_QPATH];
-	char maxPanzers[MAX_QPATH];
+	char maxMachineguns[MAX_QPATH];
+	char maxRockets[MAX_QPATH];
 	char maxRiflegrenades[MAX_QPATH];
 	int maxPlayers;
 
@@ -1354,7 +1365,8 @@ typedef struct
 	/// tracing bullet, predict hitboxes used on server
 	qboolean bulletTrace;
 
-	specName_t specOnScreenNames[MAX_CLIENTS];
+	specLabel_t specOnScreenLabels[MAX_FLOATING_STRINGS];
+	int specStringCount;
 
 	vec3_t airstrikePlaneScale[2];
 
@@ -1435,6 +1447,7 @@ typedef struct
 	qhandle_t objectiveBothTEShader;
 	qhandle_t objectiveBothTDShader;
 	qhandle_t objectiveBothDEShader;
+	qhandle_t objectiveSimpleIcon;
 	qhandle_t readyShader;
 
 	qhandle_t destroyShader;
@@ -1582,6 +1595,7 @@ typedef struct
 	qhandle_t dirtParticle2Shader;
 
 	qhandle_t genericConstructionShader;
+	qhandle_t shoutcastLandmineShader;
 
 	qhandle_t alliedUniformShader;
 	qhandle_t axisUniformShader;
@@ -1661,7 +1675,8 @@ typedef struct
 	qhandle_t skillPics[SK_NUM_SKILLS];
 	qhandle_t ccMortarHit;
 	qhandle_t ccMortarTarget;
-	qhandle_t ccMortarTargetArrow;
+	qhandle_t mortarTarget;
+	qhandle_t mortarTargetArrow;
 
 	// for commandmap
 	qhandle_t medicIcon;
@@ -1739,6 +1754,7 @@ typedef struct
 	qhandle_t limboBriefingButtonStopOff;
 
 	qhandle_t limboSpectator;
+	qhandle_t limboShoutcaster;
 	qhandle_t limboRadioBroadcast;
 
 	qhandle_t limboTeamLocked;
@@ -2286,13 +2302,13 @@ typedef struct cgs_s
 
 	int dbMode;
 	qboolean dbShowing;
-	qboolean dbAccuraciesRecieved;
-	qboolean dbPlayerKillsDeathsRecieved;
-	qboolean dbPlayerTimeRecieved;
+	qboolean dbAccuraciesReceived;
+	qboolean dbPlayerKillsDeathsReceived;
+	qboolean dbPlayerTimeReceived;
 #ifdef FEATURE_RATING
-	qboolean dbSkillRatingRecieved;
+	qboolean dbSkillRatingReceived;
 #endif
-	qboolean dbWeaponStatsRecieved;
+	qboolean dbWeaponStatsReceived;
 	qboolean dbAwardsParsed;
 	char *dbAwardNames[NUM_ENDGAME_AWARDS];
 	team_t dbAwardTeams[NUM_ENDGAME_AWARDS];
@@ -2338,6 +2354,7 @@ typedef struct cgs_s
 	char dbMaps[MAX_VOTE_MAPS][MAX_QPATH];
 	char dbMapDispName[MAX_VOTE_MAPS][128];
 	int dbMapVotes[MAX_VOTE_MAPS];
+	int dbMapVotesSum;
 	int dbMapID[MAX_VOTE_MAPS];
 	int dbMapLastPlayed[MAX_VOTE_MAPS];
 	int dbMapTotalVotes[MAX_VOTE_MAPS];
@@ -2409,6 +2426,7 @@ extern vmCvar_t cg_debugAnim;
 extern vmCvar_t cg_debugPosition;
 extern vmCvar_t cg_debugEvents;
 extern vmCvar_t cg_drawSpreadScale;
+extern vmCvar_t cg_railTrailTime;
 extern vmCvar_t cg_errorDecay;
 extern vmCvar_t cg_nopredict;
 extern vmCvar_t cg_noPlayerAnims;
@@ -2441,6 +2459,7 @@ extern vmCvar_t cg_synchronousClients;
 #endif // ALLOW_GSYNC
 extern vmCvar_t cg_teamChatTime;
 extern vmCvar_t cg_teamChatHeight;
+extern vmCvar_t cg_teamChatMention;
 extern vmCvar_t cg_stats;
 extern vmCvar_t cg_coronafardist;
 extern vmCvar_t cg_coronas;
@@ -2709,6 +2728,9 @@ void CG_TileClear(void);
 void CG_ColorForHealth(vec4_t hcolor);
 void CG_GetColorForHealth(int health, vec4_t hcolor);
 
+qboolean CG_WorldCoordToScreenCoordFloat(vec3_t point, float *x, float *y);
+void CG_AddOnScreenText(const char *text, vec3_t origin);
+
 // new hud stuff
 void CG_DrawRect(float x, float y, float width, float height, float size, const float *color);
 void CG_DrawRect_FixedBorder(float x, float y, float width, float height, int border, const float *color);
@@ -2734,6 +2756,8 @@ void CG_DrawTeamBackground(int x, int y, int w, int h, float alpha, int team);
 void CG_Text_Paint_Ext(float x, float y, float scalex, float scaley, vec4_t color, const char *text, float adjust, int limit, int style, fontHelper_t *font);
 void CG_Text_Paint_Centred_Ext(float x, float y, float scalex, float scaley, vec4_t color, const char *text, float adjust, int limit, int style, fontHelper_t *font);
 void CG_Text_Paint(float x, float y, float scale, vec4_t color, const char *text, float adjust, int limit, int style);
+void CG_Text_PaintWithCursor_Ext(float x, float y, float scale, vec4_t color, const char *text, int cursorPos, const char *cursor, int limit, int style, fontHelper_t *font);
+void CG_Text_PaintWithCursor(float x, float y, float scale, vec4_t color, const char *text, int cursorPos, const char *cursor, int limit, int style);
 void CG_Text_SetActiveFont(int font);
 int CG_Text_Width_Ext(const char *text, float scale, int limit, fontHelper_t *font);
 int CG_Text_Width(const char *text, float scale, int limit);
@@ -2761,6 +2785,7 @@ void CG_DrawWeapHeat(rectDef_t *rect, int align);
 void CG_DrawPlayerWeaponIcon(rectDef_t *rect, qboolean drawHighlighted, int align, vec4_t *refcolor);
 int CG_CalculateReinfTime(qboolean menu);
 float CG_CalculateReinfTime_Float(qboolean menu);
+int CG_CalculateShoutcasterReinfTime(team_t team);
 void CG_Fade(int r, int g, int b, int a, int time, int duration);
 
 // cg_player.c
@@ -2832,7 +2857,7 @@ void CG_DrawTracer(const vec3_t start, const vec3_t finish);
 void CG_MG42EFX(centity_t *cent);
 void CG_MortarEFX(centity_t *cent);
 
-void CG_MissileHitPlayer(centity_t *cent, int weapon, vec3_t origin, vec3_t dir, int entityNum);
+void CG_MissileHitPlayer(int entityNum, int weapon, vec3_t origin, vec3_t dir, int fleshEntityNum);
 qboolean CG_CalcMuzzlePoint(int entityNum, vec3_t muzzle);
 void CG_Bullet(int weapon, vec3_t end, int sourceEntityNum, qboolean flesh, int fleshEntityNum, int otherEntNum2, float waterfraction, int seed);
 
@@ -3041,7 +3066,7 @@ void CG_AddToNotify(const char *str);
 const char *CG_LocalizeServerCommand(const char *buf);
 void CG_wstatsParse_cmd(void);
 
-void CG_parseWeaponStats_cmd(void (txt_dump) (const char *));
+void CG_parseWeaponStats_cmd(void(txt_dump) (const char *));
 //void CG_parseBestShotsStats_cmd(qboolean doTop, void(txt_dump) (const char *));
 //void CG_parseTopShotsStats_cmd(qboolean doTop, void(txt_dump) (const char *));
 //void CG_scores_cmd(void);
@@ -3619,6 +3644,7 @@ void CG_Debriefing_ParseWeaponAccuracies(void);
 void CG_Debriefing_ParseWeaponStats(void);
 void CG_Debriefing_ParsePlayerKillsDeaths(void);
 void CG_Debriefing_ParsePlayerTime(void);
+void CG_Debriefing_ParseAwards(void);
 void CG_Debriefing_ParseSkillRating(void);
 
 void CG_TeamDebriefingTeamSkillXP_Draw(panel_button_t *button);
@@ -3659,6 +3685,15 @@ void CG_Fireteams_Setup(void);
 void CG_Fireteams_MenuText_Draw(panel_button_t *button);
 void CG_Fireteams_MenuTitleText_Draw(panel_button_t *button);
 
+// cg_spawnpoints.c
+void CG_Spawnpoints_KeyHandling(int key, qboolean down);
+qboolean CG_SpawnpointsCheckExecKey(int key, qboolean doaction);
+void CG_Spawnpoints_Draw(void);
+void CG_Spawnpoints_Setup(void);
+
+void CG_Spawnpoints_MenuText_Draw(panel_button_t *button);
+void CG_Spawnpoints_MenuTitleText_Draw(panel_button_t *button);
+
 // hitsounds flags
 /**
  * @enum hitsooundFlags
@@ -3679,5 +3714,45 @@ typedef enum
 #define IS_MOUNTED_TANK_BROWNING(entNum) (cg_entities[cg_entities[cg_entities[entNum].tagParent].tankparent].currentState.density & 8)
 
 extern qboolean resetmaxspeed; // CG_DrawSpeed
+
+/* HUD exports */
+
+typedef struct hudComponent_s
+{
+	rectDef_t location;
+	int visible;
+	int style;
+} hudComponent_t;
+
+typedef struct hudStructure_s
+{
+	int hudnumber;
+	hudComponent_t compas;
+	hudComponent_t staminabar;
+	hudComponent_t breathbar;
+	hudComponent_t healthbar;
+	hudComponent_t weaponchargebar;
+	hudComponent_t healthtext;
+	hudComponent_t xptext;
+	hudComponent_t ranktext;
+	hudComponent_t statsdisplay;
+	hudComponent_t weaponicon;
+	hudComponent_t weaponammo;
+	hudComponent_t fireteam;
+	hudComponent_t popupmessages;
+	hudComponent_t powerups;
+	hudComponent_t hudhead;
+
+	hudComponent_t cursorhint;
+	hudComponent_t weaponstability;
+	hudComponent_t livesleft;
+
+	hudComponent_t roundtimer;
+	hudComponent_t reinforcement;
+	hudComponent_t spawntimer;
+	hudComponent_t localtime;
+} hudStucture_t;
+
+hudStucture_t *CG_GetActiveHUD();
 
 #endif // #ifndef INCLUDE_CG_LOCAL_H

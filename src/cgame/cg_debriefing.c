@@ -43,7 +43,7 @@ int QDECL CG_SortPlayersByXP(const void *a, const void *b);
 panel_button_text_t debriefPlayerHeadingSmallerFont =
 {
 	0.2f,                  0.2f,
-	{ 0.6f,                0.6f, 0.6f,    1.f },
+	{ 0.6f,                0.6f,0.6f,    1.f },
 	0,                     0,
 	&cgs.media.limboFont2,
 };
@@ -505,7 +505,7 @@ panel_button_t debriefPlayerListScroll =
 panel_button_text_t debriefPlayerInfoFont =
 {
 	0.2f,                  0.2f,
-	{ 0.6f,                0.6f, 0.6f,    1.f },
+	{ 0.6f,                0.6f,0.6f,    1.f },
 	0,                     0,
 	&cgs.media.limboFont2,
 };
@@ -642,11 +642,11 @@ panel_button_t debriefPlayerInfoHitRegions =
 {
 	NULL,
 	NULL,
-	{ 146,                      156, 0, 0 },
-	{ 0,                        0,  0, 0, 0, 0, 0, 0 },
-	&debriefPlayerInfoFont,     // font
-	NULL,                       // keyDown
-	NULL,                       // keyUp
+	{ 146,                              156,   0, 0 },
+	{ 0,                                0,     0, 0, 0, 0, 0, 0},
+	&debriefPlayerInfoFont,             // font
+	NULL,                               // keyDown
+	NULL,                               // keyUp
 	CG_Debriefing_PlayerHitRegions_Draw,
 	NULL,
 };
@@ -655,8 +655,8 @@ panel_button_t debriefPlayerInfoHitRegions =
 	panel_button_t debriefPlayerInfoSkills ## number = {      \
 		NULL,                                       \
 		NULL,                                       \
-		{ 24,                            136 + (number * 14),  12, 12 }, \
-		{ number,                        0,                     0,  0, 0, 0, 0, 0},  \
+		{ 24,                            136 + (number * 14), 12, 12 }, \
+		{ number,                        0,                   0,  0, 0, 0, 0, 0},  \
 		&debriefPlayerInfoFont,          /* font     */  \
 		NULL,                            /* keyDown  */  \
 		NULL,                            /* keyUp    */  \
@@ -844,8 +844,8 @@ panel_button_t chatPanelVoteButton =
 {
 	NULL,
 	"MAP VOTE",
-	{ SCREEN_WIDTH - 10 - 60 - 4 - 60 - 4, SCREEN_HEIGHT - 30,               60, 16 },
-	{ 0,                          0,                                         0,  0, 0, 0, 0, 0},
+	{ SCREEN_WIDTH - 10 - 60 - 4 - 60 - 4,SCREEN_HEIGHT - 30,                             60, 16 },
+	{ 0,                          0,                                              0,  0, 0, 0, 0, 0},
 	NULL,                         // font
 	CG_Debriefing_VoteButton_KeyDown,// keyDown
 	NULL,                         // keyUp
@@ -858,8 +858,8 @@ panel_button_t chatPanelQCButton =
 {
 	NULL,
 	"QUICK CHAT",
-	{ SCREEN_WIDTH - 10 - 60 - 4 - 60 - 4 - 80 - 4, SCREEN_HEIGHT - 30,      80, 16 },
-	{ 0,                         0,                                          0,  0, 0, 0, 0, 0},
+	{ SCREEN_WIDTH - 10 - 60 - 4 - 60 - 4 - 80 - 4,SCREEN_HEIGHT - 30,                                    80, 16 },
+	{ 0,                         0,                                                     0,  0, 0, 0, 0, 0},
 	NULL,                        // font
 	CG_Debriefing_QCButton_KeyDown,// keyDown
 	NULL,                        // keyUp
@@ -872,8 +872,8 @@ panel_button_t chatPanelReadyButton =
 {
 	NULL,
 	"READY",
-	{ SCREEN_WIDTH - 10 - 60 - 4 - 60 - 4 - 80 - 4 - 60 - 4, SCREEN_HEIGHT - 30, 60, 16 },
-	{ 0,                           0,                                            0,  0, 0, 0, 0, 0},
+	{ SCREEN_WIDTH - 10 - 60 - 4 - 60 - 4 - 80 - 4 - 60 - 4,SCREEN_HEIGHT - 30,                                                  60, 16 },
+	{ 0,                           0,                                                                   0,  0, 0, 0, 0, 0},
 	NULL,                          // font
 	CG_Debriefing_ReadyButton_KeyDown,// keyDown
 	NULL,                          // keyUp
@@ -1097,9 +1097,10 @@ void CG_MapVoteList_Draw(panel_button_t *button)
 		                  button->font->scaley, button->font->colour,
 		                  cgs.dbMapDispName[i + cgs.dbMapVoteListOffset],
 		                  0, 30, 0, button->font->font);
-		CG_Text_Paint_Ext(DB_MAPVOTE_X + 10 + 10 + cgs.wideXoffset, y, button->font->scalex,
+		CG_Text_Paint_Ext(DB_MAPVOTE_X + cgs.wideXoffset, y, button->font->scalex,
 		                  button->font->scaley, button->font->colour,
-		                  va("%d", cgs.dbMapVotes[i + cgs.dbMapVoteListOffset]),
+		                  va("%3d%% (%d)", cgs.dbMapVotesSum > 0 ? 100 * cgs.dbMapVotes[i + cgs.dbMapVoteListOffset] / cgs.dbMapVotesSum : 0,
+		                     cgs.dbMapVotes[i + cgs.dbMapVoteListOffset]),
 		                  0, 0, 0, button->font->font);
 		y += 12;
 	}
@@ -1234,8 +1235,8 @@ panel_button_t mapVoteHeadingVotes =
 {
 	NULL,
 	"Votes",
-	{ DB_MAPVOTE_X + 10,       DB_MAPVOTE_Y,              0, 0 },
-	{ 0,                       0,                         0, 0, 0, 0, 0, 0},
+	{ DB_MAPVOTE_X,            DB_MAPVOTE_Y,         0, 0 },
+	{ 0,                       0,                    0, 0, 0, 0, 0, 0},
 	&mapVoteFont,              // font
 	NULL,                      // keyDown
 	NULL,                      // keyUp
@@ -1377,27 +1378,11 @@ panel_button_t mapVoteBorder3 =
  */
 void CG_Debriefing_ChatEdit_Draw(panel_button_t *button)
 {
-	int        offset = -1;
-	char       buffer[256 + 1];
-	const char *cs;
+	int    offset = -1;
+	char   buffer[MAX_EDITFIELD + 1];
+	vec4_t *color;
 
 	trap_Cvar_VariableStringBuffer(button->text, buffer, sizeof(buffer));
-
-	if ((cg.time / 1000) % 2)
-	{
-		if (trap_Key_GetOverstrikeMode())
-		{
-			Q_strcat(buffer, sizeof(buffer), "^7|");
-		}
-		else
-		{
-			Q_strcat(buffer, sizeof(buffer), "^7_");
-		}
-	}
-	else
-	{
-		Q_strcat(buffer, sizeof(buffer), " ");
-	}
 
 	do
 	{
@@ -1408,24 +1393,24 @@ void CG_Debriefing_ChatEdit_Draw(panel_button_t *button)
 		}
 	}
 	while (CG_Text_Width_Ext(buffer + offset, button->font->scalex, 0, button->font->font) > button->rect.w);
-
+        
 	switch (cgs.dbChatMode)
 	{
 	case 0:
-		cs = va("^7%s", buffer + offset);
+		color = &colorWhite;
 		break;
 	case 1:
-		cs = va("^5%s", buffer + offset);
+		color = &colorCyan;
 		break;
 	case 2:
-		cs = va("^3%s", buffer + offset);
+		color = &colorYellow;
 		break;
 	default:
-		cs = "";
+		color = &button->font->colour;
 		break;
 	}
 
-	CG_Text_Paint_Ext(button->rect.x, button->rect.y + button->rect.h, button->font->scalex, button->font->scaley, button->font->colour, cs, 0, 0, button->font->style, button->font->font);
+        CG_Text_PaintWithCursor_Ext(button->rect.x, button->rect.y + button->rect.h, button->font->scalex, *color, buffer + (button->data[2] <= offset ? button->data[2] : offset), button->data[2] <= offset ? 0 : button->data[2] - offset, trap_Key_GetOverstrikeMode() ? "_" : "|", offset ? Q_UTF8_Strlen(buffer + offset) : 0, button->font->style, button->font->font);
 }
 
 /**
@@ -1492,7 +1477,7 @@ void CG_Debriefing_ChatBox_Draw(panel_button_t *button)
 panel_button_t *chatPanelButtons[] =
 {
 	&chatPanelWindow,       &chatPanelText,
-	&chatPanelNextButton,   &chatPanelVoteButton, &chatPanelQCButton, &chatTypeButton, &chatPanelReadyButton,
+	&chatPanelNextButton,   &chatPanelVoteButton,&chatPanelQCButton,  &chatTypeButton, &chatPanelReadyButton,
 	&charPanelEditSurround, &charPanelEdit,
 	NULL
 };
@@ -1535,12 +1520,12 @@ void CG_Debriefing_Startup(void)
 	const char *s, *buf;
 
 	cgs.dbShowing                   = qtrue;
-	cgs.dbAccuraciesRecieved        = qfalse;
-	cgs.dbWeaponStatsRecieved       = qfalse;
-	cgs.dbPlayerKillsDeathsRecieved = qfalse;
-	cgs.dbPlayerTimeRecieved        = qfalse;
+	cgs.dbAccuraciesReceived        = qfalse;
+	cgs.dbWeaponStatsReceived       = qfalse;
+	cgs.dbPlayerKillsDeathsReceived = qfalse;
+	cgs.dbPlayerTimeReceived        = qfalse;
 #ifdef FEATURE_RATING
-	cgs.dbSkillRatingRecieved = qfalse;
+	cgs.dbSkillRatingReceived = qfalse;
 #endif
 
 	cgs.dbLastRequestTime = 0;
@@ -1610,33 +1595,33 @@ void CG_Debriefing_InfoRequests(void)
 		return;
 	}
 
-	if (!cgs.dbPlayerTimeRecieved)
+	if (!cgs.dbPlayerTimeReceived)
 	{
 		trap_SendClientCommand("impt");
 		return;
 	}
 
 #ifdef FEATURE_RATING
-	if (!cgs.dbSkillRatingRecieved && cgs.skillRating)
+	if (!cgs.dbSkillRatingReceived && cgs.skillRating)
 	{
 		trap_SendClientCommand("imsr");
 		return;
 	}
 #endif
 
-	if (!cgs.dbPlayerKillsDeathsRecieved)
+	if (!cgs.dbPlayerKillsDeathsReceived)
 	{
 		trap_SendClientCommand("impkd");
 		return;
 	}
 
-	if (!cgs.dbAccuraciesRecieved)
+	if (!cgs.dbAccuraciesReceived)
 	{
 		trap_SendClientCommand("imwa");
 		return;
 	}
 
-	if (!cgs.dbWeaponStatsRecieved)
+	if (!cgs.dbWeaponStatsReceived)
 	{
 		trap_SendClientCommand(va("imws %i", cgs.dbSelectedClient));
 		return;
@@ -1673,6 +1658,12 @@ qboolean CG_Debriefing_Draw(void)
 	if (!trap_Key_GetCatcher())
 	{
 		trap_Key_SetCatcher(KEYCATCH_CGAME);
+	}
+
+	// build award list asap to avoid empty name if awarded players disconnect early
+	if (!cgs.dbAwardsParsed)
+	{
+		CG_Debriefing_ParseAwards();
 	}
 
 	switch (cgs.dbMode)
@@ -1771,7 +1762,7 @@ void CG_DebriefingPlayerWeaponStats_Draw(panel_button_t *button)
 	float y = button->rect.y + 12;
 	int   pos;
 
-	if (!cgs.dbWeaponStatsRecieved)
+	if (!cgs.dbWeaponStatsReceived)
 	{
 		return;
 	}
@@ -1962,7 +1953,7 @@ void CG_DebriefingPlayerList_Draw(panel_button_t *button)
 
 		CG_Text_Paint_Ext(DB_XP_X + cgs.wideXoffset, y, button->font->scalex, button->font->scaley, button->font->colour, va("%i", ci->score), 0, 0, 0, button->font->font);
 
-		if (cgs.dbPlayerKillsDeathsRecieved)
+		if (cgs.dbPlayerKillsDeathsReceived)
 		{
 			CG_Text_Paint_Ext(DB_KILLS_X + cgs.wideXoffset, y, button->font->scalex, button->font->scaley, button->font->colour, va("%i", ci->kills), 0, 0, 0, button->font->font);
 			CG_Text_Paint_Ext(DB_DEATHS_X + cgs.wideXoffset, y, button->font->scalex, button->font->scaley, button->font->colour, va("%i", ci->deaths), 0, 0, 0, button->font->font);
@@ -2026,7 +2017,7 @@ const char *CG_Debriefing_FullRankNameForClientInfo(clientInfo_t *ci)
 {
 	if (ci->team != TEAM_AXIS && ci->team != TEAM_ALLIES)
 	{
-		return "Spectator";
+		return (ci->shoutcaster) ? "Shoutcaster" : "Spectator";
 	}
 
 	return GetRankTableData(ci->team, ci->rank)->names;
@@ -2041,7 +2032,7 @@ const char *CG_Debriefing_RankNameForClientInfo(clientInfo_t *ci)
 {
 	if (ci->team != TEAM_AXIS && ci->team != TEAM_ALLIES)
 	{
-		return "Spc";
+		return (ci->shoutcaster) ? "Shc" : "Spc";
 	}
 
 	return GetRankTableData(ci->team, ci->rank)->miniNames;
@@ -2059,7 +2050,7 @@ void CG_Debriefing_ParseWeaponAccuracies(void)
 		cgs.clientinfo[i].totalWeapAcc   = (float)atof(CG_Argv(i * 2 + 1));
 		cgs.clientinfo[i].totalWeapHSpct = (float)atof(CG_Argv(i * 2 + 2));
 	}
-	cgs.dbAccuraciesRecieved = qtrue;
+	cgs.dbAccuraciesReceived = qtrue;
 }
 
 /**
@@ -2075,7 +2066,7 @@ void CG_Debriefing_ParsePlayerTime(void)
 		cgs.clientinfo[i].timeAllies = atoi(CG_Argv(i * 3 + 2));
 		cgs.clientinfo[i].timePlayed = atoi(CG_Argv(i * 3 + 3));
 	}
-	cgs.dbPlayerTimeRecieved = qtrue;
+	cgs.dbPlayerTimeReceived = qtrue;
 }
 
 #ifdef FEATURE_RATING
@@ -2091,7 +2082,7 @@ void CG_Debriefing_ParseSkillRating(void)
 		cgs.clientinfo[i].rating      = atof(CG_Argv(i * 2 + 1));
 		cgs.clientinfo[i].deltaRating = atof(CG_Argv(i * 2 + 2));
 	}
-	cgs.dbSkillRatingRecieved = qtrue;
+	cgs.dbSkillRatingReceived = qtrue;
 }
 #endif
 
@@ -2111,7 +2102,7 @@ void CG_Debriefing_ParsePlayerKillsDeaths(void)
 		cgs.clientinfo[i].teamKills = atoi(CG_Argv((i * 6) + 5));
 		cgs.clientinfo[i].teamGibs  = atoi(CG_Argv((i * 6) + 6));
 	}
-	cgs.dbPlayerKillsDeathsRecieved = qtrue;
+	cgs.dbPlayerKillsDeathsReceived = qtrue;
 }
 
 /**
@@ -2133,7 +2124,7 @@ void CG_Debriefing_ParseWeaponStats(void)
 		cgs.dbWeaponStats[i].numKills = atoi(CG_Argv((i * 3) + 7));
 	}
 
-	cgs.dbWeaponStatsRecieved = qtrue;
+	cgs.dbWeaponStatsReceived = qtrue;
 }
 
 /**
@@ -2240,7 +2231,7 @@ int CG_Debriefing_ScrollGetCount(panel_button_t *button)
 		return cgs.maxclients;
 	case 1:    // weapon stats
 	{
-		if (!cgs.dbWeaponStatsRecieved)
+		if (!cgs.dbWeaponStatsReceived)
 		{
 			return 0;
 		}
@@ -2601,13 +2592,13 @@ qhandle_t imgL;
 /**
  * @brief
  */
-void CG_Debriefing_PlayerHitRegions_Draw(panel_button_t* button)
+void CG_Debriefing_PlayerHitRegions_Draw(panel_button_t *button)
 {
 	int    totalHits = cgs.dbHitRegions[HR_HEAD] + cgs.dbHitRegions[HR_ARMS] + cgs.dbHitRegions[HR_BODY] + cgs.dbHitRegions[HR_LEGS];
-	float  hitsHead  = (totalHits && cgs.dbHitRegions[HR_HEAD]) ? (cgs.dbHitRegions[HR_HEAD]/(float)totalHits) : 0.0f;
-	float  hitsArms  = (totalHits && cgs.dbHitRegions[HR_ARMS]) ? (cgs.dbHitRegions[HR_ARMS]/(float)totalHits) : 0.0f;
-	float  hitsBody  = (totalHits && cgs.dbHitRegions[HR_BODY]) ? (cgs.dbHitRegions[HR_BODY]/(float)totalHits) : 0.0f;
-	float  hitsLegs  = (totalHits && cgs.dbHitRegions[HR_LEGS]) ? (cgs.dbHitRegions[HR_LEGS]/(float)totalHits) : 0.0f;
+	float  hitsHead  = (totalHits && cgs.dbHitRegions[HR_HEAD]) ? (cgs.dbHitRegions[HR_HEAD] / (float)totalHits) : 0.0f;
+	float  hitsArms  = (totalHits && cgs.dbHitRegions[HR_ARMS]) ? (cgs.dbHitRegions[HR_ARMS] / (float)totalHits) : 0.0f;
+	float  hitsBody  = (totalHits && cgs.dbHitRegions[HR_BODY]) ? (cgs.dbHitRegions[HR_BODY] / (float)totalHits) : 0.0f;
+	float  hitsLegs  = (totalHits && cgs.dbHitRegions[HR_LEGS]) ? (cgs.dbHitRegions[HR_LEGS] / (float)totalHits) : 0.0f;
 	float  alphaH    = hitsHead > 0.f ? (hitsHead * 0.8f) + 0.2f : 0.0f;
 	float  alphaA    = hitsArms > 0.f ? (hitsArms * 0.8f) + 0.2f : 0.0f;
 	float  alphaB    = hitsBody > 0.f ? (hitsBody * 0.8f) + 0.2f : 0.0f;
@@ -2669,7 +2660,7 @@ void CG_Debriefing_PlayerHitRegions_Draw(panel_button_t* button)
 
 	if (alphaA)
 	{
-		Vector4Set(colorA, 1.0f, 0.f, 0.f, alphaA );
+		Vector4Set(colorA, 1.0f, 0.f, 0.f, alphaA);
 		trap_R_SetColor(colorA);
 		CG_DrawPic(button->rect.x + 4, button->rect.y + 12, 54, 54, imgA);
 		trap_R_SetColor(NULL);
@@ -2836,7 +2827,7 @@ void CG_Debriefing_PlayerRank_Draw(panel_button_t *button)
 
 	CG_Text_Paint_Ext(button->rect.x - w, button->rect.y, button->font->scalex, button->font->scaley, button->font->colour, CG_TranslateString("Rank:"), 0, 0, ITEM_TEXTSTYLE_SHADOWED, button->font->font);
 
-	if (ci->rank > 0)
+	if (ci->rank > 0 && ci->team != TEAM_SPECTATOR)
 	{
 		CG_DrawPic(button->rect.x, button->rect.y - 12, 16, 16, rankicons[ci->rank][ci->team == TEAM_AXIS ? 1 : 0][0].shader);
 		CG_Text_Paint_Ext(button->rect.x + 18, button->rect.y, button->font->scalex, button->font->scaley, button->font->colour, CG_Debriefing_FullRankNameForClientInfo(ci), 0, 0, ITEM_TEXTSTYLE_SHADOWED, button->font->font);
@@ -2916,7 +2907,7 @@ void CG_Debrieing_SetSelectedClient(int clientNum)
 	if (clientNum != cgs.dbSelectedClient)
 	{
 		cgs.dbSelectedClient      = clientNum;
-		cgs.dbWeaponStatsRecieved = qfalse;
+		cgs.dbWeaponStatsReceived = qfalse;
 	}
 }
 
@@ -3126,21 +3117,23 @@ void CG_Debriefing_NextButton_Draw(panel_button_t *button)
  */
 void CG_Debriefing_ChatEditFinish(panel_button_t *button)
 {
-	char buffer[256];
-	trap_Cvar_VariableStringBuffer(button->text, buffer, 256);
+	char buffer[MAX_EDITFIELD];
+	trap_Cvar_VariableStringBuffer(button->text, buffer, MAX_EDITFIELD);
 
 	switch (cgs.dbChatMode)
 	{
 	case 0:
-		trap_SendClientCommand(va("say %s\n", buffer));
+		trap_SendClientCommand(va("say %s", buffer));
 		break;
 	case 1:
-		trap_SendClientCommand(va("say_team %s\n", buffer));
+		trap_SendClientCommand(va("say_team %s", buffer));
 		break;
 	case 2:
-		trap_SendClientCommand(va("say_buddy %s\n", buffer));
+		trap_SendClientCommand(va("say_buddy %s", buffer));
 		break;
 	}
+
+	button->data[2] = 0;
 
 	trap_Cvar_Set(button->text, "");
 }
@@ -3482,6 +3475,7 @@ void CG_Debriefing_Awards_Draw(panel_button_t *button)
 	int   i, j;
 	float y = button->rect.y + 1;
 
+	// fallback - should be done already
 	if (!cgs.dbAwardsParsed)
 	{
 		CG_Debriefing_ParseAwards();
@@ -3576,6 +3570,23 @@ void CG_Debriefing_Maps_Draw(panel_button_t *button)
  */
 void CG_Debriefing_Mission_Draw(panel_button_t *button)
 {
+	static qhandle_t pinAxis = 0, pinAllied = 0, pinNeutral = 0;
+
+	if (!pinAxis)
+	{
+		pinAxis = trap_R_RegisterShaderNoMip("gfx/loading/pin_axis");
+	}
+
+	if (!pinAllied)
+	{
+		pinAllied = trap_R_RegisterShaderNoMip("gfx/loading/pin_allied");
+	}
+
+	if (!pinNeutral)
+	{
+		pinNeutral = trap_R_RegisterShaderNoMip("gfx/loading/pin_neutral");
+	}
+
 	if (cg_gameType.integer == GT_WOLF_CAMPAIGN)
 	{
 		if (!cgs.campaignInfoLoaded)
@@ -3618,13 +3629,13 @@ void CG_Debriefing_Mission_Draw(panel_button_t *button)
 				switch (CG_Debriefing_FindWinningTeamForPos(i + 1))
 				{
 				case TEAM_AXIS:
-					CG_DrawPic(x - 12, y - 12, 24, 24, trap_R_RegisterShaderNoMip("gfx/loading/pin_axis"));
+					CG_DrawPic(x - 12, y - 12, 24, 24, pinAxis);
 					break;
 				case TEAM_ALLIES:
-					CG_DrawPic(x - 12, y - 12, 24, 24, trap_R_RegisterShaderNoMip("gfx/loading/pin_allied"));
+					CG_DrawPic(x - 12, y - 12, 24, 24, pinAllied);
 					break;
 				default:
-					CG_DrawPic(x - 12, y - 12, 24, 24, trap_R_RegisterShaderNoMip("gfx/loading/pin_neutral"));
+					CG_DrawPic(x - 12, y - 12, 24, 24, pinNeutral);
 					break;
 				}
 
@@ -3646,12 +3657,13 @@ void CG_Debriefing_Mission_Draw(panel_button_t *button)
 				switch (CG_Debriefing_FindWinningTeamForPos(cgs.tdbSelectedMap))
 				{
 				case TEAM_AXIS:
-					CG_DrawPic(x - 12, y - 12, 24, 24, trap_R_RegisterShaderNoMip("gfx/loading/pin_axis"));
+					CG_DrawPic(x - 12, y - 12, 24, 24, pinAxis);
 					break;
 				case TEAM_ALLIES:
-					CG_DrawPic(x - 12, y - 12, 24, 24, trap_R_RegisterShaderNoMip("gfx/loading/pin_allied"));
+					CG_DrawPic(x - 12, y - 12, 24, 24, pinAllied);
 					break;
 				default:
+					CG_DrawPic(x - 12, y - 12, 24, 24, pinNeutral);
 					break;
 				}
 			}
@@ -3671,9 +3683,10 @@ void CG_Debriefing_Mission_Draw(panel_button_t *button)
 
 	if (cgs.arenaData.mappos[0] != 0.f && cgs.arenaData.mappos[1] != 0.f)
 	{
-		float  x, y, w;
-		vec2_t tl, br;
-		vec4_t colourFadedBlack = { 0.f, 0.f, 0.f, 0.4f };
+		float            x, y, w;
+		vec2_t           tl, br;
+		vec4_t           colourFadedBlack = { 0.f, 0.f, 0.f, 0.4f };
+		static qhandle_t campMap          = 0;
 
 		tl[0] = cgs.arenaData.mappos[0] - .5f * 650.f;
 		if (tl[0] < 0)
@@ -3699,7 +3712,12 @@ void CG_Debriefing_Mission_Draw(panel_button_t *button)
 			tl[1] = br[1] - 650.f;
 		}
 
-		CG_DrawPicST(button->rect.x, button->rect.y, button->rect.w, button->rect.h, tl[0] / 1024.f, tl[1] / 1024.f, br[0] / 1024.f, br[1] / 1024.f, trap_R_RegisterShaderNoMip("gfx/loading/camp_map"));
+		if (!campMap)
+		{
+			campMap = trap_R_RegisterShaderNoMip("gfx/loading/camp_map");
+		}
+
+		CG_DrawPicST(button->rect.x, button->rect.y, button->rect.w, button->rect.h, tl[0] / 1024.f, tl[1] / 1024.f, br[0] / 1024.f, br[1] / 1024.f, campMap);
 
 		x = button->rect.x + ((cgs.arenaData.mappos[0] - tl[0]) / 650.f * button->rect.w);
 		y = button->rect.y + ((cgs.arenaData.mappos[1] - tl[1]) / 650.f * button->rect.h);
@@ -3726,13 +3744,13 @@ void CG_Debriefing_Mission_Draw(panel_button_t *button)
 		switch (CG_Debriefing_FindWinningTeam())
 		{
 		case TEAM_AXIS:
-			CG_DrawPic(x - 12, y - 12, 24, 24, trap_R_RegisterShaderNoMip("gfx/loading/pin_axis"));
+			CG_DrawPic(x - 12, y - 12, 24, 24, pinAxis);
 			break;
 		case TEAM_ALLIES:
-			CG_DrawPic(x - 12, y - 12, 24, 24, trap_R_RegisterShaderNoMip("gfx/loading/pin_allied"));
+			CG_DrawPic(x - 12, y - 12, 24, 24, pinAllied);
 			break;
 		default:
-			CG_DrawPic(x - 12, y - 12, 24, 24, trap_R_RegisterShaderNoMip("gfx/loading/pin_neutral"));
+			CG_DrawPic(x - 12, y - 12, 24, 24, pinNeutral);
 			break;
 		}
 
@@ -4104,10 +4122,13 @@ void CG_parseMapVoteTally()
 {
 	int i, numMaps;
 
+	cgs.dbMapVotesSum = 0;
+
 	numMaps = (trap_Argc() - 1);
 	for (i = 0; i < numMaps; i++)
 	{
-		cgs.dbMapVotes[i] = atoi(CG_Argv(i + 1));
+		cgs.dbMapVotes[i]  = atoi(CG_Argv(i + 1));
+		cgs.dbMapVotesSum += cgs.dbMapVotes[i];
 	}
 
 	cgs.dbVoteTallyReceived = qtrue;

@@ -44,18 +44,10 @@
  */
 qboolean Com_PowerOf2(int x)
 {
-	int          bitsSet = 0;
-	unsigned int i;
+	int bitsSet;
+	bitsSet = x & (x - 1); /* bitwise trick to check if x is a power of two */
 
-	for (i = 0; i < sizeof(int) * 8; ++i)
-	{
-		if (x & (1 << i))
-		{
-			++bitsSet;
-		}
-	}
-
-	return (qboolean)(bitsSet <= 1);
+	return (qboolean)(bitsSet == 0);
 }
 
 /**
@@ -221,17 +213,13 @@ int Com_HashKey(char *string, int maxlen)
  * @param[in] bitNum
  * @return
  */
-qboolean COM_BitCheck(const int array[], int bitNum)
+qboolean COM_BitCheck(const int array[], unsigned int bitNum)
 {
-	int i = 0;
-
-	while (bitNum > 31)
-	{
-		i++;
-		bitNum -= 32;
-	}
-
-	return ((array[i] & (1 << bitNum)) != 0);
+	unsigned int i = bitNum / 32;
+	unsigned int bitmask;
+	bitNum  = bitNum % 32;
+	bitmask = 1u << bitNum;
+	return ((array[i] & bitmask) != 0);
 }
 
 /**
@@ -239,17 +227,14 @@ qboolean COM_BitCheck(const int array[], int bitNum)
  * @param[in] array
  * @param[out] bitNum
  */
-void COM_BitSet(int array[], int bitNum)
+void COM_BitSet(int array[], unsigned int bitNum)
 {
-	int i = 0;
+	unsigned int i = bitNum / 32;
+	unsigned int bitmask;
+	bitNum  = bitNum % 32;
+	bitmask = 1u << bitNum;
 
-	while (bitNum > 31)
-	{
-		i++;
-		bitNum -= 32;
-	}
-
-	array[i] |= (1 << bitNum);
+	array[i] |= bitmask;
 }
 
 /**
@@ -257,17 +242,14 @@ void COM_BitSet(int array[], int bitNum)
  * @param[out] array
  * @param[in] bitNum
  */
-void COM_BitClear(int array[], int bitNum)
+void COM_BitClear(int array[], unsigned int bitNum)
 {
-	int i = 0;
+	unsigned int i = bitNum / 32;
+	unsigned int bitmask;
+	bitNum  = bitNum % 32;
+	bitmask = ~(1u << bitNum);
 
-	while (bitNum > 31)
-	{
-		i++;
-		bitNum -= 32;
-	}
-
-	array[i] &= ~(1 << bitNum);
+	array[i] &= bitmask;
 }
 //============================================================================
 
@@ -278,10 +260,11 @@ void COM_BitClear(int array[], int bitNum)
  */
 short ShortSwap(short l)
 {
-	byte b1 = l & 255;
-	byte b2 = (l >> 8) & 255;
+	unsigned short tmp = l;
+	unsigned short b1  = (tmp & 0x00ff) << 8;
+	unsigned short b2  = (tmp & 0xff00) >> 8;
 
-	return (short)((b1 << 8) + b2);
+	return (b1 | b2);
 }
 
 /**
@@ -303,12 +286,14 @@ short ShortNoSwap(short l)
  */
 int LongSwap(int l)
 {
-	byte b1 = l & 255;
-	byte b2 = (l >> 8) & 255;
-	byte b3 = (l >> 16) & 255;
-	byte b4 = (l >> 24) & 255;
+	/* is compiled to bswap on gcc/clang/msvc */
+	unsigned int tmp = l;
+	unsigned int b1  = (tmp & 0x000000ff) << 24;
+	unsigned int b2  = (tmp & 0x0000ff00) <<  8;
+	unsigned int b3  = (tmp & 0x00ff0000) >>  8;
+	unsigned int b4  = (tmp & 0xff000000) >> 24;
 
-	return ((int)b1 << 24) + ((int)b2 << 16) + ((int)b3 << 8) + b4;
+	return (b1 | b2 | b3 | b4);
 }
 
 /**
@@ -2683,4 +2668,23 @@ qboolean CompareIPNoPort(char const *ip1, char const *ip2)
 	{
 		return qfalse;
 	}
+}
+
+/**
+ * @brief Com_AnyOf returns first valid pointer from the set
+ * @param[in] ptr list of pointers
+ * @param[in] n pointer count
+ * @return first non-null pointer
+ */
+void *Com_AnyOf(void **ptr, int n)
+{
+	int i;
+	for (i = 0; i < n; i++)
+	{
+		if (ptr[i])
+		{
+			return ptr[i];
+		}
+	}
+	return NULL;
 }

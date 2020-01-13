@@ -150,6 +150,7 @@ vmCvar_t cg_voiceText;
 vmCvar_t cg_drawStatus;
 vmCvar_t cg_animSpeed;
 vmCvar_t cg_drawSpreadScale;
+vmCvar_t cg_railTrailTime;
 vmCvar_t cg_debugAnim;
 vmCvar_t cg_debugPosition;
 vmCvar_t cg_debugEvents;
@@ -183,6 +184,7 @@ vmCvar_t cg_synchronousClients;
 #endif // ALLOW_GSYNC
 vmCvar_t cg_teamChatTime;
 vmCvar_t cg_teamChatHeight;
+vmCvar_t cg_teamChatMention;
 vmCvar_t cg_stats;
 vmCvar_t cg_buildScript;
 vmCvar_t cg_coronafardist;
@@ -350,6 +352,7 @@ vmCvar_t cg_drawspeed;
 
 vmCvar_t cg_visualEffects;
 
+
 typedef struct
 {
 	vmCvar_t *vmCvar;
@@ -359,7 +362,7 @@ typedef struct
 	int modificationCount;
 } cvarTable_t;
 
-cvarTable_t cvarTable[] =
+static cvarTable_t cvarTable[] =
 {
 	{ &cg_autoswitch,             "cg_autoswitch",             "2",           CVAR_ARCHIVE,                 0 },
 	{ &cg_drawGun,                "cg_drawGun",                "1",           CVAR_ARCHIVE,                 0 },
@@ -376,6 +379,7 @@ cvarTable_t cvarTable[] =
 	//  { &cg_draw2D, "cg_draw2D", "1", CVAR_CHEAT }, // JPW NERVE changed per atvi req to prevent sniper rifle zoom cheats
 	{ &cg_draw2D,                 "cg_draw2D",                 "1",           CVAR_ARCHIVE,                 0 },
 	{ &cg_drawSpreadScale,        "cg_drawSpreadScale",        "1",           CVAR_ARCHIVE,                 0 },
+	{ &cg_railTrailTime,          "cg_railTrailTime",          "50",          CVAR_ARCHIVE,                 0 },
 	{ &cg_drawStatus,             "cg_drawStatus",             "1",           CVAR_ARCHIVE,                 0 },
 	{ &cg_drawFPS,                "cg_drawFPS",                "0",           CVAR_ARCHIVE,                 0 },
 	{ &cg_drawPing,               "cg_drawPing",               "0",           CVAR_ARCHIVE,                 0 },
@@ -431,6 +435,7 @@ cvarTable_t cvarTable[] =
 	{ &cg_thirdPerson,            "cg_thirdPerson",            "0",           CVAR_CHEAT,                   0 }, // per atvi req
 	{ &cg_teamChatTime,           "cg_teamChatTime",           "8000",        CVAR_ARCHIVE,                 0 },
 	{ &cg_teamChatHeight,         "cg_teamChatHeight",         "8",           CVAR_ARCHIVE,                 0 },
+	{ &cg_teamChatMention,        "cg_teamChatMention",        "1",           CVAR_ARCHIVE,                 0 },
 	{ &cg_coronafardist,          "cg_coronafardist",          "1536",        CVAR_ARCHIVE,                 0 },
 	{ &cg_coronas,                "cg_coronas",                "1",           CVAR_ARCHIVE,                 0 },
 	{ &cg_predictItems,           "cg_predictItems",           "1",           CVAR_ARCHIVE,                 0 },
@@ -472,7 +477,7 @@ cvarTable_t cvarTable[] =
 	{ &cf_wstats,                 "cf_wstats",                 "1.2",         CVAR_ARCHIVE,                 0 },
 	{ &cf_wtopshots,              "cf_wtopshots",              "1.0",         CVAR_ARCHIVE,                 0 },
 
-	{ &cg_autoAction,             "cg_autoAction",             "0",           CVAR_ARCHIVE,                 0 },
+	{ &cg_autoAction,             "cg_autoAction",             "4",           CVAR_ARCHIVE,                 0 },
 	{ &cg_autoReload,             "cg_autoReload",             "1",           CVAR_ARCHIVE,                 0 },
 	{ &cg_bloodDamageBlend,       "cg_bloodDamageBlend",       "1.0",         CVAR_ARCHIVE,                 0 },
 	{ &cg_bloodFlash,             "cg_bloodFlash",             "1.0",         CVAR_ARCHIVE,                 0 },
@@ -537,8 +542,9 @@ cvarTable_t cvarTable[] =
 
 	{ &cg_instanttapout,          "cg_instanttapout",          "0",           CVAR_ARCHIVE,                 0 },
 	{ &cg_debugSkills,            "cg_debugSkills",            "0",           0,                            0 },
-#if 0 // not used
 	{ NULL,                       "cg_etVersion",              "",            CVAR_USERINFO | CVAR_ROM,     0 },
+#if 0
+	{ NULL,                       "cg_legacyVersion",          "",            CVAR_USERINFO | CVAR_ROM,     0 },
 #endif
 	{ &cg_drawFireteamOverlay,    "cg_drawFireteamOverlay",    "1",           CVAR_ARCHIVE,                 0 },
 	{ &cg_drawSmallPopupIcons,    "cg_drawSmallPopupIcons",    "1",           CVAR_ARCHIVE,                 0 },
@@ -597,8 +603,8 @@ cvarTable_t cvarTable[] =
 	{ &cg_visualEffects,          "cg_visualEffects",          "1",           CVAR_ARCHIVE,                 0 }  // Draw visual effects (i.e : airstrike plane, debris ...)
 };
 
-const unsigned int cvarTableSize = sizeof(cvarTable) / sizeof(cvarTable[0]);
-qboolean           cvarsLoaded   = qfalse;
+static const unsigned int cvarTableSize = sizeof(cvarTable) / sizeof(cvarTable[0]);
+static qboolean           cvarsLoaded   = qfalse;
 void CG_setClientFlags(void);
 
 /**
@@ -610,7 +616,7 @@ void CG_RegisterCvars(void)
 	cvarTable_t  *cv;
 	char         var[MAX_TOKEN_CHARS];
 
-	CG_Printf("%d client cvars in use.\n", cvarTableSize);
+	CG_Printf("%d client cvars in use\n", cvarTableSize);
 
 	trap_Cvar_Set("cg_letterbox", "0");   // force this for people who might have it in their cfg
 
@@ -1725,6 +1731,7 @@ static void CG_RegisterGraphics(void)
 	cgs.media.objectiveBothTEShader  = trap_R_RegisterShaderNoMip("sprites/objective_both_te");
 	cgs.media.objectiveBothTDShader  = trap_R_RegisterShaderNoMip("sprites/objective_both_td");
 	cgs.media.objectiveBothDEShader  = trap_R_RegisterShaderNoMip("sprites/objective_both_de");
+	cgs.media.objectiveSimpleIcon    = trap_R_RegisterShader("simpleicons/objective");
 	cgs.media.readyShader            = trap_R_RegisterShader("sprites/ready");
 
 	//cgs.media.bloodExplosionShader = trap_R_RegisterShader("bloodExplosion"); // unused FIXME: remove from shader def
@@ -1753,6 +1760,7 @@ static void CG_RegisterGraphics(void)
 	cgs.media.dirtParticle2Shader = trap_R_RegisterShader("water_splash");
 
 	cgs.media.genericConstructionShader = trap_R_RegisterShader("textures/sfx/construction");
+	cgs.media.shoutcastLandmineShader   = trap_R_RegisterShader("textures/sfx/shoutcast_landmine");
 
 	cgs.media.alliedUniformShader = trap_R_RegisterShader("sprites/uniform_allied");
 	cgs.media.axisUniformShader   = trap_R_RegisterShader("sprites/uniform_axis");
@@ -1793,9 +1801,10 @@ static void CG_RegisterGraphics(void)
 	cgs.media.ccCmdPost[0] = trap_R_RegisterShaderNoMip("gfx/limbo/cm_bo_axis");
 	cgs.media.ccCmdPost[1] = trap_R_RegisterShaderNoMip("gfx/limbo/cm_bo_allied");
 
-	cgs.media.ccMortarHit         = trap_R_RegisterShaderNoMip("gfx/limbo/mort_hit");
-	cgs.media.ccMortarTarget      = trap_R_RegisterShaderNoMip("gfx/limbo/mort_target");
-	cgs.media.ccMortarTargetArrow = trap_R_RegisterShaderNoMip("gfx/limbo/mort_targetarrow");
+	cgs.media.ccMortarHit         = trap_R_RegisterShaderNoMip("gfx/limbo/cm_mort_hit");
+	cgs.media.ccMortarTarget      = trap_R_RegisterShaderNoMip("gfx/limbo/cm_mort_target");
+	cgs.media.mortarTarget        = trap_R_RegisterShaderNoMip("gfx/limbo/mort_target");
+	cgs.media.mortarTargetArrow   = trap_R_RegisterShaderNoMip("gfx/limbo/mort_targetarrow");
 
 	cgs.media.skillPics[SK_BATTLE_SENSE]                             = trap_R_RegisterShaderNoMip("gfx/limbo/ic_battlesense");
 	cgs.media.skillPics[SK_EXPLOSIVES_AND_CONSTRUCTION]              = trap_R_RegisterShaderNoMip("gfx/limbo/ic_engineer");
@@ -1813,6 +1822,8 @@ static void CG_RegisterGraphics(void)
 	CG_ChatPanel_Setup();
 
 	CG_Fireteams_Setup();
+
+	CG_Spawnpoints_Setup();
 
 	cgs.media.railCoreShader = trap_R_RegisterShaderNoMip("railCore");       // for debugging server traces
 	cgs.media.ropeShader     = trap_R_RegisterShader("textures/props/cable_m01");
@@ -2080,6 +2091,7 @@ static void CG_RegisterGraphics(void)
 	cgs.media.limboBriefingButtonStopOff = trap_R_RegisterShaderNoMip("gfx/limbo/but_stop_off");
 
 	cgs.media.limboSpectator      = trap_R_RegisterShaderNoMip("gfx/limbo/spectator");
+	cgs.media.limboShoutcaster    = trap_R_RegisterShaderNoMip("gfx/limbo/shoutcaster");
 	cgs.media.limboRadioBroadcast = trap_R_RegisterShaderNoMip("ui/assets/radio_tower");
 
 	cgs.media.limboTeamLocked = trap_R_RegisterShaderNoMip("gfx/limbo/lock");
@@ -2381,24 +2393,6 @@ float CG_Cvar_Get(const char *cvar)
 }
 
 /**
- * @brief CG_Text_PaintWithCursor
- * @param[in] x
- * @param[in] y
- * @param[in] scale
- * @param[in] color
- * @param[in] text
- * @param cursorPos - unused
- * @param cursor - unused
- * @param[in] limit
- * @param[in] style
- * @todo Unused. Cursor is ignored
- */
-void CG_Text_PaintWithCursor(float x, float y, float scale, vec4_t color, const char *text, int cursorPos, const char *cursor, int limit, int style)
-{
-	CG_Text_Paint(x, y, scale, color, text, 0, limit, style);
-}
-
-/**
  * @brief CG_OwnerDrawWidth
  * @param ownerDraw - unused
  * @param scale - unused
@@ -2461,49 +2455,50 @@ static void CG_RunCinematicFrame(int handle)
  */
 void CG_LoadHudMenu(void)
 {
-	cgDC.registerShaderNoMip = &trap_R_RegisterShaderNoMip;
-	cgDC.setColor            = &trap_R_SetColor;
-	cgDC.drawHandlePic       = &CG_DrawPic;
-	cgDC.drawStretchPic      = &trap_R_DrawStretchPic;
-	cgDC.drawText            = &CG_Text_Paint;
-	cgDC.drawTextExt         = &CG_Text_Paint_Ext;
-	cgDC.textWidth           = &CG_Text_Width;
-	cgDC.textWidthExt        = &CG_Text_Width_Ext;
-	cgDC.textHeight          = &CG_Text_Height;
-	cgDC.textHeightExt       = &CG_Text_Height_Ext;
-	cgDC.textFont            = &CG_Text_SetActiveFont;
-	cgDC.registerModel       = &trap_R_RegisterModel;
-	cgDC.modelBounds         = &trap_R_ModelBounds;
-	cgDC.fillRect            = &CG_FillRect;
-	cgDC.drawRect            = &CG_DrawRect;
-	cgDC.drawSides           = &CG_DrawSides;
-	cgDC.drawTopBottom       = &CG_DrawTopBottom;
-	cgDC.clearScene          = &trap_R_ClearScene;
-	cgDC.addRefEntityToScene = &trap_R_AddRefEntityToScene;
-	cgDC.renderScene         = &trap_R_RenderScene;
-	cgDC.registerFont        = &trap_R_RegisterFont;
-	cgDC.ownerDrawItem       = NULL;
-	cgDC.getValue            = &CG_GetValue;
-	cgDC.ownerDrawVisible    = &CG_OwnerDrawVisible;
-	cgDC.runScript           = &CG_RunMenuScript;
-	cgDC.getTeamColor        = &CG_GetTeamColor;
-	cgDC.setCVar             = trap_Cvar_Set;
-	cgDC.getCVarString       = trap_Cvar_VariableStringBuffer;
-	cgDC.getCVarValue        = CG_Cvar_Get;
-	cgDC.drawTextWithCursor  = &CG_Text_PaintWithCursor;
-	cgDC.setOverstrikeMode   = &trap_Key_SetOverstrikeMode;
-	cgDC.getOverstrikeMode   = &trap_Key_GetOverstrikeMode;
-	cgDC.startLocalSound     = &trap_S_StartLocalSound;
-	cgDC.ownerDrawHandleKey  = &CG_OwnerDrawHandleKey;
-	cgDC.feederCount         = &CG_FeederCount;
-	cgDC.feederItemImage     = &CG_FeederItemImage;
-	cgDC.feederItemText      = &CG_FeederItemText;
-	cgDC.feederSelection     = &CG_FeederSelection;
-	cgDC.setBinding          = &trap_Key_SetBinding;
-	cgDC.getBindingBuf       = &trap_Key_GetBindingBuf;
-	cgDC.getKeysForBinding   = &trap_Key_KeysForBinding;
-	cgDC.keynumToStringBuf   = &trap_Key_KeynumToStringBuf;
-	cgDC.translateString     = &CG_TranslateString;
+	cgDC.registerShaderNoMip   = &trap_R_RegisterShaderNoMip;
+	cgDC.setColor              = &trap_R_SetColor;
+	cgDC.drawHandlePic         = &CG_DrawPic;
+	cgDC.drawStretchPic        = &trap_R_DrawStretchPic;
+	cgDC.drawText              = &CG_Text_Paint;
+	cgDC.drawTextExt           = &CG_Text_Paint_Ext;
+	cgDC.textWidth             = &CG_Text_Width;
+	cgDC.textWidthExt          = &CG_Text_Width_Ext;
+	cgDC.textHeight            = &CG_Text_Height;
+	cgDC.textHeightExt         = &CG_Text_Height_Ext;
+	cgDC.textFont              = &CG_Text_SetActiveFont;
+	cgDC.registerModel         = &trap_R_RegisterModel;
+	cgDC.modelBounds           = &trap_R_ModelBounds;
+	cgDC.fillRect              = &CG_FillRect;
+	cgDC.drawRect              = &CG_DrawRect;
+	cgDC.drawSides             = &CG_DrawSides;
+	cgDC.drawTopBottom         = &CG_DrawTopBottom;
+	cgDC.clearScene            = &trap_R_ClearScene;
+	cgDC.addRefEntityToScene   = &trap_R_AddRefEntityToScene;
+	cgDC.renderScene           = &trap_R_RenderScene;
+	cgDC.registerFont          = &trap_R_RegisterFont;
+	cgDC.ownerDrawItem         = NULL;
+	cgDC.getValue              = &CG_GetValue;
+	cgDC.ownerDrawVisible      = &CG_OwnerDrawVisible;
+	cgDC.runScript             = &CG_RunMenuScript;
+	cgDC.getTeamColor          = &CG_GetTeamColor;
+	cgDC.setCVar               = trap_Cvar_Set;
+	cgDC.getCVarString         = trap_Cvar_VariableStringBuffer;
+	cgDC.getCVarValue          = CG_Cvar_Get;
+	cgDC.drawTextWithCursor    = &CG_Text_PaintWithCursor;
+	cgDC.drawTextWithCursorExt = &CG_Text_PaintWithCursor_Ext;
+	cgDC.setOverstrikeMode     = &trap_Key_SetOverstrikeMode;
+	cgDC.getOverstrikeMode     = &trap_Key_GetOverstrikeMode;
+	cgDC.startLocalSound       = &trap_S_StartLocalSound;
+	cgDC.ownerDrawHandleKey    = &CG_OwnerDrawHandleKey;
+	cgDC.feederCount           = &CG_FeederCount;
+	cgDC.feederItemImage       = &CG_FeederItemImage;
+	cgDC.feederItemText        = &CG_FeederItemText;
+	cgDC.feederSelection       = &CG_FeederSelection;
+	cgDC.setBinding            = &trap_Key_SetBinding;
+	cgDC.getBindingBuf         = &trap_Key_GetBindingBuf;
+	cgDC.getKeysForBinding     = &trap_Key_KeysForBinding;
+	cgDC.keynumToStringBuf     = &trap_Key_KeynumToStringBuf;
+	cgDC.translateString       = &CG_TranslateString;
 	//cgDC.executeText = &trap_Cmd_ExecuteText;
 	cgDC.Error          = &Com_Error;
 	cgDC.Print          = &Com_Printf;
@@ -2715,8 +2710,19 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum, qbo
 	{
 		CG_Error("Client/Server game mismatch: '%s/%s'\n", GAME_VERSION, s);
 	}
-#if 0 // not used
-	trap_Cvar_Set("cg_etVersion", GAME_VERSION_DATED);   // So server can check
+
+	/* mark old and new clients */
+	if (cg.legacyClient <= 0)
+	{
+		trap_Cvar_Set("cg_etVersion", "Enemy Territory, ET 2.60b");
+	}
+	else
+	{
+		trap_Cvar_Set("cg_etVersion", Q3_VERSION);
+	}
+
+#if 0
+	trap_Cvar_Set("cg_legacyVersion", ETLEGACY_VERSION);
 #endif
 
 	s                  = CG_ConfigString(CS_LEVEL_START_TIME);
@@ -2881,12 +2887,17 @@ void CG_Shutdown(void)
  */
 qboolean CG_CheckExecKey(int key)
 {
-	if (!cg.showFireteamMenu)
+	if (cg.showFireteamMenu)
 	{
-		return qfalse;
+		return CG_FireteamCheckExecKey(key, qfalse);
 	}
 
-	return CG_FireteamCheckExecKey(key, qfalse);
+	if (cg.showSpawnpointsMenu)
+	{
+		return CG_SpawnpointsCheckExecKey(key, qfalse);
+	}
+
+	return qfalse;
 }
 
 /**

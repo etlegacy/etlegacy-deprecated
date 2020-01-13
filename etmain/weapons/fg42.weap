@@ -28,6 +28,8 @@ weaponDef
 		weaponIcon			"icons/iconw_fg42"
 		weaponIconScale		2
 		weaponSelectedIcon	"icons/iconw_fg42_1_select"
+		weaponSimpleIcon	"simpleicons/fg42"
+		weaponSimpleIconScale 2 1
 		
 		weaponCardIcon      "gfx/limbo/weaponcard01"
 		weaponCardScale     1 1
