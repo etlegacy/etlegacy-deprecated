@@ -3285,7 +3285,7 @@ gentity_t *Bullet_Fire(gentity_t *ent)
 	spread *= aimSpreadScale;
 
 	if ((GetWeaponTableData(ent->s.weapon)->type & (WEAPON_TYPE_SMG | WEAPON_TYPE_PISTOL))
-	    && !(GetWeaponTableData(ent->s.weapon)->type & WEAPON_TYPE_SCOPED)
+            && !(ent->client->pmext.silencedSideArm & WALTTYPE_SCOPE)
 	    && !(GetWeaponTableData(ent->s.weapon)->attributes & WEAPON_ATTRIBUT_AKIMBO))
 	{
 		// increase in accuracy (spread reduction) at level 3

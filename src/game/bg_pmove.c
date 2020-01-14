@@ -132,7 +132,7 @@ int PM_IdleAnimForWeapon(int weapon)
 	{
 		return WEAP_IDLE2;
 	}
-	
+
 	return WEAP_IDLE1;
 }
 
@@ -144,7 +144,7 @@ int PM_IdleAnimForWeapon(int weapon)
 int PM_ReloadAnimForWeapon(int weapon)
 {
 	if ((pm->skill[SK_LIGHT_WEAPONS] >= 2 && GetWeaponTableData(weapon)->attributes & WEAPON_ATTRIBUT_FAST_RELOAD)      // faster reload
-	    || GetWeaponTableData(weapon)->type & (WEAPON_TYPE_SET | WEAPON_TYPE_RIFLENADE))
+	    || (GetWeaponTableData(weapon)->type & WEAPON_TYPE_RIFLENADE) || (pm->pmext->silencedSideArm & WALTTYPE_BIPOD))
 	{
 		return WEAP_RELOAD2;
 	}
@@ -2408,6 +2408,12 @@ static void PM_BeginWeaponChange(weapon_t oldWeapon, weapon_t newWeapon, qboolea
 		return;
 	}
 
+	// already asking for switching
+	if (pm->ps->nextWeapon == newWeapon)
+	{
+		return;
+	}
+
 	pm->ps->nextWeapon = newWeapon;
 
 	// force unscoping weapon
@@ -2420,10 +2426,7 @@ static void PM_BeginWeaponChange(weapon_t oldWeapon, weapon_t newWeapon, qboolea
 		if (!(GetWeaponTableData(oldWeapon)->type & WEAPON_TYPE_RIFLENADE) || pm->ps->ammoclip[GetWeaponTableData(oldWeapon)->ammoIndex])
 		{
 			PM_AddEvent(EV_CHANGE_WEAPON_2);
-			PM_StartWeaponAnim(WEAP_ALTSWITCHFROM);
 		}
-
-		BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DROPWEAPON, qfalse, qfalse);
 	}
 	else
 	{
@@ -2437,14 +2440,7 @@ static void PM_BeginWeaponChange(weapon_t oldWeapon, weapon_t newWeapon, qboolea
 		pm->ps->weaponTime += GetWeaponTableData(oldWeapon)->switchTimeBegin;            // dropping/raising usually takes 1/4 sec.
 	}
 
-	if (newWeapon == GetWeaponTableData(oldWeapon)->weapAlts)
-	{
-		pm->ps->weaponTime += GetWeaponTableData(oldWeapon)->altSwitchToTime;
-	}
-	else
-	{
-		pm->ps->weaponTime += GetWeaponTableData(oldWeapon)->switchTimeBegin;    // dropping/raising usually takes 1/4 sec.
-	}
+	pm->ps->weaponstate = reload ? WEAPON_DROPPING_TORELOAD : WEAPON_DROPPING;
 }
 
 /**
@@ -2495,45 +2491,43 @@ static void PM_FinishWeaponChange(void)
 	// play an animation
 	if (GetWeaponTableData(oldWeapon)->weapAlts == newWeapon)
 	{
-		if (((GetWeaponTableData(newWeapon)->type & WEAPON_TYPE_RIFLE) && !pm->ps->ammoclip[GetWeaponTableData(oldWeapon)->ammoIndex])
-		    || ((GetWeaponTableData(oldWeapon)->type & WEAPON_TYPE_PISTOL) && (GetWeaponTableData(oldWeapon)->attributes & WEAPON_ATTRIBUT_SILENCED)))
+		if ((GetWeaponTableData(newWeapon)->type & WEAPON_TYPE_RIFLE) && !pm->ps->ammoclip[GetWeaponTableData(oldWeapon)->ammoIndex])
 		{
 			return;
 		}
 
-		pm->ps->weaponTime += GetWeaponTableData(newWeapon)->altSwitchFromTime;
 		BG_UpdateConditionValue(pm->ps->clientNum, ANIM_COND_WEAPON, newWeapon, qtrue);
 
-		if (GetWeaponTableData(oldWeapon)->type & (WEAPON_TYPE_SET | WEAPON_TYPE_SCOPED | WEAPON_TYPE_RIFLENADE))
-		{
-			PM_StartWeaponAnim(WEAP_ALTSWITCHTO);
-
-			if (pm->ps->eFlags & EF_PRONE)
-			{
-				BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_UNDO_ALT_WEAPON_MODE_PRONE, qfalse, qfalse);
-			}
-			else
-			{
-				BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_UNDO_ALT_WEAPON_MODE, qfalse, qfalse);
-			}
-
-			pm->ps->weaponTime += GetWeaponTableData(newWeapon)->altSwitchTimeTo;
-		}
-		else
-		{
-			PM_StartWeaponAnim(WEAP_ALTSWITCHFROM);
-
-			if (pm->ps->eFlags & EF_PRONE)
-			{
-				BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DO_ALT_WEAPON_MODE_PRONE, qfalse, qfalse);
-			}
-			else
-			{
-				BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DO_ALT_WEAPON_MODE, qfalse, qfalse);
-			}
-
-		// alt weapon switch was played when switching away, just go into idle
-		PM_StartWeaponAnim(WEAP_ALTSWITCHTO);
+                if (GetWeaponTableData(oldWeapon)->type & WEAPON_TYPE_RIFLENADE)
+                {
+                    PM_StartWeaponAnim(WEAP_ALTSWITCHTO);
+                    
+                    if (pm->ps->eFlags & EF_PRONE)
+                    {
+                        BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_UNDO_ALT_WEAPON_MODE_PRONE, qfalse, qfalse);
+                    }
+                    else
+                    {
+                        BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_UNDO_ALT_WEAPON_MODE, qfalse, qfalse);
+                    }
+                    
+                    pm->ps->weaponTime += GetWeaponTableData(newWeapon)->altSwitchToTime;
+                }
+                else
+                {
+                    PM_StartWeaponAnim(WEAP_ALTSWITCHFROM);
+                    
+                    if (pm->ps->eFlags & EF_PRONE)
+                    {
+                        BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DO_ALT_WEAPON_MODE_PRONE, qfalse, qfalse);
+                    }
+                    else
+                    {
+                        BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DO_ALT_WEAPON_MODE, qfalse, qfalse);
+                    }
+                    
+                    pm->ps->weaponTime += GetWeaponTableData(oldWeapon)->altSwitchFromTime;
+                }
 	}
 	else
 	{
@@ -2549,6 +2543,8 @@ static void PM_FinishWeaponChange(void)
 		}
 
 		PM_StartWeaponAnim(WEAP_RAISE);
+
+		pm->ps->weaponTime += GetWeaponTableData(newWeapon)->switchTimeFinish;                          // dropping/raising usually takes 1/4 sec.
 	}
 }
 
@@ -2690,14 +2686,7 @@ static void PM_BeginAltWeaponChange(qboolean reload)
 
 	BG_AnimScriptEvent(pm->ps, pm->character->animModelInfo, ANIM_ET_DROPWEAPON, qfalse, qfalse);
 
-	if (reload)
-	{
-		pm->ps->weaponstate = WEAPON_DROPPING_TORELOAD;
-	}
-	else
-	{
-		pm->ps->weaponstate = WEAPON_DROPPING;
-	}
+	pm->ps->weaponstate = reload ? WEAPON_DROPPING_TORELOAD : WEAPON_DROPPING;
 }
 
 /**
@@ -2743,8 +2732,8 @@ static void PM_FinishAltWeaponChange()
 
 	if (pm->pmext->silencedSideArm & weaponAltType)
 	{
-		PM_StartWeaponAnim(WEAP_ALTSWITCHFROM);
-		pm->ps->weaponTime += GetWeaponTableData(pm->ps->weapon)->altSwitchFromTime;
+		PM_StartWeaponAnim(WEAP_ALTSWITCHTO);
+		pm->ps->weaponTime += GetWeaponTableData(pm->ps->weapon)->altSwitchToTime;
 
 		if (pm->ps->eFlags & EF_PRONE)
 		{
@@ -2757,8 +2746,8 @@ static void PM_FinishAltWeaponChange()
 	}
 	else
 	{
-		PM_StartWeaponAnim(WEAP_ALTSWITCHTO);
-		pm->ps->weaponTime += GetWeaponTableData(pm->ps->weapon)->altSwitchToTime;
+		PM_StartWeaponAnim(WEAP_ALTSWITCHFROM);
+		pm->ps->weaponTime += GetWeaponTableData(pm->ps->weapon)->altSwitchFromTime;
 
 		if (pm->ps->eFlags & EF_PRONE)
 		{
@@ -3576,14 +3565,7 @@ static void PM_Weapon(void)
 		return;
 	case WEAPON_RAISING:
 		pm->ps->weaponstate = WEAPON_READY;
-		if (pm->pmext->silencedSideArm & WALTTYPE_BIPOD)
-		{
-			PM_StartWeaponAnim(WEAP_IDLE2);
-		}
-		else
-		{
-			PM_StartWeaponAnim(WEAP_IDLE1);
-		}
+		PM_StartWeaponAnim(PM_IdleAnimForWeapon(pm->ps->weapon));
 		return;
 	case WEAPON_RAISING_TORELOAD:
 		pm->ps->weaponstate = WEAPON_READY;
@@ -3596,14 +3578,7 @@ static void PM_Weapon(void)
 	// can't shoot while prone and moving
 	if ((pm->ps->eFlags & EF_PRONE_MOVING) && !delayedFire)
 	{
-		if (pm->pmext->silencedSideArm & WALTTYPE_BIPOD)
-		{
-			PM_ContinueWeaponAnim(WEAP_IDLE2);
-		}
-		else
-		{
-			PM_ContinueWeaponAnim(WEAP_IDLE1);
-		}
+		PM_ContinueWeaponAnim(PM_IdleAnimForWeapon(pm->ps->weapon));
 		return;
 	}
 
@@ -3979,7 +3954,7 @@ static void PM_Weapon(void)
 	}
 
 	// covert ops received a reduction of 50% reduction in both recoil jump and weapon sway with Scoped Weapons ONLY
-	if ((GetWeaponTableData(pm->ps->weapon)->type & WEAPON_TYPE_SCOPED) && pm->skill[SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS] >= 3
+	if ((pm->pmext->silencedSideArm & WALTTYPE_SCOPE) && pm->skill[SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS] >= 3
 	    && pm->ps->stats[STAT_PLAYER_CLASS] == PC_COVERTOPS)
 	{
 		pm->ps->aimSpreadScaleFloat *= .5f;

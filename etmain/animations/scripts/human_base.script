@@ -3193,10 +3193,6 @@ undo_alt_weapon_mode
 	{
 		torso detach_silencer
 	}
-	weapons Colt
-	{
-		torso detach_silencer
-	}
 }
 
 do_alt_weapon_mode_prone

@@ -534,7 +534,7 @@ int Pickup_Weapon(gentity_t *ent, gentity_t *other)
 		{
 			weapon_t weapAlts = GetWeaponTableData(ent->item->giWeapon)->weapAlts;
 
-			if (GetWeaponTableData(weapAlts)->type & (WEAPON_TYPE_RIFLENADE | WEAPON_TYPE_SCOPED | WEAPON_TYPE_SET))
+			if (GetWeaponTableData(weapAlts)->type & WEAPON_TYPE_RIFLENADE)
 			{
 				COM_BitSet(other->client->ps.weapons, weapAlts);
 			}

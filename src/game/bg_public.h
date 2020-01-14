@@ -1151,8 +1151,8 @@ typedef struct weapontable_s
 
 	int switchTimeBegin;            ///< bg -
 	int switchTimeFinish;           ///< bg -
-	int altSwitchToTime;            ///< bg -
 	int altSwitchFromTime;          ///< bg -
+	int altSwitchToTime;            ///< bg -
 
 	float knockback;                ///< bg -
 	int muzzlePointOffset[3];       ///< g  - forward, left, up

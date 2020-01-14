@@ -7,7 +7,7 @@ weaponDef
 		//pickupModel		"models/multiplayer/mauser/mauser_pickup.md3"
 		//pickupSound		"sound/misc/w_pkup.wav"
 		
-		weaponConfig		"models/multiplayer/m7/weapon.cfg"
+		weaponConfig		"models/multiplayer/m1_garand/weapon.cfg"
 		handsModel		"models/multiplayer/m1_garand/v_m1_garand_hand.md3"
 		
 		flashDlightColor	1.0 0.7 0.5

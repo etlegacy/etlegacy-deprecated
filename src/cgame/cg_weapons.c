@@ -2605,8 +2605,7 @@ void CG_AddPlayerWeapon(refEntity_t *parent, playerState_t *ps, centity_t *cent)
 	if (ps && cg.clientNum != cg.snap->ps.clientNum)
 	{
 		// calculate mounted weapon angles if spectating client
-		if (CHECKBITWISE(GetWeaponTableData(cg.snap->ps.weapon)->type, WEAPON_TYPE_MG | WEAPON_TYPE_SET) ||
-		    CHECKBITWISE(GetWeaponTableData(cg.snap->ps.weapon)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET))
+                if (cg.pmext.silencedSideArm & WALTTYPE_BIPOD)
 		{
 			// update it only once
 			if (cg.weaponSetTime == 0)
