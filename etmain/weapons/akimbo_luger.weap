@@ -3,7 +3,7 @@ weaponDef
 	// This basically fills out weaponInfo_t
 	client {
 		//standModel		""										// weapon pickup 'stand' (do we still use this?)
-		//pickupModel		""
+		pickupModel			"models/weapons2/luger/ss_luger.mdc"
 		//pickupSound		"sound/misc/w_pkup.wav"
 		
 		weaponConfig		"models/weapons2/akimbo_luger/weapon.cfg"

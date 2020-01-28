@@ -326,42 +326,36 @@ bg_playerclass_t *BG_PlayerClassForPlayerState(playerState_t *ps)
 }
 
 /**
- * @brief BG_ClassHasWeapon
- * @param[in] classInfo
- * @param[in] weap
- * @return
- */
-qboolean BG_ClassHasWeapon(bg_playerclass_t *classInfo, weapon_t weap)
-{
-	int i;
-
-	if (!weap)
-	{
-		return qfalse;
-	}
-
-	for (i = 0; i < MAX_WEAPS_PER_CLASS; i++)
-	{
-		if (classInfo->classPrimaryWeapons[i].weapon == weap)
-		{
-			return qtrue;
-		}
-	}
-	return qfalse;
-}
-
-/**
  * @brief BG_WeaponIsPrimaryForClassAndTeam
  * @param[in] classnum
  * @param[in] team
  * @param[in] weapon
+ * @param[in] isPrimary
  * @return
  */
-qboolean BG_WeaponIsPrimaryForClassAndTeam(int classnum, team_t team, weapon_t weapon)
+qboolean BG_WeaponForClassAndTeam(int classnum, team_t team, weapon_t weapon, qboolean isPrimary)
 {
 	if (team == TEAM_AXIS || team == TEAM_ALLIES)
 	{
-		return BG_ClassHasWeapon(GetPlayerClassesData(team, classnum), weapon);
+		int              i;
+		bg_playerclass_t *classInfo;
+		bg_weaponclass_t *weapons;
+
+		if (!weapon)
+		{
+			return qfalse;
+		}
+
+		classInfo = BG_GetPlayerClassInfo(team, classnum);
+		weapons   = isPrimary ? classInfo->classPrimaryWeapons : classInfo->classSecondaryWeapons;
+
+		for (i = 0; i < MAX_WEAPS_PER_CLASS; i++)
+		{
+			if (weapons[i].weapon == weapon)
+			{
+				return qtrue;
+			}
+		}
 	}
 
 	return qfalse;

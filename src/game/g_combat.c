@@ -155,26 +155,47 @@ void TossWeapons(gentity_t *self)
 	drop->count = self->client->ps.ammoclip[BG_FindClipForWeapon(weapon)];
 	drop->item->quantity = self->client->ps.ammoclip[BG_FindClipForWeapon(weapon)];*/
 
-	weapon_t primaryWeapon;
-
 	if (g_gamestate.integer == GS_INTERMISSION)
 	{
 		return;
 	}
 
-	if (self->client->sess.playerType == PC_SOLDIER && self->client->sess.skill[SK_HEAVY_WEAPONS] >= 4)
+	if (!g_dropWeapon.integer)
 	{
-		primaryWeapon = G_GetPrimaryWeaponForClientSoldier(self->client);
-	}
-	else
-	{
-		primaryWeapon = G_GetPrimaryWeaponForClient(self->client);
+		return;
 	}
 
-	if (primaryWeapon)
+	if (g_dropWeapon.integer & 1)
 	{
-		// drop our primary weapon
-		G_DropWeapon(self, primaryWeapon); // FIXME; drop secondary too?!
+		weapon_t primaryWeapon;
+
+		if (self->client->sess.playerType == PC_SOLDIER && self->client->sess.skill[SK_HEAVY_WEAPONS] >= 4)
+		{
+			primaryWeapon = G_GetPrimaryWeaponForClientSoldier(self->client);
+		}
+		else
+		{
+			primaryWeapon = G_GetPrimaryWeaponForClient(self->client);
+		}
+
+		if (primaryWeapon)
+		{
+			// drop our primary weapon
+			G_DropWeapon(self, primaryWeapon, qtrue);
+		}
+	}
+
+	if (g_dropWeapon.integer & 2)
+	{
+		weapon_t secondaryWeapon;
+
+		secondaryWeapon = G_GetSecondaryWeaponForClient(self->client);
+
+		if (secondaryWeapon)
+		{
+			// drop our secondary weapon
+			G_DropWeapon(self, secondaryWeapon, qfalse);
+		}
 	}
 }
 

@@ -636,8 +636,14 @@ qboolean CG_PlayerSeesItem(playerState_t *ps, entityState_t *item, int atTime, i
  */
 static int CG_PlayerCanPickupWeapon(int clientNum, weapon_t weapon)
 {
-	return BG_ClassHasWeapon(GetPlayerClassesData(TEAM_AXIS, cgs.clientinfo[clientNum].cls), weapon) ||
-	       BG_ClassHasWeapon(GetPlayerClassesData(TEAM_ALLIES, cgs.clientinfo[clientNum].cls), weapon);
+	// get an equivalent weapon if the client team is different of the weapon team, if not keep the current
+	if (cgs.clientinfo[clientNum].team != GetWeaponTableData(weapon)->team && GetWeaponTableData(weapon)->weapEquiv)
+	{
+		weapon = GetWeaponTableData(weapon)->weapEquiv;
+	}
+
+	return BG_WeaponForClassAndTeam(cgs.clientinfo[clientNum].team, cgs.clientinfo[clientNum].cls, weapon, qtrue) ||
+	       BG_WeaponForClassAndTeam(cgs.clientinfo[clientNum].team, cgs.clientinfo[clientNum].cls, weapon, qfalse);
 }
 
 /**
@@ -1337,7 +1343,7 @@ static void CG_Missile(centity_t *cent)
 	// FIXME: check FEATURE_EDV weapon cam (see else condition below)
 	if (/*GetWeaponTableData(cent->currentState.weapon)->type & (WEAPON_TYPE_RIFLENADE | WEAPON_TYPE_PANZER | WEAPON_TYPE_GRENADE)
 	    &&*/(CHECKBITWISE(GetWeaponTableData(cent->currentState.weapon)->type, WEAPON_TYPE_MORTAR | WEAPON_TYPE_SET)
-	     || cent->currentState.weapon == WP_MAPMORTAR /*|| cent->currentState.weapon == WP_SMOKE_MARKER
+	         || cent->currentState.weapon == WP_MAPMORTAR /*|| cent->currentState.weapon == WP_SMOKE_MARKER
 	        || cent->currentState.weapon == WP_SMOKE_BOMB || cent->currentState.weapon == WP_DYNAMITE*/))
 	{
 		vec3_t delta;

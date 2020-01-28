@@ -205,63 +205,36 @@ weapon_t G_GetPrimaryWeaponForClient(gclient_t *client)
 	return WP_NONE;
 }
 
-/*
+/**
  * @brief G_GetSecondaryWeaponForClient
  * @param[in] client
- * @param primary - unused
- * @return
- *
- * @note Unused
- *
-weapon_t G_GetSecondaryWeaponForClient(gclient_t *client, weapon_t primary)
+ * @return the secondary weapon of the client
+ */
+weapon_t G_GetSecondaryWeaponForClient(gclient_t *client)
 {
-    weapon_t secondary = WP_NONE;
+	int i, team;
 
-    // early out if not on a team
-    if (client->sess.sessionTeam != TEAM_ALLIES && client->sess.sessionTeam != TEAM_AXIS)
-    {
-        return WP_NONE;
-    }
+	// early out if not on a team
+	if (client->sess.sessionTeam != TEAM_ALLIES && client->sess.sessionTeam != TEAM_AXIS)
+	{
+		return WP_NONE;
+	}
 
-    // Record our secondary weapon (usually a pistol sidearm)
-    // Colts
-    if (COM_BitCheck(client->ps.weapons, WP_AKIMBO_SILENCEDCOLT))
-    {
-        secondary = WP_AKIMBO_SILENCEDCOLT;
-    }
-    else if (COM_BitCheck(client->ps.weapons, WP_AKIMBO_COLT))
-    {
-        secondary = WP_AKIMBO_COLT;
-    }
-    else if (COM_BitCheck(client->ps.weapons, WP_SILENCED_COLT))
-    {
-        secondary = WP_SILENCED_COLT;
-    }
-    else if (COM_BitCheck(client->ps.weapons, WP_COLT))
-    {
-        secondary = WP_COLT;
-    }
-    // Lugers
-    else if (COM_BitCheck(client->ps.weapons, WP_AKIMBO_SILENCEDLUGER))
-    {
-        secondary = WP_AKIMBO_SILENCEDLUGER;
-    }
-    else if (COM_BitCheck(client->ps.weapons, WP_AKIMBO_LUGER))
-    {
-        secondary = WP_AKIMBO_LUGER;
-    }
-    else if (COM_BitCheck(client->ps.weapons, WP_SILENCER))
-    {
-        secondary = WP_SILENCER;
-    }
-    else if (COM_BitCheck(client->ps.weapons, WP_LUGER))
-    {
-        secondary = WP_LUGER;
-    }
+	for (team = TEAM_AXIS; team <= TEAM_ALLIES; team++)
+	{
+		bg_playerclass_t *classInfo = GetPlayerClassesData(team, client->sess.playerType);
 
-    return secondary;
+		for (i = 0; i < MAX_WEAPS_PER_CLASS; i++)
+		{
+			if (COM_BitCheck(client->ps.weapons, classInfo->classSecondaryWeapons[i].weapon))
+			{
+				return classInfo->classSecondaryWeapons[i].weapon;
+			}
+		}
+	}
+
+	return WP_NONE;
 }
-*/
 
 /**
  * @brief Get the primary weapon of the client.
@@ -310,8 +283,9 @@ weapon_t G_GetPrimaryWeaponForClientSoldier(gclient_t *client)
  * @brief Drop Weapon
  * @param[in] ent
  * @param[in] weapon
+ * @param[in] isPrimary
  */
-void G_DropWeapon(gentity_t *ent, weapon_t weapon)
+void G_DropWeapon(gentity_t *ent, weapon_t weapon, qboolean isPrimary)
 {
 	vec3_t    angles, velocity, org, offset, mins, maxs;
 	gclient_t *client = ent->client;
@@ -341,6 +315,21 @@ void G_DropWeapon(gentity_t *ent, weapon_t weapon)
 	else if (angles[PITCH] > 30)
 	{
 		angles[PITCH] = 30;
+	}
+
+	// drop primary and secondary weapon on different angle
+	// to don't get stuck with with each other
+	if (g_dropWeapon.integer & 3)
+	{
+		if (isPrimary)
+		{
+			angles[YAW] += 5;
+
+		}
+		else
+		{
+			angles[YAW] -= 5;
+		}
 	}
 
 	AngleVectors(angles, velocity, NULL, NULL);
@@ -408,9 +397,10 @@ void G_DropWeapon(gentity_t *ent, weapon_t weapon)
  * @brief Check if a weapon can be picked up.
  * @param[in] weapon
  * @param[in] ent
+ * @param[out] isPrimary
  * @return
  */
-qboolean G_CanPickupWeapon(weapon_t weapon, gentity_t *ent)
+qboolean G_CanPickupWeapon(weapon_t weapon, gentity_t *ent, qboolean *isPrimary)
 {
 	// prevent picking up while reloading
 	if (ent->client->ps.weaponstate == WEAPON_RELOADING)
@@ -424,13 +414,21 @@ qboolean G_CanPickupWeapon(weapon_t weapon, gentity_t *ent)
 		return qfalse;
 	}
 
-	// get an equivalent weapon if the cleint team is different of the weapon team, if not keep the current
+	// get an equivalent weapon if the client team is different of the weapon team, if not keep the current
 	if (ent->client->sess.sessionTeam != GetWeaponTableData(weapon)->team && GetWeaponTableData(weapon)->weapEquiv)
 	{
 		weapon = GetWeaponTableData(weapon)->weapEquiv;
 	}
 
-	return BG_WeaponIsPrimaryForClassAndTeam(ent->client->sess.playerType, ent->client->sess.sessionTeam, weapon);
+
+	*isPrimary = BG_WeaponForClassAndTeam(ent->client->sess.playerType, ent->client->sess.sessionTeam, weapon, qtrue);
+
+	if (isPrimary)
+	{
+		return qtrue;
+	}
+
+	return BG_WeaponForClassAndTeam(ent->client->sess.playerType, ent->client->sess.sessionTeam, weapon, qfalse);
 }
 /**
  * @brief Pick a weapon up.
@@ -492,8 +490,9 @@ int Pickup_Weapon(gentity_t *ent, gentity_t *other)
 	}
 	else
 	{
-		weapon_t primaryWeapon;
+		weapon_t weapon;
 		qboolean canPickup;
+		qboolean isPrimary;
 
 		if (level.time - other->client->dropWeaponTime < 1000)
 		{
@@ -507,26 +506,33 @@ int Pickup_Weapon(gentity_t *ent, gentity_t *other)
 		}
 
 		// see if we can pick it up
-		canPickup = G_CanPickupWeapon(ent->item->giWeapon, other);
+		canPickup = G_CanPickupWeapon(ent->item->giWeapon, other, &isPrimary);
 
 		if (!canPickup)
 		{
 			return 0;
 		}
 
-		if (other->client->sess.playerType == PC_SOLDIER && other->client->sess.skill[SK_HEAVY_WEAPONS] >= 4)
+		if (isPrimary)
 		{
-			primaryWeapon = G_GetPrimaryWeaponForClientSoldier(other->client);
+			if (other->client->sess.playerType == PC_SOLDIER && other->client->sess.skill[SK_HEAVY_WEAPONS] >= 4)
+			{
+				weapon = G_GetPrimaryWeaponForClientSoldier(other->client);
+			}
+			else
+			{
+				weapon = G_GetPrimaryWeaponForClient(other->client);
+			}
 		}
 		else
 		{
-			primaryWeapon = G_GetPrimaryWeaponForClient(other->client);
+			weapon = G_GetSecondaryWeaponForClient(other->client);
 		}
 
 		// drop our primary weapon if one exist
-		if (primaryWeapon)
+		if (weapon)
 		{
-			G_DropWeapon(other, primaryWeapon);
+			G_DropWeapon(other, weapon, isPrimary);
 		}
 
 		// now pickup the other one

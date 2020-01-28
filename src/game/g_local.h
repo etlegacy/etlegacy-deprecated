@@ -1410,7 +1410,8 @@ void Touch_Item(gentity_t *ent, gentity_t *other, trace_t *trace);
 qboolean AddMagicAmmo(gentity_t *receiver, int numOfClips);
 weapon_t G_GetPrimaryWeaponForClient(gclient_t *client);
 weapon_t G_GetPrimaryWeaponForClientSoldier(gclient_t *client);
-void G_DropWeapon(gentity_t *ent, weapon_t weapon);
+weapon_t G_GetSecondaryWeaponForClient(gclient_t *client);
+void G_DropWeapon(gentity_t *ent, weapon_t weapon, qboolean isPrimary);
 
 // Touch_Item_Auto is bound by the rules of autoactivation (if cg_autoactivate is 0, only touch on "activate")
 void Touch_Item_Auto(gentity_t *ent, gentity_t *other, trace_t *trace);
@@ -2013,6 +2014,7 @@ extern vmCvar_t g_protect;
 
 extern vmCvar_t g_dropHealth;
 extern vmCvar_t g_dropAmmo;
+extern vmCvar_t g_dropWeapon;
 
 extern vmCvar_t g_shove;
 
@@ -2599,7 +2601,7 @@ void G_MakeUnready(gentity_t *ent);
 
 void SetPlayerSpawn(gentity_t *ent, int spawn, qboolean update);
 void G_UpdateSpawnPointState(gentity_t *ent);
-void G_UpdateSpawnPointStatePlayerCounts();
+void G_UpdateSpawnPointStatePlayerCounts(void);
 
 void G_SetConfigStringValue(int num, const char *key, const char *value);
 void G_GlobalClientEvent(entity_event_t event, int param, int client);
@@ -2609,7 +2611,7 @@ void G_ResetTempTraceIgnoreEnts(void);
 void G_TempTraceIgnoreEntity(gentity_t *ent);
 void G_TempTraceIgnorePlayersAndBodies(void);
 
-qboolean G_CanPickupWeapon(weapon_t weapon, gentity_t *ent);
+qboolean G_CanPickupWeapon(weapon_t weapon, gentity_t *ent, qboolean *isPrimary);
 
 qboolean G_LandmineSnapshotCallback(int entityNum, int clientNum);
 
