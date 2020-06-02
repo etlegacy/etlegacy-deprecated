@@ -617,7 +617,7 @@ void COM_FixPath(char *pathname);
 const char *COM_GetExtension(const char *name);
 void COM_StripExtension(const char *in, char *out, int destsize);
 qboolean COM_CompareExtension(const char *in, const char *ext);
-void COM_StripFilename(const char *in, char *out);
+void COM_StripFilename(const char *in, char *out, size_t outsize);
 
 void COM_DefaultExtension(char *path, size_t maxSize, const char *extension);
 
